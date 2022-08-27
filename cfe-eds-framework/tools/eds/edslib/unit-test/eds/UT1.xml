@@ -1,0 +1,150 @@
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+  <Package name="UT1" shortDescription="Unit Test Data Definition">
+    <DataTypeSet>
+      <EnumeratedDataType name="CMDVAL">
+        <EnumerationList>
+            <Enumeration label="C140" value="140" />
+            <Enumeration label="C141" value="141" />
+            <Enumeration label="C142" value="142" />
+            <Enumeration label="C143" value="143" />
+            <Enumeration label="C144" value="144" />
+            <Enumeration label="C145" value="145" />
+            <Enumeration label="C146" value="146" />
+            <Enumeration label="C147" value="147" />
+            <Enumeration label="C148" value="148" />
+            <Enumeration label="C149" value="149" />
+            <Enumeration label="C150" value="150" />
+            <Enumeration label="C151" value="151" />
+            <Enumeration label="C152" value="152" />
+            <Enumeration label="C153" value="153" />
+            <Enumeration label="C154" value="154" />
+            <Enumeration label="C155" value="155" />
+            <Enumeration label="C156" value="156" />
+            <Enumeration label="C157" value="157" />
+            <Enumeration label="C158" value="158" />
+            <Enumeration label="C159" value="159" />
+            <Enumeration label="C160" value="160" />
+            <Enumeration label="C161" value="161" />
+            <Enumeration label="C162" value="162" />
+            <Enumeration label="C163" value="163" />
+            <Enumeration label="C164" value="164" />
+            <Enumeration label="C165" value="165" />
+            <Enumeration label="C166" value="166" />
+            <Enumeration label="C167" value="167" />
+            <Enumeration label="C168" value="168" />
+            <Enumeration label="C169" value="169" />
+            <Enumeration label="C170" value="170" />
+        </EnumerationList>
+      </EnumeratedDataType>
+
+      <StringDataType name="char@10" length="10" />
+
+      <ArrayDataType name="uint16@4" dataTypeRef="uint8">
+        <DimensionList>
+          <Dimension size="4" />
+        </DimensionList>
+      </ArrayDataType>
+
+      <ArrayDataType name="uint8@250" dataTypeRef="uint8">
+        <DimensionList>
+          <Dimension size="250" />
+        </DimensionList>
+      </ArrayDataType>
+      
+      <ArrayDataType name="bitmask@20" dataTypeRef="uint8">
+        <DimensionList>
+          <Dimension size="3" />
+        </DimensionList>
+      </ArrayDataType>
+
+      <ArrayDataType name="bitmask@40" dataTypeRef="uint16">
+        <DimensionList>
+          <Dimension size="3" />
+        </DimensionList>
+      </ArrayDataType>
+
+      <ArrayDataType name="bitmask@10" dataTypeRef="uint32">
+        <DimensionList>
+          <Dimension size="1" />
+        </DimensionList>
+      </ArrayDataType>
+
+      <ContainerDataType name="BasicDataTypes" shortDescription="Basic data types">
+        <EntryList>
+          <Entry name="cmdval" type="CMDVAL" />
+          <Entry name="b1" type="int8" />
+          <Entry name="bl1" type="uint8" />
+          <Entry name="w1" type="uint16" />
+          <Entry name="w2" type="int16" />
+          <Entry name="dw1" type="uint32" />
+          <Entry name="dw2" type="int32" />
+          <Entry name="f1" type="float" />
+          <Entry name="df1" type="double" />
+          <Entry name="str" type="char@10" />
+        </EntryList>
+      </ContainerDataType>
+      
+      <ArrayDataType name="BasicDataTypes@5" dataTypeRef="BasicDataTypes">
+        <DimensionList>
+          <Dimension size="5" />
+        </DimensionList>
+      </ArrayDataType>
+
+      <ContainerDataType name="Cmd" shortDescription="Unit Test 1 Command">
+        <EntryList>
+          <Entry name="Commands" type="uint16@4" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="Tlm1" shortDescription="Unit Test 1 Telemetry">
+        <EntryList>
+          <Entry name="BasicDataTypes1" type="UT1/BasicDataTypes" />
+          <Entry name="bitmask8" type="bitmask@20" />
+          <Entry name="bitmask16" type="bitmask@40" />
+          <Entry name="bitmask32" type="bitmask@10" />
+          <Entry name="BasicDataTypes2" type="BasicDataTypes@5" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="Table1">
+        <EntryList>
+          <Entry name="TableContent" type="uint8@250" />
+        </EntryList>
+      </ContainerDataType>
+
+      <InterfaceType name="TestCMD" baseType="UTHDR/UtCmd">
+        <ConstraintSet>
+          <ValueConstraint entry="UtStreamId" value="8" />
+        </ConstraintSet>
+      </InterfaceType>
+
+      <InterfaceType name="TestTLM" baseType="UTHDR/UtTlm">
+        <ConstraintSet>
+          <ValueConstraint entry="UtStreamId" value="3" />
+        </ConstraintSet>
+        <GenericTypeMapSet>
+          <GenericTypeMap type="Tlm1" name="TlmPayloadType" />
+        </GenericTypeMapSet>
+      </InterfaceType>
+
+      <InterfaceType name="Cmd1" baseType="TestCMD">
+        <ConstraintSet>
+          <ValueConstraint entry="SecHdr.UtCommandId" value="1" />
+        </ConstraintSet>
+        <GenericTypeMapSet>
+          <GenericTypeMap type="Cmd" name="CmdPayloadType" />
+        </GenericTypeMapSet>
+      </InterfaceType>
+
+      <InterfaceType name="Cmd2" baseType="TestCMD">
+        <ConstraintSet>
+          <ValueConstraint entry="SecHdr.UtCommandId" value="2" />
+        </ConstraintSet>
+        <GenericTypeMapSet>
+          <GenericTypeMap type="Cmd" name="CmdPayloadType" />
+        </GenericTypeMapSet>
+      </InterfaceType>
+
+    </DataTypeSet>
+  </Package>
+</PackageFile>

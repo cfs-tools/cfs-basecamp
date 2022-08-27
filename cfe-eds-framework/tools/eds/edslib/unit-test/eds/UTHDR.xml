@@ -1,0 +1,80 @@
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+  <Package name="UTHDR">
+  
+    <Define name="UT_PORTABLE_CMD_CPU_MSG_BASE" value="30" />
+    <Define name="UT_CMD_MID_PER_CPU" value="30" />
+    <Define name="UT_PORTABLE_TLM_CPU_MSG_BASE" value="60" />
+    <Define name="UT_TLM_MID_PER_CPU" value="30" />
+    
+    <DataTypeSet>
+      <ContainerDataType name="UtPriHdr" shortDescription="The Primary message header that is present in all messages">
+        <EntryList>
+          <Entry name="UtLength" type="uint16" shortDescription="packet length word" />
+          <Entry name="UtStreamId" type="uint16" shortDescription="Packet identifier word" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="UtCmdSecHdr" shortDescription="The extended message header that is present in command messages">
+        <EntryList>
+          <Entry name="UtCommandId" type="uint16" shortDescription="Command Identifier Word" />
+          <Entry name="CmdExtraInfo" type="uint16" shortDescription="Extra Info" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="UtTlmSecHdr" shortDescription="The extended message header that is present in telemetry messages">
+        <EntryList>
+          <Entry name="TlmExtraInfo1" type="uint16" shortDescription="Extra Info" />
+          <Entry name="TlmExtraInfo2" type="uint16" shortDescription="Extra Info" />
+        </EntryList>
+      </ContainerDataType>
+      
+    </DataTypeSet>
+
+   <InterfaceTypeSet>
+   
+      <InterfaceType abstract="true" name="BasePacket">
+         <GenericTypeSet>
+            <GenericType name="SecHdrType" />
+         </GenericTypeSet>
+         <BaseTypeSet>
+            <BaseType type="UtPriHdr" />
+         </BaseTypeSet>
+         <ParameterSet>
+            <Parameter type="SecHdrType" name="SecHdr" />
+         </ParameterSet>
+      </InterfaceType>
+      
+      <InterfaceType abstract="true" baseType="BasePacket" name="UtCmd">
+         <ConstraintSet>
+           <RangeConstraint entry="UtStreamId" rangeType="offset" min="UT_PORTABLE_CMD_CPU_MSG_BASE" max="UT_CMD_MID_PER_CPU" /> 
+         </ConstraintSet>
+         <GenericTypeMapSet>
+           <GenericTypeMap type="UtCmdSecHdr" name="SecHdrType" />
+         </GenericTypeMapSet>
+         <GenericTypeSet>
+            <GenericType name="CmdPayloadType" />
+         </GenericTypeSet>
+         <ParameterSet>
+            <Parameter type="CmdPayloadType" name="Payload" />
+         </ParameterSet>
+      </InterfaceType>
+      
+      <InterfaceType abstract="true" baseType="BasePacket" name="UtTlm">
+         <ConstraintSet>
+           <RangeConstraint entry="UtStreamId" rangeType="offset" min="UT_PORTABLE_TLM_CPU_MSG_BASE" max="UT_TLM_MID_PER_CPU" /> 
+         </ConstraintSet>
+         <GenericTypeMapSet>
+           <GenericTypeMap type="UtTlmSecHdr" name="SecHdrType" />
+         </GenericTypeMapSet>
+         <GenericTypeSet>
+            <GenericType name="TlmPayloadType" />
+         </GenericTypeSet>
+         <ParameterSet>
+            <Parameter type="TlmPayloadType" name="Payload" />
+         </ParameterSet>
+      </InterfaceType>
+      
+   </InterfaceTypeSet>
+    
+  </Package>
+</PackageFile>

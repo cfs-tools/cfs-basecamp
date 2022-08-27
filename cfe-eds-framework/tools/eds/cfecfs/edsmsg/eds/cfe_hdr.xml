@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    GSC-18128-1, "Core Flight Executive Version 6.7"
+
+    Copyright (c) 2006-2019 United States Government as represented by
+    the Administrator of the National Aeronautics and Space Administration.
+    All Rights Reserved.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    This document adheres to the Electronic Data Sheet (EDS) XML schema
+    as prescribed in CCSDS book 876.0.
+
+    Purpose:
+      This describes usage of objects as defined by CCSDS book 133 Space Packet Protocol,
+      as utilized by the Core Fligh System (cFS)
+
+-->
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+<Package name="CFE_HDR" shortDescription="Message encapsulation formats in cFS">
+
+   <DataTypeSet>
+
+      <!-- The generic message type - this is a wrapper around the selected message format, giving it a fixed name -->
+      <ContainerDataType name="Message">
+         <EntryList>
+            <Entry name="CCSDS" type="CCSDS/${CFE_MISSION/MSG_HEADER_TYPE}" shortDescription="CCSDS Primary Header" />
+         </EntryList>
+      </ContainerDataType>
+
+      <IntegerDataType name="FunctionCode" shortDescription="The command ID contained within a command secondary header">
+        <LongDescription>
+          Command codes in CFE range are 7 bits (0-127).  The most signficant bit (codes 128-255) are reserved.
+        </LongDescription>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <Range>
+          <MinMaxRange rangeType="atMost" max="127" />
+        </Range>
+      </IntegerDataType>
+
+      <IntegerDataType name="ChecksumType" shortDescription="The checksum of a command packet">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" byteOrder="bigEndian"/>
+        <Range>
+          <MinMaxRange max="255" min="0" rangeType="inclusiveMinInclusiveMax"/>
+        </Range>
+      </IntegerDataType>
+
+      <ContainerDataType name="CmdSecHdr" shortDescription="Secondary header for commands">
+         <LongDescription>
+            The secondary message header that is present in all cFE command messages
+         </LongDescription>
+         <EntryList>
+            <Entry name="FunctionCode" type="FunctionCode" shortDescription="Command Identifier Word" />
+            <ErrorControlEntry name="Checksum" type="ChecksumType" shortDescription="Checksum, calculated by ground system" errorControlType="CHECKSUM_LONGITUDINAL"/>
+         </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="TlmSecHdr" shortDescription="Secondary header for telemetry">
+         <LongDescription>
+            The secondary message header that is present in all cFE telemetry messages
+         </LongDescription>
+         <EntryList>
+            <Entry name="Seconds" type="BASE_TYPES/uint32" shortDescription="Time since epoch, in seconds" />
+            <Entry name="Subseconds" type="BASE_TYPES/${CFE_MISSION/MSG_TELEMETRY_SUBSECONDS_TYPE}" shortDescription="Time since epoch, in subseconds" />
+         </EntryList>
+      </ContainerDataType>
+
+		 <ContainerDataType name="CommandHeader" baseType="Message" shortDescription="Complete Command Packet Header">
+			 <ConstraintSet>
+				 <ValueConstraint entry="CCSDS.SecHdrFlags" value="Cmd" />
+			 </ConstraintSet>-->
+			 <EntryList>
+				 <Entry name="Sec" type="CmdSecHdr" shortDescription="Command Secondary Header" />
+			 </EntryList>
+		 </ContainerDataType>
+
+		 <ContainerDataType name="TelemetryHeader" baseType="Message" shortDescription="Complete Telemetry Packet Header">
+			 <ConstraintSet>
+				 <ValueConstraint entry="CCSDS.SecHdrFlags" value="Tlm" />
+			 </ConstraintSet>-->
+			 <EntryList>
+				 <Entry name="Sec" type="TlmSecHdr" shortDescription="Telemetry Secondary Header" />
+			 </EntryList>
+		 </ContainerDataType>
+
+	 </DataTypeSet>
+</Package>
+</PackageFile>

@@ -1,0 +1,8 @@
+# Template for table configuration
+set(TABLE_BASENAME "${TBLWE}")
+set(TABLE_CPUNAME  "${TGT}")
+set(TABLE_APPNAME  "${APP}")
+set(TABLE_CSRC     "${TBL_SRC}")
+set(TABLE_LUASRC   "${TBL_LUA}")
+set(TABLE_INCLUDES "${CURRENT_INCLUDE_DIRS}")
+set(TABLE_INSTDIR  "${TGT}/${INSTALL_SUBDIR}")

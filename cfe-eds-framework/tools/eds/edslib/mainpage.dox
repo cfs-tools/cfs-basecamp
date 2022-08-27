@@ -1,0 +1,37 @@
+/**
+
+\mainpage Electronic Data Sheets (EDS) build tools and runtime library main page
+
+The EDS library provides an implementation of the CCSDS book 876 electronic data sheets.  The 
+library provided here is intended for both ground and embedded use.
+
+\tableofcontents
+
+\section intro Introduction
+
+Electronic Data Sheets are implemented in XML - a well established, widely used, 
+platform neutral, machine readable language
+
+- Geared toward space applications, and the more general problem of getting different 
+devices from different vendors, different space agencies/nationalities to reliably 
+communicate with each other even as specifications change.
+- EDS XML schema developed CCSDS Spacecraft Onboard Information Systems (SOIS) working group, 
+collaboration between NASA and ESA.
+- Internationally reviewed by various CCSDS member agencies.
+
+EDS defines interface hierarchies
+
+- Message that contain sub-messages, depending on a given field (i.e. “message type”).  
+- Encoded in the EDS, so implementations do not rely on their own “dispatch tables” that could become outdated.
+
+EDS defines binary formats of interface components
+
+- Defined as sequence of integers, strings, floats, etc. of varying sizes
+- Defines symbolic names for enumerated integer values in messages
+
+\image html overview.png "Overview of EDS workflow" 
+
+\subpage build
+
+*/
+
