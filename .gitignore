@@ -1,0 +1,7 @@
+# Backup files left around by some editors
+*~
+.DS_Store
+# merge remnants 
+*.orig
+# Build directories
+build*/

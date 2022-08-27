@@ -1,0 +1,50 @@
+<DesignParameters>
+<InstanceRuleSet>
+  <!--
+      Consider a single "MTS" subnet component to exist
+      Note that, conceptually the mission always contains only one logical "MTS" entity
+      even if multiple CPU's (i.e. multiple instances of CFE SB) are in use, as they can
+      route messages between them.  Conceptually, it is one message transfer domain.
+  -->
+  <InstanceRule name="SoftwareBusRouting" pattern="singleton" component="CFE_SB/MTS" />
+
+  <InstanceRule name="SoftwareBusAccess" pattern="ondemand" component="CFE_SB/SoftwareBus">
+    <InterfaceMapSet>
+      <InterfaceMap type="CFE_SB/SoftwareBusRouting" rule="SoftwareBusRouting" />
+    </InterfaceMapSet>
+  </InstanceRule>
+
+  <InstanceRule name="Listener" pattern="ondemand" component="CFE_SB/Listener">
+    <InterfaceMapSet>
+      <InterfaceMap type="CFE_SB/SoftwareBusAccess" rule="SoftwareBusAccess">
+        <ParameterValue name="MsgId" method="cfunction" value="CFE_MissionLib_MapListenerComponent" />
+      </InterfaceMap>
+    </InterfaceMapSet>
+  </InstanceRule>
+
+  <InstanceRule name="Publisher" pattern="ondemand" component="CFE_SB/Publisher">
+    <InterfaceMapSet>
+      <InterfaceMap type="CFE_SB/SoftwareBusAccess" rule="SoftwareBusAccess">
+        <ParameterValue name="MsgId" method="cfunction" value="CFE_MissionLib_MapPublisherComponent" />
+      </InterfaceMap>
+    </InterfaceMapSet>
+  </InstanceRule>
+
+  <!--
+      Consider all "Application" components to always exist
+      The "matchname" pattern attribute means a separate dedicated instance of each component
+      with a matching name will exist
+  -->
+  <InstanceRule name="Application" pattern="matchname">
+    <InterfaceMapSet>
+      <InterfaceMap type="CFE_SB/Telecommand" rule="Listener">
+        <ParameterValue name="InstanceNumber" method="static" value="1" />
+      </InterfaceMap>
+      <InterfaceMap type="CFE_SB/Telemetry" rule="Publisher">
+        <ParameterValue name="InstanceNumber" method="static" value="1" />
+      </InterfaceMap>
+    </InterfaceMapSet>
+  </InstanceRule>
+
+</InstanceRuleSet>
+</DesignParameters>

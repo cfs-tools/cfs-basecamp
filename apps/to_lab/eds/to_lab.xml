@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    GSC-18128-1, "Core Flight Executive Version 6.7"
+    LEW-19710-1, "CCSDS electronic data sheet implementation"
+
+    Copyright (c) 2006-2019 United States Government as represented by
+    the Administrator of the National Aeronautics and Space Administration.
+    All Rights Reserved.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    This document adheres to the Electronic Data Sheet (EDS) XML schema
+    as prescribed in CCSDS book 876.0.
+
+    Purpose:
+      This describes all interface objects for the Executive Services (CFE_ES)
+      core application
+
+-->
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+  <Package name="TO_LAB">
+    <DataTypeSet>
+
+      <StringDataType name="char_x_10" length="10" />
+      <StringDataType name="char_x_16" length="16" />
+
+      <!-- TO subscription table -->
+      <ContainerDataType name="SubscriptionEntry" shortDescription="TO_LAB Subscription table entry">
+        <EntryList>
+          <Entry name="Stream" type="CFE_SB/MsgId" shortDescription="MsgId to subscribe to" />
+          <Entry name="Flags" type="CFE_SB/Qos" shortDescription="Qos for subscription" />
+          <Entry name="BufLimit" type="BASE_TYPES/uint16" shortDescription="Depth limit" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ArrayDataType name="SubscriptionTable" dataTypeRef="SubscriptionEntry" shortDescription="TO_LAB Complete subscription table">
+        <DimensionList>
+          <Dimension size="${CFE_MISSION/SB_MAX_PIPES}" />
+        </DimensionList>
+      </ArrayDataType>
+
+      <ContainerDataType name="Subs">
+        <EntryList>
+          <Entry type="SubscriptionTable" name="Subs" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="EnableOutput_Payload" shortDescription="Enable TLM packet output">
+        <EntryList>
+          <Entry name="dest_IP" type="char_x_16" shortDescription="IP address to send to" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="RemovePacket_Payload" shortDescription="Unsubscribe Command Payload">
+        <EntryList>
+          <Entry name="Stream" type="CFE_SB/MsgId" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="AddPacket_Payload" shortDescription="Subscribe Command Payload">
+        <EntryList>
+          <Entry name="Stream" type="CFE_SB/MsgId" />
+          <Entry name="PacketSize" type="BASE_TYPES/uint16" />
+          <Entry name="Flags" type="CFE_SB/Qos" />
+          <Entry name="BufLimit" type="BASE_TYPES/uint8" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="DataTypes_Payload" shortDescription="TO data types">
+        <EntryList>
+          <Entry name="synch" type="BASE_TYPES/uint16" />
+          <Entry name="bl1" type="BASE_TYPES/uint8" />
+          <Entry name="bl2" type="BASE_TYPES/uint8" />
+          <Entry name="b1" type="BASE_TYPES/int8" />
+          <Entry name="b2" type="BASE_TYPES/int8" />
+          <Entry name="b3" type="BASE_TYPES/int8" />
+          <Entry name="b4" type="BASE_TYPES/int8" />
+          <Entry name="w1" type="BASE_TYPES/uint16" />
+          <Entry name="w2" type="BASE_TYPES/uint16" />
+          <Entry name="dw1" type="BASE_TYPES/uint32" />
+          <Entry name="dw2" type="BASE_TYPES/uint32" />
+          <Entry name="f1" type="BASE_TYPES/float" />
+          <Entry name="f2" type="BASE_TYPES/float" />
+          <Entry name="df1" type="BASE_TYPES/double" />
+          <Entry name="df2" type="BASE_TYPES/double" />
+          <Entry name="str" type="char_x_10" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="HkTlm_Payload" shortDescription="TO housekeeping">
+        <EntryList>
+          <Entry name="CommandCounter" type="BASE_TYPES/uint8" />
+          <Entry name="CommandErrorCounter" type="BASE_TYPES/uint8" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="SendHkCommand" baseType="CFE_HDR/CommandHeader">
+      </ContainerDataType>
+
+      <ContainerDataType name="CMD" baseType="CFE_HDR/CommandHeader">
+      </ContainerDataType>
+
+      <ContainerDataType name="HkTlm" baseType="CFE_HDR/TelemetryHeader">
+        <EntryList>
+          <Entry type="HkTlm_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="DataTypesTlm" baseType="CFE_HDR/TelemetryHeader">
+        <EntryList>
+          <Entry type="DataTypes_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="NoopCmd" baseType="CMD">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="0" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="ResetCountersCmd" baseType="CMD">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="1" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="AddPacketCmd" baseType="CMD">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="2" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="AddPacket_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="SendDataTypesCmd" baseType="CMD">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="3" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="RemovePacketCmd" baseType="CMD">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="4" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="RemovePacket_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="RemoveAllCmd" baseType="CMD">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="5" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="EnableOutputCmd" baseType="CMD">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="6" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="EnableOutput_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+    </DataTypeSet>
+
+    <ComponentSet>
+      <Component name="Application">
+        <RequiredInterfaceSet>
+          <Interface name="CMD" shortDescription="Software bus telecommand interface" type="CFE_SB/Telecommand">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelecommandDataType" type="CMD" />
+            </GenericTypeMapSet>
+          </Interface>
+          <Interface name="SEND_HK" shortDescription="Send telemetry command interface" type="CFE_SB/Telecommand">
+            <!-- This uses a bare spacepacket with no payload -->
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelecommandDataType" type="SendHkCommand" />
+            </GenericTypeMapSet>
+          </Interface>
+          <Interface name="HK_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
+            </GenericTypeMapSet>
+          </Interface>
+          <Interface name="DATA_TYPES" shortDescription="Data type test interface" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="DataTypesTlm" />
+            </GenericTypeMapSet>
+          </Interface>
+
+        </RequiredInterfaceSet>
+        <Implementation>
+          <VariableSet>
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId" initialValue="${CFE_MISSION/TO_LAB_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId" initialValue="${CFE_MISSION/TO_LAB_SEND_HK_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId" initialValue="${CFE_MISSION/TO_LAB_HK_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="DataTypesTopicId" initialValue="${CFE_MISSION/TO_LAB_DATA_TYPES_TOPICID}" />
+          </VariableSet>
+          <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
+          <ParameterMapSet>
+            <ParameterMap interface="CMD" parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="SEND_HK" parameter="TopicId" variableRef="SendHkTopicId" />
+            <ParameterMap interface="HK_TLM" parameter="TopicId" variableRef="HkTlmTopicId" />
+            <ParameterMap interface="DATA_TYPES" parameter="TopicId" variableRef="DataTypesTopicId" />
+          </ParameterMapSet>
+        </Implementation>
+      </Component>
+    </ComponentSet>
+
+
+  </Package>
+</PackageFile>

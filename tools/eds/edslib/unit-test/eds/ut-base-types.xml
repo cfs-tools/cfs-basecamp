@@ -1,0 +1,48 @@
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+   <!-- Defines for unit testing -->
+   <Define name="BASE_NUMBER" value="14" />
+   <Define name="BASE_TYPE" value="uint8" />
+   <Define name="NUMBER_OF_WIDGETS" value="BASE_NUMBER" />
+   <Define name="SIGNED_INTEGER_ENCODING" value="twosComplement" />
+      
+   <DataTypeSet>
+      
+      <!-- Fixed width integer types -->
+      <IntegerDataType name="int8" shortDescription="Signed 8 bit integer">
+        <IntegerDataEncoding sizeInBits="8" encoding="SIGNED_INTEGER_ENCODING" />
+      </IntegerDataType>
+      <IntegerDataType name="uint8" shortDescription="Unsigned 8 bit integer">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+      </IntegerDataType>
+      <IntegerDataType name="int16" shortDescription="Signed 16 bit integer">
+        <IntegerDataEncoding sizeInBits="16" encoding="SIGNED_INTEGER_ENCODING" />
+      </IntegerDataType>
+      <IntegerDataType name="uint16" shortDescription="Unsigned 16 bit integer">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+      </IntegerDataType>
+      <IntegerDataType name="int32" shortDescription="Signed 32 bit integer">
+        <IntegerDataEncoding sizeInBits="32" encoding="SIGNED_INTEGER_ENCODING" />
+      </IntegerDataType>
+      <IntegerDataType name="uint32" shortDescription="Unsigned 32 bit integer">
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
+      </IntegerDataType>
+      <IntegerDataType name="int64" shortDescription="Signed 64 bit integer">
+        <IntegerDataEncoding sizeInBits="64" encoding="SIGNED_INTEGER_ENCODING" />
+      </IntegerDataType>
+      <IntegerDataType name="uint64" shortDescription="Unsigned 64 bit integer">
+        <IntegerDataEncoding sizeInBits="64" encoding="unsigned" />
+      </IntegerDataType>
+      <IntegerDataType name="memaddr" shortDescription="CPU memory address">
+        <IntegerDataEncoding sizeInBits="64" encoding="unsigned" />
+      </IntegerDataType>
+      
+      <!-- Floating point types -->
+      <FloatDataType name="float" shortDescription="Single precision (32 bit) floating point value">
+        <FloatDataEncoding encodingAndPrecision="ieee754_2008_single" />
+      </FloatDataType>
+      <FloatDataType name="double" shortDescription="Double precision (64 bit) floating point value">
+        <FloatDataEncoding encodingAndPrecision="ieee754_2008_double" />
+      </FloatDataType>
+
+   </DataTypeSet>
+</PackageFile>
