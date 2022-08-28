@@ -51,5 +51,5 @@ This must be done prior to runing the python ground system because it creates py
 
 ## Next Steps
 
-![](https://github.com//base-camp/blob/main/docs/images/next-steps.png)
+![](https://github.com//cfs-tools/cfs-basecamp/blob/main/docs/images/next-steps.png)
 
