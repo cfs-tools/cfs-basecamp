@@ -1,0 +1,13 @@
+{
+   "title": "App Template Configuration",
+   "version": "1.0",
+
+   "description": [
+      "Defines default configuration paramters for the app_template processing",
+      "This file must be in the directory that contains the app_templates directory"
+   ],
+
+   "template-var": ["@TEMPLATE@","@Template@","@template@"]
+
+}
+

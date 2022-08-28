@@ -1,0 +1,21 @@
+{
+   "title": "OSK Command Ingest",
+   "description": [ "Define runtime configurations. See kit_ci::app_cfg.h for definitions"],
+   "config": {
+      
+      "APP_CFE_NAME":     "KIT_CI",
+      "APP_PERF_ID":      90,
+      "APP_UDP_CMD_PORT": 1234,
+           
+      "CMD_MID":         7936,
+      "SEND_HK_MID":     7937,
+      "HK_TLM_MID":      3840,
+      
+      "CMD_PIPE_DEPTH":  10,
+      "CMD_PIPE_NAME":   "KIT_CI_CMD",
+      
+      "RUNLOOP_DELAY":   500,
+      "RUNLOOP_MAX_MSG": 10
+
+   }
+}

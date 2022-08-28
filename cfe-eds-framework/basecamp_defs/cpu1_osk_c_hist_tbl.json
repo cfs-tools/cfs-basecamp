@@ -1,0 +1,31 @@
+{
+   "app-name": "OSK_C_DEMO",
+   "tbl-name": "Histogram",
+   "description": ["Define histrogram bins. bin-cnt must match the number of bins defined",
+                   "The device data range is determined by the app ini tableDEVICE_DATA_MODULO definition",
+                   "The limits are inclusive"],
+   "bin-cnt": 5,
+   "bin": [
+       {
+          "lo-lim":  0,
+          "hi-lim": 19
+       },
+       {
+          "lo-lim": 20,
+          "hi-lim": 39
+       },
+       {
+          "lo-lim": 40,
+          "hi-lim": 59
+       },
+       {
+          "lo-lim": 60,
+          "hi-lim": 79
+       },
+       {
+          "lo-lim": 80,
+          "hi-lim": 99
+       }
+   ]
+   
+}

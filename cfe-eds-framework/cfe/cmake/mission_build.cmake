@@ -443,7 +443,8 @@ function(prepare)
   add_subdirectory(${MISSION_SOURCE_DIR}/tools/eds/edslib eds/edslib)
   add_subdirectory(${MISSION_SOURCE_DIR}/tools/eds/tool   eds/tool)
   add_subdirectory(${MISSION_SOURCE_DIR}/tools/eds/cfecfs eds/cfecfs)
-
+  add_subdirectory(${MISSION_SOURCE_DIR}/tools/cFS-EDS-GroundStation eds/cFS-EDS-GroundStation)
+  
   add_custom_command(
     OUTPUT
         "${MISSION_BINARY_DIR}/edstool-complete.stamp"

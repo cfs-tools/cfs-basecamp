@@ -29,17 +29,17 @@ Package Notes:
 
 The python appplication uses [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/) and [Requests]](https://docs.python-requests.org/en/latest/ that can be installed with the following command:
 
-    pip3 install PySimpleGUI requests
+    pip3 install PySimpleGUI requests paho-mqtt numpy
 
 ## Clone cFSAT Repository
-    git clone https://github.com/OpenSatKit/base-camp.git
+    git clone https://github.com/cfs-tools/cfs-basecamp.git
 
 # Using Base Camp
 
 ## Build the core Flight System Target
 This must be done prior to runing the python ground system because it creates python libraries that define the cFS app interfaces
 
-    cd base-camp/cfsat/cfe-eds-framework
+    cd cfs-basecamp/cfe-eds-framework
     make SIMULATION=native prep
     make install
 
@@ -47,13 +47,9 @@ This must be done prior to runing the python ground system because it creates py
 
     cd ../gnd-sys/app
     . ./setvars.sh
-    python3 cfsat.py
-
-## Run the cFS
-
-![](https://github.com/OpenSatKit/base-camp/blob/main/docs/start-cfs.png)
+    python3 basecamp.py
 
 ## Next Steps
-- [OpenSatKit](https://opensatkit.org/) is being updated to serve as the hub to all OpenSatKit resources 
-- *Base Camp Quick Start Guide* (coming soon)
+
+![](https://github.com//base-camp/blob/main/docs/images/next-steps.png)
 

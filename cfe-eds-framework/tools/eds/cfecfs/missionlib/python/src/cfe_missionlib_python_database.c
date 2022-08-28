@@ -382,7 +382,7 @@ static PyObject *CFE_MissionLib_Python_DecodeEdsId(PyObject *obj, PyObject *args
 
     Py_ssize_t BytesSize;
     char *NetworkBuffer;
-    CCSDS_SpacePacket_Buffer_t LocalBuffer;
+    CFE_HDR_Message_Buffer_t LocalBuffer;
 
     CFE_SB_SoftwareBus_PubSub_Interface_t PubSubParams;
     CFE_SB_Publisher_Component_t PublisherParams;
@@ -415,7 +415,7 @@ static PyObject *CFE_MissionLib_Python_DecodeEdsId(PyObject *obj, PyObject *args
     	BytesSize = PyBytes_Size(arg1);
         PyBytes_AsStringAndSize(arg1, &NetworkBuffer, &BytesSize);
 
-        EdsId = EDSLIB_MAKE_ID(EDS_INDEX(CCSDS_SPACEPACKET), CCSDS_TelemetryPacket_DATADICTIONARY);
+        EdsId = EDSLIB_MAKE_ID(EDS_INDEX(CFE_HDR), CFE_HDR_TelemetryHeader_DATADICTIONARY);
         Status = EdsLib_DataTypeDB_GetTypeInfo(EdsDb->GD, EdsId, &TypeInfo);
         if (Status != CFE_MISSIONLIB_SUCCESS)
         {
@@ -431,19 +431,19 @@ static PyObject *CFE_MissionLib_Python_DecodeEdsId(PyObject *obj, PyObject *args
     	    break;
         }
 
-        CFE_SB_Get_PubSub_Parameters(&PubSubParams, &LocalBuffer.BaseObject);
+        CFE_MissionLib_Get_PubSub_Parameters(&PubSubParams, &LocalBuffer.BaseObject);
 
-        if (CFE_SB_PubSub_IsPublisherComponent(&PubSubParams))
+        if (CFE_MissionLib_PubSub_IsPublisherComponent(&PubSubParams))
         {
-            CFE_SB_UnmapPublisherComponent(&PublisherParams, &PubSubParams);
+            CFE_MissionLib_UnmapPublisherComponent(&PublisherParams, &PubSubParams);
             TopicId = PublisherParams.Telemetry.TopicId;
 
             Status = CFE_MissionLib_GetArgumentType(IntfDb->IntfDb, CFE_SB_Telemetry_Interface_ID,
                     PublisherParams.Telemetry.TopicId, 1, 1, &EdsId);
         }
-        else if (CFE_SB_PubSub_IsListenerComponent(&PubSubParams))
+        else if (CFE_MissionLib_PubSub_IsListenerComponent(&PubSubParams))
         {
-            CFE_SB_UnmapListenerComponent(&ListenerParams, &PubSubParams);
+            CFE_MissionLib_UnmapListenerComponent(&ListenerParams, &PubSubParams);
             TopicId = ListenerParams.Telecommand.TopicId;
 
             Status = CFE_MissionLib_GetArgumentType(IntfDb->IntfDb, CFE_SB_Telecommand_Interface_ID,
@@ -482,7 +482,7 @@ static PyObject *  CFE_MissionLib_Python_Set_PubSub(PyObject *obj, PyObject *arg
     EdsLib_Python_ObjectBase_t *Python_Packet;
     EdsLib_Python_Buffer_t *StorageBuffer;
     EdsLib_Binding_Buffer_Content_t edsbuf;
-    CCSDS_SpacePacket_t *Packet;
+    CFE_HDR_Message_t *Packet;
 
     CFE_SB_Listener_Component_t Params;
     CFE_SB_SoftwareBus_PubSub_Interface_t PubSub;
@@ -529,10 +529,10 @@ static PyObject *  CFE_MissionLib_Python_Set_PubSub(PyObject *obj, PyObject *arg
         Python_Packet = (EdsLib_Python_ObjectBase_t *) arg3;
         StorageBuffer = Python_Packet->StorageBuf;
         edsbuf = StorageBuffer->edsbuf;
-        Packet = (CCSDS_SpacePacket_t *) edsbuf.Data;
+        Packet = (CFE_HDR_Message_t *) edsbuf.Data;
 
-        CFE_SB_MapListenerComponent(&PubSub, &Params);
-        CFE_SB_Set_PubSub_Parameters(Packet, &PubSub);
+        CFE_MissionLib_MapListenerComponent(&PubSub, &Params);
+        CFE_MissionLib_Set_PubSub_Parameters(Packet, &PubSub);
 
         Py_INCREF(Py_True);
         result = Py_True;
