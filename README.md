@@ -1,7 +1,7 @@
-# OpenSatKit Base Camp
-Provides a framework and tools for developing, downloading, and integrating core Flight System (cFS) applications into an operational system. A python Graphical User Interface (GUI) allows the user to send commands to and receve telemetry from the cFS target. The GUI also facilitates user workflows for working with apps.  
+# core FLight System Basecamp
+Provides a framework and tools for developing, downloading, and integrating core Flight System (cFS) applications into an operational system. A python Graphical User Interface (GUI) allows users to send commands to and receve telemetry from the cFS target. The GUI also facilitates user workflows for working with apps.
 
-*Base Camp* includes the [cfe-eds-framework](https://github.com/jphickey/cfe-eds-framework) cFS distribution which includes NASA's core Flight Executive (cFE) and CCSDS Electronic Data Sheets (EDS) support. EDS specifications are Each cFS application interface is defined using EDS and the cfe-eds-framework build toolchain generates artifacts that are used by both the flight and ground software systems. The [OpenSatKit App repositories](https://github.com/OpenSatKit-Apps) contain apps that include EDS interface specifications and they can be downloaded and integrated into the *Base Camp* system with minimal effort. 
+*Basecamp* includes the [cfe-eds-framework](https://github.com/jphickey/cfe-eds-framework) cFS distribution which includes NASA's core Flight Executive (cFE) and CCSDS Electronic Data Sheets (EDS) support. Each cFS application interface is defined using EDS specifications and the cfe-eds-framework build toolchain generates artifacts that are used by both the flight and ground software systems. The [cFS App Repositories](https://github.com/orgs/cfs-apps/repositories) contain apps that include EDS interface specifications so the apps can be downloaded and integrated into *Basecamp* system with minimal effort. 
 
 # Getting Started
 
@@ -27,17 +27,17 @@ Package Notes:
 - *liblua5.3-dev* must be at least v5.1
 - *You can skip installing pip and replace the 'pip3 install' below with 'python3 -m pip install'
 
-The python appplication uses [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/) and [Requests]](https://docs.python-requests.org/en/latest/ that can be installed with the following command:
+The python appplication uses [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/), [Requests]](https://docs.python-requests.org/en/latest/), [paho-mqtt](https://pypi.org/project/paho-mqtt/), and [NumPy]https;//numpy.org/) that can be installed with the following command:
 
     pip3 install PySimpleGUI requests paho-mqtt numpy
 
-## Clone cFSAT Repository
+## Clone Basecamp Repository
     git clone https://github.com/cfs-tools/cfs-basecamp.git
 
-# Using Base Camp
+# Using Basecamp
 
 ## Build the core Flight System Target
-This must be done prior to runing the python ground system because it creates python libraries that define the cFS app interfaces
+This must be done prior to running the python ground system because it creates python libraries that define the cFS app interfaces
 
     cd cfs-basecamp/cfe-eds-framework
     make SIMULATION=native prep
