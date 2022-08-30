@@ -271,7 +271,7 @@ class TelecommandGui(TelecommandInterface):
         # This GUI is designed for application command topics. The ini file has a non-standard configuration that allows all
         # topics to be sent from the GUI. Topics like 'send HK req' do not have subcommands so this alerts the users 
         if (len(self.command_list) == 1):
-            sg.Popup('This is a topic-only command do not select a command/payload', title=topic_name, modal=False)
+            sg.Popup('This is a topic-only command do not select a command/payload', title=topic_name, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
         
         # Create a layout with more than enough input and combo boxes. Then hide what's not needed for a particular command 
         # The top rows below self.PAYLOAD_INPUT_START are used for enumerated types with combo boxes and the remaining rows
@@ -756,11 +756,11 @@ class ManageCfs():
             elif self.event == '-1_AUTO-': # Stop the cFS prior to modifying or adding an app
                 status = subprocess.run(SH_STOP_CFS, shell=True, cwd=self.basecamp_abs_path)
                 popup_text = "'%s' executed with return status %s" % (SH_STOP_CFS, status.returncode) 
-                sg.popup(popup_text, title='Automatically Stop the cFS', grab_anywhere=True, modal=True)
+                sg.popup(popup_text, title='Automatically Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
             
             elif self.event == '-1_MAN-': # Stop the cFS prior to modifying or adding an app
                 popup_text = "Open a terminal window and kill any running cFS processes. See '%s' for guidance" % SH_STOP_CFS 
-                sg.popup(popup_text, title='Manually Stop the cFS', grab_anywhere=True, modal=True)
+                sg.popup(popup_text, title='Manually Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
             ## Step 2 - Update cFS build configuration
             
@@ -769,7 +769,7 @@ class ManageCfs():
                 self.update_targets_cmake(auto_update=True)
                 self.update_startup_scr(auto_update=True)
                 popup_text = "The Electronic Data Sheet Topic ID file must be updated manually"
-                sg.popup(popup_text, title='Update EDS cfe-topicids.xml', grab_anywhere=True, modal=True)
+                sg.popup(popup_text, title='Update EDS cfe-topicids.xml', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                 
             elif self.event == '-2A_MAN-':
                 self.copy_app_tables(auto_copy=False)  # Copy table files from app dir to cFS '_defs' file
@@ -786,13 +786,13 @@ class ManageCfs():
             elif self.event == '-3_AUTO-': # Update scheduler app table
                 #TODO - Add auto update scheduler app table
                 popup_text = "Auto update scheduler app table feature not implemented"
-                sg.popup(popup_text, title='Update Scheduler App Tables', grab_anywhere=True, modal=True)
+                sg.popup(popup_text, title='Update Scheduler App Tables', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
             elif self.event == '-3A_MAN-': # Update scheduler app table
                 msg_tbl_name = self.cfs_target + '_' + 'kit_sch_msgtbl.json'
                 sch_tbl_name = self.cfs_target + '_' + 'kit_sch_schtbl.json'
                 popup_text = 'After this dialogue, %s and %s will open in a text editor' % (msg_tbl_name, sch_tbl_name)
-                sg.popup(popup_text, title='Update Scheduler App Tables', grab_anywhere=True, modal=True)
+                sg.popup(popup_text, title='Update Scheduler App Tables', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                 path_filename = os.path.join(self.cfs_abs_defs_path, msg_tbl_name)
                 self.text_editor = sg.execute_py_file("texteditor.py", parms=path_filename, cwd=self.basecamp_tools_path)
                 path_filename = os.path.join(self.cfs_abs_defs_path, sch_tbl_name)
@@ -815,15 +815,15 @@ class ManageCfs():
             
             elif self.event == '-4_MAN-': # Build the cfS
                 popup_text = "Open a terminal window, change directory to %s and build the cFS. See '%s' for guidance" % (self.cfs_abs_base_path, SH_BUILD_CFS_TOPICIDS) 
-                sg.popup(popup_text, title='Manually Stop the cFS', grab_anywhere=True, modal=True)            
+                sg.popup(popup_text, title='Manually Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)            
 
             ## Step 5 - Restart Basecamp
 
             elif self.event == '-5_AUTO-': # Reload cFS python EDS definitions                
-                sg.popup('This feature has not been implemented. You must restart the Basecamp applicaton.', title='Reload cFS EDS definitions', grab_anywhere=True, modal=True)
+                sg.popup('This feature has not been implemented. You must restart the Basecamp applicaton.', title='Reload cFS EDS definitions', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
             elif self.event == '-5_MAN-': # Reload cFS python EDS definitions
-                sg.popup('This feature has not been implemented. You must restart the Basecamp applicaton.', title='Reload cFS EDS definitions', grab_anywhere=True, modal=True)
+                sg.popup('This feature has not been implemented. You must restart the Basecamp applicaton.', title='Reload cFS EDS definitions', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
         self.window.close()       
 
@@ -836,8 +836,10 @@ class ManageCfs():
                 self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
                 self.integrate_app_gui()
         else:
-            sg.popup('Your usr/apps directory is empty', title='Error', grab_anywhere=True, modal=True)
+            print("Your usr/apps directory is empty")
+            sg.popup('Your usr/apps directory is empty', title='Add App to cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
+        
     def copy_app_tables(self, auto_copy):
         """
         An app's JSON spec table filename should not have a target prefix.  The default table filename in an
@@ -877,7 +879,7 @@ class ManageCfs():
                     popup_text = "Error copying table file\nFROM\n  %s\nTO\n  %s\n" % (src,dst)  
             else:
                 popup_text = "Copy table files '%s'\n\nFROM %s\n\nTO %s\n" % (table_list_str[:-2], app_table_path, self.cfs_abs_defs_path)
-        sg.popup(popup_text, title='Copy table files', grab_anywhere=True, modal=True)
+        sg.popup(popup_text, title='Copy table files', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
     def update_targets_cmake(self, auto_update):
         """
@@ -906,12 +908,12 @@ class ManageCfs():
                 popup_text = 'targets_cmake updated with %s and %s' % (cmake_files['obj-file'], str(cmake_files['tables']))
             else:
                 popup_text = 'targets_cmake not modified. it already contains %s and %s' % (cmake_files['obj-file'], str(cmake_files['tables']))
-            sg.popup(popup_text, title='Update '+self.startup_scr_filename, grab_anywhere=True, modal=True)
+            sg.popup(popup_text, title='Update '+self.startup_scr_filename, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=Falsee)
         else:
             sg.clipboard_set(cmake_files['obj-file'] + ',' + str(cmake_files['tables']))
             popup_text = "After this dialogue, %s will open in an editor. Paste\n  %s\ninto\n  %s\n\nPaste filenames with spaces\n  %s\ninto\n  %s" % \
             (self.targets_cmake_file, cmake_files['obj-file'], self.cmake_app_list, str(cmake_files['tables']), self.cmake_file_list)
-            sg.popup(popup_text, title='Update '+self.startup_scr_filename, grab_anywhere=True, modal=True)
+            sg.popup(popup_text, title='Update '+self.startup_scr_filename, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
             self.text_editor = sg.execute_py_file("texteditor.py", parms=self.targets_cmake_file, cwd=self.basecamp_tools_path)
         
     def update_targets_cmake_line(self, cmake_files, line):
@@ -958,11 +960,11 @@ class ManageCfs():
                 popup_text = 'Startup script modified. Added  %s entry:\n%s' % (self.selected_app, original_entry)
             else:
                 popup_text = 'Startup script not modified. already contains %s entry:\n%s' % (self.selected_app, original_entry)
-            sg.popup(popup_text, title='Update '+self.startup_scr_filename, grab_anywhere=True, modal=True)
+            sg.popup(popup_text, title='Update '+self.startup_scr_filename, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
         else:
             sg.clipboard_set(startup_script_entry)
             popup_text = "After this dialogue, %s will open in an editor.\nPaste the following entry from the clipboard:\n\n'%s'\n" % (self.startup_scr_filename, startup_script_entry)
-            sg.popup(popup_text, title='Update '+self.startup_scr_filename, grab_anywhere=True, modal=True)
+            sg.popup(popup_text, title='Update '+self.startup_scr_filename, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
             self.text_editor = sg.execute_py_file("texteditor.py", parms=self.startup_scr_file, cwd=self.basecamp_tools_path)
 
   
@@ -1132,7 +1134,7 @@ class App():
             self.send_cfs_cmd('CFE_EVS', evs_cmd,  {'AppName': 'CFE_TIME', 'EventID': Cfe.CFE_TIME_FLY_OFF_EID, 'Mask': Cfe.CFE_EVS_FIRST_ONE_STOP})
 
     def ComingSoonPopup(self, feature_str):
-        sg.popup(feature_str, title='Coming soon...', grab_anywhere=True, modal=False)
+        sg.popup(feature_str, title='Coming soon...', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
  
     def shutdown(self):
         logger.info("Starting app shutdown sequence")
@@ -1207,7 +1209,7 @@ class App():
                             tlm_dict[topic] = self.tlm_server.eds_mission.get_topic_payload(topic)
                     break
                 else:
-                    sg.popup("Please select a telemetry topic from the drop down menu", title='Plot Configuration', grab_anywhere=True, modal=False)
+                    sg.popup("Please select a telemetry topic from the drop down menu", title='Plot Configuration', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
         app_window.close()
         if (len(tlm_dict) == 0):
             return
@@ -1260,13 +1262,13 @@ class App():
                             if len(index) > 0:
                                 tlm_payload = type_list[index[0]].split('/')[-1]
                             else:
-                                sg.popup("Error retreiving payload name from topic %s type %s" % (topic, topic_type), title='Plot Configuration', grab_anywhere=True, modal=False)
+                                sg.popup("Error retrieving payload name from topic %s type %s" % (topic, topic_type), title='Plot Configuration', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                                 tlm_plot_cmd_parms = ""
                             tlm_topic = topic
                     tlm_plot_cmd_parms += ' ' + tlm_topic + ' ' + tlm_payload + ' ' + tlm_element + ' ' + plot_data_values['-MIN-'] + ' ' + plot_data_values['-MAX-'] 
                     break
                 else:
-                    sg.popup("You must select a telemetry element from a telemetry topic's payload", title='Plot Configuration', grab_anywhere=True, modal=False)
+                    sg.popup("You must select a telemetry element from a telemetry topic's payload", title='Plot Configuration', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
             elif plot_data_event == '-MIN_UP-':
                 min_value += 1
                 plot_data_window["-MIN-"].update(str(min_value))
@@ -1425,13 +1427,13 @@ class App():
                 self.ComingSoonPopup("Configure Basecamp system options")
             
             elif self.event == 'About':
-                about_msg = ('Basecamp is a PySimpleGUI based pogram that allows users to\n'
-                             'develop, integrate, and run cFS apps. It is not intended to\n'
-                             'be a complete ground system for remote operations of a cFS target.\n\n'
+                about_msg = ('Basecamp provides a cFS application framework,\n'
+                             'build/runtime tools, and a lightweight GUI that\n'
+                             'simplify creating, integrating, testing, and\n'
+                             'deploying cFS applications.\n\n'
                              'Version.......{}'.format(self.APP_VERSION))
                 sg.popup(about_msg,
-                         title='About cFS Application Toolkit', 
-                         grab_anywhere=True)
+                         title='About Basecamp', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
        
             ### CFS DEVELOPER ###
 
@@ -1516,7 +1518,7 @@ class App():
                         self.cfs_stdout = CfsStdout(self.cfs_build_subprocess, self.window)
                         self.cfs_stdout.start()
                 else:
-                    sg.popup("A cFS image is currently running. You must stop the current image prior to building a new image.", title='Warning', grab_anywhere=True, modal=False)
+                    sg.popup("A cFS image is currently running. You must stop the current image prior to building a new image.", title='Build cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                 
             elif self.event == '-START_CFS-':
                 """
@@ -1733,7 +1735,7 @@ class App():
                     self.display_event(cmd_status)
                     self.display_event(cmd_text)
                 else:
-                    sg.popup('Please select a command topic from the dropdown list', title='Command Topic')
+                    sg.popup('Please select a command topic from the dropdown list', title='Command Topic', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
             
             elif self.event == '-TLM_TOPICS-':
                 tlm_topic = self.values['-TLM_TOPICS-']
@@ -1753,7 +1755,7 @@ class App():
                     else:
                         self.display_event("Failed to create telemetry screen for %s. Verify EDS naming standard compliance" % tlm_topic)
                 else:
-                    sg.popup('Please select a telemetry topic from the dropdown list', title='Telemetry Topic')
+                    sg.popup('Please select a telemetry topic from the dropdown list', title='Telemetry Topic', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                 
             elif self.event == '-CLEAR_EVENTS-':
                 self.event_log = ""
