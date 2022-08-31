@@ -1,4 +1,4 @@
-# core FLight System Basecamp
+# core Flight System Basecamp
 Provides a framework and tools for developing, downloading, and integrating core Flight System (cFS) applications into an operational system. A python Graphical User Interface (GUI) allows users to send commands to and receve telemetry from the cFS target. The GUI also facilitates user workflows for working with apps.
 
 *Basecamp* includes the [cfe-eds-framework](https://github.com/jphickey/cfe-eds-framework) cFS distribution which includes NASA's core Flight Executive (cFE) and CCSDS Electronic Data Sheets (EDS) support. Each cFS application interface is defined using EDS specifications and the cfe-eds-framework build toolchain generates artifacts that are used by both the flight and ground software systems. The [cFS App Repositories](https://github.com/orgs/cfs-apps/repositories) contain apps that include EDS interface specifications so the apps can be downloaded and integrated into *Basecamp* system with minimal effort. 
