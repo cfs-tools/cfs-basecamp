@@ -1,0 +1,357 @@
+{
+   "name": "Scheduler Table Message Table",
+   "description":  [
+        "Steps to add a new message:",
+        " 1. Add the topic to the 'topic-id-map' object. The entry must",
+        "    be between the 'start' and 'end' entries and use the      ",
+        "    following convention:      ",
+        "     0 - cFE apps              ",
+        "    10 - Base Camp runtime apps",
+        "    20 - Dev & Demo apps       ",
+        "    30 - User apps             ",
+        " 2. Add a new 'message' object. N must be identical in ",
+        "    topic-id-N must match",
+        " 3. The sequence-segmentation flag entry 'seq-seg' can always",
+        "    be set to 49152",
+        "uint16  Sequence;     /* packet sequence word */                ",
+        "  /*  bits  shift                description                  */",
+        "  /* 0x3FFF    0  : sequence count                            */",
+        "  /* 0xC000   14  : segmentation flags:  3 = complete packet  */",
+        "uint16  Length;       /* packet length word */                  ",
+        "  /*  bits  shift                description                  */",
+        "  /* 0xFFFF    0  : (total packet length) - 7                 */"
+        ],
+
+   
+   "topic-id-map": { 
+   
+      "start": true,
+      
+      "ES_SEND_HK_TOPICID"   : "topic-id-0",
+      "EVS_SEND_HK_TOPICID"  : "topic-id-1",
+      "SB_SEND_HK_TOPICID"   : "topic-id-2",
+      "TBL_SEND_HK_TOPICID"  : "topic-id-3",
+      "TIME_SEND_HK_TOPICID" : "topic-id-4",
+      
+      "CI_LAB_SEND_HK_TOPICID"    : "topic-id-10",
+      "FILE_MGR_SEND_HK_TOPICID"  : "topic-id-11",
+      "FILE_XFER_SEND_HK_TOPICID" : "topic-id-12",
+      "FILE_XFER_EXE_TOPICID"     : "topic-id-13",
+      "KIT_SCH_SEND_HK_TOPICID"   : "topic-id-14",
+      "KIT_TO_SEND_HK_TOPICID"    : "topic-id-15",
+
+      "OSK_C_DEMO_EXE_TOPICID"     : "topic-id-20",
+      "OSK_C_DEMO_SEND_HK_TOPICID" : "topic-id-21",
+      "PROTO_EXE_TOPICID"          : "topic-id-22",
+      "PROTO_SEND_HK_TOPICID"      : "topic-id-23",
+      "SAMPLE_APP_SEND_HK_TOPICID" : "topic-id-24",
+      
+      "BERRY_IMU_SEND_HK_TOPICID"  : "topic-id-30",
+      "GPIO_DEMO_SEND_HK_TOPICID"  : "topic-id-31",
+      "MQTT_GW_SEND_HK_TOPICID"    : "topic-id-32",
+      "PL_MGR_EXE_TOPICID"         : "topic-id-33",
+      "PL_SIM_EXE_TOPICID"         : "topic-id-34",
+
+      "SPARE_TOPICID" : "topic-id-50",
+      "SPARE_TOPICID" : "topic-id-51",
+      "SPARE_TOPICID" : "topic-id-52",
+      "SPARE_TOPICID" : "topic-id-53",
+      "SPARE_TOPICID" : "topic-id-54",
+      "SPARE_TOPICID" : "topic-id-55",
+      "SPARE_TOPICID" : "topic-id-56",
+      "SPARE_TOPICID" : "topic-id-57",
+      "SPARE_TOPICID" : "topic-id-58",
+      "SPARE_TOPICID" : "topic-id-59",
+
+      "end": true
+      
+  },
+   
+   
+   "message-array": [
+
+      {"message": {
+         "name":  "ES_SEND_HK_TOPICID",
+         "id": 0,
+         "topic-id-0": 6209,
+         "topic-id": 6209,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "EVS_SEND_HK_TOPICID",
+         "id": 1,
+         "topic-id-1": 6211,
+         "topic-id": 6211,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "SB_SEND_HK_TOPICID",
+         "id": 2,
+         "topic-id-2": 6213,
+         "topic-id": 6213,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "TBL_SEND_HK_TOPICID",
+         "id": 3,
+         "topic-id-3": 6216,
+         "topic-id": 6216,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "TIME_SEND_HK_TOPICID",
+         "id": 4,
+         "topic-id-4": 6221,
+         "topic-id": 6221,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+
+      {"message": {
+         "name":  "CI_LAB_SEND_HK_TOPICID",
+         "id": 10,
+         "topic-id-10": 6226,
+         "topic-id": 6226,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "FILE_MGR_SEND_HK_TOPICID",
+         "id": 11,
+         "topic-id-11": 6228,
+         "topic-id": 6228,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "FILE_XFER_SEND_HK_TOPICID",
+         "id": 12,
+         "topic-id-12": 6230,
+         "topic-id": 6230,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "FILE_XFER_EXE_TOPICID",
+         "id": 13,
+         "topic-id-13": 6231,
+         "topic-id": 6231,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "KIT_SCH_SEND_HK_TOPICID",
+         "id": 14,
+         "topic-id-14": 6233,
+         "topic-id": 6233,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "KIT_TO_SEND_HK_TOPICID",
+         "id": 15,
+         "topic-id-15": 6235,
+         "topic-id": 6235,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+
+      {"message": {
+         "name":  "OSK_C_DEMO_EXE_TOPICID",
+         "id": 20,
+         "topic-id-20": 6237,
+         "topic-id": 6237,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "OSK_C_DEMO_SEND_HK_TOPICID",
+         "id": 21,
+         "topic-id-21": 6238,
+         "topic-id": 6238,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "PROTO_EXE_TOPICID",
+         "id": 22,
+         "topic-id-22": 6240,
+         "topic-id": 6240,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "PROTO_SEND_HK_TOPICID",
+         "id": 23,
+         "topic-id-23": 6241,
+         "topic-id": 6241,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "SAMPLE_APP_SEND_HK_TOPICID",
+         "id": 24,
+         "topic-id-24": 6243,
+         "topic-id": 6243,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+
+      {"message": {
+         "name":  "BERRY_IMU_SEND_HK_TOPICID",
+         "id": 30,
+         "topic-id-30": 6246,
+         "topic-id": 6246,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "GPIO_DEMO_SEND_HK_TOPICID",
+         "id": 31,
+         "topic-id-31": 6248,
+         "topic-id": 6248,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "MQTT_GW_SEND_HK_TOPICID",
+         "id": 32,
+         "topic-id-32": 6250,
+         "topic-id": 6250,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "PL_MGR_EXE_TOPICID",
+         "id": 33,
+         "topic-id-33": 6252,
+         "topic-id": 6252,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "PL_SIM_EXE_TOPICID",
+         "id": 34,
+         "topic-id-34": 6254,
+         "topic-id": 6254,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "SPARE_TOPICID",
+         "id": 50,
+         "topic-id-50": 0,
+         "topic-id": 0,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+
+      {"message": {
+         "name":  "SPARE_TOPICID",
+         "id": 51,
+         "topic-id-51": 0,
+         "topic-id": 0,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "SPARE_TOPICID",
+         "id": 52,
+         "topic-id-52": 0,
+         "topic-id": 0,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "SPARE_TOPICID",
+         "id": 53,
+         "topic-id-53": 0,
+         "topic-id": 0,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "SPARE_TOPICID",
+         "id": 54,
+         "topic-id-54": 0,
+         "topic-id": 0,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "SPARE_TOPICID",
+         "id": 55,
+         "topic-id-55": 0,
+         "topic-id": 0,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "SPARE_TOPICID",
+         "id": 56,
+         "topic-id-56": 0,
+         "topic-id": 0,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "SPARE_TOPICID",
+         "id": 57,
+         "topic-id-57": 0,
+         "topic-id": 0,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "SPARE_TOPICID",
+         "id": 58,
+         "topic-id-58": 0,
+         "topic-id": 0,
+         "seq-seg": 49152,
+         "length": 1
+      }},
+      
+      {"message": {
+         "name":  "SPARE_TOPICID",
+         "id": 59,
+         "topic-id-59": 0,
+         "topic-id": 0,
+         "seq-seg": 49152,
+         "length": 1
+      }}
+      
+   ]
+}
+

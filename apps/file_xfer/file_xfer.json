@@ -1,0 +1,30 @@
+{ "app": {
+   
+   "title": "File Transfer",
+   "version": "1.0.0",
+   "owner": "OpenSatkit",
+   "url": "https://github.com/OpenSatKit-Apps/file_xfer",
+
+   "description": [
+      "This app provides a file transfer service. It uses a custom protocol that is",
+      "close to the CCSDS File Delivery Protocol Class 1 algorithm. Using a simple",
+      "custom algorithm elliminates the need for an external dependency and minimzes",
+      "complexity"
+   ],
+
+   "cfs": {
+      "cfe-type": "CFE_APP",
+      "obj-file": "file_xfer",
+      "entry-symbol": "FILE_XFER_AppMain",
+      "name": "FILE_XFER",
+      "priority": 80,
+      "stack": 16384,
+      "load_addr": 0,
+      "exception-action": 0,
+      "app-framework": "osk",
+      "tables": ["file_xfer_ini.json"],
+      "cmd-mid": "FILE_XFER_CMD_MID"
+   }
+   
+}}
+

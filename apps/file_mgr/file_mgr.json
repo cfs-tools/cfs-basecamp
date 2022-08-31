@@ -1,0 +1,27 @@
+{ "app": {
+   
+   "title": "File Manager",
+   "version": "4.0.0",
+   "owner": "OpenSatkit",
+   "url": "https://github.com/OpenSatKit-Apps/file_mgr",
+
+   "description": [
+      "This app provides a directory and file management services"
+   ],
+
+   "cfs": {
+      "cfe-type": "CFE_APP",
+      "obj-file": "file_mgr",
+      "entry-symbol": "FILE_MGR_AppMain",
+      "name": "FILE_MGR",
+      "priority": 80,
+      "stack": 16384,
+      "load_addr": 0,
+      "exception-action": 0,
+      "app-framework": "osk",
+      "tables": ["file_mgr_ini.json"],
+      "cmd-mid": "FILE_MGR_CMD_MID"
+   }
+   
+}}
+

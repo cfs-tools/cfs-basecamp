@@ -1,0 +1,358 @@
+{
+   "name": "Scheduler Activity Table",
+   "description": ["Activities are defined in time slots. There are 4 slots per second", 
+                   "and 15 entries per slot. The topic IDs in cfe-topicids.xml are grouped",
+                   "as follows: cFE, runtime app suite, development apps, community apps.",
+                   "Each group is scheduled in a different slot to keep things functionally",
+                   "organized. The schedule is not designed with a mission in mind.",
+                   "Activities with a period of 1 must have an offset of 0"
+                   ],
+   
+   "slot-array": [
+      
+      {"slot": {
+      
+         "index": 0, 
+         "activity-array" : [
+         
+            {"activity": {
+               "name":    "ES_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   0,
+               "enabled": "true",
+               "period":  4,
+               "offset":  0,
+               "msg-idx": 0
+            }},
+
+            {"activity": {
+               "name":    "EVS_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   1,
+               "enabled": "true",
+               "period":  4,
+               "offset":  0,
+               "msg-idx": 1
+            }},
+            
+            {"activity": {
+               "name":    "SB_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   2,
+               "enabled": "true",
+               "period":  4,
+               "offset":  0,
+               "msg-idx": 2
+            }},
+            
+            {"activity": {
+               "name":    "TBL_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   3,
+               "enabled": "true",
+               "period":  4,
+               "offset":  0,
+               "msg-idx": 3
+            }},
+            
+            {"activity": {
+               "name":    "TIME_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   4,
+               "enabled": "true",
+               "period":  4,
+               "offset":  0,
+               "msg-idx": 4
+            }}
+            
+         ]
+      }},   
+
+   
+      {"slot": {
+      
+         "index": 1, 
+         "activity-array" : [
+         
+            {"activity": {
+               "name":    "CI_LAB_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   0,
+               "enabled": "true",
+               "period":  4,
+               "offset":  1,
+               "msg-idx": 10
+            }},
+            
+            {"activity": {
+               "name":    "FILE_MGR_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   1,
+               "enabled": "true",
+               "period":  4,
+               "offset":  1,
+               "msg-idx": 11
+            }},
+            
+           {"activity": {
+               "name":    "FILE_XFER_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   2,
+               "enabled": "true",
+               "period":  4,
+               "offset":  1,
+               "msg-idx": 12
+            }},
+        
+           {"activity": {
+               "name":    "FILE_XFER_EXE_TOPICID",
+               "descr":   "",
+               "index":   3,
+               "enabled": "true",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 13
+            }},
+                        
+            {"activity": {
+               "name":    "KIT_SCH_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   4,
+               "enabled": "true",
+               "period":  4,
+               "offset":  1,
+               "msg-idx": 14
+            }},
+            
+            {"activity": {
+               "name":    "KIT_TO_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   5,
+               "enabled": "true",
+               "period":  4,
+               "offset":  1,
+               "msg-idx": 15
+            }}
+            
+         ]
+      }},   
+
+      {"slot": {
+   
+         "index": 2, 
+         "activity-array" : [
+         
+            {"activity": {
+               "name":    "OSK_C_DEMO_EXE_TOPICID",
+               "descr":   "",
+               "index":   0,
+               "enabled": "true",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 20
+            }},
+
+            {"activity": {
+               "name":    "OSK_C_DEMO_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   1,
+               "enabled": "true",
+               "period":  4,
+               "offset":  2,
+               "msg-idx": 21
+            }},
+            
+            {"activity": {
+               "name":    "OSK_DEV_EXE_TOPICID",
+               "descr":   "",
+               "index":   2,
+               "enabled": "true",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 22
+            }},
+            
+            {"activity": {
+               "name":    "OSK_DEV_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   3,
+               "enabled": "true",
+               "period":  4,
+               "offset":  2,
+               "msg-idx": 23
+            }},
+
+            {"activity": {
+               "name":    "SAMPLE_APP_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   4,
+               "enabled": "false",
+               "period":  4,
+               "offset":  2,
+               "msg-idx": 24
+            }}
+            
+            
+         ]
+      }},   
+   
+      {"slot": {
+      
+         "index": 3, 
+         "activity-array" : [
+         
+            {"activity": {
+               "name":    "BERRY_IMU_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   0,
+               "enabled": "false",
+               "period":  4,
+               "offset":  3,
+               "msg-idx": 30
+            }},
+                        
+            {"activity": {
+               "name":    "GPIO_DEMO_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   1,
+               "enabled": "false",
+               "period":  4,
+               "offset":  3,
+               "msg-idx": 31
+            }},
+            
+           {"activity": {
+               "name":    "MQTT_GW_SEND_HK_TOPICID",
+               "descr":   "",
+               "index":   2,
+               "enabled": "true",
+               "period":  4,
+               "offset":  3,
+               "msg-idx": 32
+            }},
+
+            {"activity": {
+               "name":    "PL_MGR_EXE_TOPICID",
+               "descr":   "",
+               "index":   3,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 33
+            }},
+            
+            {"activity": {
+               "name":    "PL_SIM_EXE_TOPICID",
+               "descr":   "",
+               "index":   4,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 34
+            }},
+                        
+            {"activity": {
+               "name":    "SPARE_TOPICID",
+               "descr":   "",
+               "index":   5,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 50
+            }},
+
+            {"activity": {
+               "name":    "SPARE_TOPICID",
+               "descr":   "",
+               "index":   6,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 51
+            }},
+
+            {"activity": {
+               "name":    "SPARE_TOPICID",
+               "descr":   "",
+               "index":   7,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 52
+            }},
+
+            {"activity": {
+               "name":    "SPARE_TOPICID",
+               "descr":   "",
+               "index":   8,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 53
+            }},
+
+            {"activity": {
+               "name":    "SPARE_TOPICID",
+               "descr":   "",
+               "index":   9,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 54
+            }},
+
+            {"activity": {
+               "name":    "SPARE_TOPICID",
+               "descr":   "",
+               "index":   10,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 55
+            }},
+            
+            {"activity": {
+               "name":    "SPARE_TOPICID",
+               "descr":   "",
+               "index":   11,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 56
+            }},
+            
+            {"activity": {
+               "name":    "SPARE_TOPICID",
+               "descr":   "",
+               "index":   12,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 57
+            }},
+            
+            {"activity": {
+               "name":    "SPARE_TOPICID",
+               "descr":   "",
+               "index":   13,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 58
+            }},
+            
+            {"activity": {
+               "name":    "SPARE_TOPICID",
+               "descr":   "",
+               "index":   14,
+               "enabled": "false",
+               "period":  1,
+               "offset":  0,
+               "msg-idx": 59
+            }}
+
+        ]
+      }}
+
+   ]
+}

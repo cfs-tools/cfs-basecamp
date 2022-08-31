@@ -1,0 +1,27 @@
+{ "app": {
+   
+   "title": "OSK_C_FW",
+   "version": "4.0.0",
+   "owner": "OpenSatkit",
+   "url": "https://github.com/OpenSatKit-Apps/osk_c_fw",
+
+   "description": [
+      "Provides an application framework for writing cFS apps"
+   ],
+
+   "cfs": {
+      "cfe-type": "CFE_LIB",
+      "obj-file": "osk_c_fw",
+      "entry-symbol": "OSK_C_FW_LibInit",
+      "name": "OSK_C_FW",
+      "priority": 0,
+      "stack": 0,
+      "load_addr": 0,
+      "exception-action": 0,
+      "app-framework": "osk",
+      "tables": [],
+   }
+   
+}}
+
+
