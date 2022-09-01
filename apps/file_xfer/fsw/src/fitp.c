@@ -284,7 +284,7 @@ void FITP_ResetStatus(void)
       Fitp->DataSegmentErrCnt   = 0;
       Fitp->FileTransferByteCnt = 0;
       Fitp->FileRunningCrc      = 0;
-      strcpy(Fitp->DestFilename, "Undefined");
+      strcpy(Fitp->DestFilename, FILE_XFER_UNDEF_TLM_STR);
       
    } /* End if not FileTransferActive */
    

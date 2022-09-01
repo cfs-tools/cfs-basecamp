@@ -1,9 +1,15 @@
 {
    "app-name": "OSK_C_DEMO",
    "tbl-name": "Histogram",
-   "description": ["Define histrogram bins. bin-cnt must match the number of bins defined",
-                   "The device data range is determined by the app ini tableDEVICE_DATA_MODULO definition",
-                   "The limits are inclusive"],
+   "description": ["Defines histogram bins. The maximum bin count is defined in app_cfg.h by",
+                   "HISTOGRAM_MAX_BINS. The number of bins defined in the bin array must match",
+                   "the maximum bin count. bin-cnt can be less than the maimum count, however",
+                   "the unused bin array entries must still be defined. The bins are processed",
+                   "sequentially so unused bins are at the end of the array. The bin limits are",
+                   "inclusive",
+                   "The device data range used as the histogram's input is determined by the",
+                   "app init table DEVICE_DATA_MODULO definition."
+                   ],
    "bin-cnt": 5,
    "bin": [
        {

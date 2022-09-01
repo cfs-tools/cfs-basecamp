@@ -74,6 +74,7 @@ void HISTOGRAM_Constructor(HISTOGRAM_Class_t *HistogramPtr,
    CFE_PSP_MemSet((void*)Histogram, 0, sizeof(HISTOGRAM_Class_t));
  
    Histogram->DataSampleMaxValue = INITBL_GetIntConfig(IniTbl, CFG_DEVICE_DATA_MODULO)-1;
+   strcpy(Histogram->BinCntStr, OSK_C_DEMO_UNDEF_TLM_STR);
    
    HISTOGRAM_LOG_Constructor(LOG_OBJ, IniTbl);
    

@@ -148,6 +148,13 @@
 
 DECLARE_ENUM(Config,APP_CONFIG)
 
+/******************************************************************************
+** App level definitions that don't need to be in the ini file
+**
+*/
+
+#define OSK_C_DEMO_UNDEF_TLM_STR "Undefined"
+
 
 /******************************************************************************
 ** Event Macros
@@ -167,7 +174,7 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** Histogram Macros
 */
 
-#define HISTOGRAM_MAX_BINS  10
+#define HISTOGRAM_MAX_BINS  5
 
 /******************************************************************************
 ** Histogram Log Macros

@@ -114,7 +114,7 @@ void FOTP_ResetStatus(void)
       Fotp->LastDataSegment     = false;
       Fotp->PrevSendDataSegmentFailed = 0;
       Fotp->PausedFileTransferState   = FOTP_IDLE;
-      strcpy(Fotp->SrcFilename, "Undefined");
+      strcpy(Fotp->SrcFilename, FILE_XFER_UNDEF_TLM_STR);
 
    } /* End if not idle */
       
@@ -635,7 +635,7 @@ const char* FileTransferStateStr(FOTP_FileTransferState_t  FileTransferState)
 {
 
    static const char* TransferStateStr[] = {
-      "Undefined", 
+      FILE_XFER_UNDEF_TLM_STR, 
       "Idle",       /* FOTP_IDLE      */
       "Start",      /* FOTP_START     */
       "Send Data",  /* FOTP_SEND_DATA */

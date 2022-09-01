@@ -77,7 +77,8 @@ void HISTOGRAM_LOG_Constructor(HISTOGRAM_LOG_Class_t *HistogramLogPtr,
  
    HistogramLog->FilePrefix    = INITBL_GetStrConfig(IniTbl, CFG_HIST_LOG_FILE_PREFIX);
    HistogramLog->FileExtension = INITBL_GetStrConfig(IniTbl, CFG_HIST_LOG_FILE_EXTENSION);
-   
+   strcpy(HistogramLog->Filename, OSK_C_DEMO_UNDEF_TLM_STR);
+      
    CFE_MSG_Init(CFE_MSG_PTR(HistogramLog->BinPlaybkTlm.TelemetryHeader), 
                    CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_OSK_C_DEMO_BIN_PLAYBK_TLM_TOPICID)),
                    sizeof(OSK_C_DEMO_BinPlaybkTlm_t));

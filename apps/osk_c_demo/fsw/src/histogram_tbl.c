@@ -13,11 +13,15 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Implement the Message Log table
+**    Implement the Histogram table
 **
 **  Notes:
 **    1. The static "TblData" serves as a table load buffer. Table dump data is
 **       read directly from table owner's table storage.
+**    2. The number of bins defined in the JSON bin array must match the maximum
+**       bin count. The JSON bin-cnt can be less than the maimum count, however
+**       the unused bin array entries must still be defined. The bins are
+**       processed sequentially so unused bins are at the end of the array. 
 **
 **  References:
 **    1. OpenSatKit Object-based Application Developer's Guide.
@@ -72,8 +76,7 @@ static CJSON_Obj_t JsonTblObjs[] = {
    { &TblData.Bin[3].LoLim,     sizeof(uint16),          false,   JSONNumber, false, { "bin[3].lo-lim",       (sizeof("bin[3].lo-lim")-1)}       },
    { &TblData.Bin[3].HiLim,     sizeof(uint16),          false,   JSONNumber, false, { "bin[3].hi-lim",       (sizeof("bin[3].hi-lim")-1)}       },
    { &TblData.Bin[4].LoLim,     sizeof(uint16),          false,   JSONNumber, false, { "bin[4].lo-lim",       (sizeof("bin[4].lo-lim")-1)}       },
-   { &TblData.Bin[4].HiLim,     sizeof(uint16),          false,   JSONNumber, false, { "bin[4].hi-lim",       (sizeof("bin[4].hi-lim")-1)}       }
-   
+   { &TblData.Bin[4].HiLim,     sizeof(uint16),          false,   JSONNumber, false, { "bin[4].hi-lim",       (sizeof("bin[4].hi-lim")-1)}       }   
 };
 
 
@@ -248,7 +251,7 @@ static bool LoadJsonData(size_t JsonFileLen)
    
    ObjLoadCnt = CJSON_LoadObjArray(JsonTblObjs, HistogramTbl->JsonObjCnt, HistogramTbl->JsonBuf, HistogramTbl->JsonFileLen);
 
-   // TODO - Allow less than max bins
+   /* Only accept fixed sized bin arrays */
    if (!HistogramTbl->Loaded && (ObjLoadCnt != HistogramTbl->JsonObjCnt))
    {
 
@@ -263,7 +266,7 @@ static bool LoadJsonData(size_t JsonFileLen)
       memcpy(&HistogramTbl->Data,&TblData, sizeof(HISTOGRAM_TBL_Data_t));
       HistogramTbl->LastLoadCnt = ObjLoadCnt;
       CFE_EVS_SendEvent(HISTOGRAM_TBL_LOAD_EID, CFE_EVS_EventType_DEBUG, 
-                        "Sucessfully loaded %d JSON objects",
+                        "Successfully loaded %d JSON objects",
                         (unsigned int)ObjLoadCnt);
       RetStatus = true;
       

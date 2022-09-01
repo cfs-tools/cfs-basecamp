@@ -714,9 +714,10 @@ class ManageCfs():
         layout = [
                   [sg.Text("Perform the following steps to add an app using the 'Auto' (automatically) or 'Man' (manually) buttons.\n", font=self.t_font)],
                   [sg.Text('1. Stop the cFS prior to modifying or adding an app', font=self.step_font, pad=self.b_pad)],
-                  [sg.Text('', size=self.b_size), sg.Button('Auto', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1_AUTO-'),
-                   sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1_MAN-')],
-                  
+                  [sg.Text('', size=self.b_size), sg.Text("Submit [sudo] password or open a terminal window & kill cFS process. See '%s' for guidance" % SH_STOP_CFS, font=self.t_font)],
+                  [sg.Text('', size=self.b_size), sg.Button('Submit', size=(6,1), button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1_AUTO-'),
+                   sg.InputText(password_char='*', size=(15,1), font=self.t_font, pad=self.b_pad, key='-PASSWORD-')],
+                   #sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1_MAN-'),
                   [sg.Text('2. Update cFS build configuration', font=self.step_font, pad=self.b_pad)],
                   [sg.Text('', size=self.b_size), sg.Button('Auto', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2_AUTO-'),
                    sg.Text('Automatically perform all steps', font=self.t_font)],
@@ -742,7 +743,7 @@ class ManageCfs():
                   [sg.Text('', size=self.b_size), sg.Button('Exit', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-EXIT-')],
                  ]
         # sg.Button('Exit', enable_events=True, key='-EXIT-')
-        self.window = sg.Window('Integrate %s with the cFS' % self.usr_app_spec.app_name, layout, resizable=True, modal=True)
+        self.window = sg.Window('Integrate %s with the cFS' % self.usr_app_spec.app_name, layout, resizable=True, finalize=True) # modal=True)
         
         while True:
         
@@ -754,10 +755,33 @@ class ManageCfs():
             ## Step 1 - Stop the cFS prior to modifying or adding an app
             
             elif self.event == '-1_AUTO-': # Stop the cFS prior to modifying or adding an app
-                status = subprocess.run(SH_STOP_CFS, shell=True, cwd=self.basecamp_abs_path)
-                popup_text = "'%s' executed with return status %s" % (SH_STOP_CFS, status.returncode) 
-                sg.popup(popup_text, title='Automatically Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
-            
+                """
+                #todo: 
+                #1 - Current window blocked this from working.
+                self.main_window['-STOP_CFS-'].click()
+                #2 - Couldn't get blocking and tlm threading exceptions worked out
+                layout = [[sg.Text("Enter [sudo] password", size=(20,1)), sg.InputText(password_char='*')],
+                          [sg.Button("Submit"), sg.Button("Cancel")]]
+                window = sg.Window("Stop cFS", layout) #, modal=True)
+                event,values = window.read()
+                window.close()
+                password = values[0]
+                status = subprocess.run(SH_STOP_CFS, shell=True, cwd=self.basecamp_abs_path, input=password.encode())
+                """
+                #popup_text = 'After you close this popup. Enter your sudo password in the terminal where you started cfs-basecamp'
+                #sg.popup(popup_text, title='Automatically Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=True)
+                password = self.values['-PASSWORD-']
+                if password is not None:
+                    status = subprocess.run(SH_STOP_CFS, shell=True, cwd=self.basecamp_abs_path, input=password.encode())
+                    if status == '0':
+                        popup_text = "'%s' successfully executed with return status %s" % (SH_STOP_CFS, status.returncode)
+                    else:
+                        popup_text = "'%s' returned with error status %s" % (SH_STOP_CFS, status.returncode)
+                    sg.popup(popup_text, title='Automatically Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                else:
+                    popup_text = "No attempt to stop the cFS, since no password supplied"
+                    sg.popup(popup_text, title='Automatically Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                            
             elif self.event == '-1_MAN-': # Stop the cFS prior to modifying or adding an app
                 popup_text = "Open a terminal window and kill any running cFS processes. See '%s' for guidance" % SH_STOP_CFS 
                 sg.popup(popup_text, title='Manually Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)

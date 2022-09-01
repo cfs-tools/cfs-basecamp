@@ -1,6 +1,6 @@
 {
   "time-stamp": "08/28/2022-14:03:17",
-  "title": "Use Pi GPIO Demo App",
+  "title": "Raspberry Pi GPIO Demo App",
   "objective": [
     "Describes how to configure a Raspberry Pi with an LED ",
     "and how to download/install the gpio_demo app that turns ",

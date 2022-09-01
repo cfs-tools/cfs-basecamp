@@ -89,6 +89,14 @@ DECLARE_ENUM(Config,APP_CONFIG)
 
 
 /******************************************************************************
+** App level definitions that don't need to be in the ini file
+**
+*/
+
+#define FILE_XFER_UNDEF_TLM_STR "Undefined"
+
+
+/******************************************************************************
 ** Command Macros
 */
 

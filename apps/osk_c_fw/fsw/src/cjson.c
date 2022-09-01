@@ -393,7 +393,7 @@ static bool LoadObj(CJSON_Obj_t* Obj, const char* Buf, size_t BufLen, OBJ_Necess
       if (Necessity == OBJ_REQUIRED)
       {
          CFE_EVS_SendEvent(CJSON_LOAD_OBJ_EID, CFE_EVS_EventType_INFORMATION,
-                           "JSON search error for query %s. Status = %s.", 
+                           "JSON query for %s not found. Status = %s.", 
                            Obj->Query.Key, JsonStatusStr[JsonStatus]);
       }
    }
