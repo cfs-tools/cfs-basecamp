@@ -30,7 +30,6 @@
 # tools are linked into the final executables, but there is no dependency
 # on expat in the final binaries.
 #
-cmake_minimum_required(VERSION 2.6.4)
 project(EDSTOOL C)
 
 add_definitions(-Wall -Werror -std=c99 -pedantic)

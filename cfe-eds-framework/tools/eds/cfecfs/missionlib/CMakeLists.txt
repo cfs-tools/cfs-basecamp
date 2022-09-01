@@ -38,7 +38,6 @@
 # subdirectory.  The contents of this directory should be included on the sedstool command
 # line which is handled outside of this script.
 #
-cmake_minimum_required(VERSION 2.8)
 project(EDS_CFECFS_MISSIONLIB C)
 
 
