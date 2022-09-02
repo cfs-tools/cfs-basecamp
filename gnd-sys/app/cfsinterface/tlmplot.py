@@ -16,7 +16,9 @@
       Plot a single telemetry data item in a linear plot
       
     Notes:
-      1. TODO - THIS IS A PROTOTYPE!!!!      
+      1. This is a simple single integer plot utility that only supports
+         linear time plots. If more sophisticated plotting becomess
+         necessary then a package such as matplot will be used.      
 """
 
 import sys
@@ -96,27 +98,45 @@ class TelemetryCurrentValue(TelemetryObserver):
 
 class TlmPlot():
     """
+    Manage a linear plot that can plot up to self.plot_x_range data points. The
+    update rate depends upon the telemetry point that is being plotted to the
+    x-axis doesn't have a time scale, it is simple a data sample count
+    
+    The y-axis is scaled based on the data min/max values and the number of
+    points on the gragh
     
     self.tlm_server.get_tlm_val(app_name, tlm_msg_name, parameter)
         Example current value usage: get_tlm_val("CFE_ES", "HK_TLM", "Sequence")
     """
     def __init__(self, gnd_ip_addr, tlm_port, tlm_timeout, min_value, max_value):
 
-        self.tlm_server = TelemetrySocketServer('samplemission', 'cpu1', gnd_ip_addr, tlm_port, tlm_timeout)  #TODO - Use kwarg?
+        self.tlm_server = TelemetrySocketServer('samplemission', 'cpu1', gnd_ip_addr, tlm_port, tlm_timeout)
 
-        self.app_name    = 'OSK_C_DEMO'
+        self.app_name    = ''
         self.tlm_topic   = ''
         self.tlm_payload = ''
         self.tlm_element = ''
 
-        self.dataSize = 40
-        self.dataMaxIdx = self.dataSize-1
-        self.dataRangeMin = min_value
-        self.dataRangeMax = max_value
-        
-        self.xData = np.zeros(self.dataSize)
-        self.yData = np.linspace(self.dataRangeMin, self.dataRangeMax, num=self.dataSize, dtype=int)
+        self.plot_x_range = 100
+        self.plot_y_range = 100
+      
+        self.data_points  = 40
+        self.data_max_idx = self.data_points-1
 
+        self.data_min_value = min_value
+        self.data_max_value = max_value
+        self.data_range     = max_value - min_value
+        
+        self.y_data = np.zeros(self.data_points)
+        self.linear_space = np.linspace(self.data_min_value, self.data_max_value, num=self.data_points, dtype=int)
+
+        # Create 5 tick marks per axis
+        self.x_tick_step       = int(self.plot_x_range/5)
+        self.x_tick_step_value = int(self.data_points/5)
+        self.x_scale_factor    = self.plot_x_range/self.data_points
+        self.y_tick_step       = int(self.plot_y_range/5)
+        self.y_tick_step_value = int(self.data_range/5)
+        self.y_scale_factor    = self.plot_y_range/self.data_range
 
     def create_window(self, title):
         """
@@ -129,46 +149,51 @@ class TlmPlot():
 
         self.window = sg.Window(title, layout, grab_anywhere=True, finalize=True)
         self.graph = self.window['graph']
-        self.drawAxis()
-        self.drawTicks(20)
-        self.drawPlot()
+        self.draw_axes()
+        self.draw_plot()
 
-    def drawAxis(self):
-        self.graph.DrawLine((self.dataRangeMin, 0), (self.dataRangeMax, 0))
-        self.graph.DrawLine((0, self.dataRangeMin), (0, self.dataRangeMax))
-
-    def drawTicks(self, step):
-        for x in range(self.dataRangeMin, self.dataRangeMax+1, step):
+    def draw_axes(self):
+        self.graph.DrawLine((0, 0), (self.plot_x_range, 0))
+        self.graph.DrawLine((0, 0), (0, self.plot_y_range))
+        
+        i = 1
+        for x in range(0, self.plot_x_range+1, self.x_tick_step):
             self.graph.DrawLine((x, -3), (x, 3))
             if x != 0:
-                self.graph.DrawText(x, (x, -10), color='black')
-        for y in range(self.dataRangeMin, self.dataRangeMax+1, step):
+                text = self.x_tick_step_value * i
+                self.graph.DrawText(text, (x, -10), color='black')
+                i += 1
+        i=1
+        for y in range(0, self.plot_y_range+1, self.y_tick_step):
             self.graph.DrawLine((-3, y), (3, y))
             if y != 0:
-                self.graph.DrawText(y, (-10, y), color='black')
+                text = self.y_tick_step_value * i
+                self.graph.DrawText(text, (-10, y), color='black')
+                i += 1
 
-    def drawPlot(self):
+    def draw_plot(self):
         prev_x = prev_y = None
-        for i, xCoord in enumerate(self.yData):
-            yCoord = self.xData[i]
+        for i, x_coord in enumerate(self.linear_space):
+            x_coord = int(i * self.x_scale_factor)
+            y_coord = int(self.y_data[i] * self.y_scale_factor)
             if prev_x is not None:
-                self.graph.draw_line((prev_x, prev_y), (xCoord, yCoord),
+                self.graph.draw_line((prev_x, prev_y), (x_coord, y_coord),
                                      color='#595959', width=1.8)
-            prev_x, prev_y = xCoord, yCoord
+            prev_x, prev_y = x_coord, y_coord
 
-    def addData(self, data):
+    def add_data(self, data):
         data = int(data)
-        if data < self.dataRangeMin:
-            data = self.dataRangeMin
-        elif data > self.dataRangeMax:
-            data = self.dataRangeMax
-        self.xData[0:self.dataMaxIdx] = self.xData[1:self.dataSize]
-        self.xData[self.dataMaxIdx]   = data   #todo np.random.randint(self.dataRangeMin, self.dataRangeMax)
-
-    def updatePlot(self, tlm_msg: TelemetryMessage):
+        if data < self.data_min_value:
+            data = self.data_min_value
+        elif data > self.data_max_value:
+            data = self.data_max_value
+        self.y_data[0:self.data_max_idx] = self.y_data[1:self.data_points]
+        self.y_data[self.data_max_idx]   = data
+        
+    def update_plot(self, tlm_msg: TelemetryMessage):
         if tlm_msg.app_name == self.app_name:
             payload = tlm_msg.payload()
-            print('payload = ', payload)
+            #print('payload = ', payload)
             if self.tlm_payload in str(type(payload)):
                 has_element = False
                 for p in payload:
@@ -177,15 +202,14 @@ class TlmPlot():
                         break
                 if has_element:
                     data = payload[self.tlm_element]
-                    self.addData(data)
+                    self.add_data(data)
                     self.graph.erase()
-                    self.drawAxis()
-                    self.drawTicks(20)
-                    self.drawPlot()
+                    self.draw_axes()
+                    self.draw_plot()
 
     def execute(self, app_name, tlm_topic, tlm_payload, tlm_element):
         """
-        Must start the current value observer after the GUI window is created
+        The current value observer must be created after the GUI window is created
         """
         self.app_name    = app_name
         self.tlm_topic   = tlm_topic
@@ -194,14 +218,12 @@ class TlmPlot():
 
         self.create_window(app_name+'/'+tlm_payload+'/'+tlm_element)
 
-        self.tlm_current_value = TelemetryCurrentValue(self.tlm_server, self.updatePlot)
+        self.tlm_current_value = TelemetryCurrentValue(self.tlm_server, self.update_plot)
         self.tlm_server.execute()
 
         while True: # Event Loop
-
             event, values = self.window.read(timeout=200)
-
-            if event == 'Exit' or event == sg.WIN_CLOSED:
+            if event in (sg.WIN_CLOSED, 'Exit'):
                 break
 
         self.tlm_server.shutdown()
@@ -224,7 +246,7 @@ if __name__ == '__main__':
         tlm_payload = 'StatusTlm'
         tlm_element = 'DeviceData'
         min_value   = 0
-        max_value   = 100
+        max_value   = 55
     
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
