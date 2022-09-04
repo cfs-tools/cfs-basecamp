@@ -303,14 +303,16 @@ class TelemetryServer(CfeEdsTarget):
     def execute(self):
 
         self._recv_tlm_thread = threading.Thread(target=self._recv_tlm_handler)
-        self._recv_tlm_thread.kill = False
+        self._recv_tlm_thread.kill  = False
+        self._recv_tlm_threaddaemon = True
 
         self._recv_tlm_thread.start()
         self._recv_tlm_thread.join()
 
     def shutdown(self):
+        logger.info("Telemetry Server shutdown started")
         self._recv_tlm_thread.kill = True
-        logger.info("Telemetry Server shutting down")
+        logger.info("Telemetry Server shutdown complete")
 
     
 ###############################################################################
@@ -387,8 +389,9 @@ class TelemetrySocketServer(TelemetryServer):
         
         self._recv_tlm_thread = threading.Thread(target=self._recv_tlm_handler)
         
-        self._recv_tlm_thread.kill = False
-
+        self._recv_tlm_thread.kill  = False
+        self._recv_tlm_threaddaemon = True
+        
         self._recv_tlm_thread.start()
 
 

@@ -27,6 +27,7 @@ import os
 import socket
 import configparser
 import io
+import math
 from contextlib import redirect_stdout
 import PySimpleGUI as sg
 import numpy as np
@@ -135,7 +136,7 @@ class TlmPlot():
         self.x_tick_step_value = int(self.data_points/5)
         self.x_scale_factor    = self.plot_x_range/self.data_points
         self.y_tick_step       = int(self.plot_y_range/5)
-        self.y_tick_step_value = int(self.data_range/5)
+        self.y_tick_step_value = self.data_range/5.0
         self.y_scale_factor    = self.plot_y_range/self.data_range
 
     def create_window(self, title):
@@ -165,9 +166,10 @@ class TlmPlot():
                 i += 1
         i=1
         for y in range(0, self.plot_y_range+1, self.y_tick_step):
+            print('y=',y)
             self.graph.DrawLine((-3, y), (3, y))
             if y != 0:
-                text = self.y_tick_step_value * i
+                text = "{:5.1f} ".format(self.y_tick_step_value * i)
                 self.graph.DrawText(text, (-10, y), color='black')
                 i += 1
 
@@ -246,7 +248,7 @@ if __name__ == '__main__':
         tlm_payload = 'StatusTlm'
         tlm_element = 'DeviceData'
         min_value   = 0
-        max_value   = 55
+        max_value   = 6
     
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')

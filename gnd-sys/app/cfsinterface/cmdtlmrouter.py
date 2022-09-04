@@ -111,7 +111,8 @@ class CmdTlmRouter(Thread):
         self.tlm_dest_connect_socket.setblocking(True)
 
         self.tlm_dest_connect = Thread(target=self.tlm_dest_connect_thread)
-        self.tlm_dest_connect.kill = False
+        self.tlm_dest_connect.kill   = False
+        self.tlm_dest_connect.daemon = True
         
         logger.info(f"CmdTlmRouter Init: cfs_cmd_socket{self.cfs_cmd_socket_addr}, gnd_tlm_socket{self.gnd_tlm_socket_addr}")
 
@@ -238,13 +239,14 @@ class CmdTlmRouter(Thread):
 
     
     def shutdown(self):
-        logger.info("CmdTlm router shutdown")
+        logger.info("CmdTlm router shutdown started")
         self.enabled = False
         self.tlm_dest_connect.kill = True
         self.cfs_cmd_socket.close()
         self.gnd_tlm_socket.close()
         self.tlm_dest_socket.close()
         self.tlm_dest_connect_socket.close()
+        logger.info("CmdTlm router shutdown completed")
         
 ###############################################################################
 """

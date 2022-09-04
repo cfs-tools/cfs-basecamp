@@ -448,7 +448,8 @@ class TelemetryGuiClient(TelemetryObserver):
         self.window = None
         
         self.gui_thread = threading.Thread(target=self.gui)
-        self.gui_thread.kill = False
+        self.gui_thread.kill   = False
+        self.gui_thread.daemon = True
         
     def update(self, tlm_msg: TelemetryMessage) -> None:
         """
@@ -583,9 +584,10 @@ class TelemetryGuiClient(TelemetryObserver):
  
              
     def shutdown(self):
+        logger.info("Telemetry GUI %s shutdown started" % self.topic_name)
         self.gui_thread.kill = True
         self.gui_thread.join()  #TODO: Is this correct?
-        logger.info("%s GUI shutting down" % self.topic_name)
+        logger.info("Telemetry GUI %s shutdown complete" % self.topic_name)    
 
 
 ###############################################################################
@@ -1000,6 +1002,7 @@ class CfsStdout(threading.Thread):
         self.cfs_subprocess = cfs_subprocess
         self.window = window
         self.cfs_subprocess_log = ""
+        self.daemon = True
         
     def run(self):
         """
@@ -1269,6 +1272,7 @@ class App():
                 break
             elif plot_data_event == 'Ok':
                 tlm_topic = 'None'
+                tlm_payload = None
                 if len(plot_data_values['-TOPIC-']) > 0:
                     tlm_element = plot_data_values['-TOPIC-'][0]
                     for topic in tlm_dict:
@@ -1289,7 +1293,10 @@ class App():
                                 sg.popup("Error retrieving payload name from topic %s type %s" % (topic, topic_type), title='Plot Configuration', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                                 tlm_plot_cmd_parms = ""
                             tlm_topic = topic
-                    tlm_plot_cmd_parms += ' ' + tlm_topic + ' ' + tlm_payload + ' ' + tlm_element + ' ' + plot_data_values['-MIN-'] + ' ' + plot_data_values['-MAX-'] 
+                    if tlm_payload is None:
+                        tlm_plot_cmd_parms = ""
+                    else:
+                        tlm_plot_cmd_parms += ' ' + tlm_topic + ' ' + tlm_payload + ' ' + tlm_element + ' ' + plot_data_values['-MIN-'] + ' ' + plot_data_values['-MAX-'] 
                     break
                 else:
                     sg.popup("You must select a telemetry element from a telemetry topic's payload", title='Plot Configuration', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
@@ -1326,7 +1333,7 @@ class App():
                        ['System', ['Options', 'About', 'Exit']],
                        ['Developer', ['Create App', 'Download App','Add App to cFS', 'Run Perf Monitor']], #todo: 'Certify App' 
                        ['Operator', ['Browse Files', 'Run Script', 'Plot Data', '---', 'Control Target']],
-                       ['Documents', ['cFS Overview', 'cFE Overview', 'OSK App Dev']],
+                       ['Documents', ['cFS Overview', 'cFE Overview', 'App Dev Guide']],
                        ['Tutorials', self.manage_tutorials.tutorial_titles]
                    ]
 
@@ -1517,7 +1524,7 @@ class App():
                 path_filename = os.path.join(self.path, "../../docs/cFE-Overview.pdf")  #TODO - Ini file
                 webbrowser.open_new(r'file://'+path_filename)
                 
-            elif self.event == 'OSK App Dev':
+            elif self.event == 'App Dev Guide':
                 path_filename = os.path.join(self.path, "../../docs/OSK-App-Dev-Guide.pdf")  #TODO - Ini file
                 webbrowser.open_new(r'file://'+path_filename)
                 
