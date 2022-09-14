@@ -865,9 +865,10 @@ class ManageCfs():
                 self.remove_app_tables()
                 self.restore_targets_cmake()
                 self.restore_startup_scr()
-                self.restore_topic_ids()
+                self.restore_topic_ids()                
                 if self.values['-DELETE_FILES-'] == 'Yes':
                     self.remove_app_src_files()
+                sg.popup(f'Successfully removed {self.selected_app.upper()}', title='Remove App', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
                 break
 
         window.close()
@@ -924,11 +925,11 @@ class ManageCfs():
                         dst = os.path.join(self.cfs_abs_defs_path, dst_table)
                         print('##dst: ' + dst)
                         shutil.copyfile(src, dst)
-                    popup_text = f"Copied table files '{table_list_str[:-2]}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
+                    popup_text = f"Copied table files '{table_list}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
                 except IOError:
                     popup_text = f'Error copying table file\nFROM\n  {src}\nTO\n  {dst}\n'
             else:
-                popup_text = f"Copy table files '{table_list_str[:-2]}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
+                popup_text = f"Copy table files '{table_list}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
         sg.popup(popup_text, title='Copy table files', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
 
     def remove_app_tables(self):
@@ -998,7 +999,7 @@ class ManageCfs():
         app_cmake_files = self.usr_app_spec.get_targets_cmake_files()
         obj_file   = app_cmake_files['obj-file'] 
         table_list = self.get_app_table_list()
-
+        
         file_modified = False
         instantiated_text = ''
         with open(self.targets_cmake_file) as f:
@@ -1006,13 +1007,13 @@ class ManageCfs():
                 if INSERT_KEYWORD in line:
                     if self.cmake_app_list in line:
                         if obj_file in line:
-                            line.replace(obj_file,'')
+                            line = line.replace(obj_file,"")
                             file_modified = True
                             logger.info(f'Removed {obj_file} from {self.targets_cmake_file}')
                     elif self.cmake_file_list in line:
                         for table in table_list:
                             if table in line:
-                                line.replace(table,'')
+                                line = line.replace(table,"")
                                 file_modified = True
                                 logger.info(f'Removed {table} from {self.targets_cmake_file}')
                 instantiated_text += line        
@@ -1124,10 +1125,10 @@ class ManageCfs():
     def remove_app_src_files(self):
         app_path = os.path.join(self.usr_app_path, self.selected_app)
         try:
-           shutil.rmtree(app_table_path)
+           shutil.rmtree(app_path)
            logger.info(f'Successfully removed {app_path}')
         except Exception as e:
-            logger.error(f'Attempt to remove {app_path} raised exception: {repr(e)} ')
+           logger.error(f'Attempt to remove {app_path} raised exception: {repr(e)} ')
            
  
 ###############################################################################
@@ -1710,7 +1711,7 @@ class App():
                 #                                       shell=True) #, bufsize=1, universal_newlines=True)
                 self.cfs_subprocess = subprocess.Popen('%s %s %s' % (start_cfs_sh, cfs_abs_exe_path, self.cfs_exe_file),
                                                        stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True,
-                                                       preexec_fn=os.setsid)
+                                                       preexec_fn = lambda : (os.setsid(), os.nice(10)))
                 time.sleep(2.0)
                 if self.cfs_subprocess is not None:
                     self.window["-CFS_IMAGE-"].update(os.path.join(cfs_abs_exe_path, self.cfs_exe_file))

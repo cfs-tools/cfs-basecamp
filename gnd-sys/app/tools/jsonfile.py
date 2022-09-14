@@ -194,7 +194,7 @@ class JsonTblTopicMap():
                             spare_id = re.search(r'\d+', keyword[1]).group()
                             print(spare_id)
                             spare_key = f'SPARE_{spare_id}_TOPICID'
-                            line = f'      "{spare_key}": {keyword[1]}'
+                            line = f'      "{spare_key}":{keyword[1]}'
                             print('newline: ', line)
                             del remove_topics[remove_idx]
                             if len(remove_topics) == 0:

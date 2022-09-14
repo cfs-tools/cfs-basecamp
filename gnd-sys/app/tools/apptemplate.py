@@ -296,11 +296,11 @@ if __name__ == '__main__':
     config.read('../basecamp.ini')
 
     APP_TEMPLATES_PATH = config.get('PATHS','APP_TEMPLATES_PATH')
-    USR_APP_PATH  = config.get('PATHS','USR_APP_PATH ')
+    USR_APP_PATH  = config.get('PATHS','USR_APP_PATH')
     
     templates_dir = os.path.join(os.getcwd(),'..', APP_TEMPLATES_PATH) 
     usr_app_dir   = os.path.join(os.getcwd(),'..', USR_APP_PATH) 
-    print ("Directories: templates_dir: %s, usr_app_dir: %s" + (templates_dir, sr_app_path))
+    print (f'Directories: templates_dir: {templates_dir}, usr_app_dir: {usr_app_dir}')
     CreateApp(templates_dir, usr_app_dir).execute()
     
     #Test without GUI

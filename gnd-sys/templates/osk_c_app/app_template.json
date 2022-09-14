@@ -25,7 +25,7 @@
       },
       {
          "path": "fsw/tables",
-         "files": ["@template@_ini.json", "@template@_tbl.json"]
+         "files": ["cpu1_@template@_ini.json", "cpu1_@template@_tbl.json"]
       },
       {
          "path": "eds",
