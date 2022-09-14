@@ -1,7 +1,6 @@
 {
    "title": "@Template@ initialization file",
-   "description": ["Define runtime configurations",
-                   "PROTO is provided as a default development app name"],
+   "description": ["Define runtime configurations"],
    "config": {
       
       "APP_CFE_NAME": "@TEMPLATE@",
@@ -10,10 +9,10 @@
       "APP_CMD_PIPE_DEPTH": 5,
       "APP_CMD_PIPE_NAME":  "@TEMPLATE@_CMD",
 
-      "PROTO_CMD_TOPICID": 0,
-      "PROTO_EXE_TOPICID": 0,
-      "PROTO_SEND_HK_TOPICID": 0,
-      "PROTO_HK_TLM_TOPICID": 0,
+      "@TEMPLATE@_CMD_TOPICID": 0,
+      "BC_SCH_1_HZ_TOPICID": 0,
+      "BC_SCH_4_SEC_TOPICID": 0,
+      "@TEMPLATE@_HK_TLM_TOPICID": 0,
 
       "TBL_LOAD_FILE": "/cf/@template@_tbl.json",
       "TBL_DUMP_FILE": "/cf/@template@~.json"

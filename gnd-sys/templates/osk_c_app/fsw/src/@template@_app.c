@@ -165,9 +165,9 @@ static int32 InitApp(void)
       @Template@.PerfId  = INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_PERF_ID);
       CFE_ES_PerfLogEntry(@Template@.PerfId);
 
-      @Template@.CmdMid     = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_PROTO_CMD_TOPICID));
-      @Template@.ExecuteMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_PROTO_EXE_TOPICID));
-      @Template@.SendHkMid  = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_PROTO_SEND_HK_TOPICID));
+      @Template@.CmdMid     = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_CMD_TOPICID));
+      @Template@.ExecuteMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_EXE_TOPICID));
+      @Template@.SendHkMid  = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_SEND_HK_TOPICID));
       
       Status = CFE_SUCCESS; 
   
@@ -209,7 +209,7 @@ static int32 InitApp(void)
       */
 
       CFE_MSG_Init(CFE_MSG_PTR(@Template@.HkTlm.TelemetryHeader), 
-                   CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_PROTO_HK_TLM_TOPICID)),
+                   CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_HK_TLM_TOPICID)),
                    sizeof(@TEMPLATE@_HkTlm_t));
 
       /*

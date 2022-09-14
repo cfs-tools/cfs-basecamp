@@ -342,12 +342,6 @@
               <GenericTypeMap name="TelecommandDataType" type="CommandBase" />
             </GenericTypeMapSet>
           </Interface>
-          <Interface name="SEND_HK" shortDescription="Signal app to send its housekeeping telemetry command interface" type="CFE_SB/Telecommand">
-            <!-- This uses a bare spacepacket with no payload -->
-            <GenericTypeMapSet>
-              <GenericTypeMap name="TelecommandDataType" type="CFE_HDR/CommandHeader" />
-            </GenericTypeMapSet>
-          </Interface>
           
           <Interface name="HK_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
@@ -376,7 +370,6 @@
         <Implementation>
           <VariableSet>
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"          initialValue="${CFE_MISSION/KIT_TO_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId"       initialValue="${CFE_MISSION/KIT_TO_SEND_HK_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"        initialValue="${CFE_MISSION/KIT_TO_HK_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="DataTypesTlmTopicId" initialValue="${CFE_MISSION/KIT_TO_DATA_TYPES_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="PktTblTlmTopicId"    initialValue="${CFE_MISSION/KIT_TO_PKT_TBL_TLM_TOPICID}" />
@@ -384,7 +377,6 @@
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
             <ParameterMap interface="CMD"            parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="SEND_HK"        parameter="TopicId" variableRef="SendHkTopicId" />
             <ParameterMap interface="HK_TLM"         parameter="TopicId" variableRef="HkTlmTopicId" />
             <ParameterMap interface="DATA_TYPES_TLM" parameter="TopicId" variableRef="DataTypesTlmTopicId" />
             <ParameterMap interface="PKT_TBL_TLM"    parameter="TopicId" variableRef="PktTblTlmTopicId" />

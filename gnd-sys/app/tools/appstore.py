@@ -35,9 +35,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
-    from utils    import compress_abs_path
+    from eds   import AppEds
+    from utils import compress_abs_path
 else:
-    from .utils    import compress_abs_path
+    from .eds   import AppEds
+    from .utils import compress_abs_path
 
 import PySimpleGUI as sg
 
@@ -122,12 +124,11 @@ class AppSpec():
 
         self.app_path  = app_path
         self.app_name  = app_name
-        self.json_file = os.path.join(app_path, app_name+'.json')
         self.eds_file  = os.path.join(app_path, 'eds', app_name+'.xml')
-        
-        print(self.json_file)
+        self.json_file = os.path.join(app_path, app_name+'.json')
         print(self.eds_file)
-        
+        print(self.json_file)
+        self.eds   = None                
         self.valid = False
         self.json  = None
         self.cfs   = None
@@ -144,25 +145,35 @@ class AppSpec():
                 f.close()
                 #todo print(str(self.json))
             except:
-                sg.popup("Error loading JSON spec file %s" % self.json_file, title='AppStore Error', grab_anywhere=True, modal=False)
+                sg.popup(f'Error loading JSON spec file {self.json_file}', title='AppStore Error', grab_anywhere=True, modal=False)
                 return False
         else:
-            sg.popup("Error loading JSON spec file %s" % self.json_file, title='AppStore Error', grab_anywhere=True, modal=False)
+            sg.popup(f'Error loading JSON spec file {self.json_file}', title='AppStore Error', grab_anywhere=True, modal=False)
             return False
         
         try:
             self.cfs = self.json['app']['cfs']
         except:
-            sg.popup("The JSON spec file %s does not contain the required 'cfs' object" % self.json_file, title='AppStore Error', grab_anywhere=True, modal=False)
+            sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'cfs' object", title='AppStore Error', grab_anywhere=True, modal=False)
             return False
         
         #todo print('self.cfs = ' + str(self.cfs))
         return True
         
-    def read_eds_file(self):
-        return True
+    def read_eds_file(self):        
+        try:
+            self.eds = AppEds(self.eds_file)
+        except:
+            sg.popup(f'Error parsing EDS file {self.eds_file}', title='AppStore Error', grab_anywhere=True, modal=False)
+            return False
+        return True        
         
-        
+    def get_cmd_topics(self):
+        return self.eds.cmd_topics()
+    
+    def get_tlm_topics(self):
+        return self.eds.tlm_topics()
+    
     def get_targets_cmake_files(self):
         """
         The targets.cmake file needs
@@ -204,7 +215,7 @@ class AppSpec():
                         str(self.cfs['stack'])    + ', 0x0, ' + \
                         str(self.cfs['exception-action']) + ';' 
         except:
-            sg.popup("Error creating targets.cmake entry due to missing or malformed JSON file.\nPartial entry string = %s" % self.json_file, title='AppStore Error', grab_anywhere=True, modal=False)
+            sg.popup(f'Error creating targets.cmake entry due to missing or malformed JSON file.\nPartial entry string = {self.json_file}', title='AppStore Error', grab_anywhere=True, modal=False)
         
         return entry_str
 
@@ -215,7 +226,7 @@ class ManageUsrApps():
     """
     Discover what user apps exists (each app in separate directory) and
     create a 'database' of app specs that can be used by the user to integrate
-    an apps into their cFS.
+    apps into their cFS target.
     """
     def __init__(self, usr_app_path):
 
@@ -294,9 +305,9 @@ class AppStore():
                 for app in self.git_app_repo.app_dict.keys():
                     if self.values["-%s-"%app] == True:
                         if self.git_app_repo.clone(app):
-                            sg.popup("Successfully cloned %s into %s"%(app,self.usr_app_path), title='AppStore')
+                            sg.popup(f'Successfully cloned {app} into {self.usr_app_path}', title='AppStore')
                         else:
-                            sg.popup("Error cloning %s into %s"%(app,self.usr_app_path), title='AppStore Error')
+                            sg.popup(f'Error cloning {app} into {self.usr_app_path}', title='AppStore Error')
 
                 break
                 
@@ -308,7 +319,7 @@ class AppStore():
         if self.git_app_repo.create_dict():
             self.gui()
         else:
-            sg.popup("Error accessing the git url\n   '%s'\n\nVerify your network connection and the basecamp.ini APP_STORE_URL definition.\n"%self.git_app_repo.git_url, title='AppStore Error')
+            sg.popup(f"Error accessing the git url\n   '{self.git_app_repo.git_url}'\n\nVerify your network connection and the basecamp.ini APP_STORE_URL definition.\n", title='AppStore Error')
 
 
 ###############################################################################

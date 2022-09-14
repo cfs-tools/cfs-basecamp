@@ -32,11 +32,12 @@ import logging
 logger = logging.getLogger(__name__)
 if __name__ == '__main__':
     from jsonfile import JsonFile
+    from utils    import compress_abs_path
 else:
     from .jsonfile import JsonFile
+    from .utils    import compress_abs_path
 
 import PySimpleGUI as sg
-
 
 TEMPLATE_JSON_FILE = 'app_template.json'
 TEMPLATE_VAR_UPPER = "@TEMPLATE@"
@@ -96,7 +97,7 @@ class AppTemplate():
                                TEMPLATE_VAR_MIXED: self.app_name['MIXED'],
                             }
         
-        self.new_app_dir = os.path.join(cfs_app_dir, self.app_name['LOWER'])
+        self.new_app_dir = compress_abs_path(os.path.join(cfs_app_dir, self.app_name['LOWER']))
         
         make_dir = True
         if (os.path.exists(self.new_app_dir)):

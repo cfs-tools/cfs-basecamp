@@ -43,6 +43,8 @@
 """
 
 from abc import ABC, abstractmethod
+import sys
+import importlib
 import time
 import logging
 logger = logging.getLogger(__name__)
@@ -78,10 +80,20 @@ class EdsMission:
     COMMAND_TITLE_KEY   = "-- Command --"
 
     def __init__(self, mission_name, interface_type):
-        
         self.mission_name = mission_name
         self.interface_type = interface_type
         self.load_eds_database()
+
+    def reload_libs(self):
+        print('reload_libs')
+        #importlib.invalidate_caches()
+        #importlib.reload(EdsLib)
+        #importlib.reload(CFE_MissionLib)
+        for m in ['EdsLib', 'CFE_MissionLib']:
+            print('m=',m)
+            if m in sys.modules:
+                del(sys.modules[m])
+                print('reload_libs deleted ',m)
 
     def load_eds_database(self):
         try:
@@ -89,8 +101,8 @@ class EdsMission:
             self.cfe_db     = CFE_MissionLib.Database(self.mission_name, self.lib_db)  #cfe_db => CFE_MissionLib.Database('samplemission'), type => CFE_MissionLib.Database
             self.interface  = self.cfe_db.Interface(self.interface_type)
         except RuntimeError:
-            print("Error accessing EDS libraries. Verify your LD_LIBRARY_PATH and PYTHONPATH environment variable settings and mission name")
-            logger.error("Error accessing EDS libraries. Verify your LD_LIBRARY_PATH and PYTHONPATH environment variable settings and mission name")
+            print("Error accessing EDS libraries. Verify your LD_LIBRARY_PATH, PYTHONPATH environment variable settings and mission name")
+            logger.error("Error accessing EDS libraries. Verify your LD_LIBRARY_PATH, PYTHONPATH environment variable settings and mission name")
 
     
     

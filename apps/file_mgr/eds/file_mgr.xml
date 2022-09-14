@@ -530,12 +530,6 @@
               <GenericTypeMap name="TelecommandDataType" type="CommandBase" />
             </GenericTypeMapSet>
           </Interface>
-          <Interface name="SEND_HK" shortDescription="Send telemetry command interface" type="CFE_SB/Telecommand">
-            <!-- This uses a bare spacepacket with no payload -->
-            <GenericTypeMapSet>
-              <GenericTypeMap name="TelecommandDataType" type="CFE_HDR/CommandHeader" />
-            </GenericTypeMapSet>
-          </Interface>
           <Interface name="HK_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
@@ -570,7 +564,6 @@
         <Implementation>
           <VariableSet>
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"            initialValue="${CFE_MISSION/FILE_MGR_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId"         initialValue="${CFE_MISSION/FILE_MGR_SEND_HK_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"          initialValue="${CFE_MISSION/FILE_MGR_HK_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="DirListTlmTopicId"     initialValue="${CFE_MISSION/FILE_MGR_DIR_LIST_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="FileInfoTlmTopicId"    initialValue="${CFE_MISSION/FILE_MGR_FILE_INFO_TLM_TOPICID}" />
@@ -580,7 +573,6 @@
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
             <ParameterMap interface="CMD"               parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="SEND_HK"           parameter="TopicId" variableRef="SendHkTopicId" />
             <ParameterMap interface="HK_TLM"            parameter="TopicId" variableRef="HkTlmTopicId" />
             <ParameterMap interface="DIR_LIST_TLM"      parameter="TopicId" variableRef="DirListTlmTopicId" />
             <ParameterMap interface="FILE_INFO_TLM"     parameter="TopicId" variableRef="FileInfoTlmTopicId" />

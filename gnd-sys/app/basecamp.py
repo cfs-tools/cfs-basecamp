@@ -39,6 +39,7 @@ if 'LD_LIBRARY_PATH' not in os.environ:
         print("Auto define LD_LIBRARY_PATH failed")
         sys.exit(1)
     """
+import importlib
 import ctypes
 import time
 import socket
@@ -62,12 +63,14 @@ logger = logging.getLogger(__name__)
 
 import PySimpleGUI as sg
 
+import EdsLib
+import CFE_MissionLib
 from cfsinterface import CmdTlmRouter
 from cfsinterface import Cfe, EdsMission
 from cfsinterface import TelecommandInterface, TelecommandScript
 from cfsinterface import TelemetryMessage, TelemetryObserver, TelemetryQueueServer
 from tools import CreateApp, ManageTutorials, crc_32c, datagram_to_str, compress_abs_path, TextEditor
-from tools import AppStore, ManageUsrApps, AppSpec, TargetControl
+from tools import AppStore, ManageUsrApps, AppSpec, TargetControl, CfeTopicIds, JsonTblTopicMap
 
 # Shell script names should not change and are considered part of the application
 # Therefore they can be defined here and not in a configuration file
@@ -82,6 +85,7 @@ SH_START_CFS = './start_cfs.sh'
 CFS_DEFS_FOLDER = 'basecamp_defs'
 
 INSERT_KEYWORD = '!BASECAMP-INSERT!'
+
 
 ###############################################################################
 
@@ -210,7 +214,6 @@ class TelecommandGui(TelecommandInterface):
         See SendCmd() payload_layout definition comment for initial payload display
         When there are no payload paramaters (zero length) hide all rows except the first parameter.
         """
-        ManageUsrApps
         for row in range(self.PAYLOAD_ROWS):
             self.window["-PAYLOAD_%d_NAME-"%row].update(visible=False)
             self.window["-PAYLOAD_%d_TYPE-"%row].update(visible=False)
@@ -647,23 +650,29 @@ class BasecampTelemetryMonitor(TelemetryObserver):
 class ManageCfs():
     """
     Manage the display for building and running the cFS.
-    app_abs_path - The python application path, not cFS apps
+    app_abs_path is the python application path, not cFS apps
+    #TODO - Define path and file constants
     """
     def __init__(self, basecamp_abs_path, cfs_abs_base_path, usr_app_rel_path, main_window, cfs_target):
-        self.basecamp_abs_path       = basecamp_abs_path
-        self.cfs_abs_base_path    = cfs_abs_base_path
-        self.cfs_abs_defs_path    = os.path.join(self.cfs_abs_base_path, "basecamp_defs")     #TODO - Use constants
-        self.basecamp_tools_path     = os.path.join(basecamp_abs_path, "tools")
-        self.usr_app_path         = compress_abs_path(os.path.join(basecamp_abs_path, usr_app_rel_path))
-        self.main_window          = main_window
-        self.cfs_target           = cfs_target
-        self.startup_scr_filename = cfs_target + '_' + 'cfe_es_startup.scr'
-        self.startup_scr_file     = os.path.join(self.cfs_abs_defs_path, self.startup_scr_filename)
-        self.targets_cmake_file   = os.path.join(self.cfs_abs_defs_path, "targets.cmake")
-        self.cmake_app_list       = cfs_target + '_APPLIST'
-        self.cmake_file_list      = cfs_target + '_FILELIST'
-        self.build_subprocess     = None
-        self.selected_app         = None
+        self.basecamp_abs_path      = basecamp_abs_path
+        self.cfs_abs_base_path      = cfs_abs_base_path
+        self.cfs_abs_defs_path      = os.path.join(self.cfs_abs_base_path, 'basecamp_defs')
+        self.basecamp_tools_path    = os.path.join(basecamp_abs_path, 'tools')
+        self.usr_app_path           = compress_abs_path(os.path.join(basecamp_abs_path, usr_app_rel_path))
+        self.main_window            = main_window
+        self.cfs_target             = cfs_target
+        self.startup_scr_filename   = cfs_target + '_' + 'cfe_es_startup.scr'
+        self.startup_scr_file       = os.path.join(self.cfs_abs_defs_path, self.startup_scr_filename)
+        self.targets_cmake_filename = 'targets.cmake'
+        self.targets_cmake_file     = os.path.join(self.cfs_abs_defs_path, self.targets_cmake_filename)
+        self.cfe_topic_id_filename  = 'cfe-topicids.xml'
+        self.cfe_topic_id_file      = os.path.join(self.cfs_abs_defs_path, 'eds', self.cfe_topic_id_filename)
+        self.kit_to_tbl_filename    = cfs_target + '_' + 'kit_to_pkt_tbl.json'
+        self.kit_to_tbl_file        = os.path.join(self.cfs_abs_defs_path, self.kit_to_tbl_filename)
+        self.cmake_app_list         = cfs_target + '_APPLIST'
+        self.cmake_file_list        = cfs_target + '_FILELIST'
+        self.build_subprocess       = None
+        self.selected_app           = None
         
         self.b_size  = (4,1)
         self.b_pad   = ((0,2),(2,2))
@@ -673,20 +682,20 @@ class ManageCfs():
         self.t_font  = ('Arial', 12)
         self.step_font  = ('Arial bold', 14)
 
-    def select_app_gui(self, app_name_list):
+    def select_usr_app_gui(self, app_name_list, action_text):
         """
-        Select an app to be integrated
+        Select an app to be integrated. The action text should be lower case.
         """
         self.selected_app = None
         
         layout = [
-                  [sg.Text('Select an app from the dropdown iist and click Submit\n', font=self.b_font)],
+                  [sg.Text(f'Select app to {action_text} from the dropdown iist and click <Submit>\n', font=self.b_font)],
                   [sg.Combo(app_name_list, pad=self.b_pad, font=self.b_font, enable_events=True, key="-USR_APP-", default_value=app_name_list[0]),
                    sg.Button('Submit', button_color=('SpringGreen4'), pad=self.b_pad, key='-SUBMIT-'),
-                   sg.Button('Cancel', button_color=('red4'), pad=self.b_pad, key='-CANCEL-')]
+                   sg.Button('Cancel', button_color=('gray'), pad=self.b_pad, key='-CANCEL-')]
                  ]      
 
-        window = sg.Window('Select App to Integrate', layout, resizable=True, modal=True)
+        window = sg.Window('Select User App', layout, resizable=True, modal=True)
         
         while True:
         
@@ -702,7 +711,7 @@ class ManageCfs():
         window.close()       
               
     
-    def integrate_app_gui(self):
+    def add_usr_app_gui(self):
         """
         Provide steps for the user to integrate an app. This is only invoked
         after an app has been selected.
@@ -713,12 +722,13 @@ class ManageCfs():
         """
         #TODO - Use a loop to construct the layout
         layout = [
-                  [sg.Text("Perform the following steps to add an app using the 'Auto' (automatically) or 'Man' (manually) buttons.\n", font=self.t_font)],
+                  [sg.Text("Perform the following steps to add an app. Use 'Auto' (automatically) or 'Man' (manually) buttons for step 2.\n", font=self.t_font)],
                   [sg.Text('1. Stop the cFS prior to modifying or adding an app', font=self.step_font, pad=self.b_pad)],
-                  [sg.Text('', size=self.b_size), sg.Text("Submit [sudo] password or open a terminal window & kill cFS process. See '%s' for guidance" % SH_STOP_CFS, font=self.t_font)],
+                  [sg.Text('', size=self.b_size), sg.Text('Close this window and click <Stop cFS>, open a terminal window & kill the cFS process, or', font=self.t_font)],
+                  [sg.Text('', size=self.b_size), sg.Text('Submit [sudo] password', font=self.t_font)],
                   [sg.Text('', size=self.b_size), sg.Button('Submit', size=(6,1), button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1_AUTO-'),
                    sg.InputText(password_char='*', size=(15,1), font=self.t_font, pad=self.b_pad, key='-PASSWORD-')],
-                   #sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1_MAN-'),
+                  
                   [sg.Text('2. Update cFS build configuration', font=self.step_font, pad=self.b_pad)],
                   [sg.Text('', size=self.b_size), sg.Button('Auto', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2_AUTO-'),
                    sg.Text('Automatically perform all steps', font=self.t_font)],
@@ -730,25 +740,22 @@ class ManageCfs():
                    sg.Text('Update cpu1_cfe_es_startup.scr', font=self.t_font)],
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2D_MAN-'),
                    sg.Text('Update EDS cfe-topicids.xml', font=self.t_font)], 
-                  
-                  [sg.Text('3. Update runtime app suite tables', font=self.step_font, pad=self.b_pad)],
-                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-3A_MAN-'),
-                   sg.Text('Update scheduler app table', font=self.t_font)],
-                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-3B_MAN-'),
+                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2E_MAN-'),
                    sg.Text('Update telemetry output app table', font=self.t_font)],
                   
-                  [sg.Text('4. Build the cfS', font=self.step_font, pad=self.b_pad)],
-                  [sg.Text('', size=self.b_size), sg.Button('Start', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-4_AUTO-')],
+                  [sg.Text('3. Build the cfS', font=self.step_font, pad=self.b_pad)],
+                  [sg.Text('', size=self.b_size), sg.Button('Build', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-3_AUTO-')],
                   
-                  [sg.Text('5. Manually exit and restart Basecamp', font=self.step_font, pad=self.b_pad)],
-                  [sg.Text('', size=self.b_size), sg.Button('Exit', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-EXIT-')],
+                  [sg.Text('4. Exit and restart Basecamp', font=self.step_font, pad=self.b_pad)],
+                  [sg.Text('', size=self.b_size), sg.Button('Restart', size=(6,1), button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-4_AUTO-')],
                  ]
         # sg.Button('Exit', enable_events=True, key='-EXIT-')
-        self.window = sg.Window('Integrate %s with the cFS' % self.usr_app_spec.app_name, layout, resizable=True, finalize=True) # modal=True)
+        window = sg.Window(f'Add {self.usr_app_spec.app_name.upper()}', layout, resizable=True, finalize=True) # modal=True)
         
+        restart_main_window = False
         while True:
         
-            self.event, self.values = self.window.read(timeout=200)
+            self.event, self.values = window.read(timeout=200)
         
             if self.event in (sg.WIN_CLOSED, 'Exit', '-EXIT-') or self.event is None:
                 break
@@ -774,18 +781,20 @@ class ManageCfs():
                 password = self.values['-PASSWORD-']
                 if password is not None:
                     status = subprocess.run(SH_STOP_CFS, shell=True, cwd=self.basecamp_abs_path, input=password.encode())
-                    if status == '0':
-                        popup_text = "'%s' successfully executed with return status %s" % (SH_STOP_CFS, status.returncode)
+                    print('status type = %s'%str(type(status.returncode)))
+                    if status.returncode == 0:
+                        popup_text = f"'{SH_STOP_CFS}' successfully executed with return status {status.returncode}"
+                        self.main_window['-STOP_CFS-'].click()
                     else:
-                        popup_text = "'%s' returned with error status %s" % (SH_STOP_CFS, status.returncode)
-                    sg.popup(popup_text, title='Automatically Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                        popup_text = f"'{SH_STOP_CFS}' returned with error status {status.returncode}"
+                    sg.popup(popup_text, title='Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                 else:
-                    popup_text = "No attempt to stop the cFS, since no password supplied"
-                    sg.popup(popup_text, title='Automatically Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                    popup_text = 'No attempt to stop the cFS, since no password supplied'
+                    sg.popup(popup_text, title='Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                             
             elif self.event == '-1_MAN-': # Stop the cFS prior to modifying or adding an app
-                popup_text = "Open a terminal window and kill any running cFS processes. See '%s' for guidance" % SH_STOP_CFS 
-                sg.popup(popup_text, title='Manually Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                popup_text = f"Open a terminal window and kill any running cFS processes. See '{SH_STOP_CFS}' for guidance" 
+                sg.popup(popup_text, title='Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
             ## Step 2 - Update cFS build configuration
             
@@ -793,8 +802,7 @@ class ManageCfs():
                 self.copy_app_tables(auto_copy=True)
                 self.update_targets_cmake(auto_update=True)
                 self.update_startup_scr(auto_update=True)
-                popup_text = "The Electronic Data Sheet Topic ID file must be updated manually"
-                sg.popup(popup_text, title='Update EDS cfe-topicids.xml', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                self.update_topic_ids()
                 
             elif self.event == '-2A_MAN-':
                 self.copy_app_tables(auto_copy=False)  # Copy table files from app dir to cFS '_defs' file
@@ -803,108 +811,136 @@ class ManageCfs():
             elif self.event == '-2C_MAN-':
                 self.update_startup_scr(auto_update=False)
             elif self.event == '-2D_MAN-':
-                path_filename = os.path.join(self.cfs_abs_base_path, CFS_DEFS_FOLDER, 'eds', 'cfe-topicids.xml')
-                self.text_editor = sg.execute_py_file("texteditor.py", parms=path_filename, cwd=self.basecamp_tools_path)
+                popup_text = f"After this dialogue, {self.cfe_topic_id_filename} will open in an editor.\n Replace spare topic IDs with the app's topic ID names"
+                sg.popup(popup_text, title=f'Update {self.cfe_topic_id_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                self.text_editor = sg.execute_py_file('texteditor.py', parms=self.cfe_topic_id_file, cwd=self.basecamp_tools_path)
+            elif self.event == '-2E_MAN-':
+                popup_text = f"After this dialogue, {self.kit_to_tbl_filename} will open in an editor.\n Replace spare topic IDs with the app's topic ID names"
+                sg.popup(popup_text, title=f'Update {self.kit_to_tbl_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                self.text_editor = sg.execute_py_file('texteditor.py', parms=self.kit_to_tbl_file, cwd=self.basecamp_tools_path)
                 
-            ## Step 3 - Update runtime app suite tables
+            ## Step 3 - Build the cFS
 
-            elif self.event == '-3_AUTO-': # Update scheduler app table
-                #TODO - Add auto update scheduler app table
-                popup_text = "Auto update scheduler app table feature not implemented"
-                sg.popup(popup_text, title='Update Scheduler App Tables', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
-
-            elif self.event == '-3A_MAN-': # Update scheduler app table
-                msg_tbl_name = self.cfs_target + '_' + 'kit_sch_msgtbl.json'
-                sch_tbl_name = self.cfs_target + '_' + 'kit_sch_schtbl.json'
-                popup_text = 'After this dialogue, %s and %s will open in a text editor' % (msg_tbl_name, sch_tbl_name)
-                sg.popup(popup_text, title='Update Scheduler App Tables', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
-                path_filename = os.path.join(self.cfs_abs_defs_path, msg_tbl_name)
-                self.text_editor = sg.execute_py_file("texteditor.py", parms=path_filename, cwd=self.basecamp_tools_path)
-                path_filename = os.path.join(self.cfs_abs_defs_path, sch_tbl_name)
-                self.text_editor = sg.execute_py_file("texteditor.py", parms=path_filename, cwd=self.basecamp_tools_path)
-            
-            elif self.event == '-3B_MAN-': # Update telemetry output app table
-                pkt_tbl_name = self.cfs_target + '_' + 'kit_to_pkt_tbl.json'
-                path_filename = os.path.join(self.cfs_abs_defs_path, pkt_tbl_name)
-                self.text_editor = sg.execute_py_file("texteditor.py", parms=path_filename, cwd=self.basecamp_tools_path)
-            
-            ## Step 4 - Build the cFS
-
-            elif self.event == '-4_AUTO-': # Build the cfS
+            elif self.event == '-3_AUTO-': # Build the cfS
                 build_cfs_sh = os.path.join(self.basecamp_abs_path, SH_BUILD_CFS_TOPICIDS)
-                self.build_subprocess = subprocess.Popen('%s %s' % (build_cfs_sh, self.cfs_abs_base_path),
-                                                       stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True)
+                self.build_subprocess = subprocess.Popen(f'{build_cfs_sh} {self.cfs_abs_base_path}',
+                                        stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True)
                 if self.build_subprocess is not None:
                     self.cfs_stdout = CfsStdout(self.build_subprocess, self.main_window)
                     self.cfs_stdout.start()
             
-            elif self.event == '-4_MAN-': # Build the cfS
-                popup_text = "Open a terminal window, change directory to %s and build the cFS. See '%s' for guidance" % (self.cfs_abs_base_path, SH_BUILD_CFS_TOPICIDS) 
-                sg.popup(popup_text, title='Manually Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)            
+            elif self.event == '-3_MAN-': # Build the cfS
+                popup_text = f"Open a terminal window, change directory to {self.cfs_abs_base_path} and build the cFS. See '{SH_BUILD_CFS_TOPICIDS}' for guidance"
+                sg.popup(popup_text, title='Manually Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)   
 
-            ## Step 5 - Restart Basecamp
+            ## Step 4 - Restart Basecamp
 
-            elif self.event == '-5_AUTO-': # Reload cFS python EDS definitions                
-                sg.popup('This feature has not been implemented. You must restart the Basecamp applicaton.', title='Reload cFS EDS definitions', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+            elif self.event == '-4_AUTO-': # Reload cFS python EDS definitions                
+                sg.popup(f'Basecamp will be closed after this dialogue.\nYou must restart Basecamp to use {self.usr_app_spec.app_name.upper()}',
+                         title='Reload cFS EDS definitions', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                restart_main_window = True
+                break
+                
+        window.close()       
+        if restart_main_window:
+            self.main_window['-RESTART-'].click()
 
-            elif self.event == '-5_MAN-': # Reload cFS python EDS definitions
-                sg.popup('This feature has not been implemented. You must restart the Basecamp applicaton.', title='Reload cFS EDS definitions', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+    def remove_usr_app_gui(self):
 
-        self.window.close()       
+        no_yes = ['No', 'Yes']
+        layout = [
+                  [sg.Text(f'This will remove {self.usr_app_spec.app_name.upper()} from the cFS target', font=self.t_font)],
+                  [sg.Text('Do you want to remove the source files from usr/apps? ', font=self.t_font),
+                  sg.Combo(no_yes, enable_events=True, key='-DELETE_FILES-', default_value=no_yes[0], pad=((0,5),(5,5)))], 
+                  [sg.Text('', font=self.t_font)],
+                  [sg.Button('Remove App', button_color=('SpringGreen4')), sg.Cancel(button_color=('gray'))]
+                 ]
+        
+        window = sg.Window(f'Remove {self.usr_app_spec.app_name.upper()}', layout, resizable=True, finalize=True)
+        while True: # Event Loop
+            self.event, self.values = window.read()
+            if self.event in (sg.WIN_CLOSED, 'Cancel') or self.event is None:       
+                break
+            if self.event == 'Remove App':
+                self.remove_app_tables()
+                self.restore_targets_cmake()
+                self.restore_startup_scr()
+                self.restore_topic_ids()
+                if self.values['-DELETE_FILES-'] == 'Yes':
+                    self.remove_app_src_files()
+                break
 
-    def execute(self):
+        window.close()
+        
+    def execute(self, action):
         self.manage_usr_apps = ManageUsrApps(self.usr_app_path)
         self.cfs_app_specs = self.manage_usr_apps.get_app_specs()
         if len(self.cfs_app_specs) > 0:
-            self.select_app_gui(list(self.cfs_app_specs.keys()))
+            self.select_usr_app_gui(list(self.cfs_app_specs.keys()), action.lower())
             if self.selected_app is not None:
                 self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
-                self.integrate_app_gui()
+                if action == 'Add':
+                    self.add_usr_app_gui()
+                elif action == 'Remove':
+                    self.remove_usr_app_gui()
         else:
-            sg.popup('Your usr/apps directory is empty', title='Add App to cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+            sg.popup('Your usr/apps directory is empty', title=f'{action} App', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
-        
+    def get_app_table_list(self):
+        app_cmake_files = self.usr_app_spec.get_targets_cmake_files()
+        table_list_str = ""
+        table_list = []
+        for table in app_cmake_files['tables']:
+            table_list_str += "%s, " % table
+            table_list.append(table)
+        return table_list
+                
     def copy_app_tables(self, auto_copy):
         """
         An app's JSON spec table filename should not have a target prefix.  The default table filename in an
-        app's tables directory should have a defaul target name. 
+        app's tables directory should have a default target name. 
         There may be extra table files in an apps table directory so only copy the tables that are defined
-        in th JSON app spec
+        in the JSON app spec
         """
-        cmake_files = self.usr_app_spec.get_targets_cmake_files()
-        table_list_str = ""
-        table_list = []
-        for table in cmake_files['tables']:
-            table_list_str += "%s, " % table
-            table_list.append(table)
+        table_list = self.get_app_table_list()
         if len(table_list) == 0:
-            popup_text = "This app does not have any table files to copy"
+            popup_text = 'This app does not have any table files to copy'
         else:
             app_table_path = os.path.join(self.usr_app_path, self.selected_app, 'fsw', 'tables')
             if auto_copy:
                 target_equals_default = (DEFAULT_TARGET_NAME == self.cfs_target)
                 try:
-                    src=""   # Init for excepion
-                    dst=""
+                    src=''   # Init for exception
+                    dst=''
                     for table in os.listdir(app_table_path):
                         src_table = table.replace(DEFAULT_TARGET_NAME+'_','')
                         if src_table in table_list:
                             src = os.path.join(app_table_path, table)
-                        print("##src: " + src)
+                        print('##src: ' + src)
                         if target_equals_default:
                             dst_table = table
                         else:
                             dst_table = self.cfs_target + '_' + src_table
                         dst = os.path.join(self.cfs_abs_defs_path, dst_table)
-                        print("##dst: " + dst)
+                        print('##dst: ' + dst)
                         shutil.copyfile(src, dst)
-                    popup_text = "Copied table files '%s'\n\nFROM %s\n\nTO %s\n" % (table_list_str[:-2], app_table_path, self.cfs_abs_defs_path)
+                    popup_text = f"Copied table files '{table_list_str[:-2]}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
                 except IOError:
-                    popup_text = "Error copying table file\nFROM\n  %s\nTO\n  %s\n" % (src,dst)  
+                    popup_text = f'Error copying table file\nFROM\n  {src}\nTO\n  {dst}\n'
             else:
-                popup_text = "Copy table files '%s'\n\nFROM %s\n\nTO %s\n" % (table_list_str[:-2], app_table_path, self.cfs_abs_defs_path)
-        sg.popup(popup_text, title='Copy table files', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                popup_text = f"Copy table files '{table_list_str[:-2]}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
+        sg.popup(popup_text, title='Copy table files', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
 
+    def remove_app_tables(self):
+        table_list = self.get_app_table_list()
+        for table in table_list:
+            try:
+                table_file = os.path.join(self.cfs_abs_defs_path, f'{self.cfs_target}_{table}')
+                os.remove(table_file)
+                logger.info(f'Successfully removed {table_file} from {self.cfs_abs_defs_path}')
+            except Exception as e:
+                logger.error(f'Attempt to remove {table_file} raised exception: {repr(e)} ')
+                
     def update_targets_cmake(self, auto_update):
         """
         The following two variables list need to be updated:
@@ -914,14 +950,13 @@ class ManageCfs():
         FILELIST line that needs to be updated. 
         """
         
-        cmake_files = self.usr_app_spec.get_targets_cmake_files()
-
+        app_cmake_files = self.usr_app_spec.get_targets_cmake_files()
         if auto_update:
             file_modified = False
-            instantiated_text = ""                
+            instantiated_text = ''
             with open(self.targets_cmake_file) as f:
                 for line in f:
-                    (line_modified, newline) = self.update_targets_cmake_line(cmake_files, line)
+                    (line_modified, newline) = self.update_targets_cmake_line(app_cmake_files, line)
                     instantiated_text += newline
                     if line_modified:
                         file_modified = True
@@ -929,30 +964,29 @@ class ManageCfs():
             if file_modified:
                 with open(self.targets_cmake_file, 'w') as f:
                     f.write(instantiated_text)
-                popup_text = 'targets_cmake updated with %s and %s' % (cmake_files['obj-file'], str(cmake_files['tables']))
+                popup_text = f"targets_cmake updated with {app_cmake_files['obj-file']} and {app_cmake_files['tables']}"
             else:
-                popup_text = 'targets_cmake not modified. it already contains %s and %s' % (cmake_files['obj-file'], str(cmake_files['tables']))
-            sg.popup(popup_text, title='Update '+self.startup_scr_filename, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=Falsee)
+                popup_text = f"targets_cmake not modified. it already contains {app_cmake_files['obj-file']} and {app_cmake_files['tables']}"
+            sg.popup(popup_text, title=f'Update {self.targets_cmake_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         else:
-            sg.clipboard_set(cmake_files['obj-file'] + ',' + str(cmake_files['tables']))
-            popup_text = "After this dialogue, %s will open in an editor. Paste\n  %s\ninto\n  %s\n\nPaste filenames with spaces\n  %s\ninto\n  %s" % \
-            (self.targets_cmake_file, cmake_files['obj-file'], self.cmake_app_list, str(cmake_files['tables']), self.cmake_file_list)
-            sg.popup(popup_text, title='Update '+self.startup_scr_filename, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
-            self.text_editor = sg.execute_py_file("texteditor.py", parms=self.targets_cmake_file, cwd=self.basecamp_tools_path)
+            sg.clipboard_set(app_cmake_files['obj-file'] + ',' + str(app_cmake_files['tables']))
+            popup_text = f"After this dialogue, {self.targets_cmake_filename} will open in an editor. Paste\n  {app_cmake_files['obj-file']}\ninto\n  {self.cmake_app_list}\n\nPaste filenames with spaces\n  {app_cmake_files['tables']}\ninto\n  {self.cmake_file_list}"
+            sg.popup(popup_text, title=f'Update {self.targets_cmake_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+            self.text_editor = sg.execute_py_file('texteditor.py', parms=self.targets_cmake_file, cwd=self.basecamp_tools_path)
         
-    def update_targets_cmake_line(self, cmake_files, line):
+    def update_targets_cmake_line(self, app_cmake_files, line):
         line_modified = False
         if INSERT_KEYWORD in line:
             if self.cmake_app_list in line:
                 if not line.strip().startswith('#'):  # Non-commented line
-                    if not cmake_files['obj-file'] in line:
+                    if not app_cmake_files['obj-file'] in line:
                         i = line.find(')')
-                        line = line[:i] + ' ' + cmake_files['obj-file'] + line[i:]     
+                        line = line[:i] + ' ' + app_cmake_files['obj-file'] + line[i:]     
                         line_modified = True
                         print('app_list_new: ' + line)
             elif self.cmake_file_list in line:
                 if not line.strip().startswith('#'):  # Non-commented line
-                    for table in cmake_files['tables']:
+                    for table in app_cmake_files['tables']:
                         if not table in line:
                             i = line.find(')')
                             line = line[:i] + ' ' + table + line[i:]     
@@ -960,13 +994,39 @@ class ManageCfs():
                             print('file_list_new: ' + line)
         return (line_modified, line)
         
+    def restore_targets_cmake(self):
+        app_cmake_files = self.usr_app_spec.get_targets_cmake_files()
+        obj_file   = app_cmake_files['obj-file'] 
+        table_list = self.get_app_table_list()
+
+        file_modified = False
+        instantiated_text = ''
+        with open(self.targets_cmake_file) as f:
+            for line in f:
+                if INSERT_KEYWORD in line:
+                    if self.cmake_app_list in line:
+                        if obj_file in line:
+                            line.replace(obj_file,'')
+                            file_modified = True
+                            logger.info(f'Removed {obj_file} from {self.targets_cmake_file}')
+                    elif self.cmake_file_list in line:
+                        for table in table_list:
+                            if table in line:
+                                line.replace(table,'')
+                                file_modified = True
+                                logger.info(f'Removed {table} from {self.targets_cmake_file}')
+                instantiated_text += line        
+        if file_modified:
+            with open(self.targets_cmake_file, 'w') as f:
+                f.write(instantiated_text)
+
     def update_startup_scr(self, auto_update):
         startup_script_entry = self.usr_app_spec.get_startup_scr_entry()
         if auto_update:
             original_entry = ""
             check_for_entry = True
             file_modified = False
-            instantiated_text = ""                
+            instantiated_text = ""
             with open(self.startup_scr_file) as f:
                 for line in f:
                     if check_for_entry:
@@ -981,16 +1041,96 @@ class ManageCfs():
             if file_modified:
                 with open(self.startup_scr_file, 'w') as f:
                     f.write(instantiated_text)
-                popup_text = 'Startup script modified. Added  %s entry:\n%s' % (self.selected_app, original_entry)
+                popup_text = f'Startup script modified. Added  {self.selected_app} entry:\n{startup_script_entry}'
             else:
-                popup_text = 'Startup script not modified. already contains %s entry:\n%s' % (self.selected_app, original_entry)
-            sg.popup(popup_text, title='Update '+self.startup_scr_filename, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                popup_text = f'Startup script not modified, it already contains {self.selected_app} entry:\n{original_entry}'
+            sg.popup(popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         else:
             sg.clipboard_set(startup_script_entry)
-            popup_text = "After this dialogue, %s will open in an editor.\nPaste the following entry from the clipboard:\n\n'%s'\n" % (self.startup_scr_filename, startup_script_entry)
-            sg.popup(popup_text, title='Update '+self.startup_scr_filename, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
-            self.text_editor = sg.execute_py_file("texteditor.py", parms=self.startup_scr_file, cwd=self.basecamp_tools_path)
+            popup_text = f"After this dialogue, {self.startup_scr_filename} will open in an editor.\nPaste the following entry from the clipboard:\n\n'{startup_script_entry}'\n"
+            sg.popup(popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+            self.text_editor = sg.execute_py_file('texteditor.py', parms=self.startup_scr_file, cwd=self.basecamp_tools_path)
 
+    def restore_startup_scr(self):
+        """
+        Search for the app's entry. Any field with app's name can be used as
+        a keyword for the search
+        """
+        startup_script_entry = self.usr_app_spec.get_startup_scr_entry()
+        keyword = startup_script_entry.split(',')[2]
+        check_for_entry = True
+        file_modified   = False
+        instantiated_text = ""
+        with open(self.startup_scr_file) as f:
+            for line in f:
+                if check_for_entry:
+                    if keyword in line:
+                        line = ''
+                        check_for_entry = False
+                        file_modified   = True
+                    if INSERT_KEYWORD in line:
+                        check_for_entry = False
+                instantiated_text += line               
+        if file_modified:
+            with open(self.startup_scr_file, 'w') as f:
+                f.write(instantiated_text)
+
+    def update_topic_ids(self):
+        """
+        cfe-topicids.xml and kit_to_pkt_tbl.json are updated together because
+        they both use the telemetry topic IDs. Also with the current 'spare'
+        ID substitution method, this code makes sure they both have enough
+        spares before either is updated.
+        """
+        cmd_topics = self.usr_app_spec.get_cmd_topics()
+        tlm_topics = self.usr_app_spec.get_tlm_topics()
+        cfe_topic_ids  = CfeTopicIds(self.cfe_topic_id_file)
+        kit_to_pkt_tbl = JsonTblTopicMap(self.kit_to_tbl_file)
+        
+        if len(cmd_topics) > cfe_topic_ids.spare_cmd_topic_cnt():
+            popup_text = f'Error acquiring command topic IDs. {len(cmd_topics)} needed, only {cfe_topic_ids.spare_cmd_topic_cnt()} available.'
+            sg.popup(popup_text, title='Update Topic IDs Error', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+        elif len(tlm_topics) > cfe_topic_ids.spare_tlm_topic_cnt():
+            popup_text = f'Error acquiring cFE telemetry topic IDs. {len(tlm_topics)} needed, only {cfe_topic_ids.spare_tlm_topic_cnt()} available.'
+            sg.popup(popup_text, title='Update Topic IDs Error', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+        elif len(tlm_topics) > len(kit_to_pkt_tbl.spare_topics()):
+            popup_text = f'Error acquiring KIT_TO telemetry topic IDs. {len(tlm_topics)} needed, only {len(kit_to_pkt_tbl.spare_topics())} available.'
+            sg.popup(popup_text, title='Update Topic IDs Error', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+        else:  
+            for cmd in cmd_topics:
+                cfe_topic_ids.replace_spare_cmd_topic(cmd)
+                print(cmd)
+            for tlm in tlm_topics:
+                cfe_topic_ids.replace_spare_tlm_topic(tlm)
+                print(tlm)
+            cfe_topic_ids.write_doc_to_file()
+            kit_to_pkt_tbl.replace_spare_topics(tlm_topics)
+            popup_text = f'Successfully updated topid IDs in\n{self.cfe_topic_id_file}\nand\n{self.kit_to_tbl_file}'
+            sg.popup(popup_text, title='Update Topic IDs', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+
+    def restore_topic_ids(self):
+        cmd_topics = self.usr_app_spec.get_cmd_topics()
+        tlm_topics = self.usr_app_spec.get_tlm_topics()
+        cfe_topic_ids  = CfeTopicIds(self.cfe_topic_id_file)
+        kit_to_pkt_tbl = JsonTblTopicMap(self.kit_to_tbl_file)
+        for cmd in cmd_topics:
+            cfe_topic_ids.restore_spare_cmd_topic(cmd)
+        for tlm in tlm_topics:
+            cfe_topic_ids.restore_spare_tlm_topic(tlm)
+        cfe_topic_ids.write_doc_to_file()
+        kit_to_pkt_tbl.restore_spare_topics(tlm_topics)
+
+
+    def remove_app_src_files(self):
+        app_path = os.path.join(self.usr_app_path, self.selected_app)
+        try:
+           shutil.rmtree(app_table_path)
+           logger.info(f'Successfully removed {app_path}')
+        except Exception as e:
+            logger.error(f'Attempt to remove {app_path} raised exception: {repr(e)} ')
+           
+ 
+###############################################################################
   
 class CfsStdout(threading.Thread):
     """
@@ -1332,7 +1472,7 @@ class App():
     
         menu_def = [
                        ['System', ['Options', 'About', 'Exit']],
-                       ['Developer', ['Create App', 'Download App','Add App to cFS', 'Run Perf Monitor']], #todo: 'Certify App' 
+                       ['Developer', ['Create App', 'Download App', 'Add App', 'Remove App', '---', 'Run Perf Monitor']], #todo: 'Certify App' 
                        ['Operator', ['Browse Files', 'Run Script', 'Plot Data', '---', 'Control Remote Target']],
                        ['Documents', ['cFS Overview', 'cFE Overview', 'App Dev Guide']],
                        ['Tutorials', self.manage_tutorials.tutorial_titles]
@@ -1374,7 +1514,7 @@ class App():
                       sg.Combo(cmd_topics, enable_events=True, key="-CMD_TOPICS-", default_value=cmd_topics[0], pad=((0,5),(12,12))),
                       sg.Text('View Tlm:', font=sec_hdr_font, pad=((5,0),(12,12))),
                       sg.Combo(tlm_topics, enable_events=True, key="-TLM_TOPICS-", default_value=tlm_topics[0], pad=((0,5),(12,12))),]], pad=((0,0),(15,15)))],
-                     [sg.Text('cFS Process Window', font=pri_hdr_font), sg.Text('Time: ', font=sec_hdr_font, pad=(2,1)), sg.Text(self.GUI_NULL_TXT, key='-CFS_TIME-', font=sec_hdr_font, text_color='blue')],
+                     [sg.Text('cFS Process Window', font=pri_hdr_font), sg.Text('Time: ', font=sec_hdr_font, pad=(2,1)), sg.Text(self.GUI_NULL_TXT, key='-CFS_TIME-', font=sec_hdr_font, text_color='blue'), sg.Button('Restart', enable_events=True, key='-RESTART-', visible=False)],
                      #[sg.Output(font=log_font, size=(125, 10))],
                      [sg.MLine(default_text=self.cfs_subprocess_log, font=log_font, enable_events=True, size=(125, 15), key='-CFS_PROCESS_TEXT-')],
                      [sg.Text('Ground & Flight Events', font=pri_hdr_font), sg.Button('Clear', enable_events=True, key='-CLEAR_EVENTS-', pad=(5,1))],
@@ -1385,6 +1525,12 @@ class App():
         #sg.Button('View Tlm', enable_events=True, key='-VIEW_TLM-', pad=(10,1)),
         window = sg.Window('cFS Basecamp', layout, auto_size_text=True, finalize=True)
         return window
+  
+    def reload_eds_libs(self):
+        #importlib.invalidate_caches()
+        self.telecommand_gui.eds_mission.reload_libs()
+        self.telecommand_script.eds_mission.reload_libs()
+        self.tlm_server.eds_mission.reload_libs()
         
     def execute(self):
     
@@ -1425,12 +1571,14 @@ class App():
 
         self.window = self.create_window(sys_target_str, sys_comm_str)
         # --- Loop taking in user input --- #
+        restart = False
         while True:
     
             self.event, self.values = self.window.read(timeout=50)
             logger.debug("App Window Read()\nEvent: %s\nValues: %s" % (self.event, self.values))
 
-            if self.event in (sg.WIN_CLOSED, 'Exit') or self.event is None:
+            if self.event in (sg.WIN_CLOSED, 'Exit', '-RESTART-') or self.event is None:
+                restart = (self.event == '-RESTART-')
                 break
             
             ######################################
@@ -1477,9 +1625,9 @@ class App():
                 app_store = AppStore(self.config.get('APP','APP_STORE_URL'), self.config.get('PATHS','USR_APP_PATH'),repo_exclusions)
                 app_store.execute()
  
-            elif self.event == 'Add App to cFS':
+            elif self.event in ('Add App','Remove App'):
                 manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.config.get('PATHS', 'USR_APP_PATH'), self.window, self.EDS_CFS_TARGET_NAME)
-                manage_cfs.execute()
+                manage_cfs.execute(self.event.split(' ')[0])
 
             if self.event == 'Certify App':
                 self.ComingSoonPopup("Certify your app to an OpenSatKit app repo")
@@ -1585,13 +1733,16 @@ class App():
                     self.cfs_popen = sg.execute_command_subprocess(self.cfs_exe_str, cwd=cfs_dir)
                 """
             elif self.event == '-STOP_CFS-':
+                print("@@1")
                 if self.cfs_subprocess is not None:
+                    print("@@2")
                     logger.info("Killing cFS Process")
                     os.killpg(os.getpgid(self.cfs_subprocess.pid), signal.SIGTERM)  # Send the signal to all the process groups
                     self.cfs_subprocess = None
                     self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
                     self.window["-CFS_TIME-"].update(self.GUI_NULL_TXT)
                 else:
+                    print("@@3")
                     self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
                     self.window["-CFS_TIME-"].update(self.GUI_NULL_TXT)
                     """
@@ -1623,7 +1774,7 @@ class App():
                         sg.popup("cFS failed to terminate.\nUse another terminal to kill the process.", title='Warning', grab_anywhere=True, modal=False)
                     else:
                         self.cfs_subprocess = None
-                    #5 - Trying to confirm process was actually stopped. The exception wasn't raised. I tried a delay butthat prevented some events from being displayed
+                    #5 - Trying to confirm process was actually stopped. The exception wasn't raised. I tried a delay but that prevented some events from being displayed
                     try:
                          print("Trying PID")
                          os.getpgid(self.cfs_subprocess.pid)
@@ -1795,14 +1946,19 @@ class App():
 
         self.shutdown()
 
-
+        return restart
+        
 if __name__ == '__main__':
 
     image_grey1 = b'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/GMzLdsAADsHaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/Pgo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjYtYzE0NSA3OS4xNjIzMTksIDIwMTgvMDIvMTUtMjA6Mjk6NDMgICAgICAgICI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIKICAgICAgICAgICAgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iCiAgICAgICAgICAgIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiCiAgICAgICAgICAgIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZXhpZj0iaHR0cDovL25zLmFkb2JlLmNvbS9leGlmLzEuMC8iPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkFkb2JlIFBob3Rvc2hvcCBFbGVtZW50cyAxNy4wIChXaW5kb3dzKTwveG1wOkNyZWF0b3JUb29sPgogICAgICAgICA8eG1wOkNyZWF0ZURhdGU+MjAyMC0xMC0wM1QxMToyOTozMi0wNDowMDwveG1wOkNyZWF0ZURhdGU+CiAgICAgICAgIDx4bXA6TWV0YWRhdGFEYXRlPjIwMjAtMTAtMDNUMTE6Mjk6MzItMDQ6MDA8L3htcDpNZXRhZGF0YURhdGU+CiAgICAgICAgIDx4bXA6TW9kaWZ5RGF0ZT4yMDIwLTEwLTAzVDExOjI5OjMyLTA0OjAwPC94bXA6TW9kaWZ5RGF0ZT4KICAgICAgICAgPHhtcE1NOkluc3RhbmNlSUQ+eG1wLmlpZDo2Y2Q5MjZlZS0xYWE3LTBlNDEtYTI2ZS04MmMwMGYyN2E2Nzg8L3htcE1NOkluc3RhbmNlSUQ+CiAgICAgICAgIDx4bXBNTTpEb2N1bWVudElEPmFkb2JlOmRvY2lkOnBob3Rvc2hvcDozMzlhMjcxYS0wNThkLTExZWItOTQ3ZC04N2E5Njc3OWZkYzU8L3htcE1NOkRvY3VtZW50SUQ+CiAgICAgICAgIDx4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ+eG1wLmRpZDpjZDY3N2JmMi02YjVjLWU4NDgtYTI0OC1kOGRkNGNkZTBkMzM8L3htcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD4KICAgICAgICAgPHhtcE1NOkhpc3Rvcnk+CiAgICAgICAgICAgIDxyZGY6U2VxPgogICAgICAgICAgICAgICA8cmRmOmxpIHJkZjpwYXJzZVR5cGU9IlJlc291cmNlIj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OmFjdGlvbj5jcmVhdGVkPC9zdEV2dDphY3Rpb24+CiAgICAgICAgICAgICAgICAgIDxzdEV2dDppbnN0YW5jZUlEPnhtcC5paWQ6Y2Q2NzdiZjItNmI1Yy1lODQ4LWEyNDgtZDhkZDRjZGUwZDMzPC9zdEV2dDppbnN0YW5jZUlEPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6d2hlbj4yMDIwLTEwLTAzVDExOjI5OjMyLTA0OjAwPC9zdEV2dDp3aGVuPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6c29mdHdhcmVBZ2VudD5BZG9iZSBQaG90b3Nob3AgRWxlbWVudHMgMTcuMCAoV2luZG93cyk8L3N0RXZ0OnNvZnR3YXJlQWdlbnQ+CiAgICAgICAgICAgICAgIDwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpIHJkZjpwYXJzZVR5cGU9IlJlc291cmNlIj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OmFjdGlvbj5zYXZlZDwvc3RFdnQ6YWN0aW9uPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6aW5zdGFuY2VJRD54bXAuaWlkOjZjZDkyNmVlLTFhYTctMGU0MS1hMjZlLTgyYzAwZjI3YTY3ODwvc3RFdnQ6aW5zdGFuY2VJRD4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OndoZW4+MjAyMC0xMC0wM1QxMToyOTozMi0wNDowMDwvc3RFdnQ6d2hlbj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OnNvZnR3YXJlQWdlbnQ+QWRvYmUgUGhvdG9zaG9wIEVsZW1lbnRzIDE3LjAgKFdpbmRvd3MpPC9zdEV2dDpzb2Z0d2FyZUFnZW50PgogICAgICAgICAgICAgICAgICA8c3RFdnQ6Y2hhbmdlZD4vPC9zdEV2dDpjaGFuZ2VkPgogICAgICAgICAgICAgICA8L3JkZjpsaT4KICAgICAgICAgICAgPC9yZGY6U2VxPgogICAgICAgICA8L3htcE1NOkhpc3Rvcnk+CiAgICAgICAgIDxwaG90b3Nob3A6RG9jdW1lbnRBbmNlc3RvcnM+CiAgICAgICAgICAgIDxyZGY6QmFnPgogICAgICAgICAgICAgICA8cmRmOmxpPnhtcC5kaWQ6MDE4MDExNzQwNzIwNjgxMTg3MUZEQjdDNzNFQzdBRjQ8L3JkZjpsaT4KICAgICAgICAgICAgPC9yZGY6QmFnPgogICAgICAgICA8L3Bob3Rvc2hvcDpEb2N1bWVudEFuY2VzdG9ycz4KICAgICAgICAgPHBob3Rvc2hvcDpDb2xvck1vZGU+MzwvcGhvdG9zaG9wOkNvbG9yTW9kZT4KICAgICAgICAgPHBob3Rvc2hvcDpJQ0NQcm9maWxlPnNSR0IgSUVDNjE5NjYtMi4xPC9waG90b3Nob3A6SUNDUHJvZmlsZT4KICAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9wbmc8L2RjOmZvcm1hdD4KICAgICAgICAgPHRpZmY6T3JpZW50YXRpb24+MTwvdGlmZjpPcmllbnRhdGlvbj4KICAgICAgICAgPHRpZmY6WFJlc29sdXRpb24+NzIwMDAwLzEwMDAwPC90aWZmOlhSZXNvbHV0aW9uPgogICAgICAgICA8dGlmZjpZUmVzb2x1dGlvbj43MjAwMDAvMTAwMDA8L3RpZmY6WVJlc29sdXRpb24+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDxleGlmOkNvbG9yU3BhY2U+MTwvZXhpZjpDb2xvclNwYWNlPgogICAgICAgICA8ZXhpZjpQaXhlbFhEaW1lbnNpb24+ODI8L2V4aWY6UGl4ZWxYRGltZW5zaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+MzI8L2V4aWY6UGl4ZWxZRGltZW5zaW9uPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAKPD94cGFja2V0IGVuZD0idyI/PkjKk0kAAAAgY0hSTQAAeiUAAICDAAD5/wAAgOkAAHUwAADqYAAAOpgAABdvkl/FRgAAAgtJREFUeNrsmi1vFFEUhp97Z6b7PYtuNyQYQkIwBNNgoAKBA4FAIJAIdP/BViOQCAQCgUQSBB+GYDZtCGnShKAIgp3dndl05p6L2G2ABrrscgXivGbEuCfvc8+ZyTXM8/Dx03ONZmvHWrtljOmg+WO89yMReVHkk+17d259ADAADx49OZ92T70+c7rXTdMuePB4JfabGAwYyLIhB58+D7Pht8v3797ejYGo0Wz1exvr3XitznCUI14hnhRrDMland7GevegLPvAjRhIrI2uJrUaxWGplP4i4j3VoZDUalgbbQFJDERAuyoFr01cKlUpAC0gigEr3uMU4tJx3h8dgzYGEBFERMmsovmcWzwf52ghV16FfoAU8YjXRq7WyF9ACl60kv+stnjR3XHlVUiOq60gg6gtqnYAtXX9CQVS1Va1/7ep7VTtQFNbGxlGbadfNqGmtjYyzNTWMzKA2l5w2sgQw0YX8mBqayMDqO29npGr5tiPXVU7iNpOZFxVrm2sVTLLtFEEJ5IfgZRpkb/Jx9m1RjtVOkukGGdMi/wVIDHg9vcG/bWktpk612m0UrSZi5tYTDKyr19G+3uDPuAMswsCnSvXb146e+Hidr3e2DTWNhXXiSDz6bR4+3Hwfufl82fvgJFhdpEqZnZjoA3UAa3kghkDTIExMAEq89PLCEjmTwW5GKQDyvmT7wMAzpNJbp+doKQAAAAASUVORK5CYII='
 
-   
-    app = App('basecamp.ini')
-    app.execute()    
+    #todo - Try to get reload EDS to work
+    execute = True
+    while execute:
+        app = App('basecamp.ini')
+        execute = app.execute()
+        break
+                
     logger.info("Exiting app")
 
 

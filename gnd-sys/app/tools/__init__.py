@@ -23,6 +23,8 @@ logger.addHandler(logging.NullHandler())
 
 from .appstore import AppStore, AppSpec, ManageUsrApps
 from .apptemplate import CreateApp
+from .eds import CfeTopicIds, AppEds
+from .jsonfile import JsonTblTopicMap
 from .targetcontrol import TargetControl
 from .tutorial import ManageTutorials
 from .texteditor import TextEditor

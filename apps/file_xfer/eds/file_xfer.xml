@@ -337,18 +337,6 @@
               <GenericTypeMap name="TelecommandDataType" type="CommandBase" />
             </GenericTypeMapSet>
           </Interface>
-          <Interface name="EXE_APP" shortDescription="Signal app to execute command interface" type="CFE_SB/Telecommand">
-             <!-- This uses a bare spacepacket with no payload -->
-             <GenericTypeMapSet>
-                <GenericTypeMap name="TelecommandDataType" type="CFE_HDR/CommandHeader" />
-             </GenericTypeMapSet>
-          </Interface>
-          <Interface name="SEND_HK" shortDescription="Signal app to send its housekeeping telemetry command interface" type="CFE_SB/Telecommand">
-            <!-- This uses a bare spacepacket with no payload -->
-            <GenericTypeMapSet>
-              <GenericTypeMap name="TelecommandDataType" type="CFE_HDR/CommandHeader" />
-            </GenericTypeMapSet>
-          </Interface>
           
           <Interface name="HK_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
@@ -379,8 +367,6 @@
         <Implementation>
           <VariableSet>
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"                  initialValue="${CFE_MISSION/FILE_XFER_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="ExeAppTopicId"               initialValue="${CFE_MISSION/FILE_XFER_EXE_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId"               initialValue="${CFE_MISSION/FILE_XFER_SEND_HK_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"                initialValue="${CFE_MISSION/FILE_XFER_HK_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="FotpStartTransferTlmTopicId" initialValue="${CFE_MISSION/FILE_XFER_FOTP_START_TRANSFER_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="FotpDataSegmentTlmTopicId"   initialValue="${CFE_MISSION/FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID}" />
@@ -389,8 +375,6 @@
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
             <ParameterMap interface="CMD"                      parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="EXE_APP"                  parameter="TopicId" variableRef="ExeAppTopicId" />
-            <ParameterMap interface="SEND_HK"                  parameter="TopicId" variableRef="SendHkTopicId" />
             <ParameterMap interface="HK_TLM"                   parameter="TopicId" variableRef="HkTlmTopicId" />
             <ParameterMap interface="FOTP_START_TRANSFER_TLM"  parameter="TopicId" variableRef="FotpStartTransferTlmTopicId" />
             <ParameterMap interface="FOTP_DATA_SEGMENT_TLM"    parameter="TopicId" variableRef="FotpDataSegmentTlmTopicId" />
