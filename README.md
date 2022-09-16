@@ -41,7 +41,7 @@ This must be done prior to running the python ground system because it creates p
 
     cd cfs-basecamp/cfe-eds-framework
     make SIMULATION=native prep
-    make install
+    make topicids
 
 ## Run the Python Ground System Applcation 
 
