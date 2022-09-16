@@ -124,17 +124,26 @@ class AppSpec():
 
         self.app_path  = app_path
         self.app_name  = app_name
-        self.eds_file  = os.path.join(app_path, 'eds', app_name+'.xml')
+        self.eds_path  = os.path.join(app_path, 'eds')
+        self.eds_file  = os.path.join(self.eds_path, app_name+'.xml')
         self.json_file = os.path.join(app_path, app_name+'.json')
         print(self.eds_file)
         print(self.json_file)
+        self.eds_dir = False
         self.eds   = None                
         self.valid = False
         self.json  = None
         self.cfs   = None
         if self.read_json_file():
-            if self.read_eds_file():
-                self.valid = True
+            self.eds_dir = os.path.exists(self.eds_path)
+            if self.eds_dir:
+                if self.read_eds_file():
+                    self.valid = True
+            else:
+                if self.cfs['cfe-type'] == 'CFE_APP':
+                    sg.popup(f'App is missing an EDS spec. Expected {self.eds_path} to exist', title='AppStore Error', grab_anywhere=True, modal=False)
+                else:                
+                    self.valid = True
 
     def read_json_file(self):
     
@@ -160,14 +169,20 @@ class AppSpec():
         #todo print('self.cfs = ' + str(self.cfs))
         return True
         
+    def has_eds(self):
+        return self.eds_dir
+        
     def read_eds_file(self):        
         try:
             self.eds = AppEds(self.eds_file)
-        except:
-            sg.popup(f'Error parsing EDS file {self.eds_file}', title='AppStore Error', grab_anywhere=True, modal=False)
-            return False
+        except Exception as e: 
+            if (self.cfs['cfe-type'] == 'CFE_APP'):
+                sg.popup(f'Exception {repr(e)} raised when attepting to read app EDS file {self.eds_file}', title='AppStore Error', grab_anywhere=True, modal=False)
+                return False
+            else:
+                pass
         return True        
-        
+       
     def get_cmd_topics(self):
         return self.eds.cmd_topics()
     

@@ -802,7 +802,8 @@ class ManageCfs():
                 self.copy_app_tables(auto_copy=True)
                 self.update_targets_cmake(auto_update=True)
                 self.update_startup_scr(auto_update=True)
-                self.update_topic_ids()
+                if self.usr_app_spec.has_eds():
+                    self.update_topic_ids()
                 
             elif self.event == '-2A_MAN-':
                 self.copy_app_tables(auto_copy=False)  # Copy table files from app dir to cFS '_defs' file
@@ -865,7 +866,8 @@ class ManageCfs():
                 self.remove_app_tables()
                 self.restore_targets_cmake()
                 self.restore_startup_scr()
-                self.restore_topic_ids()                
+                if self.usr_app_spec.has_eds():
+                    self.restore_topic_ids()                
                 if self.values['-DELETE_FILES-'] == 'Yes':
                     self.remove_app_src_files()
                 sg.popup(f'Successfully removed {self.selected_app.upper()}', title='Remove App', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
