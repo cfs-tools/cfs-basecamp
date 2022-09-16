@@ -15,8 +15,8 @@
     GNU Affero General Public License for more details.
       
     Purpose: 
-      This describes all interface objects for the OpenSatKit(OSK) C Application
-      Framework (osk_c_fw) library. 
+      This describes the interface objects for the OpenSatKit(OSK) C
+      Application Framework (osk_c_fw) library. 
       
     Notes:
       1. This document adheres to the Electronic Data Sheet (EDS) XML schema 
@@ -33,7 +33,6 @@
     <Define name="LOAD_TBL_CC"  value="2" />
     <Define name="DUMP_TBL_CC"  value="3" />
     <Define name="APP_BASE_CC"  value="10" />
-
 
     <DataTypeSet>
  

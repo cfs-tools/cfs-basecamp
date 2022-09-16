@@ -54,7 +54,7 @@
       "BERRY_IMU_RATE_TLM_TOPICID"  : "topic-id-51",
       "GPIO_DEMO_HK_TLM_TOPICID"    : "topic-id-52",
       "MQTT_GW_HK_TLM_TOPICID"      : "topic-id-53",
-      "MQTT_GW_RATE_TLM_TOPICID"    : "topic-id-54",
+      "MQTT_GW_TOPIC_1_TLM_TOPICID" : "topic-id-54",
       "MQTT_GW_TOPIC_2_TLM_TOPICID" : "topic-id-55",
       "MQTT_GW_TOPIC_3_TLM_TOPICID" : "topic-id-56",
       "MQTT_GW_TOPIC_4_TLM_TOPICID" : "topic-id-57",
