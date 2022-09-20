@@ -96,7 +96,7 @@ class TlmScreen():
         """
         hdr_label_font = ('Arial bold',12)
         hdr_value_font = ('Arial',12)
-                
+        sg.theme('LightGreen')
         layout = [[sg.Text('App ID: ', font=hdr_label_font),  sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-APP_ID-'), 
                    sg.Text('Length: ', font=hdr_label_font),  sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-LENGTH-'),
                    sg.Text('Seq Cnt: ', font=hdr_label_font), sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-SEQ_CNT-'),
@@ -213,18 +213,19 @@ class TlmScreen():
 
 if __name__ == '__main__':
     
-    if len(sys.argv) > 1:
-        app_name    = sys.argv[1]
-        tlm_topic   = sys.argv[2]
-    else:
-        app_name    = 'OSK_C_DEMO'
-        tlm_topic   = 'OSK_C_DEMO/Application/STATUS_TLM'
-    
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
 
+    if len(sys.argv) > 1:
+        tlm_port    = int(sys.argv[1])
+        app_name    = sys.argv[2]
+        tlm_topic   = sys.argv[3]
+    else:     
+        tlm_port    = config.getint('NETWORK', 'TLM_SCREEN_TLM_PORT')
+        app_name    = 'OSK_C_DEMO'
+        tlm_topic   = 'OSK_C_DEMO/Application/STATUS_TLM'
+
     cfs_host_addr = config.get('NETWORK', 'CFS_HOST_ADDR')
-    tlm_port = config.getint('NETWORK', 'TLM_PLOT_TLM_PORT')
 
     tlm_screen = TlmScreen(cfs_host_addr, tlm_port, 1.0)
     tlm_screen.execute(app_name, tlm_topic) 

@@ -109,8 +109,8 @@ class TelecommandGui(TelecommandInterface):
 
         self.PAYLOAD_ROWS, self.PAYLOAD_COLS, self.PAYLOAD_HEADINGS = 8, 3, ('Parameter Name','Type','Value',)
         self.PAYLOAD_INPUT_START = 2 # First row of input payloads (see SendCmd() payload_layout comment)
-        self.PAYLOAD_TEXT_INPUT  = "text"
-        self.PAYLOAD_COMBO_INPUT = "combo"
+        self.PAYLOAD_TEXT_INPUT  = 'text'
+        self.PAYLOAD_COMBO_INPUT = 'combo'
         
         self.PAYLOAD_NAME_IDX  = 0
         self.PAYLOAD_TYPE_IDX  = 1
@@ -165,24 +165,24 @@ class TelecommandGui(TelecommandInterface):
         """
         return_str = ""        
         if isinstance(payload_struct, dict):
-            return_str = "Recursively extracting dictionary"
+            return_str = 'Recursively extracting dictionary'
             for item in list(payload_struct.keys()):
                 return_str = self.create_payload_gui_entries(payload_struct[item])
         elif isinstance(payload_struct, list):
-            return_str = "Recursively extracting list"
+            return_str = 'Recursively extracting list'
             for item in payload_struct:
                 return_str = create_payload_gui_entries(item)
         elif isinstance(payload_struct, tuple):
-            logger.debug("TUPLEDATA: "+str(payload_struct))
+            logger.debug(f'TUPLEDATA: {str(payload_struct)}')
             return_str = "Extracting tuple entry: " + str(payload_struct)
             eds_name  = payload_struct[0]
             gui_name  = self.remove_eds_payload_name_prefix(eds_name)
-            logger.debug("gui_name = " + str(gui_name))
+            logger.debug(f'gui_name = {str(gui_name)}')
             eds_entry = payload_struct[1] 
             eds_obj   = eds_entry()
-            logger.debug("eds_entry:\n" + str(type(eds_entry)))
+            logger.debug(f'eds_entry:\n {str(type(eds_entry))}')
             logger.debug(str(dir(eds_entry)))
-            logger.debug("eds_obj:\n" + str(type(eds_obj)))
+            logger.debug(f'eds_obj:\n {str(type(eds_obj))}')
             logger.debug(str(dir(eds_obj)))
             eds_obj_list = str(type(eds_obj)).split(',')
             logger.debug(str(eds_obj_list))
@@ -196,16 +196,16 @@ class TelecommandGui(TelecommandInterface):
                 for enum_value in list(payload_struct[3].keys()):
                     gui_value.append(enum_value)
             else:
-                return_str = "Error extracting entries from payload structure tuple: " + str(payload_struct)
+                return_str = f'Error extracting entries from payload structure tuple: {str(payload_struct)}'
             logger.debug(gui_type)
             self.payload_gui_entries[gui_name] = {'eds_entry': eds_entry, 'eds_name': eds_name,       
                                                   'gui_type': gui_type,   'gui_value': gui_value, 
                                                   'gui_input': gui_input, 'gui_value_key': self.NULL_STR}
             
         else:
-            return_str = "Error extracting entries from unkown payload structure instance type: " + str(payload_struct)
+            return_str = f'Error extracting entries from unkown payload structure instance type: {str(payload_struct)}'
         
-        logger.debug("return_str="+return_str)
+        logger.debug(f'return_str: {return_str}')
         return return_str
 
 
@@ -215,9 +215,9 @@ class TelecommandGui(TelecommandInterface):
         When there are no payload paramaters (zero length) hide all rows except the first parameter.
         """
         for row in range(self.PAYLOAD_ROWS):
-            self.window["-PAYLOAD_%d_NAME-"%row].update(visible=False)
-            self.window["-PAYLOAD_%d_TYPE-"%row].update(visible=False)
-            self.window["-PAYLOAD_%d_VALUE-"%row].update(visible=False, value=self.UNDEFINED_LIST[0])
+            self.window[f'-PAYLOAD_{row}_NAME-'].update(visible=False)
+            self.window[f'-PAYLOAD_{row}_TYPE-'].update(visible=False)
+            self.window[f'-PAYLOAD_{row}_VALUE-'].update(visible=False, value=self.UNDEFINED_LIST[0])
 
         enum_row  = 0
         entry_row = self.PAYLOAD_INPUT_START
@@ -225,21 +225,21 @@ class TelecommandGui(TelecommandInterface):
 
         if len(self.payload_gui_entries) > 0:
             for payload_gui_name in self.payload_gui_entries.keys():
-                logger.debug("payload_gui_name = " + str(payload_gui_name))
+                logger.debug(f'payload_gui_name = {payload_gui_name}')
                 if self.payload_gui_entries[payload_gui_name]['gui_input'] == self.PAYLOAD_TEXT_INPUT:
                     row = entry_row
                     entry_row += 1                
-                    self.window["-PAYLOAD_%d_VALUE-"%row].update(visible=True, value=self.payload_gui_entries[payload_gui_name]['gui_value'][0])
+                    self.window[f'-PAYLOAD_{row}_VALUE-'].update(visible=True, value=self.payload_gui_entries[payload_gui_name]['gui_value'][0])
                     
                 else:
                     row = enum_row
                     enum_row += 1                
                     payload_enum_list = self.payload_gui_entries[payload_gui_name]['gui_value']
-                    self.window["-PAYLOAD_%d_VALUE-"%row].update(visible=True,value=payload_enum_list[0], values=payload_enum_list)
+                    self.window[f'-PAYLOAD_{row}_VALUE-'].update(visible=True,value=payload_enum_list[0], values=payload_enum_list)
                 
-                self.payload_gui_entries[payload_gui_name]['gui_value_key'] = "-PAYLOAD_%d_VALUE-"%row
-                self.window["-PAYLOAD_%d_NAME-"%row].update(visible=True,value=payload_gui_name)
-                self.window["-PAYLOAD_%d_TYPE-"%row].update(visible=True,value=self.payload_gui_entries[payload_gui_name]['gui_type'])
+                self.payload_gui_entries[payload_gui_name]['gui_value_key'] = f'-PAYLOAD_{row}_VALUE-'
+                self.window[f'-PAYLOAD_{row}_NAME-'].update(visible=True,value=payload_gui_name)
+                self.window[f'-PAYLOAD_{row}_TYPE-'].update(visible=True,value=self.payload_gui_entries[payload_gui_name]['gui_type'])
 
         else:
             self.window["-PAYLOAD_0_NAME-"].update(visible=True, value='No Parameters')
@@ -250,21 +250,21 @@ class TelecommandGui(TelecommandInterface):
         Virtual function used by based Telesommand class set_payload_values() to retrieve values
         from a derived class source: GUI or command line
         """
-        logger.debug("load_payload_entry_value() - Entry")
-        logger.debug("payload_naManageUsrAppsme=%s, payload_eds_entry=%s, payload_type=%s, payload_list=%s"%(payload_name, payload_eds_entry, payload_type, payload_list))
-        logger.debug("self.payload_gui_entries = " + str(self.payload_gui_entries))
-        logger.debug("self.sg_values = " + str(self.sg_values))
+        logger.debug('load_payload_entry_value() - Entry')
+        logger.debug(f'payload_name={payload_name}, payload_eds_entry={payload_eds_entry}, payload_type={payload_type}, payload_list={payload_list}')
+        logger.debug(f'self.payload_gui_entries = {str(self.payload_gui_entries)}')
+        logger.debug(f'self.sg_values = {str(self.sg_values)}')
         #todo: Add type check error reporting
         value_key = self.payload_gui_entries[self.remove_eds_payload_name_prefix(payload_name)]['gui_value_key']
-        logger.debug("@@@@value_key = " + value_key)
+        logger.debug(f'@@@@value_key = {value_key}')
         value = self.sg_values[value_key]
         return value
         
     def execute(self, topic_name):
     
         cmd_sent = True
-        cmd_text = "Send command aborted"
-        cmd_status = ""
+        cmd_text = 'Send command aborted'
+        cmd_status = ''
 
         topic_list = list(self.get_topics().keys())
         logger.debug("topic_list = " + str(topic_list))
@@ -302,21 +302,21 @@ class TelecommandGui(TelecommandInterface):
                       [sg.Button('Send', enable_events=True, key='-SEND_CMD-',pad=((0,10),(1,1))), sg.Exit()]
                       ]
                  
-        self.window = sg.Window("Send %s Telecommand" % topic_name, self.layout, element_padding=(1,1), default_element_size=(20,1)) #TODO - default_element_size=(14,1),  return_keyboard_events=True
+        self.window = sg.Window(f'Send {topic_name} Telecommand' , self.layout, element_padding=(1,1), default_element_size=(20,1)) #TODO - default_element_size=(14,1),  return_keyboard_events=True
                 
         while True:
         
             self.event, self.values = self.window.read(timeout=100)
-            logger.debug("Command Window Read()\nEvent: %s\nValues: %s" % (self.event, self.values))
+            logger.debug(f'Command Window Read()\nEvent: {self.event}\nValues: {self.values}')
 
             self.sg_values = self.values
 
             if self.event in (sg.WIN_CLOSED, 'Exit') or self.event is None:       
                 break
             
-            logger.debug("Matching event " + self.event)
+            logger.debug(f'Matching event {self.event}')
             cmd_name   = self.values['-COMMAND-']
-            logger.debug("Topic: %s, Command: %s" % (topic_name, cmd_name))
+            logger.debug(f'Topic: {topic_name}, Command: {cmd_name}')
             
             if self.event == '-COMMAND-':
                 if cmd_name != self.eds_mission.COMMAND_TITLE_KEY:
@@ -327,9 +327,9 @@ class TelecommandGui(TelecommandInterface):
                        
                         cmd_valid, cmd_entry, cmd_obj = self.get_cmd_entry(topic_name, cmd_name)
                         cmd_has_payload, cmd_payload_item = self.get_cmd_entry_payload(cmd_entry)
-                        logger.debug("self.cmd_entry = " + str(cmd_entry))
-                        logger.debug("self.cmd_obj = " + str(cmd_obj))
-                        logger.debug("cmd_payload_item = " + str(cmd_payload_item))
+                        logger.debug(f'self.cmd_entry = {str(cmd_entry)}')
+                        logger.debug(f'self.cmd_obj = {str(cmd_obj)}')
+                        logger.debug(f'cmd_payload_item = {str(cmd_payload_item)}')
     
                         self.payload_struct = None 
                         self.payload_gui_entries = None
@@ -340,28 +340,28 @@ class TelecommandGui(TelecommandInterface):
                             payload_entry = self.eds_mission.get_database_named_entry(cmd_payload_item[2])
                             payload = payload_entry()
                             self.payload_struct = self.get_payload_struct(payload_entry, payload, 'Payload')
-                            logger.debug("payload_entry = " + str(payload_entry))
-                            logger.debug("payload = " + str(payload))
+                            logger.debug(f'payload_entry = {str(payload_entry)}')
+                            logger.debug(f'payload = {str(payload)}')
                             self.payload_gui_entries = {}
                             status_str = self.create_payload_gui_entries(self.payload_struct)
-                            logger.debug("status_str = " + status_str)
-                            logger.debug("self.payload_gui_entries: " + str(self.payload_gui_entries))
+                            logger.debug(f'status_str = {status_str}')
+                            logger.debug(f'self.payload_gui_entries: {str(self.payload_gui_entries)}')
                             if len(self.payload_gui_entries) > 0:
                                 self.display_payload_gui_entries()
                             else:
-                                cmd_text = "Error extracting payload parameters from %s" % str(self.payload_struct)
+                                cmd_text = f'Error extracting payload parameters from {str(self.payload_struct)}'
                         else:
                             self.display_payload_gui_entries()
                 
             if self.event == '-SEND_CMD-':
 
                 if topic_name == self.eds_mission.TOPIC_CMD_TITLE_KEY:
-                    cmd_text  = "Please select a topic before sending a command"
+                    cmd_text  = 'Please select a topic before sending a command'
                     cmd_sent = False
                     break
                     
                 if (cmd_name == self.eds_mission.COMMAND_TITLE_KEY and len(self.command_list) > 1):
-                    cmd_text  = "Please select a command before sending a command"
+                    cmd_text  = 'Please select a command before sending a command'
                     cmd_sent = False
                     break
                 
@@ -371,26 +371,26 @@ class TelecommandGui(TelecommandInterface):
 
                 if cmd_valid == True:
     
-                    logger.debug("self.cmd_entry = " + str(cmd_entry))
-                    logger.debug("self.cmd_obj = " + str(cmd_obj))
+                    logger.debug(f'self.cmd_entry = {str(cmd_entry)}')
+                    logger.debug(f'self.cmd_obj = {str(cmd_obj)}')
 
                     self.set_cmd_hdr(topic_id, cmd_obj)
 
                     cmd_has_payload, cmd_payload_item = self.get_cmd_entry_payload(cmd_entry)
-                    logger.debug("cmd_payload_item = " + str(cmd_payload_item))
+                    logger.debug(f'cmd_payload_item = {str(cmd_payload_item)}')
                     
                     send_command = True
                     if cmd_has_payload:
             
                         try:
                             # Use the information from the database entry iterator to get a payload Entry and object
-                            logger.debug("cmd_payload_item[1] = " + str(cmd_payload_item[1]))
-                            logger.debug("cmd_payload_item[2] = " + str(cmd_payload_item[2]))
+                            logger.debug(f'cmd_payload_item[1] = {str(cmd_payload_item[1])}')
+                            logger.debug(f'cmd_payload_item[2] = {str(cmd_payload_item[2])}')
                             #todo: payload_entry = self.eds_mission.lib_db.DatabaseEntry(cmd_payload_item[1], cmd_payload_item[2])
                             payload_entry = self.eds_mission.get_database_named_entry(cmd_payload_item[2])
                             payload = payload_entry()
-                            logger.debug("payload_entry = " + str(payload_entry))
-                            logger.debug("payload = " + str(payload))
+                            logger.debug(f'payload_entry = {str(payload_entry)}')
+                            logger.debug(f'payload = {str(payload)}')
 
                             #payload = EdsLib.DatabaseEntry('samplemission','FILE_MGR/SendDirListTlm_Payload')({'DirName': '', 'DirListOffset': 0, 'IncludeSizeTime': 'FALSE'})
                             #todo: Check if None? payload_struct = self.get_payload_struct(payload_entry, payload, 'Payload')
@@ -400,16 +400,16 @@ class TelecommandGui(TelecommandInterface):
     
                         except:
                            send_command = False
-                           cmd_status = "%s %s command not sent. Error loading parameters from command window " % (topic_name, cmd_name)
+                           cmd_status = f'{topic_name} {cmd_name} command not sent. Error loading parameters from command window.'
                     
                     if send_command:
                         (cmd_sent, cmd_text, cmd_status) = self.send_command(cmd_obj)
                         if cmd_sent:
-                            cmd_status = "%s %s command sent" % (topic_name, cmd_name)
+                            cmd_status = f'{topic_name} {cmd_name} command sent'
                     
-                else:    
-            
-                    print("Error retrieving command %s using topic ID %d" % (cmd_name, topic_id)) 
+                else:
+                    popup_text = f'Error retrieving command {cmd_name} using topic ID {topic_id}' 
+                    sg.popup(popup_text, title='Send Command Error', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)            
 
 
                 # Keep GUI active if a command error occurs to allow user to fixed and resend or cancel
@@ -419,177 +419,6 @@ class TelecommandGui(TelecommandInterface):
         self.window.close()
 
         return (cmd_sent, cmd_text, cmd_status)
-
-
-###############################################################################
-
-class TelemetryGuiClient(TelemetryObserver):
-    """
-    Create a screen that displays a single telemetry message
-    """
-
-    def __init__(self, tlm_server: TelemetryQueueServer, topic_name):
-        super().__init__(tlm_server)
-
-        self.NULL_STR = self.tlm_server.eds_mission.NULL_STR
-
-        self.topic_name = topic_name
-        self.tlm_msg = tlm_server.get_tlm_msg_from_topic(topic_name)
-
-        self.payload_fmt_str = "{:<50}: {}\n"
-        self.payload_str_max_len = 0
-                
-        self.paused = False
-        self.payload_text = None
-      
-        self.event = None
-        self.values = None
-        self.lock = threading.Lock()
-        self.gui_first_loop = True
-      
-        self.current_msg = None
-        self.window = None
-        
-        self.gui_thread = threading.Thread(target=self.gui)
-        self.gui_thread.kill   = False
-        self.gui_thread.daemon = True
-        
-    def update(self, tlm_msg: TelemetryMessage) -> None:
-        """
-        Receive telemetry updates
-        self.payload_str_max_len is set as opposed to the constructor because an initial
-        tlm_msg object does not have its eds_obj and eds_entry attributes set
-        """
-        self.lock.acquire()
-        if self.payload_str_max_len == 0:
-            self.payload_str_max(self.tlm_msg.eds_obj, self.tlm_msg.eds_entry.Name)
-            if self.payload_str_max_len > 0:
-                self.payload_fmt_str = "{:<%d}: {}\n" % self.payload_str_max_len
-                logger.info("%s: %s %d" % (self.topic_name, self.tlm_msg.msg_name, self.payload_str_max_len))
-
-        self.current_msg = tlm_msg
-        if not self.paused:
-            """
-            logger.debug("%s %s received at %s" % (tlm_msg.app_name, tlm_msg.msg_name, str(tlm_msg.sec_hdr().Seconds)))
-            self.window['-APP_ID-'].update(tlm_msg.pri_hdr().AppId)
-            self.window['-LENGTH-'].update(tlm_msg.pri_hdr().Length)
-            self.window['-SEQ_CNT-'].update(tlm_msg.pri_hdr().Sequence)
-            self.window['-TIME-'].update(str(tlm_msg.sec_hdr().Seconds))
-            self.payload_text = ""
-            self.format_payload_text(tlm_msg.eds_obj, tlm_msg.eds_entry.Name)
-            self.window['-PAYLOAD_TEXT-'].update(self.payload_text)  
-            """
-            self.window['-TLM_UPDATE-'].click()
-        self.lock.release()
-
-
-    def format_payload_text(self, base_object, base_name):
-        """
-        Recursive function that iterates over an EDS object and creates a string that can be displayed.
-        """
-        # Array display string
-        if (self.tlm_server.eds_mission.lib_db.IsArray(base_object)):
-            for i in range(len(base_object)):
-                self.format_payload_text(base_object[i], f"{base_name}[{i}]")
-        # Container display string
-        elif (self.tlm_server.eds_mission.lib_db.IsContainer(base_object)):
-            for item in base_object:
-                self.format_payload_text(item[1], f"{base_name}.{item[0]}")
-        # Everything else (number, enumeration, string, etc.)
-        else:
-            if '.Payload.' in base_name:
-                self.payload_text += self.payload_fmt_str.format(base_name, base_object)
-
-    def payload_str_max(self, base_object, base_name):
-        """
-        Recursive function that determines the longest payload string. This
-        is helpful for formatting displayes .
-        """
-        # Array display string
-        if (self.tlm_server.eds_mission.lib_db.IsArray(base_object)):
-            for i in range(len(base_object)):
-                self.payload_str_max(base_object[i], f"{base_name}[{i}]")
-        # Container display string
-        elif (self.tlm_server.eds_mission.lib_db.IsContainer(base_object)):
-            for item in base_object:
-                self.payload_str_max(item[1], f"{base_name}.{item[0]}")
-        # Everything else (number, enumeration, string, etc.)
-        else:
-            if '.Payload.' in base_name:
-                base_name_len = len(base_name)
-                if base_name_len > self.payload_str_max_len:
-                    self.payload_str_max_len = base_name_len
-               
-
-    def gui(self):
-        thread = threading.current_thread()
-        
-        hdr_label_font = ('Arial bold',12)
-        hdr_value_font = ('Arial',12)
-                
-        self.layout = [[sg.Text('App ID: ', font=hdr_label_font),  sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-APP_ID-'), 
-                        sg.Text('Length: ', font=hdr_label_font),  sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-LENGTH-'),
-                        sg.Text('Seq Cnt: ', font=hdr_label_font), sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-SEQ_CNT-'),
-                        sg.Text('Time: ', font=hdr_label_font),    sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-TIME-')],
-                       [sg.Text('')], 
-                       [sg.Text('Payload', font = ('Arial bold',14)), sg.Text('', font=hdr_value_font, key='-PAUSED-', pad=(10,0))],
-                       [sg.MLine(default_text='-- No Messages Received --', font = ('Courier',12), enable_events=True, size=(65, 30), key='-PAYLOAD_TEXT-')],
-                       [sg.Button('Pause'), sg.Button('Resume'), sg.Button('Close'), sg.Button('', key='-TLM_UPDATE-', visible=False)]]
-
-        self.window = sg.Window(self.topic_name, self.layout, resizable=True, grab_anywhere=True)
-
-
-        while not self.gui_thread.kill:  # Event Loop
-            
-            #todo: Big kludge for multi-threaded tlm windows
-            #todo: PySimpleGUI has a subprocess API, execute_command_subprocess() that I'm using for tutorials and it can be used for each telemetry GUI
-            try:
-                self.event, self.values = self.window.read(timeout=250)
-            except (RuntimeError, AttributeError):
-                #print("Telemetry GUI read loop exception")
-                self.event = "void"
-            logger.debug("GUI Window Read()\nEvent: %s\nValues: %s" % (self.event, self.values))
-
-            if self.gui_first_loop:
-                # Attach self.update() observer. Must be done after the first read
-                self.tlm_server.add_msg_observer(self.tlm_msg, self)
-            self.gui_first_loop = False
-            
-            if self.event in (sg.WIN_CLOSED, 'Close') or self.event is None:       
-                break
-            
-            if self.event == 'Pause':
-                self.paused = True
-                self.window['-PAUSED-'].update('Display Paused')
-
-            if self.event == 'Resume':
-                self.paused = False
-                self.window['-PAUSED-'].update('')
-
-            if self.event == '-TLM_UPDATE-':
-                #Keep hook because may need event loop context for updates
-                #print("telemetry update click")
-                logger.debug("%s %s received at %s" % (self.current_msg.app_name, self.current_msg.msg_name, str(self.current_msg.sec_hdr().Seconds)))
-                self.window['-APP_ID-'].update(self.current_msg.pri_hdr().AppId)
-                self.window['-LENGTH-'].update(self.current_msg.pri_hdr().Length)
-                self.window['-SEQ_CNT-'].update(self.current_msg.pri_hdr().Sequence)
-                self.window['-TIME-'].update(str(self.current_msg.sec_hdr().Seconds))
-                self.payload_text = ""
-                self.format_payload_text(self.current_msg.eds_obj, self.current_msg.eds_entry.Name)
-                self.window['-PAYLOAD_TEXT-'].update(self.payload_text)
-        self.tlm_server.remove_msg_observer(self.tlm_msg, self)
-        self.window.close()
-
-
-    def execute(self):
-        self.gui_thread.start()
- 
-             
-    def shutdown(self):
-        logger.info("Telemetry GUI %s shutdown started" % self.topic_name)
-        self.window['Close'].click()
-        self.gui_thread.kill = True
-        logger.info("Telemetry GUI %s shutdown complete" % self.topic_name)    
 
 
 ###############################################################################
@@ -614,7 +443,7 @@ class BasecampTelemetryMonitor(TelemetryObserver):
             tlm_msg = self.tlm_server.tlm_messages[msg]
             if tlm_msg.app_name in self.sys_apps:
                 self.tlm_server.add_msg_observer(tlm_msg, self)        
-                logger.info("system telemetry adding observer for %s: %s" % (tlm_msg.app_name, tlm_msg.msg_name))
+                logger.info(f'Basecamp telemetry adding observer for {tlm_msg.app_name}: {tlm_msg.msg_name}')
         
 
     def update(self, tlm_msg: TelemetryMessage) -> None:
@@ -624,14 +453,13 @@ class BasecampTelemetryMonitor(TelemetryObserver):
         #todo: Determine best tlm identification method: if int(tlm_msg.app_id) == int(self.cfe_es_hk.app_id):
         try:
             if tlm_msg.app_name in self.tlm_monitors:
-                self.tlm_callback(tlm_msg.app_name, tlm_msg.msg_name, "Seconds", str(tlm_msg.sec_hdr().Seconds))
+                self.tlm_callback(tlm_msg.app_name, tlm_msg.msg_name, 'Seconds', str(tlm_msg.sec_hdr().Seconds))
 
             elif tlm_msg.app_name == 'CFE_EVS':
                 if tlm_msg.msg_name == 'LONG_EVENT_MSG':
                     payload = tlm_msg.payload()
                     pkt_id = payload.PacketID
-                    event_text = "FSW Event at %s: %s, %d - %s" % \
-                                 (str(tlm_msg.sec_hdr().Seconds), pkt_id.AppName, pkt_id.EventType, payload.Message)
+                    event_text = f'FSW Event at {str(tlm_msg.sec_hdr().Seconds)}: {pkt_id.AppName}, {pkt_id.EventType} - {payload.Message}'
                     self.event_queue.put_nowait(event_text)
                     """        
                     LongEventTlm.Payload.PacketID.AppName                        = CFE_TIME
@@ -642,7 +470,7 @@ class BasecampTelemetryMonitor(TelemetryObserver):
                     LongEventTlm.Payload.Message  
                     """
         except Exception as e:
-            logger.error("Telemetry update exception\n" + str(e))
+            logger.error(f'Telemetry update exception\n{str(e)}')
 
 
 ###############################################################################
@@ -1279,8 +1107,6 @@ class App():
 
         self.event_log   = ""        
         self.event_queue = queue.Queue()
-        self.tlm_gui_clients = {}
-        self.tlm_gui_threads = {}
         self.window = None
         
         self.cfe_apps = ['CFE_ES', 'CFE_EVS', 'CFE_SB', 'CFE_TBL', 'CFE_TIME']
@@ -1296,6 +1122,14 @@ class App():
         self.tutorial       = None
         self.target_control = None
         self.tlm_plot       = None
+        self.tlm_screen     = None
+
+        #todo: Add robust telmeetry screen port number management
+        # tlm_screen_port is used a starting port number and each telemetry
+        # screen is open with a new port number. This strategy assumes 
+        # basecamp is run for short periods of time with only a few telemetry
+        # screens.
+        self.tlm_screen_port = self.config.getint('NETWORK', 'TLM_SCREEN_TLM_PORT')
 
     def update_event_history_str(self, new_event_text):
         time = datetime.now().strftime("%H:%M:%S")
@@ -1349,9 +1183,6 @@ class App():
         if self.cfs_subprocess is not None:
             logger.info("Killing cFS Process")
             os.killpg(os.getpgid(self.cfs_subprocess.pid), signal.SIGTERM)  # Send the signal to all the process groups
-        for tlm_topic in self.tlm_gui_clients:
-            if self.tlm_gui_clients[tlm_topic] != None:
-                 self.tlm_gui_clients[tlm_topic].shutdown()
         self.cmd_tlm_router.shutdown()
         self.tlm_server.shutdown()
         time.sleep(self.CFS_TARGET_TLM_TIMEOUT)
@@ -1773,16 +1604,13 @@ class App():
                     self.cfs_popen = sg.execute_command_subprocess(self.cfs_exe_str, cwd=cfs_dir)
                 """
             elif self.event == '-STOP_CFS-':
-                print("@@1")
                 if self.cfs_subprocess is not None:
-                    print("@@2")
                     logger.info("Killing cFS Process")
                     os.killpg(os.getpgid(self.cfs_subprocess.pid), signal.SIGTERM)  # Send the signal to all the process groups
                     self.cfs_subprocess = None
                     self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
                     self.window["-CFS_TIME-"].update(self.GUI_NULL_TXT)
                 else:
-                    print("@@3")
                     self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
                     self.window["-CFS_TIME-"].update(self.GUI_NULL_TXT)
                     """
@@ -1962,27 +1790,20 @@ class App():
             
             elif self.event == '-TLM_TOPICS-':
                 tlm_topic = self.values['-TLM_TOPICS-']
-                self.display_event("Created telemetry screen for %s" % tlm_topic)
                 if tlm_topic != EdsMission.TOPIC_TLM_TITLE_KEY:
-                    """
-                    The thread start() nevers returns and I don't know why. Guessing underlying GUI control issue.
-                    The TelemetryGui object contains thread management but this is causing execeptions. For now I"m
-                    catching the exceptions because eveything else hangs together, but it's a kludge!!
-                    """
-                    self.tlm_gui_clients[tlm_topic] = TelemetryGuiClient(self.tlm_server, tlm_topic)
-                    if self.tlm_gui_clients[tlm_topic] != None:
-                        self.tlm_gui_clients[tlm_topic].execute()
-                        #self.tlm_gui_threads[tlm_topic] = Thread(target=self.tlm_gui_clients[tlm_topic].gui())
-                        #self.tlm_gui_threads[tlm_topic].start()
-                        self.display_event("Created telemetry screen for %s" % tlm_topic)
-                    else:
-                        self.display_event("Failed to create telemetry screen for %s. Verify EDS naming standard compliance" % tlm_topic)
+                    
+                    app_name = self.tlm_server.get_app_name_from_topic(tlm_topic)
+                    tlm_screen_cmd_parms = f'{self.tlm_screen_port} {app_name} {tlm_topic}'
+                    self.cmd_tlm_router.add_tlm_dest(self.tlm_screen_port)
+                    self.tlm_screen = sg.execute_py_file("tlmscreen.py", parms=tlm_screen_cmd_parms, cwd=self.cfs_interface_dir)
+                    self.display_event(f'Created telemetry screen for {tlm_topic} on port {self.tlm_screen_port}')
+                    self.tlm_screen_port += 1
                 else:
                     sg.popup('Please select a telemetry topic from the dropdown list', title='Telemetry Topic', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                 
             elif self.event == '-CLEAR_EVENTS-':
                 self.event_log = ""
-                self.display_event("Cleared event display")
+                self.display_event('Cleared event display')
 
         self.shutdown()
 
@@ -1999,6 +1820,6 @@ if __name__ == '__main__':
         execute = app.execute()
         break
                 
-    logger.info("Exiting app")
+    logger.info('Exiting app')
 
 

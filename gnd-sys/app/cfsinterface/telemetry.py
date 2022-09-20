@@ -239,7 +239,7 @@ class TelemetryServer(CfeEdsTarget):
         return (topic_token[0], topic_token[2])
     
 
-    def get_tlm_msg_from_topic(self,topic_name):
+    def get_tlm_msg_from_topic(self, topic_name):
     
         app_name, tlm_msg_name = self.parse_topic(topic_name)    
         app_id = self.get_app_id(app_name, tlm_msg_name)
@@ -249,6 +249,12 @@ class TelemetryServer(CfeEdsTarget):
         return tlm_msg
             
  
+    def get_app_name_from_topic(self, topic_name):
+    
+        app_name, tlm_msg_name = self.parse_topic(topic_name)    
+        return app_name
+            
+
     def add_tlm_messages(self, tlm_msg_dict):
         for msg in tlm_msg_dict:
             self.tlm_messages[tlm_msg_dict[msg].app_id] = tlm_msg_dict[msg]
