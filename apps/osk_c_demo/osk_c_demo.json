@@ -1,9 +1,12 @@
-{ "app": {
+{ 
+
+   "app": {
    
    "title": "OSK_C_DEMO",
    "version": "4.0.0",
-   "owner": "OpenSatkit",
-   "url": "https://github.com/OpenSatKit-Apps/osk_c_demo",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
+   "url": "https://github.com/cfs-tools/cfs-basecamp/tree/main/apps",
 
    "description": [
       "Demonstrates an application using the OSK C Framework. It also serves",
@@ -21,9 +24,10 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["osk_c_demo_ini.json","osk_c_demo_tbl.json"],
-      "cmd-mid": "OSK_C_DEMO_CMD_MID"
-   }
+      "tables": ["osk_c_demo_ini.json","osk_c_demo_tbl.json"]
+   },
+   
+   "requires": ["osk_c_fw"]
    
 }}
 

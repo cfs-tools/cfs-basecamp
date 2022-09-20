@@ -2,8 +2,9 @@
    
    "title": "OSK_C_FW",
    "version": "4.0.0",
-   "owner": "OpenSatkit",
-   "url": "https://github.com/OpenSatKit-Apps/osk_c_fw",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
+   "url": "https://github.com/cfs-tools/cfs-basecamp/tree/main/apps",
 
    "description": [
       "Provides an application framework for writing cFS apps"
@@ -20,8 +21,10 @@
       "exception-action": 0,
       "app-framework": "osk",
       "tables": [],
-   }
-   
+   },
+
+   "requires": []
+
 }}
 
 

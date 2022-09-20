@@ -730,7 +730,7 @@ class ManageCfs():
                    sg.InputText(password_char='*', size=(15,1), font=self.t_font, pad=self.b_pad, key='-PASSWORD-')],
                   
                   [sg.Text('2. Update cFS build configuration', font=self.step_font, pad=self.b_pad)],
-                  [sg.Text('', size=self.b_size), sg.Button('Auto', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2_AUTO-'),
+                  [sg.Text('', size=self.b_size), sg.Button('Auto', size=self.b_size, button_color=('SpringGreen4'), font=self.b_font, pad=self.b_pad, enable_events=True, key='-2_AUTO-'),
                    sg.Text('Automatically perform all steps', font=self.t_font)],
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2A_MAN-'),
                    sg.Text('Copy table files to %s' % CFS_DEFS_FOLDER, font=self.t_font)],
@@ -799,11 +799,33 @@ class ManageCfs():
             ## Step 2 - Update cFS build configuration
             
             elif self.event == '-2_AUTO-': # Autonomously perform step 2 
-                self.copy_app_tables(auto_copy=True)
-                self.update_targets_cmake(auto_update=True)
-                self.update_startup_scr(auto_update=True)
-                if self.usr_app_spec.has_eds():
-                    self.update_topic_ids()
+                """
+                Errors are reported in a popup by each function. The success string is an aggregate of each successful return
+                that will be reported in a single popup. 
+                A boolean return value of True from each function indicates there weren't any errors, it doesn't mean a paricular
+                update was performed, becuase the update may notbe required.
+                """ 
+                auto_popup_text = f"{self.selected_app.upper()} was successfully added to Basecamp's cFS target:\n\n"
+                display_auto_popup = False 
+                copy_tables_passed, copy_tables_text = self.copy_app_tables(auto_copy=True)
+                if copy_tables_passed:
+                    auto_popup_text += f'1. {copy_tables_text}\n\n' 
+                    update_cmake_passed, update_cmake_text = self.update_targets_cmake(auto_update=True)
+                    if update_cmake_passed:
+                        auto_popup_text += f'2. {update_cmake_text}\n\n'
+                        update_startup_passed, update_startup_text = self.update_startup_scr(auto_update=True)
+                        if update_startup_passed:
+                            auto_popup_text += f'3. {update_startup_text}\n\n'
+                            if self.usr_app_spec.has_eds():
+                                update_topics_passed, update_topics_text = self.update_topic_ids()
+                                auto_popup_text += f'4. {update_topics_text}\n\n'
+                                display_auto_popup = update_topics_passed
+                            else:
+                                auto_popup_text += f'4. Library without an EDS spec\n\n'
+                                display_auto_popup = True
+                if display_auto_popup:
+                    sg.popup(auto_popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                                
                 
             elif self.event == '-2A_MAN-':
                 self.copy_app_tables(auto_copy=False)  # Copy table files from app dir to cFS '_defs' file
@@ -900,14 +922,16 @@ class ManageCfs():
                 
     def copy_app_tables(self, auto_copy):
         """
-        An app's JSON spec table filename should not have a target prefix.  The default table filename in an
+        An app's JSON spec table filename should not have a target prefix. The default table filename in an
         app's tables directory should have a default target name. 
         There may be extra table files in an apps table directory so only copy the tables that are defined
         in the JSON app spec
         """
+        copy_passed = True
+        popup_text = 'Undefined'
         table_list = self.get_app_table_list()
         if len(table_list) == 0:
-            popup_text = 'This app does not have any table files to copy'
+            popup_text = 'Library without tables to copy'
         else:
             app_table_path = os.path.join(self.usr_app_path, self.selected_app, 'fsw', 'tables')
             if auto_copy:
@@ -919,21 +943,22 @@ class ManageCfs():
                         src_table = table.replace(DEFAULT_TARGET_NAME+'_','')
                         if src_table in table_list:
                             src = os.path.join(app_table_path, table)
-                        print('##src: ' + src)
+                        #print('##src: ' + src)
                         if target_equals_default:
                             dst_table = table
                         else:
                             dst_table = self.cfs_target + '_' + src_table
                         dst = os.path.join(self.cfs_abs_defs_path, dst_table)
-                        print('##dst: ' + dst)
+                        #print('##dst: ' + dst)
                         shutil.copyfile(src, dst)
                     popup_text = f"Copied table files '{table_list}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
                 except IOError:
                     popup_text = f'Error copying table file\nFROM\n  {src}\nTO\n  {dst}\n'
             else:
                 popup_text = f"Copy table files '{table_list}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
-        sg.popup(popup_text, title='Copy table files', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
-
+                sg.popup(popup_text, title='Copy table files', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+        return copy_passed, popup_text
+        
     def remove_app_tables(self):
         table_list = self.get_app_table_list()
         for table in table_list:
@@ -949,11 +974,16 @@ class ManageCfs():
         The following two variables list need to be updated:
            SET(cpu1_APPLIST app1 app2 app3) #!BASECAMP-INSERT!
            SET(cpu1_FILELIST file1 file2) #!BASECAMP-INSERT!
-        The logic assuems there is only oe uncommented APPLIST and
+        This logic assumes there is only one uncommented APPLIST and
         FILELIST line that needs to be updated. 
         """
-        
+        update_passed = True
+        popup_text = "Undefined"
         app_cmake_files = self.usr_app_spec.get_targets_cmake_files()
+        table_list_str = ''
+        table_list = app_cmake_files['tables']
+        if len(table_list) > 0:
+            table_list_str = f'and {str(table_list)}'
         if auto_update:
             file_modified = False
             instantiated_text = ''
@@ -967,15 +997,16 @@ class ManageCfs():
             if file_modified:
                 with open(self.targets_cmake_file, 'w') as f:
                     f.write(instantiated_text)
-                popup_text = f"targets_cmake updated with {app_cmake_files['obj-file']} and {app_cmake_files['tables']}"
+                popup_text = f"Updated targets_cmake with {app_cmake_files['obj-file']} {table_list_str}"
             else:
-                popup_text = f"targets_cmake not modified. it already contains {app_cmake_files['obj-file']} and {app_cmake_files['tables']}"
-            sg.popup(popup_text, title=f'Update {self.targets_cmake_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                popup_text = f"Preserved targets_cmake, it already contains {app_cmake_files['obj-file']} {table_list_str}"
+            #todo: Remove? sg.popup(popup_text, title=f'Update {self.targets_cmake_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         else:
             sg.clipboard_set(app_cmake_files['obj-file'] + ',' + str(app_cmake_files['tables']))
             popup_text = f"After this dialogue, {self.targets_cmake_filename} will open in an editor. Paste\n  {app_cmake_files['obj-file']}\ninto\n  {self.cmake_app_list}\n\nPaste filenames with spaces\n  {app_cmake_files['tables']}\ninto\n  {self.cmake_file_list}"
             sg.popup(popup_text, title=f'Update {self.targets_cmake_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
             self.text_editor = sg.execute_py_file('texteditor.py', parms=self.targets_cmake_file, cwd=self.basecamp_tools_path)
+        return update_passed, popup_text
         
     def update_targets_cmake_line(self, app_cmake_files, line):
         line_modified = False
@@ -1024,6 +1055,7 @@ class ManageCfs():
                 f.write(instantiated_text)
 
     def update_startup_scr(self, auto_update):
+        update_passed = True
         startup_script_entry = self.usr_app_spec.get_startup_scr_entry()
         if auto_update:
             original_entry = ""
@@ -1044,16 +1076,17 @@ class ManageCfs():
             if file_modified:
                 with open(self.startup_scr_file, 'w') as f:
                     f.write(instantiated_text)
-                popup_text = f'Startup script modified. Added  {self.selected_app} entry:\n{startup_script_entry}'
+                popup_text = f'Added {self.selected_app} startup script entry'
             else:
-                popup_text = f'Startup script not modified, it already contains {self.selected_app} entry:\n{original_entry}'
-            sg.popup(popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                popup_text = f'Preserved startup script, it already contains {self.selected_app}'
+            #todo: Remove? sg.popup(popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         else:
             sg.clipboard_set(startup_script_entry)
             popup_text = f"After this dialogue, {self.startup_scr_filename} will open in an editor.\nPaste the following entry from the clipboard:\n\n'{startup_script_entry}'\n"
             sg.popup(popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
             self.text_editor = sg.execute_py_file('texteditor.py', parms=self.startup_scr_file, cwd=self.basecamp_tools_path)
-
+        return update_passed, popup_text
+    
     def restore_startup_scr(self):
         """
         Search for the app's entry. Any field with app's name can be used as
@@ -1085,6 +1118,8 @@ class ManageCfs():
         ID substitution method, this code makes sure they both have enough
         spares before either is updated.
         """
+        update_passed = False
+        popup_text = 'Undefined'
         cmd_topics = self.usr_app_spec.get_cmd_topics()
         tlm_topics = self.usr_app_spec.get_tlm_topics()
         cfe_topic_ids  = CfeTopicIds(self.cfe_topic_id_file)
@@ -1108,9 +1143,11 @@ class ManageCfs():
                 print(tlm)
             cfe_topic_ids.write_doc_to_file()
             kit_to_pkt_tbl.replace_spare_topics(tlm_topics)
-            popup_text = f'Successfully updated topid IDs in\n{self.cfe_topic_id_file}\nand\n{self.kit_to_tbl_file}'
-            sg.popup(popup_text, title='Update Topic IDs', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
-
+            popup_text = f'Updated topid IDs in {self.cfe_topic_id_file} and {self.kit_to_tbl_file}'
+            update_passed = True
+            #todo: Remove? sg.popup(popup_text, title='Update Topic IDs', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+        return update_passed, popup_text 
+        
     def restore_topic_ids(self):
         cmd_topics = self.usr_app_spec.get_cmd_topics()
         tlm_topics = self.usr_app_spec.get_tlm_topics()

@@ -1,0 +1,33 @@
+{ 
+
+   "app": {
+   
+   "title": "OpenSatKit Telemetry Output",
+   "version": "3.0.0",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
+   "url": "https://github.com/cfs-tools/cfs-basecamp/tree/main/apps",
+
+   "description": [
+      "KIT_TO uses a packet filter table to determine which telemetry",
+      "messages are read from the software bus and sent to an external",
+      "systems over a UDP port." 
+   ],
+
+   "cfs": {
+      "cfe-type": "CFE_APP",
+      "obj-file": "kit_to",
+      "entry-symbol": "KIT_TO_AppMain",
+      "name": "KIT_TO",
+      "priority": 20,
+      "stack": 32768,
+      "load_addr": 0,
+      "exception-action": 0,
+      "app-framework": "osk",
+      "tables": ["kit_to_ini.json", "kit_to_pkt_tbl.json"]
+   },
+   
+   "requires": ["osk_c_fw"]
+
+}}
+

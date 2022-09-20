@@ -67,7 +67,8 @@ class TelemetryCurrentValue(TelemetryObserver):
             tlm_msg = self.tlm_server.tlm_messages[msg]
             self.tlm_server.add_msg_observer(tlm_msg, self)        
             print("TelemetryCurrentValue adding observer for %s: %s" % (tlm_msg.app_name, tlm_msg.msg_name))
-
+        
+        """
         # Debug to help determine how to structure current value data       
         topics = self.tlm_server.get_topics()
         for topic in topics:
@@ -87,7 +88,8 @@ class TelemetryCurrentValue(TelemetryObserver):
                 print('>>>> Payload: = ')
                 for entry in tlm_obj.Payload:
                     print(str(entry))
-
+        """
+        
     def update(self, tlm_msg: TelemetryMessage) -> None:
         """
         Receive telemetry updates
@@ -100,11 +102,11 @@ class TelemetryCurrentValue(TelemetryObserver):
 class TlmPlot():
     """
     Manage a linear plot that can plot up to self.plot_x_range data points. The
-    update rate depends upon the telemetry point that is being plotted to the
-    x-axis doesn't have a time scale, it is simple a data sample count
+    update rate depends upon the telemetry point that is being plotted so the
+    x-axis doesn't have a time scale, it is simple a data sample count.
     
-    The y-axis is scaled based on the data min/max values and the number of
-    points on the gragh
+    The y-axis is scaled based upon the data min/max values and the number of
+    points on the gragh.
     
     self.tlm_server.get_tlm_val(app_name, tlm_msg_name, parameter)
         Example current value usage: get_tlm_val("CFE_ES", "HK_TLM", "Sequence")
@@ -227,7 +229,8 @@ class TlmPlot():
             event, values = self.window.read(timeout=200)
             if event in (sg.WIN_CLOSED, 'Exit'):
                 break
-
+        
+        self.window.close()
         self.tlm_server.shutdown()
 
 

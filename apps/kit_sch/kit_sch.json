@@ -1,0 +1,33 @@
+{ 
+
+   "app": {
+   
+   "title": "OpenSatKit Scheduler",
+   "version": "3.0.0",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
+   "url": "https://github.com/cfs-tools/cfs-basecamp/tree/main/apps",
+
+   "description": [
+      "KIT_SCH uses a scheduler table to determine when to send",
+      "messages on the software bus that othe apps can subscribe to",
+      "for performing periodic functions." 
+   ],
+
+   "cfs": {
+      "cfe-type": "CFE_APP",
+      "obj-file": "kit_sch",
+      "entry-symbol": "KIT_SCH_AppMain",
+      "name": "KIT_SCH",
+      "priority": 10,
+      "stack": 32768,
+      "load_addr": 0,
+      "exception-action": 0,
+      "app-framework": "osk",
+      "tables": ["kit_sch_ini.json", "kit_sch_msgtbl.json", "kit_sch_schtbl.json"]
+   },
+   
+   "requires": ["osk_c_fw"]
+
+}}
+

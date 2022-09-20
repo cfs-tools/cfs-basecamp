@@ -1,12 +1,15 @@
-{ "app": {
+{ 
+
+   "app": {
    
    "title": "File Manager",
    "version": "4.0.0",
-   "owner": "OpenSatkit",
-   "url": "https://github.com/OpenSatKit-Apps/file_mgr",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
+   "url": "https://github.com/cfs-tools/cfs-basecamp/tree/main/apps",
 
    "description": [
-      "This app provides a directory and file management services"
+      "FILE_MGR provides directory and file management services"
    ],
 
    "cfs": {
@@ -19,9 +22,10 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["file_mgr_ini.json"],
-      "cmd-mid": "FILE_MGR_CMD_MID"
-   }
-   
+      "tables": ["file_mgr_ini.json"]
+   },
+
+   "requires": ["osk_c_fw"]
+
 }}
 

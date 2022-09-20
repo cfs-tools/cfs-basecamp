@@ -1,15 +1,18 @@
-{ "app": {
+{ 
+   
+   "app": {
    
    "title": "File Transfer",
    "version": "1.0.0",
-   "owner": "OpenSatkit",
-   "url": "https://github.com/OpenSatKit-Apps/file_xfer",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
+   "url": "https://github.com/cfs-tools/cfs-basecamp/tree/main/apps",
 
    "description": [
-      "This app provides a file transfer service. It uses a custom protocol that is",
+      "FILE_XFER provides a file transfer service. It uses a custom protocol that is",
       "close to the CCSDS File Delivery Protocol Class 1 algorithm. Using a simple",
-      "custom algorithm elliminates the need for an external dependency and minimzes",
-      "complexity"
+      "custom algorithm eliminates the need for an external dependency and minimzes",
+      "complexity."
    ],
 
    "cfs": {
@@ -22,9 +25,10 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["file_xfer_ini.json"],
-      "cmd-mid": "FILE_XFER_CMD_MID"
-   }
+      "tables": ["file_xfer_ini.json"]
+   },
    
+   "requires": ["osk_c_fw"]
+
 }}
 
