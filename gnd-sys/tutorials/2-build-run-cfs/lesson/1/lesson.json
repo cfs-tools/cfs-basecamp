@@ -1,8 +1,8 @@
 {
   "time-stamp": "",
-  "title": "Build and Run cFS",
+  "title": "cFS Build Environment",
   "objective": [
-    "Build and run the cFS from the command line and Basecamp GUI"
+    "Describe Basecamp's build environment."
   ],
   "current-slide": 1,
   "complete": false
