@@ -291,7 +291,7 @@ class AppStore():
         app_layout = []
         for app in self.git_app_repo.app_dict.keys():
             print(app)
-            app_layout.append([sg.Radio(app, "APPS", default=False, font=hdr_label_font, size=(10,0), key='-%s-'%app),  
+            app_layout.append([sg.Radio(app.upper(), "APPS", default=False, font=hdr_label_font, size=(10,0), key='-%s-'%app),  
                                sg.Text(self.git_app_repo.get_descr(app), font=hdr_value_font, size=(100,1))])
                 
         layout = [

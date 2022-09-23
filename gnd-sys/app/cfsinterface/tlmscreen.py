@@ -162,14 +162,16 @@ class TlmScreen():
         initial tlm_msg object does not have its eds_obj and eds_entry attributes set
         """
         if tlm_msg.app_name == self.app_name:
+            # Compute max length if it hasn't been done yet
             if self.payload_str_max_len == 0:
                 self.payload_str_max(self.tlm_msg.eds_obj, self.tlm_msg.eds_entry.Name)
                 if self.payload_str_max_len > 0:
                     self.payload_fmt_str = "{:<%d}: {}\n" % self.payload_str_max_len
 
-            self.current_msg = tlm_msg
-            if not self.paused:
-                self.window['-TLM_UPDATE-'].click()
+            if tlm_msg.app_id == self.tlm_msg.app_id:
+                self.current_msg = tlm_msg
+                if not self.paused:
+                    self.window['-TLM_UPDATE-'].click()
 
 
     def format_payload_text(self, base_object, base_name):
@@ -224,6 +226,8 @@ if __name__ == '__main__':
         tlm_port    = config.getint('NETWORK', 'TLM_SCREEN_TLM_PORT')
         app_name    = 'OSK_C_DEMO'
         tlm_topic   = 'OSK_C_DEMO/Application/STATUS_TLM'
+        app_name    = 'MQTT_GW'
+        tlm_topic   = 'MQTT_GW/Application/HK_TLM'
 
     cfs_host_addr = config.get('NETWORK', 'CFS_HOST_ADDR')
 
