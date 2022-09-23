@@ -266,7 +266,7 @@ class CreateApp():
                     app_name = None
                     layout = [[sg.T('Application Name')],
                               [sg.In(key='-INPUT-')],
-                              [sg.OK(), sg.Button('Cancel')]]
+                              [sg.OK(button_color=('SpringGreen4')), sg.Button('Cancel')]]
                     window = sg.Window('Create Application', layout, modal=False)
                     event, values = window.read()
                     if event == 'OK':
