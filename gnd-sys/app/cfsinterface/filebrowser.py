@@ -537,8 +537,8 @@ class FileBrowser(CmdTlmProcess):
 
 if __name__ == '__main__':
 
-    print(f"Name of the script      : {sys.argv[0]=}")
-    print(f"Arguments of the script : {sys.argv[1:]=}")
+    #print(f"Name of the script      : {sys.argv[0]}")
+    #print(f"Arguments of the script : {sys.argv[1]}")
 
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
