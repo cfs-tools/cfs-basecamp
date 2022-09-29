@@ -1153,7 +1153,7 @@ class App():
         The use must enable telemetry every time the cFS is started and most if not all users want
         the time fly wheel event disabled as well so it is also done here
         """
-        self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'dest_IP': self.CFS_TARGET_HOST_ADDR})
+        self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'DestIp': self.CFS_TARGET_HOST_ADDR})
         # Disable flywheel events. Assume new cFS instance running so set time_event_filter to false 
         self.cfe_time_event_filter = False 
         time.sleep(0.5)
