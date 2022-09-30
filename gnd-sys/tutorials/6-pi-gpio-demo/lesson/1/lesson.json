@@ -1,8 +1,10 @@
 {
   "time-stamp": "",
-  "title": "Use Raspberry Pi GPIO Demo App",
+  "title": "Connect an LED to a Raspberry Pi",
   "objective": [
-    "Download and integrate gpio_demo app on a Raspberry Pi"
+    "Connect an LED to Raspberry Pi using the General-Purpose",
+    "Input/Output (GPIO) connector. Verify the configuration",
+    "with a small Python script"
   ],
   "current-slide": 1,
   "complete": false
