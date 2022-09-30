@@ -521,7 +521,9 @@ class FileBrowser(CmdTlmProcess):
                     if dst_file is not None:
                         self.flt_dir.rename_file(filename, dst_file)
                         self.window['-FLT_FOLDER-'].update(self.flt_dir.path)
-            
+        
+        self.shutdown()
+
 
     def execute(self):
         self.gui()
