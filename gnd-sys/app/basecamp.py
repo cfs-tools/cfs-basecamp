@@ -1543,7 +1543,7 @@ class App():
                 webbrowser.open_new(r'file://'+path_filename)
                 
             elif self.event == 'App Dev Guide':
-                path_filename = os.path.join(self.path, "../../docs/OSK-App-Dev-Guide.pdf")  #TODO - Ini file
+                path_filename = os.path.join(self.path, "../../docs/basecamp-app-dev.pdf")  #TODO - Ini file
                 webbrowser.open_new(r'file://'+path_filename)
                 
             ### TUTORIALS ###
