@@ -93,5 +93,4 @@ JSON_TLM_CFS_APPS = 'cfs-apps'
 JSON_TLM_PY_EXE   = 'py-exe'
 JSON_TLM_PY_APPS  = 'py-apps'
 
-
-
+JSON_VAL_NONE = 'None'

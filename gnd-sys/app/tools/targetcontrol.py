@@ -61,6 +61,7 @@ class TargetControl():
                                JSON_TLM_CFS_EXE, JSON_TLM_CFS_APPS,
                                JSON_TLM_PY_EXE,  JSON_TLM_PY_APPS]
 
+        self.window = None
         
     def client_on_connect(self, client, userdata, flags, rc):
         """
@@ -70,7 +71,7 @@ class TargetControl():
         self.client.subscribe(self.tlm_topic)
         self.client_connected = True 
  
-    def client_on_disconnect(self, client, userdata, flags, rc):
+    def client_on_disconnect(self, client, userdata, flags):
         """
         """
         self.client_disconnect()
@@ -100,11 +101,12 @@ class TargetControl():
         self.client.disconnect()
 
 
-    def publish_cmd(self, subsystem, cmd):
+    def publish_cmd(self, subsystem, cmd, param=''):
         """
         """
-        payload = '{"%s": "%s"}' % (subsystem, cmd)
-        print("Publish: %s, %s" % (self.cmd_topic, payload))
+        payload = '{"%s": "%s", "%s": "%s"}' % \
+                  (subsystem, cmd, JSON_CMD_PARAMETER, param)  
+        print(f'Publish: {self.cmd_topic}, {payload}')
         self.client.publish(self.cmd_topic, payload)
 
  
@@ -125,6 +127,9 @@ class TargetControl():
         
             The field names must match the GUI keys. See the class defined constants.
         """
+        # Connection establish prior to window creation so messages can be received before the window is created
+        if self.window is None:
+            return
         msg_str = msg.payload.decode()
         print("Message received-> " + msg.topic + " " + msg_str)
         tlm = json.loads(msg.payload.decode())
@@ -171,17 +176,17 @@ class TargetControl():
                 [sg.Text('Cmd Cnt:',    size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
                 sg.Text('0',            size=tlm_label_size, font=hdr_value_font, key=JSON_TLM_CMD_CNT)],
                 [sg.Text('Event:',      size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
-                sg.Text('None',         size=(50,1),         font=hdr_value_font, key=JSON_TLM_EVENT)],
+                sg.Text(JSON_VAL_NONE,  size=(50,1),         font=hdr_value_font, key=JSON_TLM_EVENT)],
                 [sg.HorizontalSeparator()],
                 [sg.Text('cFS Exe:',    size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
                 sg.Text('False',        size=tlm_label_size, font=hdr_value_font, key=JSON_TLM_CFS_EXE)],
                 [sg.Text('Apps:',       size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
-                sg.Text('None',         size=(50,1),         font=hdr_value_font, key=JSON_TLM_CFS_APPS)],
+                sg.Text(JSON_VAL_NONE,  size=(50,1),         font=hdr_value_font, key=JSON_TLM_CFS_APPS)],
                 [sg.HorizontalSeparator()],
                 [sg.Text('Py Exe:',     size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
                 sg.Text('False',        size=tlm_label_size, font=hdr_value_font, key=JSON_TLM_PY_EXE)],
                 [sg.Text('Apps:',       size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
-                sg.Text('None',         size=(50,1),         font=hdr_value_font, key=JSON_TLM_PY_APPS)]])
+                sg.Text(JSON_VAL_NONE,  size=(50,1),         font=hdr_value_font, key=JSON_TLM_PY_APPS)]])
             ]
             
         ]
@@ -191,8 +196,8 @@ class TargetControl():
 
 
     def execute(self):
-        self.client_connect();
-            
+        
+        self.client_connect();          
         self.window = self.create_window()
                         
         while True:
@@ -232,13 +237,61 @@ class TargetControl():
                 self.publish_cmd(JSON_CMD_SUBSYSTEM_CFS, JSON_CMD_CFS_STOP)
 
             elif self.event == '-PYTHON_START-':
-                self.publish_cmd(JSON_CMD_SUBSYSTEM_PYTHON, JSON_CMD_PYTHON_START)
+                py_app_list = self.window[JSON_TLM_PY_APPS].get()
+                if py_app_list == JSON_VAL_NONE:
+                    sg.popup('No python apps on the remote target', title='Start Remote Python App')
+                else:
+                    py_app = self.select_py_app_gui(py_app_list, 'start')
+                    if len(py_app) > 0:
+                        self.publish_cmd(JSON_CMD_SUBSYSTEM_PYTHON, JSON_CMD_PYTHON_START, param=py_app)
                                  
             elif self.event == '-PYTHON_STOP-':
-                self.publish_cmd(JSON_CMD_SUBSYSTEM_PYTHON, JSON_CMD_PYTHON_STOP)
+                py_app_list = self.window[JSON_TLM_PY_APPS].get()
+                if py_app_list == JSON_VAL_NONE:
+                    sg.popup('No python apps on the remote target', title='Stop Remote Python App')
+                else:
+                    py_app = self.select_py_app_gui(py_app_list, 'stop')
+                    if len(py_app) > 0:
+                        self.publish_cmd(JSON_CMD_SUBSYSTEM_PYTHON, JSON_CMD_PYTHON_STOP, param=py_app)
 
             elif self.event == '-PYTHON_LIST_APPS-':
-                self.publish_cmd(JSON_CMD_SUBSYSTEM_PYTHON, mqttc.JSON_CMD_PYTHON_LIST_APPS)
+                self.publish_cmd(JSON_CMD_SUBSYSTEM_PYTHON, JSON_CMD_PYTHON_LIST_APPS)
+    
+    def select_py_app_gui(self, py_app_list, action_text):
+        """
+        Select the python app to be started or stopped. The action text should be lower case.
+        py_app_list is taken from the telemetry data so astericks may need to be remove for
+        scripts that are executing.
+        """
+        selected_app = ''
+        print(py_app_list)
+        py_app_list = py_app_list.split(',')
+        print(py_app_list)
+        b_pad  = ((0,2),(2,2))
+        b_font = ('Arial bold', 11)
+
+        layout = [
+                  [sg.Text(f'Select python app to {action_text} from the dropdown iist and click <Submit>\n', font=b_font)],
+                  [sg.Combo(py_app_list, pad=b_pad, font=b_font, enable_events=True, key="-PYTHON_APP-", default_value=py_app_list[0]),
+                   sg.Button('Submit', button_color=('SpringGreen4'), pad=b_pad, key='-SUBMIT-'),
+                   sg.Button('Cancel', button_color=('gray'), pad=b_pad, key='-CANCEL-')]
+                 ]      
+
+        window = sg.Window('Select Remote Python App', layout, resizable=True, modal=True)
+        
+        while True:
+        
+            event, values = window.read(timeout=200)
+        
+            if event in (sg.WIN_CLOSED, '-CANCEL-') or event is None:
+                break
+                
+            elif event == '-SUBMIT-':
+                selected_app = values['-PYTHON_APP-'].strip().strip('*')
+                break
+        
+        window.close()
+        return selected_app
 
 ###############################################################################
 
