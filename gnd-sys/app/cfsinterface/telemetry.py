@@ -301,7 +301,7 @@ class TelemetryServer(CfeEdsTarget):
     @abstractmethod
     def _recv_tlm_handler(self):
        
-       # If this handler is part fo a GUI then a time.sleep() is needed to prevent updates from
+       # If this handler is part of a GUI then a time.sleep() is needed to prevent updates from
        # being sent before the GUI is fully initialized
        raise NotImplementedError
         
@@ -316,9 +316,9 @@ class TelemetryServer(CfeEdsTarget):
         self._recv_tlm_thread.join()
 
     def shutdown(self):
-        logger.info("Telemetry Server shutdown started")
+        logger.info('Telemetry Server shutdown started')
         self._recv_tlm_thread.kill = True
-        logger.info("Telemetry Server shutdown complete")
+        logger.info('Telemetry Server shutdown complete')
 
     
 ###############################################################################
@@ -328,34 +328,49 @@ class TelemetrySocketServer(TelemetryServer):
     Manage a socket-based telemetry server.
     """
     
-    def __init__(self, mission, target, host_addr, recv_tlm_port, recv_tlm_timeout):
+    def __init__(self, mission, target, ip_addr, router_ctrl_port, server_tlm_port, server_tlm_timeout):
+        """
+        router_ctrl_port:
+          CmdTlmRouter prot that is used to command the router itself. This is not the
+          command port used by the router that forwards a process's commands to a remote
+          destination. This server uses the control port to notify the router when it
+          shuts down.
+        server_tlm_timeout:
+          > 0: Socket operations will raise a timeout exception if the timeout 
+               period value has elapsed before the operation has completed
+         == 0: Socket is put in non-blocking mode
+         None: Socket is put in blocking mode    
+        """
         super().__init__(mission, target)
 
-        self.host_addr = host_addr
-        self.recv_tlm_port = recv_tlm_port
-        self.recv_tlm_socket_addr = (self.host_addr, self.recv_tlm_port)
-        self.recv_tlm_timeout = recv_tlm_timeout
+        self.ip_addr = ip_addr
+        self.router_ctrl_port = router_ctrl_port
+        self.server_tlm_port = server_tlm_port
+        self.server_tlm_socket_addr = (self.ip_addr, self.server_tlm_port)
+        self.server_tlm_timeout = server_tlm_timeout
+        self.router_ctrl_socket_addr = (self.ip_addr, self.router_ctrl_port)
         
-        self.recv_tlm_socket = None
+        self.server_tlm_socket = None
+        self.router_ctrl_socket = None
         try:
-            self.recv_tlm_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.server_tlm_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.router_ctrl_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         except:
-            print("Error creating TelemetrySocketServer socket")
-            logger.error("Error creating TelemetrySocketServer socket")
+            logger.error("Error creating TelemetrySocketServer sockets")
         
         self._recv_tlm_thread = None
 
 
     def _recv_tlm_handler(self):
         
-        print("TelemetrySocketServer started receive telemetry handler thread")
+        print('TelemetrySocketServer started receive telemetry handler thread')
 
         time.sleep(2.0) #todo: Wait for GUI to init. If cFS running an event message occurs before GUI is up it will crash the system
         
         # Constructor sets a timeout so the thread will terminate if no packets
         while not self._recv_tlm_thread.kill:
             try:
-                datagram, host = self.recv_tlm_socket.recvfrom(4096) #TODO: Allow configurable buffer size
+                datagram, host = self.server_tlm_socket.recvfrom(4096) #TODO: Allow configurable buffer size
 
                 # Only accept datagrams with mimimum length of a telemetry header
                 if len(datagram) > 6:
@@ -386,12 +401,12 @@ class TelemetrySocketServer(TelemetryServer):
     
     def execute(self):
 
-        print("Starting telemetry server for " + str(self.recv_tlm_socket_addr))
-        self.recv_tlm_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.recv_tlm_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.recv_tlm_socket.bind(self.recv_tlm_socket_addr)
-        self.recv_tlm_socket.setblocking(False)
-        self.recv_tlm_socket.settimeout(self.recv_tlm_timeout)
+        logger.info("Starting telemetry server for " + str(self.server_tlm_socket_addr))
+        self.server_tlm_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.server_tlm_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_tlm_socket.bind(self.server_tlm_socket_addr)
+        self.server_tlm_socket.setblocking(False)
+        self.server_tlm_socket.settimeout(self.server_tlm_timeout)
         
         self._recv_tlm_thread = threading.Thread(target=self._recv_tlm_handler)
         
@@ -402,8 +417,12 @@ class TelemetrySocketServer(TelemetryServer):
 
 
     def shutdown(self):
-        self._recv_tlm_thread.kill = True
-        logger.info("TelemetrySocketServer shutting down")
+        logger.info('TelemetrySocketServer shutdown started')
+        datagram = str(self.server_tlm_port).encode('utf-8')  # TODO - Parameterize
+        self.router_ctrl_socket.sendto(datagram, self.router_ctrl_socket_addr)
+        self.router_ctrl_socket.close()
+        super().shutdown()
+        logger.info('TelemetrySocketServer shutdown complete')
 
     
 ###############################################################################
@@ -470,8 +489,8 @@ class TelemetryQueueServer(TelemetryServer):
 
 class TelemetryCmdLineClient(TelemetryObserver):
     """
-    Command line tool to  Helpful
-    for informal verification of a system configuration.
+    Command line tool is helpful for informal verification of a system
+    configuration.
     """
 
     def __init__(self, tlm_server: TelemetryServer, monitor_server = False):
@@ -565,23 +584,28 @@ class TelemetryCmdLineClient(TelemetryObserver):
 ###############################################################################
         
 def main():
-    
+    """
+    This main function serves as a TelemetrySocketServer test so the GND_TLM_PORT is
+    the cFS telemetry stream. When TelemetrySocketServer is used in Basecamp the CmdTlmRouter
+    object contains the cFS telemetry port.
+    """
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
-    MISSION    = config.get('CFS_TARGET', 'MISSION_EDS_NAME')
-    CFS_TARGET = config.get('CFS_TARGET', 'CPU_EDS_NAME')
-    HOST_ADDR  = config.get('NETWORK','CFS_HOST_ADDR')
-    TLM_PORT   = config.getint('NETWORK','CFS_RECV_TLM_PORT')
-    CFS_TARGET_TLM_TIMEOUT = config.getint('CFS_TARGET','RECV_TLM_TIMEOUT')
+    MISSION     = config.get('CFS_TARGET', 'MISSION_EDS_NAME')
+    CFS_TARGET  = config.get('CFS_TARGET', 'CPU_EDS_NAME')
+    CFS_IP_ADDR = config.get('NETWORK','CFS_IP_ADDR')
+    ROUTER_CTRL_PORT   = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
+    SERVER_TLM_PORT    = config.getint('NETWORK','GND_TLM_PORT')
+    SERVER_TLM_TIMEOUT = config.getint('NETWORK','GND_TLM_TIMEOUT')
     
-    system_string = "Mission: %s, Target: %s, Host: %s, Telemetry Port %d" % (MISSION, CFS_TARGET, HOST_ADDR, TLM_PORT)
+    system_string = f'Mission: {MISSION}, Target: {CFS_TARGET}, cFS IP Addr: {CFS_IP_ADDR}, Gnd Tlm Port {GND_TLM_PORT}'
     try:
-        telemetry_server = TelemetrySocketServer(MISSION, CFS_TARGET, HOST_ADDR, TLM_PORT, CFS_TARGET_TLM_TIMEOUT)
+        telemetry_server = TelemetrySocketServer(MISSION, CFS_TARGET, CFS_IP_ADDR, ROUTER_CTRL_PORT, SERVER_TLM_PORT, SERVER_TLM_TIMEOUT)
         telemetry_cmd_line_client = TelemetryCmdLineClient(telemetry_server, True)
-        print ("Telemetry objects created for " + system_string)
+        print (f'Telemetry objects created for {system_string}')
         
     except RuntimeError:
-        print("Error creating telemetry object for " + system_string)
+        print(f'Error creating telemetry object for {system_string}')
         sys.exit(2)
 
     #telemetry_cmd_line_client.reverse_eng()

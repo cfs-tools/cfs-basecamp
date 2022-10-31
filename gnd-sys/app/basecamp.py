@@ -17,7 +17,7 @@
       Provide the main application for cFS Basecamp
 
     Notes:
-      1. Assumes teh exct same app name is used for
+      1. Assumes the exact same app name is used for
           - git repo,  FSW object, app directory 
       
 """
@@ -65,12 +65,12 @@ import PySimpleGUI as sg
 
 import EdsLib
 import CFE_MissionLib
-from cfsinterface import CmdTlmRouter
+from cfsinterface import CmdTlmRouter, TargetControl
 from cfsinterface import Cfe, EdsMission
 from cfsinterface import TelecommandInterface, TelecommandScript
 from cfsinterface import TelemetryMessage, TelemetryObserver, TelemetryQueueServer
 from tools import CreateApp, ManageTutorials, crc_32c, datagram_to_str, compress_abs_path, TextEditor
-from tools import AppStore, ManageUsrApps, AppSpec, TargetControl, CfeTopicIds, JsonTblTopicMap
+from tools import AppStore, ManageUsrApps, AppSpec, CfeTopicIds, JsonTblTopicMap
 
 # Shell script names should not change and are considered part of the application
 # Therefore they can be defined here and not in a configuration file
@@ -1089,10 +1089,13 @@ class App():
         self.EDS_MISSION_NAME       = self.config.get('CFS_TARGET','MISSION_EDS_NAME')
         self.EDS_CFS_TARGET_NAME    = self.config.get('CFS_TARGET','CPU_EDS_NAME')
 
-        self.CFS_TARGET_HOST_ADDR   = self.config.get('NETWORK','CFS_HOST_ADDR')
-        self.CFS_TARGET_CMD_PORT    = self.config.getint('NETWORK','CFS_SEND_CMD_PORT')
-        self.CFS_TARGET_TLM_PORT    = self.config.getint('NETWORK','CFS_RECV_TLM_PORT')
-        self.CFS_TARGET_TLM_TIMEOUT = float(self.config.getint('CFS_TARGET','RECV_TLM_TIMEOUT'))/1000.0
+        self.CFS_IP_ADDR       = self.config.get('NETWORK','CFS_IP_ADDR')
+        self.CFS_CMD_PORT = self.config.getint('NETWORK','CFS_CMD_PORT')
+
+        self.GND_IP_ADDR      = self.config.get('NETWORK','GND_IP_ADDR')
+        self.GND_TLM_PORT     = self.config.getint('NETWORK','GND_TLM_PORT')
+        self.GND_TLM_TIMEOUT  = float(self.config.getint('NETWORK','GND_TLM_TIMEOUT'))/1000.0
+        self.ROUTER_CTRL_PORT = self.config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
         
         self.GUI_CMD_PAYLOAD_TABLE_ROWS = self.config.getint('GUI','CMD_PAYLOAD_TABLE_ROWS')
 
@@ -1150,10 +1153,10 @@ class App():
         
     def enable_telemetry(self):
         """
-        The use must enable telemetry every time the cFS is started and most if not all users want
+        The user must enable telemetry every time the cFS is started and most if not all users want
         the time fly wheel event disabled as well so it is also done here
         """
-        self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'DestIp': self.CFS_TARGET_HOST_ADDR})
+        self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'DestIp': self.CFS_IP_ADDR})
         # Disable flywheel events. Assume new cFS instance running so set time_event_filter to false 
         self.cfe_time_event_filter = False 
         time.sleep(0.5)
@@ -1168,9 +1171,9 @@ class App():
             evs_cmd = 'AddEventFilterCmd'
             self.cfe_time_event_filter = True
                         
-            self.send_cfs_cmd('CFE_EVS', evs_cmd,  {'AppName': 'CFE_TIME', 'EventID': Cfe.CFE_TIME_FLY_ON_EID, 'Mask': Cfe.CFE_EVS_FIRST_ONE_STOP})
-            time.sleep(0.5)
-            self.send_cfs_cmd('CFE_EVS', evs_cmd,  {'AppName': 'CFE_TIME', 'EventID': Cfe.CFE_TIME_FLY_OFF_EID, 'Mask': Cfe.CFE_EVS_FIRST_ONE_STOP})
+        self.send_cfs_cmd('CFE_EVS', evs_cmd,  {'AppName': 'CFE_TIME', 'EventID': Cfe.CFE_TIME_FLY_ON_EID, 'Mask': Cfe.CFE_EVS_FIRST_ONE_STOP})
+        time.sleep(0.5)
+        self.send_cfs_cmd('CFE_EVS', evs_cmd,  {'AppName': 'CFE_TIME', 'EventID': Cfe.CFE_TIME_FLY_OFF_EID, 'Mask': Cfe.CFE_EVS_FIRST_ONE_STOP})
 
     def ComingSoonPopup(self, feature_str):
         sg.popup(feature_str, title='Coming soon...', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
@@ -1185,7 +1188,7 @@ class App():
             os.killpg(os.getpgid(self.cfs_subprocess.pid), signal.SIGTERM)  # Send the signal to all the process groups
         self.cmd_tlm_router.shutdown()
         self.tlm_server.shutdown()
-        time.sleep(self.CFS_TARGET_TLM_TIMEOUT)
+        time.sleep(self.GND_TLM_TIMEOUT)
         self.window.close()
         logger.info("Completed app shutdown sequence")
 
@@ -1330,7 +1333,7 @@ class App():
 
         #todo: Add check if tlm_plots been run before or is there logic in router?
         if (len(tlm_plot_cmd_parms)>0):
-            self.cmd_tlm_router.add_tlm_dest(self.config.getint('NETWORK','TLM_PLOT_TLM_PORT'))                
+            self.cmd_tlm_router.add_gnd_tlm_dest(self.config.getint('NETWORK','TLM_PLOT_TLM_PORT'))                
             self.tlm_plot = sg.execute_py_file("tlmplot.py", parms=tlm_plot_cmd_parms, cwd=self.cfs_interface_dir)
 
     def create_window(self, sys_target_str, sys_comm_str):
@@ -1406,7 +1409,7 @@ class App():
     def execute(self):
     
         sys_target_str = "Basecamp version %s initialized with mission %s, target %s on %s" % (self.APP_VERSION, self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, datetime.now().strftime("%m/%d/%Y"))
-        sys_comm_str = "Basecamp target host %s, command port %d, telemetry port %d" % (self.CFS_TARGET_HOST_ADDR, self.CFS_TARGET_CMD_PORT, self.CFS_TARGET_TLM_PORT)
+        sys_comm_str = "Basecamp target host %s, command port %d, telemetry port %d" % (self.CFS_IP_ADDR, self.CFS_CMD_PORT, self.GND_TLM_PORT)
     
         logger.info(sys_target_str)
         logger.info(sys_comm_str)
@@ -1416,8 +1419,9 @@ class App():
         try:
 
              # Command & Telemetry Router
-            
-             self.cmd_tlm_router = CmdTlmRouter(self.CFS_TARGET_HOST_ADDR, self.CFS_TARGET_CMD_PORT, self.CFS_TARGET_HOST_ADDR, self.CFS_TARGET_TLM_PORT, self.CFS_TARGET_TLM_TIMEOUT)
+                             
+             self.cmd_tlm_router = CmdTlmRouter(self.CFS_IP_ADDR, self.CFS_CMD_PORT, 
+                                   self.GND_IP_ADDR, self.ROUTER_CTRL_PORT, self.GND_TLM_PORT, self.GND_TLM_TIMEOUT)
              self.cfs_cmd_output_queue = self.cmd_tlm_router.get_cfs_cmd_queue()
              self.cfs_cmd_input_queue  = self.cmd_tlm_router.get_cfs_cmd_source_queue()
              
@@ -1465,7 +1469,7 @@ class App():
                 datagram = self.cfs_cmd_input_queue.get()[0]
                 self.cfs_cmd_output_queue.put(datagram)
                 self.display_event("Sent remote process command: " + datagram_to_str(datagram))
-                print("Sent remote process command: " + datagram_to_str(datagram))
+                logger.debug("Sent remote process command: " + datagram_to_str(datagram))
 
             #######################
             ##### MENU EVENTS #####
@@ -1513,20 +1517,20 @@ class App():
                 self.enable_telemetry()
 
             elif self.event == 'Run Script':
-                self.cmd_tlm_router.add_cmd_source(self.config.getint('NETWORK','SCRIPT_RUNNER_CMD_PORT'))
-                self.cmd_tlm_router.add_tlm_dest(self.config.getint('NETWORK','SCRIPT_RUNNER_TLM_PORT'))
+                self.cmd_tlm_router.add_cfs_cmd_source(self.config.getint('NETWORK','SCRIPT_RUNNER_CMD_PORT'))
+                self.cmd_tlm_router.add_gnd_tlm_dest(self.config.getint('NETWORK','SCRIPT_RUNNER_TLM_PORT'))
                 self.script_runner = sg.execute_py_file("scriptrunner.py", cwd=self.cfs_interface_dir)
 
             elif self.event == 'Browse Files' or self.event == '-FILE_BROWSER-':
-                self.cmd_tlm_router.add_cmd_source(self.config.getint('NETWORK','FILE_BROWSER_CMD_PORT'))
-                self.cmd_tlm_router.add_tlm_dest(self.config.getint('NETWORK','FILE_BROWSER_TLM_PORT'))
+                self.cmd_tlm_router.add_cfs_cmd_source(self.config.getint('NETWORK','FILE_BROWSER_CMD_PORT'))
+                self.cmd_tlm_router.add_gnd_tlm_dest(self.config.getint('NETWORK','FILE_BROWSER_TLM_PORT'))
                 self.file_browser = sg.execute_py_file("filebrowser.py", cwd=self.cfs_interface_dir)
 
             elif self.event == 'Plot Data':
                 self.launch_tlmplot()
                 
             elif self.event == 'Control Remote Target':
-                tools_dir = os.path.join(self.path, "tools")
+                tools_dir = os.path.join(self.path, "cfsinterface")
                 self.target_control = sg.execute_py_file("targetcontrol.py", cwd=tools_dir)
 
 
@@ -1794,7 +1798,7 @@ class App():
                     
                     app_name = self.tlm_server.get_app_name_from_topic(tlm_topic)
                     tlm_screen_cmd_parms = f'{self.tlm_screen_port} {app_name} {tlm_topic}'
-                    self.cmd_tlm_router.add_tlm_dest(self.tlm_screen_port)
+                    self.cmd_tlm_router.add_gnd_tlm_dest(self.tlm_screen_port)
                     self.tlm_screen = sg.execute_py_file("tlmscreen.py", parms=tlm_screen_cmd_parms, cwd=self.cfs_interface_dir)
                     self.display_event(f'Created telemetry screen for {tlm_topic} on port {self.tlm_screen_port}')
                     self.tlm_screen_port += 1

@@ -18,15 +18,16 @@
     Notes:
       1. This design supports a singe router connected to a single cFS
          instance running UDP versions of the command ingest and telemetru
-         output aps. 
+         output apps. 
       2. The app that creates the router communicates via queues to the router.
-         The router supports additional command and telemetry UDP telemetry.
+         The router supports additional UDP command and telemetry connections.
          Commands from mutliple UDP command sockets are not sent to the cFS and
          are placed in a queue that can be read by the parent app. This allows
          the app to serve as a single point for managing flight commands. 
-         Telemetry is routed from the cFS sokect to multiple telemetry
+         Telemetry is routed from the cFS socket to multiple telemetry
          monitors.
-      3. 
+      3. 'Ground telemetry' is cFS telemetry sent to multiple ground telemetry
+         destinations. It is not telemetry from a ground source.
          
 """
 import socket
@@ -39,10 +40,9 @@ logger = logging.getLogger("router")
 
 ###############################################################################
 
-class CfsCmdSource():
+class CmdSource():
     """
-    Provide a socket to receive cFS commands from a Basecamp CmdTlmProcess
-    object.
+    Provide a socket to receive command and queue commands.
     """
     def __init__(self, ip_addr, port, timeout):
         
@@ -65,8 +65,7 @@ class CfsCmdSource():
             while True:
                 datagram, host = self.socket.recvfrom(1024)
                 queue.put((datagram, host))
-                logger.info(f"Received cmd source datagram: size={len(datagram)} {host}")
-                print(f"Received cmd source datagram: size={len(datagram)} {host}")
+                logger.debug(f'Received cmd source datagram: size={len(datagram)} {host}')
         except socket.timeout:
             pass
 
@@ -74,28 +73,41 @@ class CfsCmdSource():
 ###############################################################################
 
 class CmdTlmRouter(Thread):
-
-    def __init__(self, cfs_ip_addr, cfs_cmd_port, gnd_ip_addr, gnd_tlm_port, gnd_tlm_timeout):
+    """
+    The router and cFS command input designs are identical. Using a queue for
+    router control commands is a little overkill since the only ground command 
+    is to remove a telemetry port. 
+    """
+    def __init__(self, cfs_ip_addr, cfs_cmd_port, 
+                 gnd_ip_addr, router_ctrl_port, gnd_tlm_port, gnd_tlm_timeout):
     
         super().__init__()
 
         self.enabled = True
 
-        # COMMANDS
+        # cFS Commands
                 
-        self.cfs_cmd_socket = None
         self.cfs_ip_addr    = cfs_ip_addr
+        self.cfs_cmd_socket = None
         self.cfs_cmd_port   = cfs_cmd_port
-        self.cfs_cmd_queue  = Queue()
         self.cfs_cmd_socket_addr = (self.cfs_ip_addr, self.cfs_cmd_port)
         
         self.cfs_cmd_source = {}
         self.cfs_cmd_source_queue = Queue()
+        self.cfs_cmd_queue  = Queue()
         
-        # TELEMETRY
+        # Ground Commands & Telemetry
         
-        self.gnd_tlm_socket = None
         self.gnd_ip_addr    = gnd_ip_addr
+        
+        self.router_ctrl_socket = None
+        self.router_ctrl_port   = router_ctrl_port
+        self.router_ctrl_socket_addr = (self.gnd_ip_addr, self.router_ctrl_port)
+        self.router_ctrl_source = {}
+        self.router_ctrl_queue  = Queue()
+        self.add_router_ctrl_source(self.router_ctrl_port)
+
+        self.gnd_tlm_socket = None
         self.gnd_tlm_port   = gnd_tlm_port
         self.gnd_tlm_queue  = Queue()
         self.gnd_tlm_socket_addr = (self.gnd_ip_addr, self.gnd_tlm_port)
@@ -114,62 +126,67 @@ class CmdTlmRouter(Thread):
         self.tlm_dest_connect.kill   = False
         self.tlm_dest_connect.daemon = True
         
-        logger.info(f"CmdTlmRouter Init: cfs_cmd_socket{self.cfs_cmd_socket_addr}, gnd_tlm_socket{self.gnd_tlm_socket_addr}")
+        logger.info(f'CmdTlmRouter Init: cfs_cmd_socket{self.cfs_cmd_socket_addr}, gnd_tlm_socket{self.gnd_tlm_socket_addr}')
 
 
-    def get_cfs_cmd_source_queue(self):
-        return self.cfs_cmd_source_queue
-
-        
+    # cFS Commands
+    
     def get_cfs_cmd_queue(self):
         return self.cfs_cmd_queue
 
+    def add_cfs_cmd_source(self, cmd_port):
+        self.cfs_cmd_source[cmd_port] = CmdSource(self.cfs_ip_addr, cmd_port, 0.2)  #TODO - Decide on timeout management
+        
+    def get_cfs_cmd_source_queue(self):
+        return self.cfs_cmd_source_queue
+
+    def remove_cfs_cmd_source(self, cmd_port):
+        try:
+            del self.cfs_cmd_source[cmd_port]
+        except KeyError:
+            logger.error(f'Error removing nonexitent command source {cmd_port} from cfs_cmd_source dictionary')  
+        
+        
+    # Ground Commands & Telemetry
+    
+    def get_router_ctrl_queue(self):
+        return self.router_ctrl_queue
+
+    def add_router_ctrl_source(self, cmd_port):
+        self.router_ctrl_source[cmd_port] = CmdSource(self.gnd_ip_addr, cmd_port, 0.1)  #TODO - Decide on timeout management
+        
+    def remove_router_ctrl_source(self, cmd_port):
+        try:
+            del self.router_ctrl_source[cmd_port]
+        except KeyError:
+            logger.error(f'Error removing nonexitent command source {cmd_port} from router_ctrl_source dictionary')  
 
     def get_gnd_tlm_queue(self):
         return self.gnd_tlm_queue
 
-
-    def add_cmd_source(self, cmd_port):
-        self.cfs_cmd_source[cmd_port] = CfsCmdSource(self.gnd_ip_addr, cmd_port, 0.1)  #todo - Decide on timeout management
-
-        
-    def remove_cmd_source(self, cmd_port):
-        try:
-            del self.cfs_cmd_source[cmd_port]
-        except KeyError:
-            logger.error("Error removing nonexitent command source %d from cfs_cmd_source dictionary" % cmd_port)  
-        
-        
-    def add_tlm_dest(self, tlm_port):
+    def add_gnd_tlm_dest(self, tlm_port):
         self.tlm_dest_mutex.acquire()
         self.tlm_dest_addr[tlm_port] = (self.gnd_ip_addr, tlm_port)
         self.tlm_dest_mutex.release()
 
-    def remove_tlm_dest(self, tlm_port):
+    def remove_gnd_tlm_dest(self, tlm_port):
         self.tlm_dest_mutex.acquire()
         try:
             del self.tlm_dest_addr[tlm_port]
         except KeyError:
-            logger.error("Error removing nonexitent telemetry source %d from cfs_cmd_source dictionary" % cmd_port)  
-        self.tlm_dest_mutex.release()
-        self.tlm_dest_mutex.acquire()
-        self.tlm_dest_addr[tlm_port] = (self.gnd_ip_addr, tlm_port)
+            logger.error(f'Error removing nonexitent telemetry source {cmd_port} from cfs_cmd_source dictionary')  
         self.tlm_dest_mutex.release()
     
     def run(self):
 
-        # COMMANDS
+        # cFS Commands
         
         self.cfs_cmd_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         
-        # TELEMETRY
+        # Ground Commands & Telemetry
         
-        self.gnd_tlm_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.gnd_tlm_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.gnd_tlm_socket.bind(self.gnd_tlm_socket_addr)
-        self.gnd_tlm_socket.setblocking(False)
-        self.gnd_tlm_socket.settimeout(self.gnd_tlm_timeout)
-
+        self.router_ctrl_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        
         self.gnd_tlm_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.gnd_tlm_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.gnd_tlm_socket.bind(self.gnd_tlm_socket_addr)
@@ -185,69 +202,89 @@ class CmdTlmRouter(Thread):
             # shutting down
             pass
         except Exception as e:
-            logger.error(f"CmdTlmRouter stopped due to error: {e}")
+            logger.error(f'CmdTlmRouter stopped due to error: {e}')
 
         self.shutdown()
 
 
     def manage_routes(self):
+        """
+        The order of processing is intentional in terms of priority. However, Basecamp
+        is not intended to support a cFS mission, so system performance just needs to
+        be acceptable for STEM education type projects.
+        """
+        # Process cFS Commands
+        for cmd_source in self.cfs_cmd_source:
+            self.cfs_cmd_source[cmd_source].read_cmd_port(self.cfs_cmd_source_queue)
+
+        while not self.cfs_cmd_queue.empty():
+            datagram = self.cfs_cmd_queue.get()
+            self.cfs_cmd_socket.sendto(datagram, self.cfs_cmd_socket_addr)
+            logger.debug(f'cFS command dequeued datagram:\n{self.datagram_to_str(datagram)}')
+
+        # Send telemetry to ground destinations 
         try:
             while True:
                 datagram, host = self.gnd_tlm_socket.recvfrom(4096)
-                logger.debug(f"Received datagram: size={len(datagram)} {host}")
-                logger.debug(self.print_datagram(datagram))
+                logger.debug(f'Received datagram: size={len(datagram)} {host}\n{self.datagram_to_str(datagram)}')
                 self.gnd_tlm_queue.put((datagram, host))
                 self.tlm_dest_mutex.acquire()
                 for dest_addr in self.tlm_dest_addr:
                     self.tlm_dest_socket.sendto(datagram, self.tlm_dest_addr[dest_addr])
-                    logger.debug("Sending tlm to destination " + str(dest_addr))
+                    logger.debug(f'Sending tlm to destination {dest_addr}')
                 self.tlm_dest_mutex.release()
                 
         except socket.timeout:
             pass
 
-        while not self.cfs_cmd_queue.empty():
-            datagram = self.cfs_cmd_queue.get()
-            self.cfs_cmd_socket.sendto(datagram, self.cfs_cmd_socket_addr)
-            logger.debug(self.print_datagram(datagram))
+        # Router Control Commands
+        for cmd_source in self.router_ctrl_source:
+            self.router_ctrl_source[cmd_source].read_cmd_port(self.router_ctrl_queue)
 
-        for cmd_source in self.cfs_cmd_source:
-            self.cfs_cmd_source[cmd_source].read_cmd_port(self.cfs_cmd_source_queue)
-
+        # Only type of datagram recognized which is the port number of a telemetry destination to 
+        # be removed
+        while not self.router_ctrl_queue.empty():
+            datagram = self.router_ctrl_queue.get()
+            port = int(datagram[0].decode())
+            logger.debug(f'Ground command datagram dequeued: {datagram[0].decode()}')
+            if port in self.tlm_dest_addr:
+                self.remove_gnd_tlm_dest(port)
+                logger.info(f'Removed port {port}')
 
     def tlm_dest_connect_thread(self):
         
-        logger.info("Starting tlm_dest_connect_thread")
+        logger.info('Starting tlm_dest_connect_thread')
         while not self.tlm_dest_connect.kill:
             datagram, host = self.tlm_dest_connect_socket.recvfrom(1024)
             self.tlm_dest_mutex.acquire()
-            print("Accepted connection from " + str(host))
-            print("Datagram = ", datagram.decode().split(','))
+            print(f'Accepted connection from {host}')
+            print('Datagram = ', datagram.decode().split(','))
             dest_addr = datagram.decode().split(',')
             self.tlm_dest_addr[int(dest_addr[1])] = (dest_addr[0],int(dest_addr[1]))
             self.tlm_dest_mutex.release()
-            logger.info("Accepted connection from " + str(host))
+            logger.info(f'Accepted connection from {host}')
 
 
-    def print_datagram(self, datagram):
+    def datagram_to_str(self, datagram):
         output = []
-
         for chunk in [datagram[i:i + 8] for i in range(0, len(datagram), 8)]:
-            output.append(" ".join([f"0x{byte:02X}" for byte in chunk]))
+            output.append(" ".join([f'0x{byte:02X}' for byte in chunk]))
 
         return "\n".join(output)
 
     
     def shutdown(self):
-        logger.info("CmdTlm router shutdown started")
+        logger.info('CmdTlm router shutdown started')
         self.enabled = False
         self.tlm_dest_connect.kill = True
         self.cfs_cmd_socket.close()
+        self.router_ctrl_socket.close()
         self.gnd_tlm_socket.close()
         self.tlm_dest_socket.close()
         self.tlm_dest_connect_socket.close()
-        logger.info("CmdTlm router shutdown completed")
+        logger.info('CmdTlm router shutdown completed')
         
+
 ###############################################################################
 """
 import socket

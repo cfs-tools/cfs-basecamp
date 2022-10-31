@@ -111,9 +111,9 @@ class TlmPlot():
     self.tlm_server.get_tlm_val(app_name, tlm_msg_name, parameter)
         Example current value usage: get_tlm_val("CFE_ES", "HK_TLM", "Sequence")
     """
-    def __init__(self, gnd_ip_addr, tlm_port, tlm_timeout, min_value, max_value):
+    def __init__(self, gnd_ip_addr, router_ctrl_port, plot_tlm_port, plot_tlm_timeout, min_value, max_value):
 
-        self.tlm_server = TelemetrySocketServer('samplemission', 'cpu1', gnd_ip_addr, tlm_port, tlm_timeout)
+        self.tlm_server = TelemetrySocketServer('samplemission', 'cpu1', gnd_ip_addr, router_ctrl_port, plot_tlm_port, plot_tlm_timeout)
 
         self.app_name    = ''
         self.tlm_topic   = ''
@@ -256,9 +256,10 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
 
-    cfs_host_addr = config.get('NETWORK', 'CFS_HOST_ADDR')
-    tlm_port = config.getint('NETWORK', 'TLM_PLOT_TLM_PORT')
+    cfs_ip_addr = config.get('NETWORK', 'CFS_IP_ADDR')
+    router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
+    plot_tlm_port    = config.getint('NETWORK', 'TLM_PLOT_TLM_PORT')
 
-    tlm_plot = TlmPlot(cfs_host_addr, tlm_port, 1.0, min_value, max_value)
+    tlm_plot = TlmPlot(cfs_ip_addr, router_ctrl_port, plot_tlm_port, 1.0, min_value, max_value)
     tlm_plot.execute(app_name, tlm_topic, tlm_payload, tlm_element) 
     

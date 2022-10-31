@@ -35,10 +35,72 @@
 #include "cfe.h"
 #include "pktutil.h"
 
+/*******************************/
+/** Local Function Prototypes **/
+/*******************************/
 
-/*********************/
-/** Local Functions **/
-/*********************/
+static int HexChar2Bin(char *ValOut, const char HexIn);
+
+
+/******************************************************************************
+** Function: PktUtil_HexDecode
+**
+**   1. InBuf must be formatted identically to the algorithm used by 
+**      PktUtil_HexEncode() which also means in must contain an even number
+**      of bytes.
+*/
+size_t PktUtil_HexDecode(uint8 *OutBuf, const char *InBuf)
+{
+
+   size_t Len;
+   size_t i;
+   char   HiNibble, LoNibble;
+
+   if (InBuf == NULL || *InBuf == '\0' || OutBuf == NULL)
+      return 0;
+
+   Len = strlen(InBuf);
+   if (Len % 2 != 0)
+      return 0;
+   Len /= 2;
+   memset(OutBuf, 'A', Len);
+   for (i=0; i<Len; i++)
+   {
+      if (!HexChar2Bin(&HiNibble, InBuf[i*2]) || !HexChar2Bin(&LoNibble, InBuf[i*2+1]))
+      {
+         return 0;
+      }
+      (OutBuf)[i] = (HiNibble << 4) | LoNibble;
+   }
+
+   return Len;
+
+} /* End PktUtil_HexDecode() */
+
+
+/******************************************************************************
+** Function: PktUtil_HexEncode
+**
+** Notes:
+**   1. Each binary numeric value is encoded using 2 hex digits regardless of 
+**      whether the numeric value could be represented by one digit. Each byte
+**      has a value between 0-255 and is represented by 0x00-0xFF. As a result,
+**      encoded buffer will always be twice the size of binary.
+**   2. The caller is responsible for ensuring the output buffer is big enough
+**      to hold the encoded binary.  
+*/
+void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t Len)
+{
+   size_t  i;
+
+   for (i=0; i<Len; i++)
+   {
+      OutBuf[i*2]   = "0123456789ABCDEF"[InBuf[i] >> 4];
+      OutBuf[i*2+1] = "0123456789ABCDEF"[InBuf[i] & 0x0F];
+   }
+   OutBuf[Len*2] = '\0';
+
+} /* End PktUtil_HexEncode() */
 
 
 /******************************************************************************
@@ -135,4 +197,32 @@ bool PktUtil_IsPacketFiltered(const CFE_MSG_Message_t *MsgPtr, const PktUtil_Fil
 
 } /* End of PktUtil_IsPacketFiltered() */
 
+
+/******************************************************************************
+** Function: HexChar2Bin
+**
+*/
+static int HexChar2Bin(char *ValOut, const char HexIn)
+{
+
+   if (HexIn >= '0' && HexIn <= '9') 
+   {
+      *ValOut = HexIn - '0';
+   }
+   else if (HexIn >= 'A' && HexIn <= 'F')
+   {
+      *ValOut = HexIn - 'A' + 10;
+   }
+   else if (HexIn >= 'a' && HexIn <= 'f')
+   {
+      *ValOut = HexIn - 'a' + 10;
+   }
+   else
+   {
+      return 0;
+   }
+
+   return 1;
+	
+} /* End HexChar2Bin() */
 

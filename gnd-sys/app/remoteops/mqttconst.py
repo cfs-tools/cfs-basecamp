@@ -83,6 +83,8 @@ JSON telemetry message constants:
 }
 """
 
+JSON_TLM_IP_ADDR  = 'ip-addr'
+
 JSON_TLM_SEQ_CNT  = 'seq-cnt'
 JSON_TLM_CMD_CNT  = 'cmd-cnt'
 JSON_TLM_EVENT    = 'event'

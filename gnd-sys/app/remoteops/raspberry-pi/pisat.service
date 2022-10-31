@@ -9,5 +9,6 @@ Type=idle
 User=pi
 ExecStart=/usr/bin/python3 /home/pi/adafruit/discrete_demo.py
 
+
 [Install]
 WantedBy=multi-user.target

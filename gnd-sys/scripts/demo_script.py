@@ -1,7 +1,7 @@
 """
-This demo script serves as a template for new user scripts. cFSAT is not
-intended to be a full featured ground system so the ScriptRunner context
-provides sending commands and receiving/waiting on telemetry values.
+This demo script serves as a template for new user scripts. Basecamp is
+not intended to be a full featured ground system so the ScriptRunner
+context provides sending commands and receiving/waiting on telemetry values.
 
 The script executes in the context of a ScriptRunner object which is a
 CmdTlmProcess child class.

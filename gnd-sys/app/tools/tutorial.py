@@ -172,17 +172,17 @@ class Tutorial():
         self.json = TutorialJson(os.path.join(tutorial_path, TUTORIAL_JSON_FILE))
         
         self.lesson_path = os.path.join(tutorial_path,LESSON_DIR)
-        logger.info("self.lesson_path  = " + self.lesson_path)
+        logger.debug("self.lesson_path  = " + self.lesson_path)
         self.lesson_list = [int(l) for l in os.listdir(self.lesson_path) if l.isnumeric()]
         self.lesson_list.sort()
-        logger.info("self.lesson_list = " + str(self.lesson_list))
+        logger.debug("self.lesson_list = " + str(self.lesson_list))
         self.lesson_objs = {}
         for l in self.lesson_list:
             lesson_num_path = os.path.join(self.lesson_path, str(l))
-            logger.info("lesson_num_path = " + lesson_num_path)
+            logger.debug("lesson_num_path = " + lesson_num_path)
             lesson_pngs = [f for f in os.listdir(lesson_num_path) if f.lower().endswith('.png')]
             lesson_pngs.sort()
-            logger.info("lesson_pngs = " + str(lesson_pngs))
+            logger.debug("lesson_pngs = " + str(lesson_pngs))
             self.lesson_objs[l] = Lesson(l, lesson_num_path, lesson_pngs)
         
         self.display = True

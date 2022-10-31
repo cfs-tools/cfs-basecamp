@@ -14,10 +14,10 @@
     GNU Affero General Public License for more details.
 
     Purpose:
-        Provide classes that manage the MQTT interface to a remote target
+      Provide classes that manage the MQTT interface to a remote target
         
     Notes:    
-      None
+      None 
        
 """
 
@@ -26,6 +26,9 @@ import time
 import os
 import configparser
 import json
+import socket
+import fcntl
+import struct
 import logging
 logger = logging.getLogger(__name__)
 
@@ -33,20 +36,33 @@ import paho.mqtt.client as mqtt
 import PySimpleGUI as sg
 
 if __name__ == '__main__':
-    sys.path.append("../remoteops")
-    from mqttconst import *
+    sys.path.append('..')
+    from cfeconstants  import Cfe
+    from cmdtlmprocess import CmdProcess
 else:
-    from remoteops import mqttconst
+    from .cfeconstants  import Cfe
+    from .cmdtlmprocess import CmdProcess
+from remoteops import mqttconst as mc
 
 ###############################################################################
 
-class TargetControl():    
+class TargetControl(CmdProcess):
     """
     Manage the target interface 
     """
-    def __init__(self, target_mqtt_topic, broker_addr, broker_port, client_name):
+    def __init__(self, gnd_ip_addr, router_cmd_port, 
+                target_mqtt_topic, broker_addr, broker_port, client_name):
         """
         """
+        super().__init__(gnd_ip_addr, router_cmd_port)
+        
+        self.ip_addr = self.get_ip_addr('ens33')
+        print(f'ip_addr: {self.ip_addr}')
+        
+        # cFS Configuration        
+        self.cfe_time_event_filter = False
+        
+        # MQTT Configuration        
         self.target_mqtt_topic = target_mqtt_topic
         self.broker_addr = broker_addr
         self.broker_port = broker_port
@@ -54,15 +70,24 @@ class TargetControl():
         self.client_connected = False
         self.client = None
                 
-        self.cmd_topic = f'{target_mqtt_topic}/{MQTT_TOPIC_CMD}'
-        self.tlm_topic = f'{target_mqtt_topic}/{MQTT_TOPIC_TLM}'
+        self.cmd_topic = f'{target_mqtt_topic}/{mc.MQTT_TOPIC_CMD}'
+        self.tlm_topic = f'{target_mqtt_topic}/{mc.MQTT_TOPIC_TLM}'
 
-        self.json_tlm_keys =  [JSON_TLM_SEQ_CNT, JSON_TLM_CMD_CNT, JSON_TLM_EVENT,
-                               JSON_TLM_CFS_EXE, JSON_TLM_CFS_APPS,
-                               JSON_TLM_PY_EXE,  JSON_TLM_PY_APPS]
+        self.json_tlm_keys =  [mc.JSON_TLM_IP_ADDR, mc.JSON_TLM_SEQ_CNT,
+                               mc.JSON_TLM_CMD_CNT, mc.JSON_TLM_EVENT,
+                               mc.JSON_TLM_CFS_EXE, mc.JSON_TLM_CFS_APPS,
+                               mc.JSON_TLM_PY_EXE,  mc.JSON_TLM_PY_APPS]
 
         self.window = None
         
+    def get_ip_addr(self, ifname):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        return socket.inet_ntoa(fcntl.ioctl(
+            s.fileno(),
+            0x8915,  # SIOCGIFADDR
+            struct.pack('256s', ifname[:15].encode('utf-8'))
+        )[20:24])
+
     def client_on_connect(self, client, userdata, flags, rc):
         """
         """
@@ -105,7 +130,7 @@ class TargetControl():
         """
         """
         payload = '{"%s": "%s", "%s": "%s"}' % \
-                  (subsystem, cmd, JSON_CMD_PARAMETER, param)  
+                  (subsystem, cmd, mc.JSON_CMD_PARAMETER, param)  
         print(f'Publish: {self.cmd_topic}, {payload}')
         self.client.publish(self.cmd_topic, payload)
 
@@ -116,6 +141,7 @@ class TargetControl():
         a JSON telemetry object with the following fields:
         
             {
+                "ip-addr":  "x.x.x.x",
                 "seq-cnt":  integer,
                 "cmd-cnt":  integer,
                 "event":    "Event message string",
@@ -138,6 +164,20 @@ class TargetControl():
                 self.window[key].update(tlm[key])
             #TODO - Is it an error to have keys not recognized by this GUI?
             
+
+    def enable_cfs_tlm(self):
+        self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'DestIp': self.ip_addr})
+        # CFE_TIME does not configure an event filter so the first time through add an event filter to CFE_TIME
+        # Set and add filter commands have identical parameters
+        if self.cfe_time_event_filter:
+            evs_cmd = 'SetFilterCmd'
+        else:
+            evs_cmd = 'AddEventFilterCmd'
+            self.cfe_time_event_filter = True                        
+        self.send_cfs_cmd('CFE_EVS', evs_cmd,  {'AppName': 'CFE_TIME', 'EventID': Cfe.CFE_TIME_FLY_ON_EID, 'Mask': Cfe.CFE_EVS_FIRST_ONE_STOP})
+        time.sleep(0.5)
+        self.send_cfs_cmd('CFE_EVS', evs_cmd,  {'AppName': 'CFE_TIME', 'EventID': Cfe.CFE_TIME_FLY_OFF_EID, 'Mask': Cfe.CFE_EVS_FIRST_ONE_STOP})
+
     def create_window(self):
 
         hdr_label_font = ('Arial bold',12)
@@ -146,7 +186,7 @@ class TargetControl():
         but_text_size     = (9,1)
         tlm_label_size    = (7,1)
         
-        centered_title = [[sg.Text('MQTT Client ', font=hdr_label_font), sg.Text('Disconnected', font=hdr_label_font, key='-CLIENT_STATE-')]]
+        centered_title = [[sg.Text('MQTT Client:', font=hdr_label_font), sg.Text('Disconnected', font=hdr_label_font, key='-CLIENT_STATE-')]]
         
         layout = [
             [sg.Column(centered_title, vertical_alignment='center', justification='center')],
@@ -166,27 +206,28 @@ class TargetControl():
                 sg.Button('Enable Tlm', size=but_text_size,     font=hdr_label_font, enable_events=True, key='-CFS_ENA_TLM-', pad=((10,5),(12,12)))],
                 [sg.Text('Python:',     size=but_row_text_size, font=hdr_label_font, pad=((5,0),(12,12))), 
                 sg.Button('Start',      size=but_text_size,     font=hdr_label_font, enable_events=True, key='-PYTHON_START-', pad=((10,5),(12,12))),
-                sg.Button('Stop',       size=but_text_size,     font=hdr_label_font, enable_events=True, key='-PYTHON_STOP-',  pad=((10,5),(12,12))),
-                sg.Button('List Apps',  size=but_text_size,     font=hdr_label_font, enable_events=True, key='-PYTHON_LIST_APPS-',  pad=((10,5),(12,12)))]])
+                sg.Button('Stop',       size=but_text_size,     font=hdr_label_font, enable_events=True, key='-PYTHON_STOP-',  pad=((10,5),(12,12)))]])
             ],    
             [sg.Text('  ', pad=((10,5),(12,12)))],
             [sg.Frame('Remote Target Status',
-                [[sg.Text('Seq Cnt:',   size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
-                sg.Text('0',            size=tlm_label_size, font=hdr_value_font, key=JSON_TLM_SEQ_CNT)],
+                [[sg.Text('IP Addr:',   size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
+                sg.Text('0.0.0.0',      size=(50,1),         font=hdr_value_font, key=mc.JSON_TLM_IP_ADDR)],
+                [sg.Text('Seq Cnt:',    size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
+                sg.Text('0',            size=tlm_label_size, font=hdr_value_font, key=mc.JSON_TLM_SEQ_CNT)],
                 [sg.Text('Cmd Cnt:',    size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
-                sg.Text('0',            size=tlm_label_size, font=hdr_value_font, key=JSON_TLM_CMD_CNT)],
+                sg.Text('0',            size=tlm_label_size, font=hdr_value_font, key=mc.JSON_TLM_CMD_CNT)],
                 [sg.Text('Event:',      size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
-                sg.Text(JSON_VAL_NONE,  size=(50,1),         font=hdr_value_font, key=JSON_TLM_EVENT)],
+                sg.Text(mc.JSON_VAL_NONE,  size=(50,1),         font=hdr_value_font, key=mc.JSON_TLM_EVENT)],
                 [sg.HorizontalSeparator()],
                 [sg.Text('cFS Exe:',    size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
-                sg.Text('False',        size=tlm_label_size, font=hdr_value_font, key=JSON_TLM_CFS_EXE)],
+                sg.Text('False',        size=tlm_label_size, font=hdr_value_font, key=mc.JSON_TLM_CFS_EXE)],
                 [sg.Text('Apps:',       size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
-                sg.Text(JSON_VAL_NONE,  size=(50,1),         font=hdr_value_font, key=JSON_TLM_CFS_APPS)],
+                sg.Text(mc.JSON_VAL_NONE,  size=(50,1),         font=hdr_value_font, key=mc.JSON_TLM_CFS_APPS)],
                 [sg.HorizontalSeparator()],
                 [sg.Text('Py Exe:',     size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
-                sg.Text('False',        size=tlm_label_size, font=hdr_value_font, key=JSON_TLM_PY_EXE)],
+                sg.Text('False',        size=tlm_label_size, font=hdr_value_font, key=mc.JSON_TLM_PY_EXE)],
                 [sg.Text('Apps:',       size=tlm_label_size, font=hdr_label_font, pad=((5,0),(6,6))), 
-                sg.Text(JSON_VAL_NONE,  size=(50,1),         font=hdr_value_font, key=JSON_TLM_PY_APPS)]])
+                sg.Text(mc.JSON_VAL_NONE,  size=(50,1),      font=hdr_value_font, key=mc.JSON_TLM_PY_APPS)]])
             ]
             
         ]
@@ -219,43 +260,44 @@ class TargetControl():
                self.client_disconnect();
             
             elif self.event == '-TARGET_NOOP-':
-                self.publish_cmd(JSON_CMD_SUBSYSTEM_TARGET, JSON_CMD_TARGET_NOOP)
+                self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_TARGET, mc.JSON_CMD_TARGET_NOOP)
 
             elif self.event == '-TARGET_REBOOT-':
-                self.publish_cmd(JSON_CMD_SUBSYSTEM_TARGET, JSON_CMD_TARGET_REBOOT)
+                self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_TARGET, mc.JSON_CMD_TARGET_REBOOT)
             
             elif self.event == '-TARGET_SHUTDOWN-':
-                self.publish_cmd(JSON_CMD_SUBSYSTEM_TARGET, JSON_CMD_TARGET_SHUTDOWN)
+                self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_TARGET, mc.JSON_CMD_TARGET_SHUTDOWN)
 
             elif self.event == '-CFS_START-':
-                self.publish_cmd(JSON_CMD_SUBSYSTEM_CFS, JSON_CMD_CFS_START)
+                self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_CFS, mc.JSON_CMD_CFS_START)
+                self.cfe_time_event_filter = False
                                  
             elif self.event == '-CFS_ENA_TLM-':
-                self.publish_cmd(JSON_CMD_SUBSYSTEM_CFS, JSON_CMD_CFS_ENA_TLM)
+                self.enable_cfs_tlm()
 
             elif self.event == '-CFS_STOP-':
-                self.publish_cmd(JSON_CMD_SUBSYSTEM_CFS, JSON_CMD_CFS_STOP)
+                self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_CFS, mc.JSON_CMD_CFS_STOP)
 
             elif self.event == '-PYTHON_START-':
-                py_app_list = self.window[JSON_TLM_PY_APPS].get()
-                if py_app_list == JSON_VAL_NONE:
+                py_app_list = self.window[mc.JSON_TLM_PY_APPS].get()
+                if py_app_list == mc.JSON_VAL_NONE:
                     sg.popup('No python apps on the remote target', title='Start Remote Python App')
                 else:
                     py_app = self.select_py_app_gui(py_app_list, 'start')
                     if len(py_app) > 0:
-                        self.publish_cmd(JSON_CMD_SUBSYSTEM_PYTHON, JSON_CMD_PYTHON_START, param=py_app)
+                        self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_PYTHON, mc.JSON_CMD_PYTHON_START, param=py_app)
                                  
             elif self.event == '-PYTHON_STOP-':
-                py_app_list = self.window[JSON_TLM_PY_APPS].get()
-                if py_app_list == JSON_VAL_NONE:
+                py_app_list = self.window[mc.JSON_TLM_PY_APPS].get()
+                if py_app_list == mc.JSON_VAL_NONE:
                     sg.popup('No python apps on the remote target', title='Stop Remote Python App')
                 else:
                     py_app = self.select_py_app_gui(py_app_list, 'stop')
                     if len(py_app) > 0:
-                        self.publish_cmd(JSON_CMD_SUBSYSTEM_PYTHON, JSON_CMD_PYTHON_STOP, param=py_app)
+                        self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_PYTHON, mc.JSON_CMD_PYTHON_STOP, param=py_app)
 
             elif self.event == '-PYTHON_LIST_APPS-':
-                self.publish_cmd(JSON_CMD_SUBSYSTEM_PYTHON, JSON_CMD_PYTHON_LIST_APPS)
+                self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_PYTHON, mc.JSON_CMD_PYTHON_LIST_APPS)
     
     def select_py_app_gui(self, py_app_list, action_text):
         """
@@ -300,14 +342,17 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
 
+    cfs_ip_addr = config.get('NETWORK','CFS_IP_ADDR')
+    cmd_port    = config.getint('NETWORK','TARGET_CONTROL_CMD_PORT')
+
     broker_addr = config.get('NETWORK','MQTT_BROKER_ADDR')
     broker_port = config.get('NETWORK','MQTT_BROKER_PORT')
     print("Broker Address: %s, Port: %s" % (broker_addr, broker_port))
     
     client_name   = config.get('NETWORK','MQTT_CLIENT_NAME')
     remote_target_mqtt_topic = config.get('NETWORK','REMOTE_TARGET_MQTT_TOPIC')
-    target_control = TargetControl(remote_target_mqtt_topic, broker_addr, broker_port, client_name)
     
+    target_control = TargetControl(cfs_ip_addr, cmd_port, remote_target_mqtt_topic, broker_addr, broker_port, client_name)
     target_control.execute()
     
 

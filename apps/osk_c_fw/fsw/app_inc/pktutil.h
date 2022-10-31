@@ -121,6 +121,31 @@ typedef struct
 
 
 /******************************************************************************
+** Function: PktUtil_HexDecode
+**
+** Notes:
+**   1. InBuf must be formatted identically to the algorithm used by 
+**      PktUtil_HexEncode() which also means it must contain an even number
+**      of bytes.
+*/
+size_t PktUtil_HexDecode(uint8 *OutBuf, const char *InBuf);
+
+
+/******************************************************************************
+** Function: PktUtil_HexEncode
+**
+** Notes:
+**   1. Each binary numeric value is encoded using 2 hex digits regardless of 
+**      whether the numeric value could be represented by one digit. Each byte
+**      has a value between 0-255 and is represented by 0x00-0xFF. As a result,
+**      encoded buffer will always be twice the size of binary.
+**   2. The caller is responsible for ensuring the output buffer is big enough
+**      to hold the encoded binary.  
+*/
+void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t Len);
+
+
+/******************************************************************************
 ** Function: PktUtil_IsFilterTypeValid
 **
 ** Notes:

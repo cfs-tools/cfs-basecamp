@@ -75,9 +75,9 @@ class TlmScreen():
     """
     Create a screen that displays a single telemetry message
     """
-    def __init__(self, gnd_ip_addr, tlm_port, tlm_timeout):
+    def __init__(self, gnd_ip_addr, router_ctrl_port, screen_tlm_port, screen_tlm_timeout):
 
-        self.tlm_server = TelemetrySocketServer('samplemission', 'cpu1', gnd_ip_addr, tlm_port, tlm_timeout)
+        self.tlm_server = TelemetrySocketServer('samplemission', 'cpu1', gnd_ip_addr, router_ctrl_port, screen_tlm_port, screen_tlm_timeout)
 
         self.app_name  = ''
         self.tlm_topic = ''
@@ -121,8 +121,9 @@ class TlmScreen():
 
         self.tlm_current_value = TelemetryCurrentValue(self.tlm_server, self.update)
         self.tlm_server.execute()
-
-        self.window = self.create_window(tlm_topic)
+        self.window_title = f'{tlm_topic} = Port {self.tlm_server.server_tlm_port}'
+        
+        self.window = self.create_window(self.window_title)
 
         while True:  # Event Loop
 
@@ -148,8 +149,8 @@ class TlmScreen():
                 self.format_payload_text(self.current_msg.eds_obj, self.current_msg.eds_entry.Name)
                 self.window['-PAYLOAD_TEXT-'].update(self.payload_text)
      
-        self.window.close()
         self.tlm_server.shutdown()
+        self.window.close()
 
     def update(self, tlm_msg: TelemetryMessage):
         """
@@ -164,9 +165,11 @@ class TlmScreen():
         if tlm_msg.app_name == self.app_name:
             # Compute max length if it hasn't been done yet
             if self.payload_str_max_len == 0:
-                self.payload_str_max(self.tlm_msg.eds_obj, self.tlm_msg.eds_entry.Name)
-                if self.payload_str_max_len > 0:
-                    self.payload_fmt_str = "{:<%d}: {}\n" % self.payload_str_max_len
+                #TODO - Resolve why eds_entry is sometimes None 
+                if self.tlm_msg.eds_entry is not None:
+                    self.payload_str_max(self.tlm_msg.eds_obj, self.tlm_msg.eds_entry.Name)
+                    if self.payload_str_max_len > 0:
+                        self.payload_fmt_str = "{:<%d}: {}\n" % self.payload_str_max_len
 
             if tlm_msg.app_id == self.tlm_msg.app_id:
                 self.current_msg = tlm_msg
@@ -218,6 +221,7 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
 
+    router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     if len(sys.argv) > 1:
         tlm_port    = int(sys.argv[1])
         app_name    = sys.argv[2]
@@ -228,9 +232,10 @@ if __name__ == '__main__':
         tlm_topic   = 'OSK_C_DEMO/Application/STATUS_TLM'
         app_name    = 'MQTT_GW'
         tlm_topic   = 'MQTT_GW/Application/HK_TLM'
+        tlm_topic   = 'MQTT_GW/Application/DISCRETE_TLM'
 
-    cfs_host_addr = config.get('NETWORK', 'CFS_HOST_ADDR')
+    cfs_ip_addr = config.get('NETWORK', 'CFS_IP_ADDR')
 
-    tlm_screen = TlmScreen(cfs_host_addr, tlm_port, 1.0)
+    tlm_screen = TlmScreen(cfs_ip_addr, router_ctrl_port, tlm_port, 2.0) #TODO - Parameterize timeout
     tlm_screen.execute(app_name, tlm_topic) 
     

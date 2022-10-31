@@ -12,7 +12,8 @@
     GNU Affero General Public License for more details.
     
     Purpose:
-      Provide classes that manage the MQTT interface to sensors
+      Provide classes that manage the MQTT interface to python apps
+      and cFS targets
         
     Notes:    
       None
@@ -26,12 +27,13 @@ import configparser
 import json
 import subprocess
 import queue
+import socket
+import fcntl
+import struct
 
-import board
-from adafruit_lsm6ds.ism330dhcx import ISM330DHCX
 import paho.mqtt.client as mqtt
 
-import mqttconst as mqttc
+from mqttconst import *
 
 ###############################################################################
 
@@ -41,9 +43,9 @@ class MqttClient():
         self.broker_addr = mqtt_config['BROKER_ADDR']
         self.broker_port = mqtt_config['BROKER_PORT']
         self.client_name = f"{mqtt_config['TARGET_TYPE']}-{mqtt_config['TARGET_ID']}"
-        self.topic_base  = f"{mqttc.MQTT_TOPIC_ROOT}/{mqtt_config['TARGET_TYPE']}/{mqtt_config['TARGET_ID']}"
+        self.topic_base  = f"{MQTT_TOPIC_ROOT}/{mqtt_config['TARGET_TYPE']}/{mqtt_config['TARGET_ID']}"
         self.client = None
-        self.event_msg = ""
+        self.event_msg = ''
         self.event_queue = queue.Queue()
         
     def connect(self):
@@ -56,18 +58,21 @@ class MqttClient():
             self.client.loop_start()  # Start networking daemon             
             self.log_info_event(f'Client initialized on {self.broker_addr}:{self.broker_port}')
             connect = True
-        except:
+        except Exception as e:
             self.log_error_event(f'Client initializaation error for {self.broker_addr}:{self.broker_port}')
+            self.log_error_event(f'Error: {e}')
         return connect
 
-    def log_info_event(self, msg_str):
+    def log_info_event(self, msg_str, queue_event=True):
         logging.info(msg_str)
-        self.event_queue.put_nowait(msg_str)
+        if queue_event:
+            self.event_queue.put_nowait(msg_str)
         print(msg_str)
       
-    def log_error_event(self, msg_str):
+    def log_error_event(self, msg_str, queue_event=True):
         logging.error(msg_str)
-        self.event_queue.put_nowait(msg_str)
+        if queue_event:
+            self.event_queue.put_nowait(msg_str)
         print(msg_str)
 
 ###############################################################################
@@ -82,46 +87,69 @@ class RemoteOps(MqttClient):
         self.apps = config_parser['APPS']
         logging.basicConfig(filename=self.exec['LOG_FILE'],level=logging.DEBUG)
 
-        self.cmd_topic  = f'{self.topic_base}/{mqttc.MQTT_TOPIC_CMD}'
-        self.tlm_topic  = f'{self.topic_base}/{mqttc.MQTT_TOPIC_TLM}'
+        self.ip_addr = self.get_ip_address('wlan0')
+
+        self.cmd_topic  = f'{self.topic_base}/{MQTT_TOPIC_CMD}'
+        self.tlm_topic  = f'{self.topic_base}/{MQTT_TOPIC_TLM}'
   
         # List of apps not to be included in user cFS app list
         self.base_camp_apps = ['ASSERT_LIB','OSK_C_FW','CI_LAB_APP',
                                'TO_LAB_APP','SCH_LAB_APP','FILE_MGR',
                                'FILE_XFER', 'KIT_SCH', 'KIT_TO', 'OSK_C_DEMO']
   
-        self.json_cmd_subsystems = [mqttc.JSON_CMD_SUBSYSTEM_CFS,
-                                    mqttc.JSON_CMD_SUBSYSTEM_PYTHON,
-                                    mqttc.JSON_CMD_SUBSYSTEM_TARGET]
+        self.json_cmd_subsystems = [JSON_CMD_SUBSYSTEM_CFS,
+                                    JSON_CMD_SUBSYSTEM_PYTHON,
+                                    JSON_CMD_SUBSYSTEM_TARGET]
 
-        self.cfs_cmd    = { mqttc.JSON_CMD_CFS_START:   self.cfs_start_cmd,
-                            mqttc.JSON_CMD_CFS_STOP:    self.cfs_stop_cmd,
-                            mqttc.JSON_CMD_CFS_ENA_TLM: self.cfs_ena_tlm_cmd}
+        self.cfs_cmd    = { JSON_CMD_CFS_START:   self.cfs_start_cmd,
+                            JSON_CMD_CFS_STOP:    self.cfs_stop_cmd,
+                            JSON_CMD_CFS_ENA_TLM: self.cfs_ena_tlm_cmd}
 
-        self.python_cmd = { mqttc.JSON_CMD_PYTHON_LIST_APPS: self.python_list_apps_cmd,
-                            mqttc.JSON_CMD_PYTHON_START:     self.python_start_cmd,
-                            mqttc.JSON_CMD_PYTHON_STOP:      self.python_stop_cmd}
+        self.python_cmd = { JSON_CMD_PYTHON_LIST_APPS: self.python_list_apps_cmd,
+                            JSON_CMD_PYTHON_START:     self.python_start_cmd,
+                            JSON_CMD_PYTHON_STOP:      self.python_stop_cmd}
 
-        self.target_cmd = { mqttc.JSON_CMD_TARGET_NOOP:     self.target_noop_cmd,
-                            mqttc.JSON_CMD_TARGET_REBOOT:   self.target_reboot_cmd,
-                            mqttc.JSON_CMD_TARGET_SHUTDOWN: self.target_shutdown_cmd }
+        self.target_cmd = { JSON_CMD_TARGET_NOOP:     self.target_noop_cmd,
+                            JSON_CMD_TARGET_REBOOT:   self.target_reboot_cmd,
+                            JSON_CMD_TARGET_SHUTDOWN: self.target_shutdown_cmd }
 
-        self.cmd = { mqttc.JSON_CMD_SUBSYSTEM_CFS:    self.cfs_cmd,
-                     mqttc.JSON_CMD_SUBSYSTEM_PYTHON: self.python_cmd,
-                     mqttc.JSON_CMD_SUBSYSTEM_TARGET: self.target_cmd }
+        self.cmd = { JSON_CMD_SUBSYSTEM_CFS:    self.cfs_cmd,
+                     JSON_CMD_SUBSYSTEM_PYTHON: self.python_cmd,
+                     JSON_CMD_SUBSYSTEM_TARGET: self.target_cmd }
         self.cmd_processed = ""
 
+        self.cfs_process = None
+        self.python_process = {}
+
+        self.python_exe_cnt = 0
+        self.python_exe_app = {}
+        
         # Telemetry data
         self.tlm_delay = int(self.exec['TLM_DELAY'])
         self.tlm_seq_cnt = 0
-        self.cmd_cnt = 0
-        self.cfs_exe  = False
-        self.cfs_apps = 'None'
-        self.py_exe   = False
-        self.py_apps  = 'None'
+        self.cmd_cnt     = 0
+        self.cfs_exe     = False
+        self.cfs_apps    = JSON_VAL_NONE
+        self.python_exe  = False
+        self.python_apps = JSON_VAL_NONE
         
-        self.log_info_event(f'Remote Ops initialized on {self.broker_addr}:{self.broker_port}//{self.topic_base}')
+        self.create_python_app_str(self.apps['PYTHON_APPS'])
+        self.log_info_event(f'Remote Ops defaults {self.broker_addr}:{self.broker_port}//{self.topic_base}',queue_event=False)
 
+
+    def get_ip_address(self, ifname):
+        """
+        Can't use "socket.gethostbyname(socket.gethostname())"
+        because it will return something like 127.0.1.1
+        """
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        addr = socket.inet_ntoa(fcntl.ioctl(
+            s.fileno(),
+            0x8915,  # SIOCGIFADDR
+            struct.pack('256s', ifname[:15].encode('utf-8'))
+        )[20:24])
+        print (f'IP Adress: {addr}')
+        return addr
 
     def on_connect(self, client, userdata, flags, rc):
         """
@@ -136,14 +164,15 @@ class RemoteOps(MqttClient):
         if not self.event_queue.empty():
             self.event_msg = self.event_queue.get_nowait()
             
-        payload = '{"%s": %s, "%s": %s, "%s": "%s", "%s": "%s", "%s": "%s", "%s": "%s", "%s": "%s"}' % \
-                  (mqttc.JSON_TLM_SEQ_CNT,  str(self.tlm_seq_cnt), \
-                   mqttc.JSON_TLM_CMD_CNT,  str(self.cmd_cnt), \
-                   mqttc.JSON_TLM_EVENT,    self.event_msg, \
-                   mqttc.JSON_TLM_CFS_EXE,  str(self.cfs_exe).lower(), \
-                   mqttc.JSON_TLM_CFS_APPS, self.cfs_apps, \
-                   mqttc.JSON_TLM_PY_EXE,   str(self.py_exe).lower(), \
-                   mqttc.JSON_TLM_PY_APPS,  self.py_apps)
+        payload = '{"%s": "%s", "%s": %s, "%s": %s, "%s": "%s", "%s": "%s", "%s": "%s", "%s": "%s", "%s": "%s"}' % \
+                  (JSON_TLM_IP_ADDR,  self.ip_addr, \
+                   JSON_TLM_SEQ_CNT,  str(self.tlm_seq_cnt), \
+                   JSON_TLM_CMD_CNT,  str(self.cmd_cnt), \
+                   JSON_TLM_EVENT,    self.event_msg, \
+                   JSON_TLM_CFS_EXE,  str(self.cfs_exe), \
+                   JSON_TLM_CFS_APPS, self.cfs_apps, \
+                   JSON_TLM_PY_EXE,   str(self.python_exe), \
+                   JSON_TLM_PY_APPS,  self.python_apps)
         #print("Publishing telemetry %s, %s" % (self.tlm_topic, payload))
         self.client.publish(self.tlm_topic, payload)
         self.tlm_seq_cnt += 1
@@ -164,17 +193,22 @@ class RemoteOps(MqttClient):
         """
         msg_str = msg.payload.decode()
         msg_str_single_quote = msg_str.replace('"',"'")
-        self.log_info_event(f'Received message : {msg.topic}=>{msg_str_single_quote}')
+        self.log_info_event(f'Received message : {msg.topic}=>{msg_str_single_quote}',queue_event=False)
         cmd = json.loads(msg_str)
         for key in cmd:
             if key in self.json_cmd_subsystems:
+                param = ''
+                if JSON_CMD_PARAMETER in cmd:
+                    param = cmd[JSON_CMD_PARAMETER]
+                    print (f'param = {param}')
                 try:
                     self.cmd_processed = cmd[key]
-                    self.cmd[key][cmd[key]]()
+                    self.cmd[key][cmd[key]](param)
                     self.cmd_cnt += 1
                 except Exception as e:
                     self.log_error_event(f'Error executing command: {key}:{cmd[key]}')
                     self.log_error_event(f'Error: {e}')
+                break
             else:
                 self.log_error_event(f'Received invalid command {key}')
       
@@ -187,28 +221,24 @@ class RemoteOps(MqttClient):
                 except KeyboardInterrupt:
                     sys.exit()
 
-    def cmd_stub(self):
+    def cmd_stub(self, param):
         self.log_info_event(f'Command stub called for {self.cmd_processed}')
 
     ###########
     ### cFS ###
     ###########
-    def cfs_start_cmd(self):
+    def cfs_start_cmd(self, param):
         try:
             if self.cfs_exe:
                 self.log_info_event("Start cFS rejected, cFS already running")
             else:
-                print('1')
-                self.create_cfs_app_str(self.apps['CFS_PATH'])
-                print('2')
                 self.cfs_process = subprocess.Popen(['sudo',self.apps['CFS_BINARY']],
                                                     cwd=self.apps['CFS_PATH'],
                                                     stdout=subprocess.PIPE,
                                                     stderr=subprocess.STDOUT,
                                                     shell=False)
-                print('3')
+                self.create_cfs_app_str(self.apps['CFS_PATH'])
                 self.cfs_exe = True
-                print('4')
                 self.log_info_event(f'Start cFS, pid = {self.cfs_process.pid}')
                
         except (OSError, subprocess.CalledProcessError) as e:
@@ -216,22 +246,23 @@ class RemoteOps(MqttClient):
             self.log_error_event(f'Exception: {str(e)}')
 
 
-    def cfs_stop_cmd(self):
+    def cfs_stop_cmd(self, param):
         if self.cfs_exe:
             self.cfs_apps = ''
             self.log_info_event(f'Stopping cFS, pid = {self.cfs_process.pid}')
-            subprocess.call(['sudo', 'kill', '-9', f'{self.cfs_process.pid}'])
-            self.cfs_process.wait()
+            subprocess.run(['sudo', 'kill', f'{self.cfs_process.pid}']) #'-9', 
+            #todo: self.cfs_process.kill()
+            #self.cfs_process.wait()
             self.cfs_exe = False
         else:
             self.log_error_event('Stop cFS rejected, cFS not running')
  
 
-    def cfs_ena_tlm_cmd(self):
+    def cfs_ena_tlm_cmd(self, param):
         self.log_info_event('Enable telemetry not implemented')
 
     def create_cfs_app_str(self, target_path):
-        self.cfs_apps = ""
+        self.cfs_apps = ''
         startup_path_file = os.path.join(target_path, 'cf', 'cfe_es_startup.scr')
         print(startup_path_file)
         try:
@@ -259,44 +290,87 @@ class RemoteOps(MqttClient):
     ##############
     ### Python ###
     ##############
-    def python_list_apps_cmd(self):
+    def python_list_apps_cmd(self, param):
         self.log_info_event('List apps not implemented')
 
-    def python_start_cmd(self):
+    def python_start_cmd(self, param):
+        """
+        Mark an executing app with an asterick
+        """
         try:
-            if self.python_exe:
-                self.log_info_event('Start command rejected, python already running')
+            if self.python_exe_app[param]:
+                self.log_info_event(f'Start command rejected, {param}.py already running')
             else:
-                #todo self.mqtt_sensor.execute()
+                # Using 'exec' allows the kill() to work with shell=True
+                self.python_process[param] = subprocess.Popen(
+                    f'exec python3 {param}.py', 
+                    cwd=self.apps['PYTHON_PATH'],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    shell=True)
                 self.python_exe = True
-                self.apps = self.mqtt_sensor.SENSORS
-                self.log_info_event('Started python app')
+                self.python_exe_app[param] = True
+                self.python_exe_cnt += 1
+                self.python_apps = self.python_apps.replace(param,f'{param}*')
+                self.log_info_event(f'Started {param}.py, pid = {self.python_process[param].pid}')
                
         except Exception as e:
-            self.log_error_event(f'Start python app failed with exception')
+            self.log_error_event(f'Start {param}.py failed with exception')
             self.log_error_event(f'Exception: {str(e)}')
 
 
-    def python_stop_cmd(self):
-        if self.python_exe:
-            #todo self.mqtt_sensor.terminate()
-            self.python_exe = False
-            self.apps = ""
-            self.log_info_event('Stopped python app')
-        else:
-            self.log_error_event('Stop rejected, python app not running')
-
+    def python_stop_cmd(self, param):
+        try:
+            if self.python_exe_app[param]:
+                if param in self.python_process:
+                    pid = self.python_process[param].pid
+                    self.log_info_event(f'Stopping {param}.py, pid = {pid}')
+                    #todo: subprocess.run(['sudo', 'kill', '-9', f'{pid}'])
+                    self.python_process[param].kill()
+                    self.python_process[param].wait()
+                    self.python_exe_app[param] = False
+                    self.python_exe_cnt -= 1
+                    if self.python_exe_cnt == 0:
+                        self.python_exe = False
+                    self.python_apps = self.python_apps.replace(f'{param}*',param)
+                    self.log_info_event(f'Stopped {param}.py')
+                else:
+                    self.log_error_event(f'Stop rejected, no process ID for {param}.py')
+            else:
+                self.log_error_event(f'Stop rejected, {param}.py not running')
+        except Exception as e:
+            self.log_error_event(f'Stop {param}.py failed with exception')
+            self.log_error_event(f'Exception: {str(e)}')
+            
+    def create_python_app_str(self, app_list):
+        """
+        app_list is comma separate list of python script names without the
+        '.py' extension.
+        Add one space per app regardless of how the initial list is defined
+        """
+        self.python_apps = ''
+        first_app = True
+        app_list = app_list.split(',')
+        for app in app_list:
+            app = app.strip()
+            if first_app:
+                self.python_apps += app
+                first_app = False
+            else:
+                self.python_apps += ', ' + app
+            self.python_exe_app[app] = False
+            
     ##############
     ### Target ###
     ##############
-    def target_noop_cmd(self):
+    def target_noop_cmd(self, param):
         self.log_info_event(f'NOOP {self.broker_addr}:{self.broker_port}//{self.topic_base}')
  
-    def target_reboot_cmd(self):
+    def target_reboot_cmd(self, param):
         self.log_info_event('Rebooting target')
         subprocess.Popen('reboot', shell=False)
         
-    def target_shutdown_cmd(self):
+    def target_shutdown_cmd(self, param):
         self.log_info_event('Shutting down target')
         subprocess.Popen('halt', shell=False)
         

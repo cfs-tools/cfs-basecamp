@@ -508,33 +508,35 @@ def main():
     
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
-    MISSION     = config.get('CFS_TARGET', 'MISSION_EDS_NAME')
-    CFS_TARGET  = config.get('CFS_TARGET', 'CPU_EDS_NAME')
-    HOST_ADDR   = config.get('NETWORK', 'CFS_HOST_ADDR')
-    CMD_PORT    = config.getint('NETWORK', 'CFS_SEND_CMD_PORT')
-    TLM_PORT    = config.getint('NETWORK', 'CFS_RECV_TLM_PORT')
-    TLM_TIMEOUT = float(config.getint('CFS_TARGET', 'RECV_TLM_TIMEOUT'))/1000.0
+    MISSION         = config.get('CFS_TARGET', 'MISSION_EDS_NAME')
+    CFS_TARGET      = config.get('CFS_TARGET', 'CPU_EDS_NAME')
+    CFS_IP_ADDR     = config.get('NETWORK', 'CFS_IP_ADDR')
+    CFS_CMD_PORT    = config.getint('NETWORK', 'CFS_CMD_PORT')
+    GND_IP_ADDR     = config.get('NETWORK', 'GND_IP_ADDR')
+    GND_CMD_PORT    = config.getint('NETWORK','CMD_TLM_ROUTER_CMD_PORT')
+    GND_TLM_PORT    = config.getint('NETWORK', 'GND_TLM_PORT')
+    GND_TLM_TIMEOUT = float(config.getint('NETWORK', 'GND_TLM_TIMEOUT'))/1000.0
 
 
-    system_string = "Mission: %s, Target: %s, Host: %s, Command Port %d" % (MISSION, CFS_TARGET, HOST_ADDR, CMD_PORT)
-    print("Creating telecommand objects for " + system_string)
+    system_string = f'Mission: {MISSION}, Target: {CFS_TARGET}, cFS: ({CFS_IP_ADDR}, {CFS_CMD_PORT}), Gnd: ({GND_IP_ADDR}, {GND_CMD_PORT}), {GND_TLM_PORT})'
+    print(f'Creating telecommand objects for {system_string}')
 
     try:
-        cmd_tlm_router       = CmdTlmRouter(HOST_ADDR, CMD_PORT, HOST_ADDR, TLM_PORT, TLM_TIMEOUT)
+        cmd_tlm_router       = CmdTlmRouter(CFS_IP_ADDR, CFS_CMD_PORT, GND_IP_ADDR, GND_CMD_PORT, GND_TLM_PORT, GND_TLM_TIMEOUT)
         telecommand_script   = TelecommandScript(MISSION, CFS_TARGET, cmd_tlm_router.get_cfs_cmd_queue())      
         telecommand_cmd_line = TelecommandCmdLine(MISSION, CFS_TARGET, cmd_tlm_router.get_cfs_cmd_queue())
         logger.info("Telecommand object created for " + system_string)
         
     except RuntimeError:
-        print("Error creating telecommand object for " + system_string)
+        print(f'Error creating telecommand object for {system_string}')
         sys.exit(2)
 
     cmd_tlm_router.start()
-    telecommand_script.send_cfs_cmd('TO_LAB','EnableOutputCmd',{'dest_IP':'127.0.0.1'})
+    telecommand_script.send_cfs_cmd('KIT_TO','EnableOutputCmd',{'dest_IP':'127.0.0.1'})
     telecommand_cmd_line.execute()    
     cmd_tlm_router.shutdown()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
 
 
