@@ -121,7 +121,7 @@ class TlmScreen():
 
         self.tlm_current_value = TelemetryCurrentValue(self.tlm_server, self.update)
         self.tlm_server.execute()
-        self.window_title = f'{tlm_topic} = Port {self.tlm_server.server_tlm_port}'
+        self.window_title = f'{tlm_topic} - Port {self.tlm_server.server_tlm_port}'
         
         self.window = self.create_window(self.window_title)
 

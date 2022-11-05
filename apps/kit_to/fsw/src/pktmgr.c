@@ -76,15 +76,18 @@ static uint16 SocketBufferLen = sizeof(SocketBuffer);
 */
 void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr, INITBL_Class_t *IniTbl)
 {
-
+   
    PktMgr = PktMgrPtr;
 
    PktMgr->IniTbl       = IniTbl;
    PktMgr->DownlinkOn   = false;
    PktMgr->SuppressSend = true;
+   PktMgr->TlmSource    = KIT_TO_TlmSource_LOCAL;
    PktMgr->TlmSockId    = 0;
    PktMgr->TlmUdpPort   = INITBL_GetIntConfig(PktMgr->IniTbl, CFG_PKTMGR_UDP_TLM_PORT);
    strncpy(PktMgr->TlmDestIp, "000.000.000.000", PKTMGR_IP_STR_LEN);
+   PktMgr->SbWrapToUdpTlmMid   = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID));
+   PktMgr->LocalToSbWrapTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_MQTT_GW_TOPIC_1_TLM_TOPICID));
 
    PKTMGR_InitStats(INITBL_GetIntConfig(IniTbl, CFG_APP_RUN_LOOP_DELAY),
                     INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_STATS_INIT_DELAY));
@@ -98,6 +101,8 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr, INITBL_Class_t *IniTbl)
    CFE_MSG_Init(CFE_MSG_PTR(PktMgr->PktTblTlm), 
                 CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_PKT_TBL_TLM_TOPICID)), 
                 sizeof(KIT_TO_PktTblTlm_t));
+   
+   CFE_MSG_Init(CFE_MSG_PTR(PktMgr->LocalToSbWrapTlm), PktMgr->LocalToSbWrapTlmMid, sizeof(KIT_TO_WrappedSbMsgTlm_t));
    
    OS_TaskInstallDeleteHandler(&DestructorCallback); /* Called when application terminates */
 
@@ -144,14 +149,14 @@ bool PKTMGR_AddPktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
          PktMgr->PktTbl.Data.Pkt[AppId] = NewPkt;
       
-         CFE_EVS_SendEvent(PKTMGR_ADD_PKT_SUCCESS_EID, CFE_EVS_EventType_INFORMATION,
+         CFE_EVS_SendEvent(PKTMGR_ADD_PKT_EID, CFE_EVS_EventType_INFORMATION,
                            "Added message ID 0x%04X, QoS (%d,%d), BufLim %d",
                            NewPkt.MsgId, NewPkt.Qos.Priority, NewPkt.Qos.Reliability, NewPkt.BufLim);
       }
       else
       {
    
-         CFE_EVS_SendEvent(PKTMGR_ADD_PKT_ERROR_EID, CFE_EVS_EventType_ERROR,
+         CFE_EVS_SendEvent(PKTMGR_ADD_PKT_EID, CFE_EVS_EventType_ERROR,
                            "Error adding message ID 0x%04X. Software Bus subscription failed with return status 0x%8x",
                            AddPkt->MsgId, Status);
       }
@@ -160,7 +165,7 @@ bool PKTMGR_AddPktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    else
    {
    
-      CFE_EVS_SendEvent(PKTMGR_ADD_PKT_ERROR_EID, CFE_EVS_EventType_ERROR,
+      CFE_EVS_SendEvent(PKTMGR_ADD_PKT_EID, CFE_EVS_EventType_ERROR,
                         "Error adding message ID 0x%04X. Packet already exists in the packet table",
                         AddPkt->MsgId);
    }
@@ -184,7 +189,7 @@ bool PKTMGR_EnableOutputCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    strncpy(PktMgr->TlmDestIp, EnableOutput->DestIp, PKTMGR_IP_STR_LEN);
 
    PktMgr->SuppressSend = false;
-   CFE_EVS_SendEvent(PKTMGR_TLM_OUTPUT_ENA_INFO_EID, CFE_EVS_EventType_INFORMATION,
+   CFE_EVS_SendEvent(PKTMGR_TLM_ENA_OUTPUT_EID, CFE_EVS_EventType_INFORMATION,
                      "Telemetry output enabled for IP %s", PktMgr->TlmDestIp);
 
    /*
@@ -205,7 +210,7 @@ bool PKTMGR_EnableOutputCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
       else
       {
          RetStatus = false;
-         CFE_EVS_SendEvent(PKTMGR_TLM_OUTPUT_ENA_SOCKET_ERR_EID, CFE_EVS_EventType_ERROR,
+         CFE_EVS_SendEvent(PKTMGR_TLM_ENA_OUTPUT_EID, CFE_EVS_EventType_ERROR,
                            "Telemetry output socket open error. Status = %d", OsStatus);
       }
 
@@ -253,15 +258,18 @@ uint16 PKTMGR_OutputTelemetry(void)
 
    int     SocketStatus;
    int32   SbStatus;
+   bool    SendMsg;
    uint16  NumPktsOutput  = 0;
    uint32  NumBytesOutput = 0;
    size_t  EdsDataSize;
    
-   CFE_MSG_ApId_t   AppId;
+   CFE_SB_MsgId_t   MsgId;
+   CFE_MSG_ApId_t   MsgAppId;
    CFE_MSG_Size_t   MsgLen;
    OS_SockAddr_t    SocketAddr;
    CFE_SB_Buffer_t  *SbBufPtr;
-
+   PKTTBL_Pkt_t     *PktTblEntry;
+   const CFE_MSG_Message_t *MsgPtr;
 
    OS_SocketAddrInit(&SocketAddr, OS_SocketDomain_INET);
    OS_SocketAddrFromString(&SocketAddr, PktMgr->TlmDestIp);
@@ -279,27 +287,64 @@ uint16 PKTMGR_OutputTelemetry(void)
       if ( (SbStatus == CFE_SUCCESS) && (PktMgr->SuppressSend == false) )
       {
           
-         if(PktMgr->DownlinkOn)
+         CFE_MSG_GetSize(&SbBufPtr->Msg, &MsgLen);
+         CFE_MSG_GetApId(&SbBufPtr->Msg, &MsgAppId);
+         MsgAppId = MsgAppId & PKTTBL_APP_ID_MASK;
+         PktTblEntry = &(PktMgr->PktTbl.Data.Pkt[MsgAppId]);
+
+         if (!PktUtil_IsPacketFiltered(&SbBufPtr->Msg, &PktTblEntry->Filter))
          {
-            
-            CFE_MSG_GetSize(&SbBufPtr->Msg, &MsgLen);
-            CFE_MSG_GetApId(&SbBufPtr->Msg, &AppId);
-            AppId = AppId & PKTTBL_APP_ID_MASK;            
-            if (!PktUtil_IsPacketFiltered(&SbBufPtr->Msg, &(PktMgr->PktTbl.Data.Pkt[AppId].Filter)))
+            if (PktTblEntry->Forward)
             {
+               // TODO - Can message length be tailored to wrapped message size?
+               OS_printf("Forwarding app ID %d, length %d\n", MsgAppId, (int16)MsgLen);
+               memcpy(&(PktMgr->LocalToSbWrapTlm.Payload), &SbBufPtr->Msg, MsgLen);
+               CFE_SB_TimeStampMsg(CFE_MSG_PTR(PktMgr->LocalToSbWrapTlm.TelemetryHeader));
+               CFE_SB_TransmitMsg(CFE_MSG_PTR(PktMgr->LocalToSbWrapTlm.TelemetryHeader), true);
+            } 
             
-               SbStatus = PackEdsOutputMessage(SocketBuffer, &SbBufPtr->Msg, SocketBufferLen, &EdsDataSize);
-               
+            if(PktMgr->DownlinkOn)
+            {
+              
+               SendMsg = false; 
+               SbStatus = CFE_MSG_GetMsgId(&SbBufPtr->Msg, &MsgId);
                if (SbStatus == CFE_SUCCESS)
                {
-                  SocketStatus = OS_SocketSendTo(PktMgr->TlmSockId, SocketBuffer, EdsDataSize, &SocketAddr);
-          
-                  ++NumPktsOutput;
-                  NumBytesOutput += MsgLen;
-               }
-               
-            } /* End if packet is not filtered */
-         } /* End if downlink enabled */
+                  if (PktMgr->TlmSource == KIT_TO_TlmSource_LOCAL)
+                  {
+                     // If it's not a wrapped message then send it
+                     if (!CFE_SB_MsgId_Equal(MsgId, PktMgr->SbWrapToUdpTlmMid))
+                     {
+                        SendMsg = true;
+                        MsgPtr  = &(SbBufPtr->Msg); 
+                     }
+                  }
+                  else
+                  {
+                     // Only wrapped messages
+                     if (CFE_SB_MsgId_Equal(MsgId, PktMgr->SbWrapToUdpTlmMid))
+                     {
+                        // TODO - Verify unwrapped message
+                        OS_printf("Unwrapping msg ID %d\n", CFE_SB_MsgIdToValue(MsgId));
+                        const KIT_TO_WrappedSbMsgTlm_Payload_t *SbMsgPayload = CMDMGR_PAYLOAD_PTR(&(SbBufPtr->Msg), KIT_TO_WrappedSbMsgTlm_t);
+                        SendMsg = true;
+                        MsgPtr  = (CFE_MSG_Message_t *)SbMsgPayload;
+                     } 
+                  }
+
+                  if (SendMsg)
+                  {
+                     SbStatus = PackEdsOutputMessage(SocketBuffer, MsgPtr, SocketBufferLen, &EdsDataSize);     
+                     if (SbStatus == CFE_SUCCESS)
+                     {
+                        SocketStatus = OS_SocketSendTo(PktMgr->TlmSockId, SocketBuffer, EdsDataSize, &SocketAddr);
+                        ++NumPktsOutput;
+                        NumBytesOutput += MsgLen;
+                     }
+                  } /* End if send msg */
+               } /* End if got msg id */
+            } /* End if downlink enabled */
+         } /* End if packet is not filtered */
          else
          {
             SocketStatus = 0;
@@ -355,7 +400,7 @@ bool PKTMGR_RemoveAllPktsCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
          {
              
             FailedUnsubscribe++;
-            CFE_EVS_SendEvent(PKTMGR_REMOVE_ALL_PKTS_ERROR_EID, CFE_EVS_EventType_ERROR,
+            CFE_EVS_SendEvent(PKTMGR_REMOVE_ALL_PKTS_EID, CFE_EVS_EventType_ERROR,
                               "Error removing message ID 0x%04X at table packet index %d. Unsubscribe status 0x%8X",
                               PktMgr->PktTbl.Data.Pkt[AppId].MsgId, AppId, Status);
          }
@@ -375,14 +420,14 @@ bool PKTMGR_RemoveAllPktsCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    if (FailedUnsubscribe == 0)
    {
       
-      CFE_EVS_SendEvent(PKTMGR_REMOVE_ALL_PKTS_SUCCESS_EID, CFE_EVS_EventType_INFORMATION,
+      CFE_EVS_SendEvent(PKTMGR_REMOVE_ALL_PKTS_EID, CFE_EVS_EventType_INFORMATION,
                         "Removed %d table packet entries", PktCnt);
    }
    else
    {
       
       RetStatus = false;
-      CFE_EVS_SendEvent(PKTMGR_REMOVE_ALL_PKTS_ERROR_EID, CFE_EVS_EventType_INFORMATION,
+      CFE_EVS_SendEvent(PKTMGR_REMOVE_ALL_PKTS_EID, CFE_EVS_EventType_INFORMATION,
                         "Attempted to remove %d packet entries. Failed %d unsubscribes",
                         PktCnt, FailedUnsubscribe);
    }
@@ -415,14 +460,14 @@ bool PKTMGR_RemovePktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
       Status = CFE_SB_Unsubscribe(CFE_SB_ValueToMsgId(RemovePkt->MsgId), PktMgr->TlmPipe);
       if(Status == CFE_SUCCESS)
       {
-         CFE_EVS_SendEvent(PKTMGR_REMOVE_PKT_SUCCESS_EID, CFE_EVS_EventType_INFORMATION,
+         CFE_EVS_SendEvent(PKTMGR_REMOVE_PKT_EID, CFE_EVS_EventType_INFORMATION,
                            "Succesfully removed message ID 0x%04X from the packet table",
                            RemovePkt->MsgId);
       }
       else
       {
          RetStatus = false;
-         CFE_EVS_SendEvent(PKTMGR_REMOVE_PKT_ERROR_EID, CFE_EVS_EventType_ERROR,
+         CFE_EVS_SendEvent(PKTMGR_REMOVE_PKT_EID, CFE_EVS_EventType_ERROR,
                            "Removed message ID 0x%04X from packet table, but SB unsubscribe failed with return status 0x%8x",
                            RemovePkt->MsgId, Status);
       }
@@ -431,7 +476,7 @@ bool PKTMGR_RemovePktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    else
    {
 
-      CFE_EVS_SendEvent(PKTMGR_REMOVE_PKT_ERROR_EID, CFE_EVS_EventType_ERROR,
+      CFE_EVS_SendEvent(PKTMGR_REMOVE_PKT_EID, CFE_EVS_EventType_ERROR,
                         "Error removing message ID 0x%04X. Packet not defined in packet table.",
                         RemovePkt->MsgId);
 
@@ -488,6 +533,37 @@ bool PKTMGR_SendPktTblTlmCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 } /* End of PKTMGR_SendPktTblTlmCmd() */
 
 
+/*******************************************************************
+** Function: PKTMGR_SetTlmSourceCmd
+**
+*/
+bool PKTMGR_SetTlmSourceCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+{
+
+   const KIT_TO_SetTlmSource_Payload_t *SetTlmSource = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_SetTlmSource_t);
+   bool RetStatus = false;
+
+
+   if ((SetTlmSource->Source >= KIT_TO_TlmSource_Enum_t_MIN) &&
+       (SetTlmSource->Source <= KIT_TO_TlmSource_Enum_t_MAX))
+   {
+      PktMgr->TlmSource = SetTlmSource->Source;
+      CFE_EVS_SendEvent(PKTMGR_SET_TLM_SOURCE_CMD_EID, CFE_EVS_EventType_INFORMATION,
+                        "Telemetry source set to %d", SetTlmSource->Source);
+      RetStatus = true;
+   }
+   else
+   {
+      CFE_EVS_SendEvent(PKTMGR_SET_TLM_SOURCE_CMD_EID, CFE_EVS_EventType_ERROR,
+                        "Error setting tlm source, invalid source ID %d",
+                        SetTlmSource->Source);    
+   }   
+   
+   return RetStatus;
+
+} /* End of PKTMGR_SetTlmSourceCmd() */
+
+
 /******************************************************************************
 ** Function: PKTMGR_UpdatePktFilterCmd
 **
@@ -514,7 +590,7 @@ bool PKTMGR_UpdatePktFilterCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr
         
          PktUtil_Filter_t *TblFilter = &(PktMgr->PktTbl.Data.Pkt[AppId].Filter);
          
-         CFE_EVS_SendEvent(PKTMGR_UPDATE_FILTER_CMD_SUCCESS_EID, CFE_EVS_EventType_INFORMATION,
+         CFE_EVS_SendEvent(PKTMGR_UPDATE_FILTER_CMD_EID, CFE_EVS_EventType_INFORMATION,
                            "Successfully changed message ID 0x%04X's filter (Type,N,X,O) from (%d,%d,%d,%d) to (%d,%d,%d,%d)",
                            UpdatePktFilter->MsgId,
                            TblFilter->Type, TblFilter->Param.N, TblFilter->Param.X, TblFilter->Param.O,
@@ -532,7 +608,7 @@ bool PKTMGR_UpdatePktFilterCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr
       else
       {
    
-         CFE_EVS_SendEvent(PKTMGR_UPDATE_FILTER_CMD_ERR_EID, CFE_EVS_EventType_ERROR,
+         CFE_EVS_SendEvent(PKTMGR_UPDATE_FILTER_CMD_EID, CFE_EVS_EventType_ERROR,
                            "Error updating filter for message ID 0x%04X. Invalid filter type %d",
                            UpdatePktFilter->MsgId, UpdatePktFilter->FilterType);
       }
@@ -541,7 +617,7 @@ bool PKTMGR_UpdatePktFilterCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr
    else
    {
    
-      CFE_EVS_SendEvent(PKTMGR_UPDATE_FILTER_CMD_ERR_EID, CFE_EVS_EventType_ERROR,
+      CFE_EVS_SendEvent(PKTMGR_UPDATE_FILTER_CMD_EID, CFE_EVS_EventType_ERROR,
                         "Error updating filter for message ID 0x%04X. Packet not in use",
                         UpdatePktFilter->MsgId);
    }
@@ -693,17 +769,20 @@ static bool LoadPktTbl(PKTTBL_Data_t* NewTbl)
 
    CFE_PSP_MemCpy(&(PktMgr->PktTbl), NewTbl, sizeof(PKTTBL_Data_t));
 
-   for (AppId=0; AppId < PKTUTIL_MAX_APP_ID; AppId++) {
+   for (AppId=0; AppId < PKTUTIL_MAX_APP_ID; AppId++)
+   {
 
-      if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PKTTBL_UNUSED_MSG_ID) {
+      if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PKTTBL_UNUSED_MSG_ID)
+      {
          
          ++PktCnt;
          Status = SubscribeNewPkt(&(PktMgr->PktTbl.Data.Pkt[AppId])); 
 
-         if(Status != CFE_SUCCESS) {
+         if(Status != CFE_SUCCESS)
+         {
             
             ++FailedSubscription;
-            CFE_EVS_SendEvent(PKTMGR_LOAD_TBL_SUBSCRIBE_ERR_EID,CFE_EVS_EventType_ERROR,
+            CFE_EVS_SendEvent(PKTMGR_LOAD_TBL_EID,CFE_EVS_EventType_ERROR,
                               "Error subscribing to message ID 0x%04X, BufLim %d, Status %i",
                               PktMgr->PktTbl.Data.Pkt[AppId].MsgId, 
                               PktMgr->PktTbl.Data.Pkt[AppId].BufLim, Status);
@@ -712,17 +791,19 @@ static bool LoadPktTbl(PKTTBL_Data_t* NewTbl)
 
    } /* End pkt loop */
 
-   if (FailedSubscription == 0) {
+   if (FailedSubscription == 0)
+   {
       
       PKTMGR_InitStats(INITBL_GetIntConfig(PktMgr->IniTbl, CFG_APP_RUN_LOOP_DELAY),
                        INITBL_GetIntConfig(PktMgr->IniTbl, CFG_PKTMGR_STATS_INIT_DELAY));
-      CFE_EVS_SendEvent(PKTMGR_LOAD_TBL_INFO_EID, CFE_EVS_EventType_INFORMATION,
+      CFE_EVS_SendEvent(PKTMGR_LOAD_TBL_EID, CFE_EVS_EventType_INFORMATION,
                         "Successfully loaded new table with %d packets", PktCnt);
    }
-   else {
+   else
+   {
       
       RetStatus = false;
-      CFE_EVS_SendEvent(PKTMGR_LOAD_TBL_ERR_EID, CFE_EVS_EventType_INFORMATION,
+      CFE_EVS_SendEvent(PKTMGR_LOAD_TBL_EID, CFE_EVS_EventType_INFORMATION,
                         "Attempted to load new table with %d packets. Failed %d subscriptions",
                         PktCnt, FailedSubscription);
    }
@@ -791,9 +872,21 @@ static int32 PackEdsOutputMessage(void *DestBuffer, const CFE_MSG_Message_t *Src
 static int32 SubscribeNewPkt(PKTTBL_Pkt_t *NewPkt)
 {
 
-   int32 Status;
+   int32 Status = CFE_SUCCESS;
+   CFE_SB_MsgId_t MsgId = CFE_SB_ValueToMsgId(NewPkt->MsgId);
 
-   Status = CFE_SB_SubscribeEx(CFE_SB_ValueToMsgId(NewPkt->MsgId), PktMgr->TlmPipe, NewPkt->Qos, NewPkt->BufLim);
+   // Don't subscribe to messages that get wrapped and forwarded because they'd immediately get forwarded to KIT_TO
+   if (!CFE_SB_MsgId_Equal(MsgId, PktMgr->LocalToSbWrapTlmMid))
+   {
+      Status = CFE_SB_SubscribeEx(CFE_SB_ValueToMsgId(NewPkt->MsgId), PktMgr->TlmPipe, NewPkt->Qos, NewPkt->BufLim);
+      CFE_EVS_SendEvent(PKTMGR_SUBSCRIBE_EID, CFE_EVS_EventType_DEBUG,
+                        "Subscribed to message 0x%04X(%d)",NewPkt->MsgId, NewPkt->MsgId); 
+   }
+   else
+   {
+      CFE_EVS_SendEvent(PKTMGR_SUBSCRIBE_EID, CFE_EVS_EventType_INFORMATION,
+                        "Skip subscribing to message 0x%04X(%d)",NewPkt->MsgId, NewPkt->MsgId);    
+   }
 
    return Status;
 

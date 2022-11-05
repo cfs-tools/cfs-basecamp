@@ -49,22 +49,25 @@ static int HexChar2Bin(char *ValOut, const char HexIn);
 **      PktUtil_HexEncode() which also means in must contain an even number
 **      of bytes.
 */
-size_t PktUtil_HexDecode(uint8 *OutBuf, const char *InBuf)
+size_t PktUtil_HexDecode(uint8 *OutBuf, const char *InBuf, size_t BufLen)
 {
 
-   size_t Len;
+   size_t Len = BufLen;
    size_t i;
    char   HiNibble, LoNibble;
 
    if (InBuf == NULL || *InBuf == '\0' || OutBuf == NULL)
       return 0;
-
-   Len = strlen(InBuf);
+   
+   if (BufLen == 0)
+   {
+      Len = strlen(InBuf);
+   }
    if (Len % 2 != 0)
       return 0;
    Len /= 2;
    memset(OutBuf, 'A', Len);
-   for (i=0; i<Len; i++)
+   for (i=0; i < Len; i++)
    {
       if (!HexChar2Bin(&HiNibble, InBuf[i*2]) || !HexChar2Bin(&LoNibble, InBuf[i*2+1]))
       {
@@ -89,16 +92,16 @@ size_t PktUtil_HexDecode(uint8 *OutBuf, const char *InBuf)
 **   2. The caller is responsible for ensuring the output buffer is big enough
 **      to hold the encoded binary.  
 */
-void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t Len)
+void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t BufLen)
 {
    size_t  i;
 
-   for (i=0; i<Len; i++)
+   for (i=0; i < BufLen; i++)
    {
       OutBuf[i*2]   = "0123456789ABCDEF"[InBuf[i] >> 4];
       OutBuf[i*2+1] = "0123456789ABCDEF"[InBuf[i] & 0x0F];
    }
-   OutBuf[Len*2] = '\0';
+   OutBuf[BufLen*2] = '\0';
 
 } /* End PktUtil_HexEncode() */
 

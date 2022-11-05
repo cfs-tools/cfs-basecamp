@@ -25,6 +25,9 @@
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
   <Package name="KIT_TO" shortDescription="Telemetry Output App">
+
+    <Define name="MAX_WRAPPED_SB_MSG_LEN" value="2048"  shortDescription="MAximum size of SB message that can be used as a payload in a wrapped msg" />
+
     <DataTypeSet>
 
       <!--***********************************-->
@@ -40,6 +43,16 @@
           <Enumeration label="PACKET_FILTER" value="0" shortDescription="Define packets/filters for output " />
         </EnumerationList>
       </EnumeratedDataType>
+
+      <EnumeratedDataType name="TlmSource" shortDescription="Identifies different telemetry sources" >
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="LOCAL"  value="1" shortDescription="Output telemetry generated on the local system" />
+          <Enumeration label="REMOTE" value="2" shortDescription="Output telemetry generated on a remote system" />
+        </EnumerationList>
+      </EnumeratedDataType>
+
+     <StringDataType name="WrappedSbMsgBuffer" length="${MAX_WRAPPED_SB_MSG_LEN}" shortDescription="" />
       
       <!--***************************************-->
       <!--**** DataTypeSet: Command Payloads ****-->
@@ -117,6 +130,12 @@
        </EntryList>
       </ContainerDataType>
 
+      <ContainerDataType name="SetTlmSource_Payload" shortDescription="">
+        <EntryList>
+          <Entry name="Source"  type="TlmSource"  shortDescription="" />
+       </EntryList>
+      </ContainerDataType>
+
       <!--*****************************************-->
       <!--**** DataTypeSet: Telemetry Payloads ****-->
       <!--*****************************************-->
@@ -129,6 +148,7 @@
           <Entry name="PktTblAction"         type="OSK_C_FW/TblActions" />
           <Entry name="PktTblActionStatus"   type="OSK_C_FW/TblActionStatus" />
           <Entry name="PktTblJsonObjCnt"     type="BASE_TYPES/uint16" />
+          <Entry name="TlmSource"            type="TlmSource" />
           <Entry name="StatsValid"           type="BASE_TYPES/uint8"  />
           <Entry name="PktMgrSpareAlignByte" type="BASE_TYPES/uint8"  />
           <Entry name="PktsPerSec"           type="BASE_TYPES/uint16" />
@@ -168,6 +188,12 @@
           <Entry name="BufLim"      type="BASE_TYPES/uint16" />
           <Entry name="FilterType"  type="OSK_C_FW/PktFilterOptions"    shortDescription="" />
           <Entry name="FilterParam" type="OSK_C_FW/PktUtil_FilterParam" shortDescription="" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="WrappedSbMsgTlm_Payload" shortDescription="Contains other SB messages">
+        <EntryList>
+          <Entry name="Data"  type="WrappedSbMsgBuffer"  shortDescription="The data is another SB message" />
         </EntryList>
       </ContainerDataType>
 
@@ -304,6 +330,15 @@
         </ConstraintSet>
       </ContainerDataType>
 
+      <ContainerDataType name="SetTlmSource" baseType="CommandBase" shortDescription="">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 12" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="SetTlmSource_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
       <!--****************************************-->
       <!--**** DataTypeSet: Telemetry Packets ****-->
       <!--****************************************-->
@@ -323,6 +358,12 @@
       <ContainerDataType name="PktTblTlm" baseType="CFE_HDR/TelemetryHeader">
         <EntryList>
           <Entry type="PktTblTlm_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="WrappedSbMsgTlm" baseType="CFE_HDR/TelemetryHeader">
+        <EntryList>
+          <Entry type="WrappedSbMsgTlm_Payload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -361,6 +402,18 @@
             </GenericTypeMapSet>
           </Interface>
 
+          <Interface name="LOCAL_TO_SB_WRAP_TLM" shortDescription="Local messages to be wrapped and sent on the software bus" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="WrappedSbMsgTlm" />
+            </GenericTypeMapSet>
+          </Interface>
+
+          <Interface name="SB_WRAP_TO_UDP_TLM" shortDescription="Remote messages received on SB that are unwrapped and output over UDP" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="WrappedSbMsgTlm" />
+            </GenericTypeMapSet>
+          </Interface>
+
         </RequiredInterfaceSet>
 
         <!--***************************************-->
@@ -369,17 +422,21 @@
 
         <Implementation>
           <VariableSet>
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"          initialValue="${CFE_MISSION/KIT_TO_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"        initialValue="${CFE_MISSION/KIT_TO_HK_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="DataTypesTlmTopicId" initialValue="${CFE_MISSION/KIT_TO_DATA_TYPES_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="PktTblTlmTopicId"    initialValue="${CFE_MISSION/KIT_TO_PKT_TBL_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"              initialValue="${CFE_MISSION/KIT_TO_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"            initialValue="${CFE_MISSION/KIT_TO_HK_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="DataTypesTlmTopicId"     initialValue="${CFE_MISSION/KIT_TO_DATA_TYPES_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="PktTblTlmTopicId"        initialValue="${CFE_MISSION/KIT_TO_PKT_TBL_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="LocalToSbWrapTlmTopicId" initialValue="${CFE_MISSION/KIT_TO_LOCAL_TO_SB_WRAP_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SbWrapToUdpTlmTopicId"   initialValue="${CFE_MISSION/KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID}" />
           </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
-            <ParameterMap interface="CMD"            parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="HK_TLM"         parameter="TopicId" variableRef="HkTlmTopicId" />
-            <ParameterMap interface="DATA_TYPES_TLM" parameter="TopicId" variableRef="DataTypesTlmTopicId" />
-            <ParameterMap interface="PKT_TBL_TLM"    parameter="TopicId" variableRef="PktTblTlmTopicId" />
+            <ParameterMap interface="CMD"                   parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="HK_TLM"                parameter="TopicId" variableRef="HkTlmTopicId" />
+            <ParameterMap interface="DATA_TYPES_TLM"        parameter="TopicId" variableRef="DataTypesTlmTopicId" />
+            <ParameterMap interface="PKT_TBL_TLM"           parameter="TopicId" variableRef="PktTblTlmTopicId" />
+            <ParameterMap interface="LOCAL_TO_SB_WRAP_TLM"  parameter="TopicId" variableRef="LocalToSbWrapTlmTopicId" />
+            <ParameterMap interface="SB_WRAP_TO_UDP_TLM"    parameter="TopicId" variableRef="SbWrapToUdpTlmTopicId" />
           </ParameterMapSet>
         </Implementation>
       </Component>

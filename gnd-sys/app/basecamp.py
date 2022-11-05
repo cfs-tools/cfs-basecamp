@@ -1352,7 +1352,7 @@ class App():
                        ['Tutorials', self.manage_tutorials.tutorial_titles]
                    ]
 
-        self.common_cmds = ['-- Common Commands--', 'Enable Telemetry', 'Reset Time', 'Noop/Reset App', 'Restart App', 'Configure Events', 'Ena/Dis Flywheel', 'cFE Version']
+        self.common_cmds = ['-- Common Commands--', 'Enable Telemetry', 'Reset Time', 'Noop/Reset App', 'Restart App', 'Configure Events', 'Ena/Dis Flywheel', 'Set Tlm Source', 'cFE Version']
 
 
         # Events can't be posted until after first window.read() so initialization string is format here and used as the default string
@@ -1749,17 +1749,15 @@ class App():
 
                     pop_win.close()
                 
-            
                 elif cfs_config_cmd == self.common_cmds[6]: # Ena/Dis Flywheel
             
                     pop_text = "cFE TIME outputs an event when it starts/stops flywheel mode\nthat occurs when time can't synch to the 1Hz pulse. Use the\nbuttons to enable/disable the flywheel event messages..."
                     pop_win = sg.Window('Flywheel Message Configuration',
                                         [[sg.Text(pop_text)],
                                         [sg.Text("")],
-                                        [sg.Button('Enable', button_color=('green'), enable_events=True, key='-FLYWHEEL_ENABLE-', pad=(10,1)),
-                                         sg.Button('Disable', button_color=('red'), enable_events=True, key='-FLYWHEEL_DISABLE-', pad=(10,1)), 
+                                        [sg.Button('Enable',  button_color=('green'), enable_events=True, key='-FLYWHEEL_ENABLE-',  pad=(10,1)),
+                                         sg.Button('Disable', button_color=('red'),   enable_events=True, key='-FLYWHEEL_DISABLE-', pad=(10,1)), 
                                          sg.Cancel(button_color=('gray'))]])
-                
 
                     while True:  # Event Loop
                         pop_event, pop_values = pop_win.read(timeout=200)
@@ -1773,10 +1771,33 @@ class App():
                         if pop_event == '-FLYWHEEL_DISABLE-':
                             self.disable_flywheel_event()
                             break
-
                     pop_win.close()
 
-                elif cfs_config_cmd == self.common_cmds[7]: # cFE Version (CFE ES Noop)
+                elif cfs_config_cmd == self.common_cmds[7]: # Set KIT_TO Telemetry source
+
+                    pop_text = "Remote telemetry should only be selected\nif an app like MQTT_GW is installed that\nsupports routing remote telemetry to KIT_TO..."
+
+                    pop_win = sg.Window('Telemetry Source Configuration',
+                                        [[sg.Text(pop_text)],
+                                        [sg.Text("")],
+                                        [sg.Button('Local',  button_color=('green'), enable_events=True, key='-LOCAL_SRC-',  pad=(10,1)),
+                                         sg.Button('Remote', button_color=('green'), enable_events=True, key='-REMOTE_SRC-', pad=(10,1)), 
+                                         sg.Cancel(button_color=('gray'))]])
+                
+                    while True:  # Event Loop
+                        pop_event, pop_values = pop_win.read(timeout=200)
+                        if pop_event in (sg.WIN_CLOSED, 'Cancel'):
+                            break
+                        elif pop_event == '-LOCAL_SRC-':
+                            self.send_cfs_cmd('KIT_TO', 'SetTlmSource',  {'Source': 'LOCAL'})
+                            break
+                        if pop_event == '-REMOTE_SRC-':
+                            self.send_cfs_cmd('KIT_TO', 'SetTlmSource',  {'Source': 'REMOTE'})
+                            break
+                    pop_win.close()
+      
+            
+                elif cfs_config_cmd == self.common_cmds[8]: # cFE Version (CFE ES Noop)
                     self.send_cfs_cmd('CFE_ES', 'NoopCmd', {})
             
                    

@@ -65,6 +65,7 @@ typedef struct
 {
 
    uint16        MsgId;
+   bool          Forward;
    CFE_SB_Qos_t  Qos;
    uint16        BufLim;
 

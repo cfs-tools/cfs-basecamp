@@ -304,6 +304,8 @@ static bool LoadObj(CJSON_Obj_t* Obj, const char* Buf, size_t BufLen, OBJ_Necess
       switch (ValueType)
       {
          
+         case JSONTrue:
+         case JSONFalse:
          case JSONString:
          
             if (ValueLen <= Obj->TblDataLen)

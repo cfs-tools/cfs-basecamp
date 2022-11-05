@@ -42,9 +42,10 @@
 /** Type Definitions **/
 /**********************/
 
-/* See LoadJsonData()prologue for details */
+/* See LoadJsonData() prologue for details */
 
 typedef CJSON_IntObj_t JsonTopicId_t;
+typedef CJSON_StrObj_t JsonForward_t;
 typedef CJSON_IntObj_t JsonPriority_t;
 typedef CJSON_IntObj_t JsonReliability_t;
 typedef CJSON_IntObj_t JsonBufLimit_t;
@@ -56,6 +57,7 @@ typedef CJSON_IntObj_t JsonFilterO_t;
 typedef struct
 {
    JsonTopicId_t      TopicId;
+   JsonForward_t      Forward;
    JsonPriority_t     Priority;
    JsonReliability_t  Reliability;
    JsonBufLimit_t     BufLimit;
@@ -279,6 +281,9 @@ static void ConstructJsonPacket(JsonPacket_t* JsonPacket, uint16 PktArrayIdx)
    sprintf(KeyStr,"packet-array[%d].packet.topic-id", PktArrayIdx);
    CJSON_ObjConstructor(&JsonPacket->TopicId.Obj, KeyStr, JSONNumber, &JsonPacket->TopicId.Value, 4);
 
+   sprintf(KeyStr,"packet-array[%d].packet.forward", PktArrayIdx);
+   CJSON_ObjConstructor(&JsonPacket->Forward.Obj, KeyStr, JSONNumber, &JsonPacket->Forward.Value, 5); // Max length is 'false'
+
    sprintf(KeyStr,"packet-array[%d].packet.priority", PktArrayIdx);
    CJSON_ObjConstructor(&JsonPacket->Priority.Obj, KeyStr, JSONNumber, &JsonPacket->Priority.Value, 4);
 
@@ -314,6 +319,7 @@ static void ConstructJsonPacket(JsonPacket_t* JsonPacket, uint16 PktArrayIdx)
 **          "name": "ES_APP_TLM_TOPICID",  # Not saved
 **          "topic-id-N": 0,               # Not saved
 **          "topic-id": 0,
+**          "forward": false,
 **          "priority": 0,
 **          "reliability": 0,
 **          "buf-limit": 4,
@@ -368,6 +374,7 @@ static bool LoadJsonData(size_t JsonFileLen)
          {
          
             AttributeCnt = 0;
+            if (CJSON_LoadObj(&JsonPacket.Forward.Obj,     PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
             if (CJSON_LoadObj(&JsonPacket.Priority.Obj,    PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
             if (CJSON_LoadObj(&JsonPacket.Reliability.Obj, PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
             if (CJSON_LoadObj(&JsonPacket.BufLimit.Obj,    PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
@@ -376,10 +383,11 @@ static bool LoadJsonData(size_t JsonFileLen)
             if (CJSON_LoadObj(&JsonPacket.FilterN.Obj,     PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
             if (CJSON_LoadObj(&JsonPacket.FilterO.Obj,     PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
             
-            if (AttributeCnt == 7)
+            if (AttributeCnt == 8)
             {
                
                Pkt.MsgId           = JsonPacket.TopicId.Value;
+               Pkt.Forward         = (strcmp(JsonPacket.Forward.Value, "true") == 0);
                Pkt.Qos.Priority    = JsonPacket.Priority.Value;
                Pkt.Qos.Reliability = JsonPacket.Reliability.Value;
                Pkt.BufLim          = JsonPacket.BufLimit.Value;
@@ -394,7 +402,7 @@ static bool LoadJsonData(size_t JsonFileLen)
             else
             {
                CFE_EVS_SendEvent(PKTTBL_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
-                                 "Packet[%d] has mising attributes, only %d of 7 defined",
+                                 "Packet[%d] has missing attributes, only %d of 8 defined",
                                  PktArrayIdx, AttributeCnt);
                ReadPkt = false;
                RetStatus = false;
@@ -463,8 +471,8 @@ static bool WriteJsonPkt(int32 FileHandle, const PKTTBL_Pkt_t* Pkt, bool FirstPk
       sprintf(DumpRecord,"\"packet\": {\n");
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
 
-      sprintf(DumpRecord,"   \"topic-id\": %d,\n   \"priority\": %d,\n   \"reliability\": %d,\n   \"buf-limit\": %d,\n",
-              Pkt->MsgId, Pkt->Qos.Priority, Pkt->Qos.Reliability, Pkt->BufLim);
+      sprintf(DumpRecord,"   \"topic-id\": %d,\n   \"forward\": %d,\n   \"priority\": %d,\n   \"reliability\": %d,\n   \"buf-limit\": %d,\n",
+              Pkt->MsgId, Pkt->Forward, Pkt->Qos.Priority, Pkt->Qos.Reliability, Pkt->BufLim);
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
       
       sprintf(DumpRecord,"   \"filter\": { \"type\": %d, \"X\": %d, \"N\": %d, \"O\": %d}\n}",

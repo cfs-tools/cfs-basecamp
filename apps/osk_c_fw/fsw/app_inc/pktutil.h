@@ -128,7 +128,7 @@ typedef struct
 **      PktUtil_HexEncode() which also means it must contain an even number
 **      of bytes.
 */
-size_t PktUtil_HexDecode(uint8 *OutBuf, const char *InBuf);
+size_t PktUtil_HexDecode(uint8 *OutBuf, const char *InBuf, size_t BufLen);
 
 
 /******************************************************************************
@@ -142,7 +142,7 @@ size_t PktUtil_HexDecode(uint8 *OutBuf, const char *InBuf);
 **   2. The caller is responsible for ensuring the output buffer is big enough
 **      to hold the encoded binary.  
 */
-void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t Len);
+void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t BufLen);
 
 
 /******************************************************************************

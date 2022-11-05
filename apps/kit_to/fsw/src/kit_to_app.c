@@ -398,6 +398,7 @@ static int32 InitApp(void)
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_REMOVE_PKT_CC,        PKTMGR_OBJ, PKTMGR_RemovePktCmd,       sizeof(KIT_TO_RemovePkt_Payload_t));
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SEND_PKT_TBL_TLM_CC,  PKTMGR_OBJ, PKTMGR_SendPktTblTlmCmd,   sizeof(KIT_TO_SendPktTblTlm_Payload_t));
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_UPDATE_PKT_FILTER_CC, PKTMGR_OBJ, PKTMGR_UpdatePktFilterCmd, sizeof(KIT_TO_UpdatePktFilter_Payload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SET_TLM_SOURCE_CC,    PKTMGR_OBJ, PKTMGR_SetTlmSourceCmd,    2); //TODO - cmdmgr expects 2 error: sizeof(KIT_TO_SetTlmSource_Payload_t));
       
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SEND_DATA_TYPES_TLM_CC, &KitTo, KIT_TO_SendDataTypesTlmCmd, 0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SET_RUN_LOOP_DELAY_CC,  &KitTo, KIT_TO_SetRunLoopDelayCmd,  sizeof(KIT_TO_SetRunLoopDelay_Payload_t));
@@ -554,7 +555,8 @@ static void SendHousekeepingTlm(void)
    ** - Some of these may be more diagnostic but not enough to warrant a
    **   separate diagnostic. Also easier for the user not to have to command it.
    */
-
+   
+   Payload->TlmSource   = KitTo.PktMgr.TlmSource;
    Payload->StatsValid  = (KitTo.PktMgr.Stats.State == PKTMGR_STATS_VALID);
    Payload->PktsPerSec  = round(KitTo.PktMgr.Stats.AvgPktsPerSec);
    Payload->BytesPerSec = round(KitTo.PktMgr.Stats.AvgBytesPerSec);

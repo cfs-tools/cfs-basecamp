@@ -84,7 +84,7 @@ typedef struct
    void*          TblData;
    size_t         TblDataLen;
    bool           Updated;
-   JSONTypes_t    Type;
+   JSONTypes_t    Type;      /* Defined in core_json.h */
    bool           TypeFlt;   /* Distinguish between integer and float number types */
    CJSON_Query_t  Query;
 
@@ -94,7 +94,7 @@ typedef struct
 /*
 ** These structures are helpful when processing JSON tables with more complex 
 ** data structures such as arrays. The CJSON_LoadObj*() methods are typically
-** used as each array element is processed. It's often convenient to defined
+** used as each array element is processed. It's often convenient to define
 ** both CJSON_OBJ information with the data storage.
 */
 

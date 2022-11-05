@@ -53,24 +53,18 @@
 /*
 ** Event Message IDs
 */
-#define PKTMGR_SOCKET_SEND_ERR_EID               (PKTMGR_BASE_EID +  0)
-#define PKTMGR_LOAD_TBL_SUBSCRIBE_ERR_EID        (PKTMGR_BASE_EID +  1)
-#define PKTMGR_LOAD_TBL_INFO_EID                 (PKTMGR_BASE_EID +  2)
-#define PKTMGR_LOAD_TBL_ERR_EID                  (PKTMGR_BASE_EID +  3)
-#define PKTMGR_LOAD_TBL_ENTRY_SUBSCRIBE_ERR_EID  (PKTMGR_BASE_EID +  4)
-#define PKTMGR_LOAD_TBL_ENTRY_INFO_EID           (PKTMGR_BASE_EID +  5)
-#define PKTMGR_TLM_OUTPUT_ENA_INFO_EID           (PKTMGR_BASE_EID +  6)
-#define PKTMGR_TLM_OUTPUT_ENA_SOCKET_ERR_EID     (PKTMGR_BASE_EID +  7)
-#define PKTMGR_ADD_PKT_SUCCESS_EID               (PKTMGR_BASE_EID +  8)
-#define PKTMGR_ADD_PKT_ERROR_EID                 (PKTMGR_BASE_EID +  9)
-#define PKTMGR_REMOVE_PKT_SUCCESS_EID            (PKTMGR_BASE_EID + 10)
-#define PKTMGR_REMOVE_PKT_ERROR_EID              (PKTMGR_BASE_EID + 11)
-#define PKTMGR_REMOVE_ALL_PKTS_SUCCESS_EID       (PKTMGR_BASE_EID + 12)
-#define PKTMGR_REMOVE_ALL_PKTS_ERROR_EID         (PKTMGR_BASE_EID + 13)
-#define PKTMGR_DESTRUCTOR_INFO_EID               (PKTMGR_BASE_EID + 14)
-#define PKTMGR_UPDATE_FILTER_CMD_SUCCESS_EID     (PKTMGR_BASE_EID + 15)
-#define PKTMGR_UPDATE_FILTER_CMD_ERR_EID         (PKTMGR_BASE_EID + 16)
-#define PKTMGR_DEBUG_EID                         (PKTMGR_BASE_EID + 17)
+#define PKTMGR_SOCKET_SEND_ERR_EID      (PKTMGR_BASE_EID +  0)
+#define PKTMGR_LOAD_TBL_EID             (PKTMGR_BASE_EID +  1)
+#define PKTMGR_LOAD_TBL_ENTRY_EID       (PKTMGR_BASE_EID +  2)
+#define PKTMGR_TLM_ENA_OUTPUT_EID       (PKTMGR_BASE_EID +  3)
+#define PKTMGR_ADD_PKT_EID              (PKTMGR_BASE_EID +  4)
+#define PKTMGR_REMOVE_PKT_EID           (PKTMGR_BASE_EID +  5)
+#define PKTMGR_REMOVE_ALL_PKTS_EID      (PKTMGR_BASE_EID +  6)
+#define PKTMGR_DESTRUCTOR_INFO_EID      (PKTMGR_BASE_EID +  7)
+#define PKTMGR_UPDATE_FILTER_CMD_EID    (PKTMGR_BASE_EID +  8)
+#define PKTMGR_SET_TLM_SOURCE_CMD_EID   (PKTMGR_BASE_EID +  9)
+#define PKTMGR_SUBSCRIBE_EID            (PKTMGR_BASE_EID + 10)
+#define PKTMGR_DEBUG_EID                (PKTMGR_BASE_EID + 11)
 
 
 /**********************/
@@ -142,20 +136,24 @@ typedef struct
    ** Telemetry Packets
    */
    
-   KIT_TO_PktTblTlm_t   PktTblTlm;
+   KIT_TO_PktTblTlm_t        PktTblTlm;
+   KIT_TO_WrappedSbMsgTlm_t  LocalToSbWrapTlm;
 
    /*
    ** PktMgr Data
    */
 
-   CFE_SB_PipeId_t   TlmPipe;
-   uint32            TlmUdpPort;
-   osal_id_t         TlmSockId;
-   char              TlmDestIp[PKTMGR_IP_STR_LEN];
-
-   bool              DownlinkOn;
-   bool              SuppressSend;
-   PKTMGR_Stats_t    Stats;
+   CFE_SB_PipeId_t  TlmPipe;
+   uint32           TlmUdpPort;
+   osal_id_t        TlmSockId;
+   char             TlmDestIp[PKTMGR_IP_STR_LEN];
+   CFE_SB_MsgId_t   LocalToSbWrapTlmMid;
+   CFE_SB_MsgId_t   SbWrapToUdpTlmMid;
+   
+   bool                    DownlinkOn;
+   bool                    SuppressSend;
+   KIT_TO_TlmSource_Enum_t TlmSource;
+   PKTMGR_Stats_t          Stats;
 
    /*
    ** Contained Objects
@@ -271,6 +269,13 @@ bool PKTMGR_RemovePktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 **
 */
 bool PKTMGR_SendPktTblTlmCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+
+
+/*******************************************************************
+** Function: PKTMGR_SetTlmSourceCmd
+**
+*/
+bool PKTMGR_SetTlmSourceCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
