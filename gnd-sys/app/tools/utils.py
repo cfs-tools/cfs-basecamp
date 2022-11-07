@@ -17,7 +17,9 @@
         Provide JSON base class.
 """
 import os
-
+import socket
+import fcntl
+import struct
 
 ###############################################################################
 
@@ -69,6 +71,17 @@ def datagram_to_str(datagram):
         datagram_str += " ".join([f"0x{byte:02X}" for byte in chunk])
 
     return datagram_str #TODO - Decide on '\n'
+
+
+###############################################################################
+
+def get_ip_addr(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', ifname[:15].encode('utf-8'))
+    )[20:24])
 
 
 ###############################################################################

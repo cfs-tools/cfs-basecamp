@@ -37,7 +37,10 @@ from threading import Thread, Lock
 
 logger = logging.getLogger("router")
 
-
+class RouterCmd():
+   CLOSE_PORT      = 'ClosePort'
+   SET_CFS_IP_ADDR = 'SetCfsIpAddr'
+   
 ###############################################################################
 
 class CmdSource():
@@ -90,7 +93,7 @@ class CmdTlmRouter(Thread):
         self.cfs_ip_addr    = cfs_ip_addr
         self.cfs_cmd_socket = None
         self.cfs_cmd_port   = cfs_cmd_port
-        self.cfs_cmd_socket_addr = (self.cfs_ip_addr, self.cfs_cmd_port)
+        self.set_cfs_ip_addr(cfs_ip_addr)
         
         self.cfs_cmd_source = {}
         self.cfs_cmd_source_queue = Queue()
@@ -173,10 +176,19 @@ class CmdTlmRouter(Thread):
         self.tlm_dest_mutex.acquire()
         try:
             del self.tlm_dest_addr[tlm_port]
+            logger.info('Removed telemetry destination port {tlm_port}')
         except KeyError:
-            logger.error(f'Error removing nonexitent telemetry source {cmd_port} from cfs_cmd_source dictionary')  
+            logger.error(f'Error removing nonexitent telemetry source {tlm_port} from tlm destination dictionary')  
         self.tlm_dest_mutex.release()
     
+    def set_cfs_ip_addr(self, ip_addr):
+        """
+        This is used for switching between local and remote cFS targets
+        """
+        self.cfs_ip_addr = ip_addr
+        self.cfs_cmd_socket_addr = (self.cfs_ip_addr, self.cfs_cmd_port)
+        logger.info(f'cfS IP address set to {self.cfs_cmd_socket_addr}')
+
     def run(self):
 
         # cFS Commands
@@ -214,6 +226,8 @@ class CmdTlmRouter(Thread):
         be acceptable for STEM education type projects.
         """
         # Process cFS Commands
+        # 1. Put commands from all sources on self.cfs_cmd_source_queue
+        # 2. Send all commands from self.cfs_cmd_source_queue
         for cmd_source in self.cfs_cmd_source:
             self.cfs_cmd_source[cmd_source].read_cmd_port(self.cfs_cmd_source_queue)
 
@@ -241,15 +255,19 @@ class CmdTlmRouter(Thread):
         for cmd_source in self.router_ctrl_source:
             self.router_ctrl_source[cmd_source].read_cmd_port(self.router_ctrl_queue)
 
-        # Only type of datagram recognized which is the port number of a telemetry destination to 
-        # be removed
         while not self.router_ctrl_queue.empty():
             datagram = self.router_ctrl_queue.get()
-            port = int(datagram[0].decode())
+            cmd = datagram[0].decode()
             logger.debug(f'Ground command datagram dequeued: {datagram[0].decode()}')
-            if port in self.tlm_dest_addr:
-                self.remove_gnd_tlm_dest(port)
-                logger.info(f'Removed port {port}')
+            cmd_token = cmd.split(':')
+            logger.info(f'Router Control Command: {str(cmd_token)}')
+            if cmd_token[0] == RouterCmd.CLOSE_PORT:
+                self.remove_gnd_tlm_dest(int(cmd_token[1]))
+            elif cmd_token[0] == RouterCmd.SET_CFS_IP_ADDR:
+                self.set_cfs_ip_addr(cmd_token[1])
+            else:
+                logger.info(f'Invalid router command recieved: {str(cmd_token)}')
+
 
     def tlm_dest_connect_thread(self):
         

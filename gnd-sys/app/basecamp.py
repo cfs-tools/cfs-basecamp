@@ -1530,6 +1530,7 @@ class App():
                 self.launch_tlmplot()
                 
             elif self.event == 'Control Remote Target':
+                self.cmd_tlm_router.add_cfs_cmd_source(self.config.getint('NETWORK','TARGET_CONTROL_CMD_PORT'))
                 tools_dir = os.path.join(self.path, "cfsinterface")
                 self.target_control = sg.execute_py_file("targetcontrol.py", cwd=tools_dir)
 
@@ -1660,15 +1661,15 @@ class App():
             elif self.event == '-COMMON_CMD-':
                 cfs_config_cmd = self.values['-COMMON_CMD-']
                 
-                if cfs_config_cmd == self.common_cmds[1]: # Enable Telemetry
+                if cfs_config_cmd == self.common_cmds[1]: #### Enable Telemetry ####
                     self.enable_telemetry()
 
-                elif cfs_config_cmd == self.common_cmds[2]: # Reset Time
+                elif cfs_config_cmd == self.common_cmds[2]: #### Reset Time ####
                     self.send_cfs_cmd('CFE_TIME', 'SetMETCmd', {'Seconds': 0,'MicroSeconds': 0 })
                     time.sleep(0.5)
                     self.send_cfs_cmd('CFE_TIME', 'SetTimeCmd', {'Seconds': 0,'MicroSeconds': 0 })
             
-                elif cfs_config_cmd == self.common_cmds[3]: # Noop/Reset App
+                elif cfs_config_cmd == self.common_cmds[3]: #### Noop/Reset App ####
 
                     pop_win = sg.Window('Noop-Reset Application',
                                         [[sg.Text("")],
@@ -1698,7 +1699,7 @@ class App():
                             break        
                     pop_win.close()
                     
-                elif cfs_config_cmd == self.common_cmds[4]: # Restart App 
+                elif cfs_config_cmd == self.common_cmds[4]: #### Restart App  ####
                     pop_win = sg.Window('Restart Application',
                                         [[sg.Text("")],
                                          [sg.Text("Select App"), sg.Combo((self.app_cmd_list), size=(20,1), key='-APP_NAME-', default_value=self.app_cmd_list[0])],
@@ -1717,7 +1718,7 @@ class App():
                             break        
                     pop_win.close()
 
-                elif cfs_config_cmd == self.common_cmds[5]: # Configure Events
+                elif cfs_config_cmd == self.common_cmds[5]: #### Configure Events ####
                     app_list = self.cfe_apps + self.app_cmd_list
                     pop_win = sg.Window('Configure App Events',
                                         [[sg.Text("")],
@@ -1749,7 +1750,7 @@ class App():
 
                     pop_win.close()
                 
-                elif cfs_config_cmd == self.common_cmds[6]: # Ena/Dis Flywheel
+                elif cfs_config_cmd == self.common_cmds[6]: #### Ena/Dis Flywheel ####
             
                     pop_text = "cFE TIME outputs an event when it starts/stops flywheel mode\nthat occurs when time can't synch to the 1Hz pulse. Use the\nbuttons to enable/disable the flywheel event messages..."
                     pop_win = sg.Window('Flywheel Message Configuration',
@@ -1773,7 +1774,7 @@ class App():
                             break
                     pop_win.close()
 
-                elif cfs_config_cmd == self.common_cmds[7]: # Set KIT_TO Telemetry source
+                elif cfs_config_cmd == self.common_cmds[7]: #### Set KIT_TO Telemetry source ####
 
                     pop_text = "Remote telemetry should only be selected\nif an app like MQTT_GW is installed that\nsupports routing remote telemetry to KIT_TO..."
 
@@ -1792,12 +1793,13 @@ class App():
                             self.send_cfs_cmd('KIT_TO', 'SetTlmSource',  {'Source': 'LOCAL'})
                             break
                         if pop_event == '-REMOTE_SRC-':
+                            #self.cmd_tlm_router.set_cfs_ip_addr('192.168.0.3')
                             self.send_cfs_cmd('KIT_TO', 'SetTlmSource',  {'Source': 'REMOTE'})
                             break
                     pop_win.close()
       
             
-                elif cfs_config_cmd == self.common_cmds[8]: # cFE Version (CFE ES Noop)
+                elif cfs_config_cmd == self.common_cmds[8]: #### cFE Version (CFE ES Noop) ####
                     self.send_cfs_cmd('CFE_ES', 'NoopCmd', {})
             
                    

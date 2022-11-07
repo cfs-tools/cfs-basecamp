@@ -27,7 +27,7 @@ from .cfeconstants  import Cfe
 from .edsmission    import EdsMission, CfeEdsTarget
 from .telecommand   import TelecommandInterface, TelecommandScript
 from .telemetry     import TelemetryMessage, TelemetryObserver, TelemetryServer, TelemetrySocketServer, TelemetryQueueServer
-from .cmdtlmrouter  import CmdTlmRouter
+from .cmdtlmrouter  import CmdTlmRouter, RouterCmd
 from .cmdtlmprocess import CmdProcess, CmdTlmProcess
 from .targetcontrol import TargetControl
 

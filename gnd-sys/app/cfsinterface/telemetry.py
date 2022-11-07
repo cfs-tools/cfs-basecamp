@@ -51,9 +51,11 @@ if __name__ == '__main__' or 'cfsinterface' in os.getcwd():
     sys.path.append('..')
     from edsmission import EdsMission
     from edsmission import CfeEdsTarget
+    from cmdtlmrouter  import RouterCmd
 else:
-    from .edsmission import EdsMission
-    from .edsmission import CfeEdsTarget
+    from .edsmission   import EdsMission
+    from .edsmission   import CfeEdsTarget
+    from .cmdtlmrouter import RouterCmd
 from tools import hex_string
     
 ###############################################################################
@@ -418,7 +420,7 @@ class TelemetrySocketServer(TelemetryServer):
 
     def shutdown(self):
         logger.info('TelemetrySocketServer shutdown started')
-        datagram = str(self.server_tlm_port).encode('utf-8')  # TODO - Parameterize
+        datagram = f'{RouterCmd.CLOSE_PORT}:{self.server_tlm_port}'.encode('utf-8')  # TODO - Parameterize
         self.router_ctrl_socket.sendto(datagram, self.router_ctrl_socket_addr)
         self.router_ctrl_socket.close()
         super().shutdown()

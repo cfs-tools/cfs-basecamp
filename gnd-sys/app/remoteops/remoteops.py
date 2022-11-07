@@ -148,7 +148,7 @@ class RemoteOps(MqttClient):
             0x8915,  # SIOCGIFADDR
             struct.pack('256s', ifname[:15].encode('utf-8'))
         )[20:24])
-        print (f'IP Adress: {addr}')
+        print (f'IP Address: {addr}')
         return addr
 
     def on_connect(self, client, userdata, flags, rc):

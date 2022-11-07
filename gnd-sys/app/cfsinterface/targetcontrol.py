@@ -22,13 +22,10 @@
 """
 
 import sys
-import time
 import os
+import socket
 import configparser
 import json
-import socket
-import fcntl
-import struct
 import logging
 logger = logging.getLogger(__name__)
 
@@ -39,10 +36,13 @@ if __name__ == '__main__':
     sys.path.append('..')
     from cfeconstants  import Cfe
     from cmdtlmprocess import CmdProcess
+    from cmdtlmrouter  import RouterCmd
 else:
     from .cfeconstants  import Cfe
     from .cmdtlmprocess import CmdProcess
+    from .cmdtlmrouter  import RouterCmd
 from remoteops import mqttconst as mc
+from tools import get_ip_addr
 
 ###############################################################################
 
@@ -50,15 +50,19 @@ class TargetControl(CmdProcess):
     """
     Manage the target interface 
     """
-    def __init__(self, gnd_ip_addr, router_cmd_port, 
+    def __init__(self, gnd_ip_addr, router_ctrl_port, router_cmd_port, 
                 target_mqtt_topic, broker_addr, broker_port, client_name):
         """
         """
         super().__init__(gnd_ip_addr, router_cmd_port)
         
-        self.ip_addr = self.get_ip_addr('ens33')
-        print(f'ip_addr: {self.ip_addr}')
+        self.local_ip_addr = get_ip_addr('ens33')
+        print(f'Local ip_addr: {self.local_ip_addr}')
+        self.router_ctrl_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.router_ctrl_socket_addr = (gnd_ip_addr, router_ctrl_port)
         
+        self.remote_ip_addr = None
+
         # cFS Configuration        
         self.cfe_time_event_filter = False
         
@@ -80,14 +84,6 @@ class TargetControl(CmdProcess):
 
         self.window = None
         
-    def get_ip_addr(self, ifname):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        return socket.inet_ntoa(fcntl.ioctl(
-            s.fileno(),
-            0x8915,  # SIOCGIFADDR
-            struct.pack('256s', ifname[:15].encode('utf-8'))
-        )[20:24])
-
     def client_on_connect(self, client, userdata, flags, rc):
         """
         """
@@ -162,21 +158,34 @@ class TargetControl(CmdProcess):
         for key in tlm:
             if key in self.json_tlm_keys:
                 self.window[key].update(tlm[key])
+                if key == 'ip-addr':
+                   self.remote_ip_addr = tlm[key]
+                   print(f'remote ip_addr: {self.remote_ip_addr}')
             #TODO - Is it an error to have keys not recognized by this GUI?
             
 
-    def enable_cfs_tlm(self):
-        self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'DestIp': self.ip_addr})
-        # CFE_TIME does not configure an event filter so the first time through add an event filter to CFE_TIME
-        # Set and add filter commands have identical parameters
-        if self.cfe_time_event_filter:
-            evs_cmd = 'SetFilterCmd'
-        else:
-            evs_cmd = 'AddEventFilterCmd'
-            self.cfe_time_event_filter = True                        
-        self.send_cfs_cmd('CFE_EVS', evs_cmd,  {'AppName': 'CFE_TIME', 'EventID': Cfe.CFE_TIME_FLY_ON_EID, 'Mask': Cfe.CFE_EVS_FIRST_ONE_STOP})
-        time.sleep(0.5)
-        self.send_cfs_cmd('CFE_EVS', evs_cmd,  {'AppName': 'CFE_TIME', 'EventID': Cfe.CFE_TIME_FLY_OFF_EID, 'Mask': Cfe.CFE_EVS_FIRST_ONE_STOP})
+    def start_remote_cfs_tlm(self, timer):
+        """
+        The timer is used to space out sending commands to the cmdtlmrouter. 
+        Sleep() can't be used because it would blocks the window event loop and
+        if telemetry is received when the loop is blocked then an error occurs.
+        If the event loop timeout value is changed then this timing will need to 
+        change.
+        """
+        ret_status = True
+        if timer == 0:
+            print('Commanding KIT_TO to remote')
+            self.send_cfs_cmd('KIT_TO', 'SetTlmSource',  {'Source': 'REMOTE'})
+        elif timer == 6:
+            print('Setting router cFS IP address')
+            datagram = f'{RouterCmd.SET_CFS_IP_ADDR}:{self.remote_ip_addr}'.encode('utf-8')
+            self.router_ctrl_socket.sendto(datagram, self.router_ctrl_socket_addr)
+        elif timer > 12:
+            print('Commanding remote KIT_TO to enable telemetry')
+            self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'DestIp': '127.0.0.1'})
+            ret_status = False
+            
+        return ret_status
 
     def create_window(self):
 
@@ -201,9 +210,9 @@ class TargetControl(CmdProcess):
                 sg.Button('Reboot',     size=but_text_size,     font=hdr_label_font, enable_events=True, key='-TARGET_REBOOT-',   pad=((10,5),(12,12))),
                 sg.Button('Shutdown',   size=but_text_size,     font=hdr_label_font, enable_events=True, key='-TARGET_SHUTDOWN-', pad=((10,5),(12,12)))],
                 [sg.Text('cFS:',        size=but_row_text_size, font=hdr_label_font, pad=((5,0),(12,12))), 
-                sg.Button('Start',      size=but_text_size,     font=hdr_label_font, enable_events=True, key='-CFS_START-',   pad=((10,5),(12,12))),
-                sg.Button('Stop',       size=but_text_size,     font=hdr_label_font, enable_events=True, key='-CFS_STOP-',    pad=((10,5),(12,12))),
-                sg.Button('Enable Tlm', size=but_text_size,     font=hdr_label_font, enable_events=True, key='-CFS_ENA_TLM-', pad=((10,5),(12,12)))],
+                sg.Button('Start',      size=but_text_size,     font=hdr_label_font, enable_events=True, key='-CFS_START-',     pad=((10,5),(12,12))),
+                sg.Button('Stop',       size=but_text_size,     font=hdr_label_font, enable_events=True, key='-CFS_STOP-',      pad=((10,5),(12,12))),
+                sg.Button('Start Tlm',  size=but_text_size,     font=hdr_label_font, enable_events=True, key='-CFS_START_TLM-', pad=((10,5),(12,12)))],
                 [sg.Text('Python:',     size=but_row_text_size, font=hdr_label_font, pad=((5,0),(12,12))), 
                 sg.Button('Start',      size=but_text_size,     font=hdr_label_font, enable_events=True, key='-PYTHON_START-', pad=((10,5),(12,12))),
                 sg.Button('Stop',       size=but_text_size,     font=hdr_label_font, enable_events=True, key='-PYTHON_STOP-',  pad=((10,5),(12,12)))]])
@@ -240,14 +249,16 @@ class TargetControl(CmdProcess):
         
         self.client_connect();          
         self.window = self.create_window()
-                        
+        
+        start_remote_cfs_tlm   = False
+        start_remote_cfs_timer = 0
         while True:
     
             self.event, self.values = self.window.read(timeout=250)
 
             if self.event in (sg.WIN_CLOSED, 'Exit') or self.event is None:
                 break
-
+            
             if self.client_connected:
                self.window['-CLIENT_STATE-'].Update('Connected to ' + self.broker_addr, text_color='white')
             else:
@@ -272,8 +283,9 @@ class TargetControl(CmdProcess):
                 self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_CFS, mc.JSON_CMD_CFS_START)
                 self.cfe_time_event_filter = False
                                  
-            elif self.event == '-CFS_ENA_TLM-':
-                self.enable_cfs_tlm()
+            elif self.event == '-CFS_START_TLM-':
+                start_remote_cfs_tlm   = True
+                start_remote_cfs_timer = 0
 
             elif self.event == '-CFS_STOP-':
                 self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_CFS, mc.JSON_CMD_CFS_STOP)
@@ -299,6 +311,14 @@ class TargetControl(CmdProcess):
             elif self.event == '-PYTHON_LIST_APPS-':
                 self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_PYTHON, mc.JSON_CMD_PYTHON_LIST_APPS)
     
+            # Perform processing that requires multiple event loop cycles
+            if start_remote_cfs_tlm:
+               start_remote_cfs_tlm = self.start_remote_cfs_tlm(start_remote_cfs_timer)
+               start_remote_cfs_timer += 1
+            
+        self.window.close()
+        
+        
     def select_py_app_gui(self, py_app_list, action_text):
         """
         Select the python app to be started or stopped. The action text should be lower case.
@@ -342,7 +362,9 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
 
-    cfs_ip_addr = config.get('NETWORK','CFS_IP_ADDR')
+    router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
+    
+    gnd_ip_addr = config.get('NETWORK','GND_IP_ADDR')
     cmd_port    = config.getint('NETWORK','TARGET_CONTROL_CMD_PORT')
 
     broker_addr = config.get('NETWORK','MQTT_BROKER_ADDR')
@@ -352,7 +374,7 @@ if __name__ == '__main__':
     client_name   = config.get('NETWORK','MQTT_CLIENT_NAME')
     remote_target_mqtt_topic = config.get('NETWORK','REMOTE_TARGET_MQTT_TOPIC')
     
-    target_control = TargetControl(cfs_ip_addr, cmd_port, remote_target_mqtt_topic, broker_addr, broker_port, client_name)
+    target_control = TargetControl(gnd_ip_addr, router_ctrl_port, cmd_port, remote_target_mqtt_topic, broker_addr, broker_port, client_name)
     target_control.execute()
     
 
