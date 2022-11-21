@@ -1,7 +1,9 @@
 # core Flight System Basecamp
-Provides a framework and tools for developing, downloading, and integrating core Flight System (cFS) applications into an operational system. A python Graphical User Interface (GUI) allows users to send commands to and receve telemetry from the cFS target. The GUI also facilitates user workflows for working with apps.
+Provides a framework and tools for developing, downloading, and integrating core Flight System (cFS) applications into an operational system. A lightweight python Graphical User Interface (GUI) allows users to send commands, receive telemetry, and transfer files with the cFS target.
 
-*Basecamp* includes the [cfe-eds-framework](https://github.com/jphickey/cfe-eds-framework) cFS distribution which includes NASA's core Flight Executive (cFE) and CCSDS Electronic Data Sheets (EDS) support. Each cFS application interface is defined using EDS specifications and the cfe-eds-framework build toolchain generates artifacts that are used by both the flight and ground software systems. The [cFS App Repositories](https://github.com/orgs/cfs-apps/repositories) contain apps that include EDS interface specifications so the apps can be downloaded and integrated into *Basecamp* system with minimal effort. 
+*Basecamp* includes the [cfe-eds-framework](https://github.com/jphickey/cfe-eds-framework) cFS distribution which includes NASA's core Flight Executive (cFE) and a CCSDS Electronic Data Sheets (EDS) toolchain. Each cFS application interface is defined using EDS specifications and the cfe-eds-framework build toolchain generates artifacts that are used by both the flight and ground software systems. The [cFS App Repositories](https://github.com/orgs/cfs-apps/repositories) contain apps that include EDS interface specifications so the apps can be downloaded and integrated into a *Basecamp* system with only a few mouse clicks. 
+
+*Basecamp* includes built-in tutorials with hands-on exercises to shorten the path to productivity. Additonal cFS learning material can be found at [Open Mission Stack](https://openmissionstack.com/)
 
 # Getting Started
 

@@ -41,8 +41,8 @@ class MqttClient():
     def __init__(self, mqtt_config):
         self.broker_addr = mqtt_config['BROKER_ADDR']
         self.broker_port = mqtt_config['BROKER_PORT']
-        self.client_name = f"{mqtt_config['TARGET_TYPE']}-{mqtt_config['TARGET_ID']}"
-        self.topic_base  = f"{MQTT_TOPIC_ROOT}/{mqtt_config['TARGET_TYPE']}/{mqtt_config['TARGET_ID']}"
+        self.client_name = f"{mqtt_config['TARGET_ID']}"
+        self.topic_base  = f"{MQTT_TOPIC_ROOT}/{mqtt_config['TARGET_ID']}"
         self.client = None
         self.event_msg = ''
         self.event_queue = queue.Queue()
@@ -98,7 +98,7 @@ class AdaFruitImu(MqttClient):
         self.imu = None
         self.control_delay = 0.5 # int(self.exec_config['CONTROL_DELAY'])
         
-        self.client_name = f"{self.mqtt_config['TARGET_TYPE']}-{self.mqtt_config['TARGET_ID']}/{self.mqtt_config['SENSOR_ID']}"
+        self.client_name = f"{self.mqtt_config['TARGET_ID']}/{self.mqtt_config['SENSOR_ID']}"
         self.imu_rate_topic = f"{self.topic_base}/{self.mqtt_config['SENSOR_ID']}"
 
         self.log_info_event(f'AdaFruit IMU defaults {self.broker_addr}:{self.broker_port}//{self.imu_rate_topic}',queue_event=False)

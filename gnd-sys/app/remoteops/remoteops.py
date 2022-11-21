@@ -42,8 +42,8 @@ class MqttClient():
     def __init__(self, mqtt_config):
         self.broker_addr = mqtt_config['BROKER_ADDR']
         self.broker_port = mqtt_config['BROKER_PORT']
-        self.client_name = f"{mqtt_config['TARGET_TYPE']}-{mqtt_config['TARGET_ID']}"
-        self.topic_base  = f"{MQTT_TOPIC_ROOT}/{mqtt_config['TARGET_TYPE']}/{mqtt_config['TARGET_ID']}"
+        self.client_name = f"{mqtt_config['TARGET_ID']}"
+        self.topic_base  = f"{MQTT_TOPIC_ROOT}/{mqtt_config['TARGET_ID']}"
         self.client = None
         self.event_msg = ''
         self.event_queue = queue.Queue()
@@ -148,7 +148,7 @@ class RemoteOps(MqttClient):
             0x8915,  # SIOCGIFADDR
             struct.pack('256s', ifname[:15].encode('utf-8'))
         )[20:24])
-        print (f'IP Address: {addr}')
+        print (f'IP Adress: {addr}')
         return addr
 
     def on_connect(self, client, userdata, flags, rc):
