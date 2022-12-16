@@ -51,13 +51,21 @@ class TargetControl(CmdProcess):
     Manage the target interface 
     """
     def __init__(self, gnd_ip_addr, router_ctrl_port, router_cmd_port, 
-                target_mqtt_topic, broker_addr, broker_port, client_name):
+                target_mqtt_topic, broker_addr, broker_port, client_name,
+                local_network_adapter):
         """
         """
         super().__init__(gnd_ip_addr, router_cmd_port)
         
-        self.local_ip_addr = get_ip_addr('ens33')
-        print(f'Local ip_addr: {self.local_ip_addr}')
+        self.local_network_adapter = local_network_adapter
+        try:
+           self.local_ip_addr = get_ip_addr(local_network_adapter)
+           print(f'Local ip_addr: {self.local_ip_addr}')
+        except Exception as e:
+           err_str = f'Error obtaining host IP address using local adapter {local_network_adapter}\nUse ifconfig to verify adapter name in basecamp.ini\n{str(e)}'
+           logger.error(err_str)
+           sg.popup(err_str, title='Target Control Error', modal=False)
+      
         self.router_ctrl_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.router_ctrl_socket_addr = (gnd_ip_addr, router_ctrl_port)
         
@@ -195,7 +203,7 @@ class TargetControl(CmdProcess):
         but_text_size     = (9,1)
         tlm_label_size    = (7,1)
         
-        centered_title = [[sg.Text('MQTT Client:', font=hdr_label_font), sg.Text('Disconnected', font=hdr_label_font, key='-CLIENT_STATE-')]]
+        centered_title = [[sg.Text(f'MQTT Client {self.client_name}:', font=hdr_label_font), sg.Text('Disconnected', font=hdr_label_font, key='-CLIENT_STATE-')]]
         
         layout = [
             [sg.Column(centered_title, vertical_alignment='center', justification='center')],
@@ -374,7 +382,11 @@ if __name__ == '__main__':
     client_name   = config.get('NETWORK','MQTT_CLIENT_NAME')
     remote_target_mqtt_topic = config.get('NETWORK','REMOTE_TARGET_MQTT_TOPIC')
     
-    target_control = TargetControl(gnd_ip_addr, router_ctrl_port, cmd_port, remote_target_mqtt_topic, broker_addr, broker_port, client_name)
+    local_network_adapter = config.get('NETWORK','LOCAL_NET_ADAPTER')
+    
+    target_control = TargetControl(gnd_ip_addr, router_ctrl_port, cmd_port, 
+                                   remote_target_mqtt_topic, broker_addr, broker_port, client_name,
+                                   local_network_adapter)
     target_control.execute()
     
 

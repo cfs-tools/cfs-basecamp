@@ -278,7 +278,7 @@ class AppStore():
     """
     def __init__(self, git_url, usr_app_path, repo_exclusions):
 
-        self.usr_app_path = usr_app_path
+        self.usr_app_path = compress_abs_path(usr_app_path)
         self.git_app_repo = GitHubAppProject(git_url, usr_app_path, repo_exclusions)
         self.window  = None
 

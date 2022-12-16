@@ -30,7 +30,7 @@ import queue
 import socket
 import fcntl
 import struct
-
+from datetime import datetime
 import paho.mqtt.client as mqtt
 
 from mqttconst import *
@@ -364,7 +364,8 @@ class RemoteOps(MqttClient):
     ### Target ###
     ##############
     def target_noop_cmd(self, param):
-        self.log_info_event(f'NOOP {self.broker_addr}:{self.broker_port}//{self.topic_base}')
+        timestamp = datetime.now().strftime("%m/%d/%Y-%H:%M:%S")
+        self.log_info_event(f'{timestamp} Noop: {self.broker_addr}:{self.broker_port}//{self.topic_base}')
  
     def target_reboot_cmd(self, param):
         self.log_info_event('Rebooting target')

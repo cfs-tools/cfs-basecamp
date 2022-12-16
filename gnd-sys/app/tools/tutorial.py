@@ -280,7 +280,7 @@ class ManageTutorials():
     create a 'database' of information about the tutorials based on each 
     tutorial's JSON spec.
     User select tutorials based by title so self.tutorial_lookup provides a
-    method to retreive a tutorial given its title
+    method to retrieve a tutorial given its title
     """
     def __init__(self, tutorials_path):
 
