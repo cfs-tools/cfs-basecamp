@@ -6,9 +6,9 @@ Basecamp is ideal for cFS training and STEM educational products. For example, i
 1.	Wire an LED to a Raspberry Pi’s interface pins
 2.	Install Basecamp on a Raspberry Pi
 3.	From the Basecamp GUI:
- * Clone the [Pi IO Library](https://github.com/cfs-apps/pi_iolib)
- * Clone the [GPIO Demo App]( https://github.com/cfs-apps/gpio_demo) 
- * Run Basecamp’s app integration/build tool
+   * Clone the [Pi IO Library](https://github.com/cfs-apps/pi_iolib)
+   * Clone the [GPIO Demo App]( https://github.com/cfs-apps/gpio_demo) 
+   * Run Basecamp’s app integration/build tool
 4.	Restart Basecamp and run the new cFS target
 5.	Operate the GPIO Demo app using the GUI’s command and telemetry menus
 
