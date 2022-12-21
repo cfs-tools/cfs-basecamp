@@ -1497,6 +1497,7 @@ class App():
             elif self.event == 'Download App':
                 repo_exclusions = self.config.get('APP','CFS_APPS').split(',')
                 print(repo_exclusions)
+                print(self.config.get('PATHS','USR_APP_PATH'))
                 app_store = AppStore(self.config.get('APP','APP_STORE_URL'), self.config.get('PATHS','USR_APP_PATH'),repo_exclusions)
                 app_store.execute()
  

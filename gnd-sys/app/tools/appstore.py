@@ -50,12 +50,12 @@ class GitHubAppProject():
     '''
     Manage the interface to cFS apps in github repos  
     '''
-    def __init__(self, git_url, usr_app_path, repo_exclusions):
+    def __init__(self, git_url, usr_app_rel_path, repo_exclusions):
         """
-        usr_app_path is an absolute path to where git repos should be cloned into
+        usr_app_rel_path is an relative path to where git repos should be cloned into
         repo_exclusions is a list of repos that should not be used
         """
-        self.usr_clone_path = usr_app_path
+        self.usr_clone_path = usr_app_rel_path
         self.git_url  = git_url
         self.repo_exclusions = repo_exclusions
         self.app_repo = None
@@ -95,7 +95,7 @@ class GitHubAppProject():
         ret_status = False
         if app_name in self.app_dict:
             saved_cwd = os.getcwd()
-            os.chdir(self. usr_clone_path)
+            os.chdir(self.usr_clone_path)
             clone_url = self.app_dict[app_name]["clone_url"]
             print("Cloning " + clone_url)
             os.system("git clone {}".format(self.app_dict[app_name]["clone_url"]))
@@ -243,19 +243,19 @@ class ManageUsrApps():
     create a 'database' of app specs that can be used by the user to integrate
     apps into their cFS target.
     """
-    def __init__(self, usr_app_path):
+    def __init__(self, usr_app_abs_path):
 
-        self.path = usr_app_path
+        self.path = usr_app_abs_path
         self.app_specs = {}
         
-        usr_app_list = os.listdir(usr_app_path)
+        usr_app_list = os.listdir(usr_app_abs_path)
         usr_app_list.sort()
         # Assumes app directory name equals app name
         for app_name in usr_app_list:
             print("User app folder/name: " + app_name)
             #todo: AppSpec constructor could raise exception if JSON doesn't exist or is malformed
-            app_path = os.path.join(usr_app_path, app_name)
-            if os.path.isdir(os.path.join(usr_app_path, app_name)):
+            app_path = os.path.join(usr_app_abs_path, app_name)
+            if os.path.isdir(os.path.join(usr_app_abs_path, app_name)):
                 app_spec = AppSpec(app_path, app_name)
                 if app_spec.valid:
                     self.app_specs[app_name] = app_spec        
@@ -276,10 +276,10 @@ class AppStore():
     Manage the user interface for downloading apps from github and cloning
     them into the user's app directory. 
     """
-    def __init__(self, git_url, usr_app_path, repo_exclusions):
+    def __init__(self, git_url, usr_app_rel_path, repo_exclusions):
 
-        self.usr_app_path = compress_abs_path(usr_app_path)
-        self.git_app_repo = GitHubAppProject(git_url, usr_app_path, repo_exclusions)
+        self.usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(), usr_app_rel_path))
+        self.git_app_repo = GitHubAppProject(git_url, usr_app_rel_path, repo_exclusions)
         self.window  = None
 
         
@@ -320,9 +320,9 @@ class AppStore():
                 for app in self.git_app_repo.app_dict.keys():
                     if self.values["-%s-"%app] == True:
                         if self.git_app_repo.clone(app):
-                            sg.popup(f'Successfully cloned {app} into {self.usr_app_path}', title='AppStore')
+                            sg.popup(f'Successfully cloned {app} into {self.usr_app_abs_path}', title='AppStore')
                         else:
-                            sg.popup(f'Error cloning {app} into {self.usr_app_path}', title='AppStore Error')
+                            sg.popup(f'Error cloning {app} into {self.usr_app_abs_path}', title='AppStore Error')
 
                 break
                 
@@ -345,13 +345,13 @@ if __name__ == '__main__':
     config.read('../basecamp.ini')
 
     git_url = config.get('APP','APP_STORE_URL')
-    usr_app_path = compress_abs_path(os.path.join(os.getcwd(),'..', config.get('PATHS', 'USR_APP_PATH'))) 
+    usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(),'..', config.get('PATHS', 'USR_APP_PATH'))) 
 
     #app_store = AppStore(git_url, usr_app_path)
     #app_store.execute()
     
     
-    manage_usr_apps = ManageUsrApps(usr_app_path)
+    manage_usr_apps = ManageUsrApps(usr_app_abs_path)
     
     berry_imu = manage_usr_apps.get_app_spec('berry_imu')
     print(berry_imu.get_targets_cmake_files())

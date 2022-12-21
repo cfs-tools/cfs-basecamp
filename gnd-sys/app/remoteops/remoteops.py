@@ -83,11 +83,13 @@ class RemoteOps(MqttClient):
     def __init__(self, config_parser):
         super().__init__(config_parser['MQTT'])
         
-        self.exec = config_parser['EXEC']
-        self.apps = config_parser['APPS']
-        logging.basicConfig(filename=self.exec['LOG_FILE'],level=logging.DEBUG)
+        self.exec    = config_parser['EXEC']
+        self.apps    = config_parser['APPS']
+        self.network = config_parser['NETWORK']
+        log_filename = os.path.join(os.getcwd(), self.exec['LOG_FILE'])
+        logging.basicConfig(filename=log_filename,level=logging.DEBUG)
 
-        self.ip_addr = self.get_ip_address('wlan0')
+        self.ip_addr = self.get_ip_address(self.network['LOCAL_NET_ADAPTER'])
 
         self.cmd_topic  = f'{self.topic_base}/{MQTT_TOPIC_CMD}'
         self.tlm_topic  = f'{self.topic_base}/{MQTT_TOPIC_TLM}'
@@ -133,7 +135,8 @@ class RemoteOps(MqttClient):
         self.python_exe  = False
         self.python_apps = JSON_VAL_NONE
         
-        self.create_python_app_str(self.apps['PYTHON_APPS'])
+        python_app_path = os.path.join(os.getcwd(), self.apps['PYTHON_APPS'])
+        self.create_python_app_str(python_app_path)
         self.log_info_event(f'Remote Ops defaults {self.broker_addr}:{self.broker_port}//{self.topic_base}',queue_event=False)
 
 
@@ -232,12 +235,13 @@ class RemoteOps(MqttClient):
             if self.cfs_exe:
                 self.log_info_event("Start cFS rejected, cFS already running")
             else:
+                cfs_path = os.path.join(os.getcwd(), self.apps['CFS_PATH'])
                 self.cfs_process = subprocess.Popen(['sudo',self.apps['CFS_BINARY']],
-                                                    cwd=self.apps['CFS_PATH'],
+                                                    cwd=cfs_path,
                                                     stdout=subprocess.PIPE,
                                                     stderr=subprocess.STDOUT,
                                                     shell=False)
-                self.create_cfs_app_str(self.apps['CFS_PATH'])
+                self.create_cfs_app_str(cfs_path)
                 self.cfs_exe = True
                 self.log_info_event(f'Start cFS, pid = {self.cfs_process.pid}')
                
