@@ -1535,7 +1535,6 @@ class App():
                 tools_dir = os.path.join(self.path, "cfsinterface")
                 self.target_control = sg.execute_py_file("targetcontrol.py", cwd=tools_dir)
 
-
             ### DOCUMENTS ###
             
             elif self.event == 'cFS Overview':

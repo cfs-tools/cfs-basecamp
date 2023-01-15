@@ -135,8 +135,8 @@ class RemoteOps(MqttClient):
         self.python_exe  = False
         self.python_apps = JSON_VAL_NONE
         
-        python_app_path = os.path.join(os.getcwd(), self.apps['PYTHON_APPS'])
-        self.create_python_app_str(python_app_path)
+        self.python_app_path = os.path.join(os.getcwd(), self.apps['PYTHON_PATH'])
+        self.create_python_app_str(self.apps['PYTHON_APPS'])
         self.log_info_event(f'Remote Ops defaults {self.broker_addr}:{self.broker_port}//{self.topic_base}',queue_event=False)
 
 
@@ -308,7 +308,7 @@ class RemoteOps(MqttClient):
                 # Using 'exec' allows the kill() to work with shell=True
                 self.python_process[param] = subprocess.Popen(
                     f'exec python3 {param}.py', 
-                    cwd=self.apps['PYTHON_PATH'],
+                    cwd=self.python_app_path,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     shell=True)
@@ -369,15 +369,16 @@ class RemoteOps(MqttClient):
     ##############
     def target_noop_cmd(self, param):
         timestamp = datetime.now().strftime("%m/%d/%Y-%H:%M:%S")
-        self.log_info_event(f'{timestamp} Noop: {self.broker_addr}:{self.broker_port}//{self.topic_base}')
- 
+        self.log_info_event(f'Noop received at {timestamp}')
+        self.log_info_event(f'Noop status: {self.broker_addr}:{self.broker_port}//{self.topic_base}')
+        
     def target_reboot_cmd(self, param):
         self.log_info_event('Rebooting target')
-        subprocess.Popen('reboot', shell=False)
+        subprocess.Popen(self.exec['REBOOT_CMD'], shell=False)
         
     def target_shutdown_cmd(self, param):
         self.log_info_event('Shutting down target')
-        subprocess.Popen('halt', shell=False)
+        subprocess.Popen(self.exec['HALT_CMD'], shell=False)
         
 ############################################################################
 

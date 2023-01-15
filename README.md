@@ -39,7 +39,7 @@ the [GPIO Demo tutorial](https://github.com/cfs-tools/cfs-basecamp/tree/main/gnd
 Package Notes:
 - *sudo apt-get update* updates a platform's current package respositories
 - *build-essential* contains a C developer tool suite including gcc, libc-dev, make, etc.* 
-- *cmake* must be at least v2.8.12
+- *cmake* must be at least v3.12 (This excludes Ubuntu 18.04 and earlier)
 - *liblua5.3-dev* must be at least v5.1
 - You can skip installing pip and replace the 'pip3 install' below with 'python3 -m pip install'
 - The Java Runtime Environment (JRE) is required to run the cFS performance monitor

@@ -33,67 +33,16 @@ from adafruit_lsm6ds.ism330dhcx import ISM330DHCX
 import paho.mqtt.client as mqtt
 
 from mqttconst import *
+from remoteprocess import RemoteProcess
 
 ###############################################################################
 
-class MqttClient():
-
-    def __init__(self, mqtt_config):
-        self.broker_addr = mqtt_config['BROKER_ADDR']
-        self.broker_port = mqtt_config['BROKER_PORT']
-        self.client_name = f"{mqtt_config['TARGET_ID']}"
-        self.topic_base  = f"{MQTT_TOPIC_ROOT}/{mqtt_config['TARGET_ID']}"
-        self.client = None
-        self.event_msg = ''
-        self.event_queue = queue.Queue()
-        
-    def connect(self):
-        connect = False
-        try:
-            self.client = mqtt.Client(self.client_name)
-            self.client.on_connect = self.on_connect        # Callback function for successful connection
-            self.client.on_message = self.process_cmd_stub  # Callback function for receipt of a message
-            self.client.connect(self.broker_addr)
-            self.client.loop_start()  # Start networking daemon             
-            self.log_info_event(f'Client initialized on {self.broker_addr}:{self.broker_port}')
-            connect = True
-        except Exception as e:
-            self.log_error_event(f'Client initializaation error for {self.broker_addr}:{self.broker_port}')
-            self.log_error_event(f'Error: {e}')
-        return connect
-
-    def log_info_event(self, msg_str, queue_event=False):
-        logging.info(msg_str)
-        if queue_event:
-            self.event_queue.put_nowait(msg_str)
-        print(msg_str)
-      
-    def log_error_event(self, msg_str, queue_event=False):
-        logging.error(msg_str)
-        if queue_event:
-            self.event_queue.put_nowait(msg_str)
-        print(msg_str)
-    
-    def process_cmd_stub(self, client, userdata, msg):
-        """
-        No input messages are expected so simply log what is received
-        """
-        msg_str = msg.payload.decode()
-        msg_str_single_quote = msg_str.replace('"',"'")
-        self.log_info_event(f'Received message : {msg.topic}=>{msg_str_single_quote}')
-
-###############################################################################
-
-class AdaFruitImu(MqttClient):
+class AdaFruitImu(RemoteProcess):
 
     
     def __init__(self, ini_file):
-        super().__init__(config_parser['MQTT'])
+        super().__init__(ini_file)
 
-        self.exec_config = config_parser['EXEC']
-        self.mqtt_config = config_parser['MQTT']
-        logging.basicConfig(filename=self.exec_config['LOG_FILE'],level=logging.DEBUG)
-        
         self.i2c = None
         self.imu = None
         self.control_delay = 0.5 # int(self.exec_config['CONTROL_DELAY'])
@@ -144,9 +93,6 @@ class AdaFruitImu(MqttClient):
 if __name__ == "__main__":
 
     ini_file = os.path.join(os.getcwd(), 'adafruitimu.ini')
-    config_parser = configparser.ConfigParser()
-    config_parser.read(ini_file)
-
-    adafruit_imu = AdaFruitImu(config_parser)
+    adafruit_imu = AdaFruitImu(ini_file)
     adafruit_imu.execute()
 

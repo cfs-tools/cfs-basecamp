@@ -300,7 +300,7 @@ static int32 ProcessCommands(void)
          else
          {
             CFE_EVS_SendEvent(FILE_MGR_INVALID_MID_EID, CFE_EVS_EventType_ERROR,
-                              "Received invalid command packet, MID = 0x%08X", 
+                              "Received invalid command packet, MID = 0x%04X", 
                               CFE_SB_MsgIdToValue(MsgId));
          }
 
