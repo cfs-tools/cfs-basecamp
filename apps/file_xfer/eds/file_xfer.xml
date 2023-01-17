@@ -15,8 +15,7 @@
     GNU Affero General Public License for more details.
       
     Purpose: 
-      This describes all interface objects for the OpenSatKit(OSK) File
-      Transfer (FILE_XFER) application.
+      This define interfaces for the File Transfer (FILE_XFER) app.
 
     Notes:
       1. This document adheres to the Electronic Data Sheet (EDS) XML schema 
@@ -94,7 +93,7 @@
       <ContainerDataType name="FitpDataSegment_Payload">
         <EntryList>
           <Entry name="Id"    type="BASE_TYPES/uint16"  shortDescription="Integer identifier that increments for each sequential segement" />
-          <Entry name="Len"   type="BASE_TYPES/uint16"  shortDescription="Number of data bytes in the data blosk" />
+          <Entry name="Len"   type="BASE_TYPES/uint16"  shortDescription="Number of data bytes in the data block" />
           <Entry name="Data"  type="FitpDataSegment"    shortDescription="Data must be defined last because it is variable length" />
         </EntryList>
       </ContainerDataType>
@@ -208,13 +207,13 @@
 
       <ContainerDataType name="Noop" baseType="CommandBase" shortDescription="Generate an info event message with app version">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/NOOP_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/NOOP_CC}" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="Reset" baseType="CommandBase" shortDescription="Reset app to a known state">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/RESET_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
         </ConstraintSet>
       </ContainerDataType>
 
@@ -228,7 +227,7 @@
 
       <ContainerDataType name="SendFile" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 0" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
           <Entry type="FitpStartTransfer_Payload" name="Payload" />
@@ -237,7 +236,7 @@
 
       <ContainerDataType name="SendFitpDataSegment" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 1" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
         <EntryList>
           <Entry type="FitpDataSegment_Payload" name="Payload" />
@@ -246,7 +245,7 @@
       
       <ContainerDataType name="FinishFitpTransfer" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 2" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
         <EntryList>
           <Entry type="FitpFinishTransfer_Payload" name="Payload" />
@@ -255,7 +254,7 @@
 
       <ContainerDataType name="CancelSendFile" baseType="CommandBase" shortDescription="Cancel a send file transfer in progress">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 3" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
         </ConstraintSet>
       </ContainerDataType>
 
@@ -263,7 +262,7 @@
 
       <ContainerDataType name="StartReceiveFile" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 4" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 4" />
         </ConstraintSet>
         <EntryList>
           <Entry type="FotpStartTransfer_Payload" name="Payload" />
@@ -272,19 +271,19 @@
 
       <ContainerDataType name="PauseReceiveFile" baseType="CommandBase" shortDescription="Pause a receive file transaction">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 5" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 5" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="ResumeReceiveFile" baseType="CommandBase" shortDescription="Resume a receive file transaction">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 6" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 6" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="CancelReceiveFile" baseType="CommandBase" shortDescription="Cancel a receive file transaction">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 7" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 7" />
         </ConstraintSet>
       </ContainerDataType>
     

@@ -28,7 +28,7 @@
       "tables": ["file_xfer_ini.json"]
    },
    
-   "requires": ["osk_c_fw"]
+   "requires": ["app_c_fw"]
 
 }}
 

@@ -1,6 +1,6 @@
 CFE_LIB, cfe_assert,      CFE_Assert_LibInit,  ASSERT_LIB,    0,       0, 0x0, 0;
-CFE_LIB, osk_c_fw,        OSK_C_FW_LibInit,    OSK_C_FW,      0,       0, 0x0, 0;
-CFE_APP, osk_c_demo,      OSK_C_DEMO_AppMain,  OSK_C_DEMO,   80,   32768, 0x0, 0;
+CFE_LIB, app_c_fw,        APP_C_FW_LibInit,    APP_C_FW,      0,       0, 0x0, 0;
+CFE_APP, app_c_demo,      APP_C_DEMO_AppMain,  APP_C_DEMO,   80,   32768, 0x0, 0;
 CFE_APP, ci_lab,          CI_Lab_AppMain,      CI_LAB_APP,   60,   16384, 0x0, 0;
 CFE_APP, kit_to,          KIT_TO_AppMain,      KIT_TO,       20,   32768, 0x0, 0;
 CFE_APP, file_mgr,        FILE_MGR_AppMain,    FILE_MGR,     80,   16384, 0x0, 0;

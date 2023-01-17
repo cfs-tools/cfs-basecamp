@@ -6,7 +6,7 @@
                    "  priority: Unused, always set to zero",
                    "  reliability: Unused, always set to zero",
                    "  buf-limit: Number of SB buffers allocated to KIT_TO input pipe",
-                   "  filter: Filter algorithm parameters. See osk_c_fw::pkt_util"],
+                   "  filter: Filter algorithm parameters. See app_c_fw::pkt_util"],
   
    "topic-id-map": { 
    
@@ -51,9 +51,9 @@
       "KIT_TO_PKT_PLBK_TOPICID"           : "topic-id-36",
       "KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID" : "topic-id-37",
       
-      "OSK_C_DEMO_STATUS_TLM_TOPICID"     : "topic-id-40",
-      "OSK_C_DEMO_BIN_PLAYBK_TLM_TOPICID" : "topic-id-41",
-      "OSK_DEV_HK_TLM_TOPICID"            : "topic-id-42",
+      "APP_C_DEMO_STATUS_TLM_TOPICID"     : "topic-id-40",
+      "APP_C_DEMO_BIN_PLAYBK_TLM_TOPICID" : "topic-id-41",
+      "APP_DEV_HK_TLM_TOPICID"            : "topic-id-42",
       "SAMPLE_APP_HK_TLM_TOPICID"         : "topic-id-43",
       "TEST_HK_TLM_TOPICID"               : "topic-id-44",
       
@@ -463,7 +463,7 @@
       }},
 
       {"packet": {
-         "name": "OSK_C_DEMO_STATUS_TLM_TOPICID",
+         "name": "APP_C_DEMO_STATUS_TLM_TOPICID",
          "topic-id-40": 2146,
          "topic-id": 2146,
          "forward": false,
@@ -474,7 +474,7 @@
       }},
 
       {"packet": {
-         "name": "OSK_C_DEMO_BIN_PLAYBK_TLM_TOPICID",
+         "name": "APP_C_DEMO_BIN_PLAYBK_TLM_TOPICID",
          "topic-id-41": 2147,
          "topic-id": 2147,
          "forward": false,

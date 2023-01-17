@@ -32,7 +32,7 @@
 
 #include "sample_app_msgids.h"
 
-#include "osk_c_demo_msgids.h"
+#include "app_c_demo_msgids.h"
 #include "file_mgr_msgids.h"
 #include "file_xfer_msgids.h"
 
@@ -64,8 +64,8 @@ SCH_LAB_ScheduleTable_t SCH_TBL_Structure = {.Config = {
                                                  {CFE_SB_MSGID_WRAP_VALUE(SAMPLE_APP_SEND_HK_MID), 4, 2},
                                                  {CFE_SB_MSGID_WRAP_VALUE(CFSAT_DEV_EXE_MID), 1, 0},
                                                  {CFE_SB_MSGID_WRAP_VALUE(CFSAT_DEV_SEND_HK_MID), 1, 0},
-                                                 {CFE_SB_MSGID_WRAP_VALUE(OSK_C_DEMO_EXE_MID), 1, 2},
-                                                 {CFE_SB_MSGID_WRAP_VALUE(OSK_C_DEMO_SEND_HK_MID), 4, 3},
+                                                 {CFE_SB_MSGID_WRAP_VALUE(APP_C_DEMO_EXE_MID), 1, 2},
+                                                 {CFE_SB_MSGID_WRAP_VALUE(APP_C_DEMO_SEND_HK_MID), 4, 3},
                                                  {CFE_SB_MSGID_WRAP_VALUE(FILE_MGR_SEND_HK_MID), 4, 3},
                                                  {CFE_SB_MSGID_WRAP_VALUE(FILE_XFER_EXE_MID), 1, 0},
                                                  {CFE_SB_MSGID_WRAP_VALUE(FILE_XFER_SEND_HK_MID), 4, 3},

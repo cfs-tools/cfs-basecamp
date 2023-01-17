@@ -1,5 +1,5 @@
 {
-   "title": "OSK Command Ingest",
+   "title": "Command Ingest",
    "description": [ "Define runtime configurations. See kit_ci::app_cfg.h for definitions"],
    "config": {
       

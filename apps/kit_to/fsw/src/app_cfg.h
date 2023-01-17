@@ -36,7 +36,7 @@
 */
 
 #include "cfe_platform_cfg.h"
-#include "osk_c_fw.h"
+#include "app_c_fw.h"
 #include "kit_to_platform_cfg.h"
 #include "kit_to_eds_typedefs.h"
 
@@ -147,10 +147,10 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define KIT_TO_APP_BASE_EID  (OSK_C_FW_APP_BASE_EID +   0)
-#define PKTTBL_BASE_EID      (OSK_C_FW_APP_BASE_EID + 100)
-#define PKTMGR_BASE_EID      (OSK_C_FW_APP_BASE_EID + 200)
-#define EVT_PLBK_BASE_EID    (OSK_C_FW_APP_BASE_EID + 300)
+#define KIT_TO_APP_BASE_EID  (APP_C_FW_APP_BASE_EID +   0)
+#define PKTTBL_BASE_EID      (APP_C_FW_APP_BASE_EID + 100)
+#define PKTMGR_BASE_EID      (APP_C_FW_APP_BASE_EID + 200)
+#define EVT_PLBK_BASE_EID    (APP_C_FW_APP_BASE_EID + 300)
 
 /*
 ** One event ID is used for all initialization debug messages. Uncomment one of

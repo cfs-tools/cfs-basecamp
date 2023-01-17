@@ -27,7 +27,7 @@
       "tables": ["kit_to_ini.json", "kit_to_pkt_tbl.json"]
    },
    
-   "requires": ["osk_c_fw"]
+   "requires": ["app_c_fw"]
 
 }}
 

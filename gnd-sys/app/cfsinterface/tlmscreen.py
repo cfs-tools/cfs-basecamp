@@ -228,8 +228,8 @@ if __name__ == '__main__':
         tlm_topic   = sys.argv[3]
     else:     
         tlm_port    = config.getint('NETWORK', 'TLM_SCREEN_TLM_PORT')
-        app_name    = 'OSK_C_DEMO'
-        tlm_topic   = 'OSK_C_DEMO/Application/STATUS_TLM'
+        app_name    = 'APP_C_DEMO'
+        tlm_topic   = 'APP_C_DEMO/Application/STATUS_TLM'
         app_name    = 'MQTT_GW'
         tlm_topic   = 'MQTT_GW/Application/HK_TLM'
         tlm_topic   = 'MQTT_GW/Application/DISCRETE_TLM'

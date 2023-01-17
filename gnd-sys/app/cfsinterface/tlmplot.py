@@ -73,7 +73,7 @@ class TelemetryCurrentValue(TelemetryObserver):
         topics = self.tlm_server.get_topics()
         for topic in topics:
             #if topic != self.tlm_server.eds_mission.TOPIC_TLM_TITLE_KEY:
-            if 'OSK_C_DEMO' in topic:
+            if 'APP_C_DEMO' in topic:
                 print('***********topic: ' + str(topic))
                 eds_id = self.tlm_server.eds_mission.get_eds_id_from_topic(topic)
                 tlm_entry = self.tlm_server.eds_mission.get_database_entry(eds_id)
@@ -246,8 +246,8 @@ if __name__ == '__main__':
         min_value   = int(sys.argv[5])
         max_value   = int(sys.argv[6])
     else:
-        app_name    = 'OSK_C_DEMO'
-        tlm_topic   = 'OSK_C_DEMO/Application/STATUS_TLM'
+        app_name    = 'APP_C_DEMO'
+        tlm_topic   = 'APP_C_DEMO/Application/STATUS_TLM'
         tlm_payload = 'StatusTlm'
         tlm_element = 'DeviceData'
         min_value   = 0

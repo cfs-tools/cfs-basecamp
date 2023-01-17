@@ -95,9 +95,9 @@ class RemoteOps(MqttClient):
         self.tlm_topic  = f'{self.topic_base}/{MQTT_TOPIC_TLM}'
   
         # List of apps not to be included in user cFS app list
-        self.base_camp_apps = ['ASSERT_LIB','OSK_C_FW','CI_LAB_APP',
+        self.base_camp_apps = ['ASSERT_LIB','APP_C_FW','CI_LAB_APP',
                                'TO_LAB_APP','SCH_LAB_APP','FILE_MGR',
-                               'FILE_XFER', 'KIT_SCH', 'KIT_TO', 'OSK_C_DEMO']
+                               'FILE_XFER', 'KIT_SCH', 'KIT_TO', 'APP_C_DEMO']
   
         self.json_cmd_subsystems = [JSON_CMD_SUBSYSTEM_CFS,
                                     JSON_CMD_SUBSYSTEM_PYTHON,

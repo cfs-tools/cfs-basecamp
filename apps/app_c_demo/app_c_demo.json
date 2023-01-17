@@ -1,0 +1,34 @@
+{ 
+
+   "app": {
+   
+   "title": "APP_C_DEMO",
+   "version": "4.0.0",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
+   "url": "https://github.com/cfs-tools/cfs-basecamp/tree/main/apps",
+
+   "description": [
+      "Demonstrates an application using the App C Framework. It also serves",
+      "as the final app that is developed during the Code-As-You-Go(CAYG)",
+      "app development tutorial."
+   ],
+
+   "cfs": {
+      "cfe-type": "CFE_APP",
+      "obj-file": "app_c_demo",
+      "entry-symbol": "APP_C_DEMO_AppMain",
+      "name": "APP_C_DEMO",
+      "priority": 80,
+      "stack": 16384,
+      "load_addr": 0,
+      "exception-action": 0,
+      "app-framework": "osk",
+      "tables": ["app_c_demo_ini.json","app_c_demo_tbl.json"]
+   },
+   
+   "requires": ["app_c_fw"]
+   
+}}
+
+

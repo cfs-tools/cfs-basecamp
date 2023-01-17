@@ -1,5 +1,5 @@
 {
-   "title": "OSK File Transfer",
+   "title": "File Transfer",
    "description": [ "Define runtime configurations. See file_xfer::app_cfg.h for definitions"],
    "config": {
       

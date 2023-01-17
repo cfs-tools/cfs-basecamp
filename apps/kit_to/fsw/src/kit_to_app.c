@@ -286,15 +286,15 @@ bool KIT_TO_TestPktFilterCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    if (SecHdrTimeLen == 6)
    {
       SubSecDelta = 0x0100;
-      // TODO cfe6.8 strcpy(FormatStr,">>>Time=0x%08X:%06X OSK Filtered=%d, cFS Filtered=%d\n");
-      strcpy(FormatStr,">>>Time=0x%08X:%06X OSK Filtered=%d\n");
+      // TODO cfe6.8 strcpy(FormatStr,">>>Time=0x%08X:%06X APP_C_FW Filtered=%d, cFS Filtered=%d\n");
+      strcpy(FormatStr,">>>Time=0x%08X:%06X APP_C_FW Filtered=%d\n");
       CFE_SB_InitMsg(&TestPkt, CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_HK_TLM_MID)), 12, true);
    }
    else
    {
       SubSecDelta = 0x01000000;
-      // TODO strcpy(FormatStr,">>>Time=0x%08X:%08X OSK Filtered=%d, cFS Filtered=%d\n");
-      strcpy(FormatStr,">>>Time=0x%08X:%08X OSK Filtered=%d\n");
+      // TODO strcpy(FormatStr,">>>Time=0x%08X:%08X APP_C_FW Filtered=%d, cFS Filtered=%d\n");
+      strcpy(FormatStr,">>>Time=0x%08X:%08X APP_C_FW Filtered=%d\n");
       CFE_SB_InitMsg(&TestPkt, CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_HK_TLM_MID)), 14, true);
    }
    

@@ -40,8 +40,8 @@
       "KIT_SCH_SEND_HK_TOPICID"   : "topic-id-14",
       "KIT_TO_SEND_HK_TOPICID"    : "topic-id-15",
 
-      "OSK_C_DEMO_EXE_TOPICID"     : "topic-id-20",
-      "OSK_C_DEMO_SEND_HK_TOPICID" : "topic-id-21",
+      "APP_C_DEMO_EXE_TOPICID"     : "topic-id-20",
+      "APP_C_DEMO_SEND_HK_TOPICID" : "topic-id-21",
       "PROTO_EXE_TOPICID"          : "topic-id-22",
       "PROTO_SEND_HK_TOPICID"      : "topic-id-23",
       "SAMPLE_APP_SEND_HK_TOPICID" : "topic-id-24",
@@ -172,7 +172,7 @@
 
 
       {"message": {
-         "name":  "OSK_C_DEMO_EXE_TOPICID",
+         "name":  "APP_C_DEMO_EXE_TOPICID",
          "id": 20,
          "topic-id-20": 6237,
          "topic-id": 6237,
@@ -181,7 +181,7 @@
       }},
 
       {"message": {
-         "name":  "OSK_C_DEMO_SEND_HK_TOPICID",
+         "name":  "APP_C_DEMO_SEND_HK_TOPICID",
          "id": 21,
          "topic-id-21": 6238,
          "topic-id": 6238,

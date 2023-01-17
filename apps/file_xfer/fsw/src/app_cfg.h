@@ -39,7 +39,7 @@
 #include "file_xfer_eds_designparameters.h"
 
 #include "file_xfer_platform_cfg.h"
-#include "osk_c_fw.h"
+#include "app_c_fw.h"
 
 /******************************************************************************
 **
@@ -121,9 +121,9 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define FILE_XFER_APP_BASE_EID  (OSK_C_FW_APP_BASE_EID +  0)
-#define FITP_BASE_EID           (OSK_C_FW_APP_BASE_EID + 20)
-#define FOTP_BASE_EID           (OSK_C_FW_APP_BASE_EID + 40)
+#define FILE_XFER_APP_BASE_EID  (APP_C_FW_APP_BASE_EID +  0)
+#define FITP_BASE_EID           (APP_C_FW_APP_BASE_EID + 20)
+#define FOTP_BASE_EID           (APP_C_FW_APP_BASE_EID + 40)
 
 
 /******************************************************************************

@@ -15,8 +15,7 @@
     GNU Affero General Public License for more details.
       
     Purpose: 
-      This describes all interface objects for the OpenSatKit(OSK) 
-      Scehduler (kit_sch) application 
+      This defines the interface Scheduler (kit_sch) application 
 
     Notes:
       1. This document adheres to the Electronic Data Sheet (EDS) XML schema 
@@ -50,7 +49,7 @@
 
       <ContainerDataType name="SchTblEntry" shortDescription="Entry in the scheduler table">
         <EntryList>
-          <Entry name="Enabled"     type="OSK_C_FW/BooleanUint8" shortDescription="" />
+          <Entry name="Enabled"     type="APP_C_FW/BooleanUint8" shortDescription="" />
           <Entry name="Period"      type="BASE_TYPES/uint8"      shortDescription="" />
           <Entry name="Offset"      type="BASE_TYPES/uint8"      shortDescription="" />
           <Entry name="MsgTblIndex" type="BASE_TYPES/uint8"      shortDescription="" />
@@ -70,7 +69,7 @@
       <ContainerDataType name="LoadTbl_Payload" shortDescription="Load an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"                   shortDescription="Table identifier" />
-          <Entry name="Type"     type="OSK_C_FW/TblLoadOptions" shortDescription="Replace entire table or perform sparse entry updates" />
+          <Entry name="Type"     type="APP_C_FW/TblLoadOptions" shortDescription="Replace entire table or perform sparse entry updates" />
           <Entry name="Filename" type="BASE_TYPES/PathName"     shortDescription="Full path and file name of table to be loaded" />
        </EntryList>
       </ContainerDataType>
@@ -87,7 +86,7 @@
         <EntryList>
           <Entry name="Slot"     type="BASE_TYPES/uint8"      shortDescription="Identify slot number, [0..N)" />
           <Entry name="Activity" type="BASE_TYPES/uint8"      shortDescription="Identify activity within the slot, [0..N)" />
-          <Entry name="Enabled"  type="OSK_C_FW/BooleanUint8" shortDescription="" />
+          <Entry name="Enabled"  type="APP_C_FW/BooleanUint8" shortDescription="" />
        </EntryList>
       </ContainerDataType>
 
@@ -95,7 +94,7 @@
         <EntryList>
           <Entry name="Slot"      type="BASE_TYPES/uint16"     shortDescription="Identify slot number, [0..N)" />
           <Entry name="Activity"  type="BASE_TYPES/uint16"     shortDescription="Identify activity within the slot, [0..N)" />
-          <Entry name="Enabled"  type="OSK_C_FW/BooleanUint16" shortDescription="" />
+          <Entry name="Enabled"  type="APP_C_FW/BooleanUint16" shortDescription="" />
           <Entry name="Period"    type="BASE_TYPES/uint16"     shortDescription="" />
           <Entry name="Offset"    type="BASE_TYPES/uint16"     shortDescription="" />
           <Entry name="MsgTblIdx" type="BASE_TYPES/uint16"     shortDescription="" />
@@ -136,9 +135,9 @@
         <EntryList>
           <Entry name="ValidCmdCnt"                  type="BASE_TYPES/uint16" />
           <Entry name="InvalidCmdCnt"                type="BASE_TYPES/uint16" />
-          <Entry name="MsgTblLoadStatus"             type="OSK_C_FW/TblActionStatus" />
+          <Entry name="MsgTblLoadStatus"             type="APP_C_FW/TblActionStatus" />
           <Entry name="MsgTblJsonObjCnt"             type="BASE_TYPES/uint16" />
-          <Entry name="SchTblLoadStatus"             type="OSK_C_FW/TblActionStatus" />
+          <Entry name="SchTblLoadStatus"             type="APP_C_FW/TblActionStatus" />
           <Entry name="SchTblJsonObjCnt"             type="BASE_TYPES/uint16" />
           <Entry name="SlotsProcessedCount"          type="BASE_TYPES/uint32" />
           <Entry name="ScheduleActivitySuccessCount" type="BASE_TYPES/uint32" />
@@ -153,8 +152,8 @@
           <Entry name="SameSlotCount"                type="BASE_TYPES/uint16" />
           <Entry name="SyncAttemptsLeft"             type="BASE_TYPES/uint16" />
           <Entry name="LastSyncMETSlot"              type="BASE_TYPES/uint16" />
-          <Entry name="IgnoreMajorFrame"             type="OSK_C_FW/BooleanUint8" />
-          <Entry name="UnexpectedMajorFrame"         type="OSK_C_FW/BooleanUint8" />
+          <Entry name="IgnoreMajorFrame"             type="APP_C_FW/BooleanUint8" />
+          <Entry name="UnexpectedMajorFrame"         type="APP_C_FW/BooleanUint8" />
         </EntryList>
       </ContainerDataType>
 
@@ -192,19 +191,19 @@
 
       <ContainerDataType name="Noop" baseType="CommandBase" shortDescription="Generate an info event message with app version">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/NOOP_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/NOOP_CC}" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="Reset" baseType="CommandBase" shortDescription="Reset app to a known state">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/RESET_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="LoadTbl" baseType="CommandBase">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/LOAD_TBL_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/LOAD_TBL_CC}" />
         </ConstraintSet>
         <EntryList>
           <Entry type="LoadTbl_Payload" name="Payload" />
@@ -213,7 +212,7 @@
 
       <ContainerDataType name="DumpTbl" baseType="CommandBase">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/DUMP_TBL_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/DUMP_TBL_CC}" />
         </ConstraintSet>
         <EntryList>
           <Entry type="DumpTbl_Payload" name="Payload" />
@@ -222,7 +221,7 @@
 
       <ContainerDataType name="LoadMsgTblEntry" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 0" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
           <Entry type="LoadMsgTblEntry_Payload" name="Payload" />
@@ -231,7 +230,7 @@
 
       <ContainerDataType name="SendMsgTblEntry" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 1" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SendMsgTblEntry_Payload" name="Payload" />
@@ -240,7 +239,7 @@
 
       <ContainerDataType name="CfgSchTblEntry" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 2" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
         <EntryList>
           <Entry type="CfgSchTblEntry_Payload" name="Payload" />
@@ -249,7 +248,7 @@
 
       <ContainerDataType name="LoadSchTblEntry" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 3" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
         </ConstraintSet>
         <EntryList>
           <Entry type="LoadSchTblEntry_Payload" name="Payload" />
@@ -258,7 +257,7 @@
 
       <ContainerDataType name="SendSchTblEntry" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 4" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 4" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SendSchTblEntry_Payload" name="Payload" />
@@ -267,7 +266,7 @@
 
       <ContainerDataType name="SendDiagTlm" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 5" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 5" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SendDiagTlm_Payload" name="Payload" />

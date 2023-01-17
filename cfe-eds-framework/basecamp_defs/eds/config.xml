@@ -79,7 +79,7 @@
     <Define name="FOTP_DATA_SEG_MAX_LEN" value="1024" shortDescription="" />
   </Package>
 
-  <Package name="OSK_C_DEMO" shortDescription="OSK_C_DEMO configurable items">
+  <Package name="APP_C_DEMO" shortDescription="APP_C_DEMO configurable items">
     <Define name="LOG_ENTRY_TEXT_LEN" value="36" shortDescription="Maximum length of time-stamped data sample log entry" />
   </Package>
 

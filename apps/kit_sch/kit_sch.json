@@ -27,7 +27,7 @@
       "tables": ["kit_sch_ini.json", "kit_sch_msgtbl.json", "kit_sch_schtbl.json"]
    },
    
-   "requires": ["osk_c_fw"]
+   "requires": ["app_c_fw"]
 
 }}
 

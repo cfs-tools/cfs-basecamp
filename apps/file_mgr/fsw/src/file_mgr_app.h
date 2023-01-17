@@ -17,7 +17,7 @@
 **
 **  Notes:
 **    1. This is a refactor of NASA's File Manager (FM) app. The refactor includes
-**       adaptation to the OSK app framework and prootyping the usage of an app 
+**       adaptation to the app C framework and prootyping the usage of an app 
 **       init JSON file. The idea is to rethink whcih configuration paarameters
 **       should be compile time and which should be runtime.
 **    2. Command and telemetry packets are defined in EDS file file_mgr.xml.

@@ -88,10 +88,10 @@ class HelpText():
                 "file's comment describe how to format/defince script entries. The following libraries\n"
                 "and apps must be loaded:\n\n"
                 "cfe_assert  - Provides unit test runtime framework, only required unit tests\n"
-                "osk_c_fw    - OpenSatKit app framework. Required by all OSK apps and mustbe loaded priori to apps\n"
+                "app_c_fw    - App C framework. Required by all Basecamp apps and must be loaded prior to apps\n"
                 "ci_lab      - Command Ingest app receives commands from basecamp.py and transmits them on the software bus\n"
-                "to_lab      - Telemetry Output app reads messages from software bus and transmits them to basecamp.py\n"
-                "sch_lab     - Scheduler app periodically sends software bus message to trigger app functions\n"
+                "kit_to      - Telemetry Output app reads messages from software bus and transmits them to basecamp.py\n"
+                "kit_sch     - Scheduler app periodically sends software bus message to trigger app functions\n"
                 "file_mgr    - File Manager app provides basic directory and file management services\n"
                 "file_xfer   - File Transfer app trasnfers files between basecamp.py and a cFS target\n"),       
 

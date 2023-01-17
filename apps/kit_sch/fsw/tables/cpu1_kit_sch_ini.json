@@ -1,5 +1,5 @@
 {
-   "title": "OSK Scheduler",
+   "title": "Scheduler",
    "description": ["Define runtime configurations. See kit_sch::app_cfg.h for definitions"],
    "config": {
       

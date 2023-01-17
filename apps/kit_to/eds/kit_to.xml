@@ -15,8 +15,7 @@
     GNU Affero General Public License for more details.
 
     Purpose: 
-      This describes all interface objects for the OpenSatKit(OSK) 
-      Telemetry Output (KIT_TO) app
+      Define the interfaces for the Telemetry Output (KIT_TO) app
 
     Notes:
       1. This document adheres to the Electronic Data Sheet (EDS) XML schema 
@@ -61,7 +60,7 @@
       <ContainerDataType name="LoadTbl_Payload" shortDescription="Load an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"                   shortDescription="Table identifier" />
-          <Entry name="Type"     type="OSK_C_FW/TblLoadOptions" shortDescription="Replace entire table or perform sparse entry updates" />
+          <Entry name="Type"     type="APP_C_FW/TblLoadOptions" shortDescription="Replace entire table or perform sparse entry updates" />
           <Entry name="Filename" type="BASE_TYPES/PathName"     shortDescription="Full path and file name of table to be loaded" />
        </EntryList>
       </ContainerDataType>
@@ -85,8 +84,8 @@
           <Entry name="MsgId"       type="BASE_TYPES/uint16"            shortDescription="Message Id" />
           <Entry name="Qos"         type="CFE_SB/Qos"                   shortDescription="Qos for subscription" />
           <Entry name="BufLim"      type="BASE_TYPES/uint16"            shortDescription="SB queue depth" />
-          <Entry name="FilterType"  type="OSK_C_FW/PktFilterOptions"    shortDescription="" />
-          <Entry name="FilterParam" type="OSK_C_FW/PktUtil_FilterParam" shortDescription="" />
+          <Entry name="FilterType"  type="APP_C_FW/PktFilterOptions"    shortDescription="" />
+          <Entry name="FilterParam" type="APP_C_FW/PktUtil_FilterParam" shortDescription="" />
        </EntryList>
       </ContainerDataType>
 
@@ -105,8 +104,8 @@
       <ContainerDataType name="UpdatePktFilter_Payload" shortDescription="Send the table entry for the specified message ID">
         <EntryList>
           <Entry name="MsgId" type="BASE_TYPES/uint16" shortDescription="Message Id" />
-          <Entry name="FilterType"  type="OSK_C_FW/PktFilterOptions"    shortDescription="" />
-          <Entry name="FilterParam" type="OSK_C_FW/PktUtil_FilterParam" shortDescription="" />
+          <Entry name="FilterType"  type="APP_C_FW/PktFilterOptions"    shortDescription="" />
+          <Entry name="FilterParam" type="APP_C_FW/PktUtil_FilterParam" shortDescription="" />
        </EntryList>
       </ContainerDataType>
 
@@ -118,8 +117,8 @@
 
       <ContainerDataType name="TestPktFilter_Payload" shortDescription="">
         <EntryList>
-          <Entry name="FilterType"  type="OSK_C_FW/PktFilterOptions"    shortDescription="" />
-          <Entry name="FilterParam" type="OSK_C_FW/PktUtil_FilterParam" shortDescription="" />
+          <Entry name="FilterType"  type="APP_C_FW/PktFilterOptions"    shortDescription="" />
+          <Entry name="FilterParam" type="APP_C_FW/PktUtil_FilterParam" shortDescription="" />
        </EntryList>
       </ContainerDataType>
 
@@ -145,8 +144,8 @@
           <Entry name="ValidCmdCnt"          type="BASE_TYPES/uint16" />
           <Entry name="InvalidCmdCnt"        type="BASE_TYPES/uint16" />
           <Entry name="RunLoopDelay"         type="BASE_TYPES/uint16" />
-          <Entry name="PktTblAction"         type="OSK_C_FW/TblActions" />
-          <Entry name="PktTblActionStatus"   type="OSK_C_FW/TblActionStatus" />
+          <Entry name="PktTblAction"         type="APP_C_FW/TblActions" />
+          <Entry name="PktTblActionStatus"   type="APP_C_FW/TblActionStatus" />
           <Entry name="PktTblJsonObjCnt"     type="BASE_TYPES/uint16" />
           <Entry name="TlmSource"            type="TlmSource" />
           <Entry name="StatsValid"           type="BASE_TYPES/uint8"  />
@@ -186,8 +185,8 @@
           <Entry name="MsgId"       type="BASE_TYPES/uint16" />
           <Entry name="Qos"         type="CFE_SB/Qos" />
           <Entry name="BufLim"      type="BASE_TYPES/uint16" />
-          <Entry name="FilterType"  type="OSK_C_FW/PktFilterOptions"    shortDescription="" />
-          <Entry name="FilterParam" type="OSK_C_FW/PktUtil_FilterParam" shortDescription="" />
+          <Entry name="FilterType"  type="APP_C_FW/PktFilterOptions"    shortDescription="" />
+          <Entry name="FilterParam" type="APP_C_FW/PktUtil_FilterParam" shortDescription="" />
         </EntryList>
       </ContainerDataType>
 
@@ -206,19 +205,19 @@
 
       <ContainerDataType name="Noop" baseType="CommandBase" shortDescription="Generate an info event message with app version">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/NOOP_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/NOOP_CC}" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="Reset" baseType="CommandBase" shortDescription="Reset app to a known state">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/RESET_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="LoadTbl" baseType="CommandBase">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/LOAD_TBL_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/LOAD_TBL_CC}" />
         </ConstraintSet>
         <EntryList>
           <Entry type="LoadTbl_Payload" name="Payload" />
@@ -227,7 +226,7 @@
 
       <ContainerDataType name="DumpTbl" baseType="CommandBase">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/DUMP_TBL_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/DUMP_TBL_CC}" />
         </ConstraintSet>
         <EntryList>
           <Entry type="DumpTbl_Payload" name="Payload" />
@@ -236,7 +235,7 @@
 
       <ContainerDataType name="AddPkt" baseType="CommandBase" shortDescription="Add a packet to packet table in memory">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 0" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
           <Entry type="AddPkt_Payload" name="Payload" />
@@ -245,7 +244,7 @@
 
       <ContainerDataType name="EnableOutput" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 1" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
         <EntryList>
           <Entry type="EnableOutput_Payload" name="Payload" />
@@ -254,13 +253,13 @@
 
       <ContainerDataType name="RemoveAllPkts" baseType="CommandBase" shortDescription="Remove all telemetry packets from the filter table. ">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 2" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="RemovePkt" baseType="CommandBase" shortDescription="Remove all telemetry packets from the filter table. ">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 3" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
         </ConstraintSet>
         <EntryList>
           <Entry type="RemovePkt_Payload" name="Payload" />
@@ -269,7 +268,7 @@
 
       <ContainerDataType name="SendPktTblTlm" baseType="CommandBase" shortDescription="Send the table entry for the specified message ID">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 4" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 4" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SendPktTblTlm_Payload" name="Payload" />
@@ -278,7 +277,7 @@
 
       <ContainerDataType name="UpdatePktFilter" baseType="CommandBase" shortDescription="Update a packet's filter parameters">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 5" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 5" />
         </ConstraintSet>
         <EntryList>
           <Entry type="UpdatePktFilter_Payload" name="Payload" />
@@ -287,13 +286,13 @@
 
       <ContainerDataType name="SendDataTypesTlm" baseType="CommandBase" shortDescription="Send the data types telemetry packet">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 6" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 6" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="SetRunLoopDelay" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 7" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 7" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SetRunLoopDelay_Payload" name="Payload" />
@@ -302,7 +301,7 @@
 
       <ContainerDataType name="TestPktFilter" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 8" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 8" />
         </ConstraintSet>
         <EntryList>
           <Entry type="TestPktFilter_Payload" name="Payload" />
@@ -311,7 +310,7 @@
 
       <ContainerDataType name="CfgEvtLogPlbk" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 9" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 9" />
         </ConstraintSet>
         <EntryList>
           <Entry type="CfgEvtLogPlbk_Payload" name="Payload" />
@@ -320,19 +319,19 @@
 
       <ContainerDataType name="StartEvtLogPlbk" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 10" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 10" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="StopEvtLogPlbk" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 11" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 11" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="SetTlmSource" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 12" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 12" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SetTlmSource_Payload" name="Payload" />

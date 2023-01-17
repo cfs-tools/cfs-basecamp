@@ -16,7 +16,7 @@
 **    Define application configurations for the File Manager (FILE_MGR) application
 **
 **  Notes:
-**    1. FILE_MGR is a refactoring of NASA's FM app using OSK's app framework.
+**    1. FILE_MGR is a refactoring of NASA's FM app using the app C framework.
 **       It's also a prototype for using a JSON init file for application 
 **       parameters that can be specified during runtime. 
 **    2. These configurations should have an application scope and define
@@ -42,13 +42,13 @@
 #include "file_mgr_eds_designparameters.h"
 
 #include "file_mgr_platform_cfg.h"
-#include "osk_c_fw.h"
+#include "app_c_fw.h"
 
 /******************************************************************************
 ** Versions:
 **
 ** 1.0 - Initial refactoring of open source FM 2.5.2
-** 1.1 - Moved childmgr utility into osk_c_fw, Moved perf & msg ids to ini file
+** 1.1 - Moved childmgr utility into app_c_fw, Moved perf & msg ids to ini file
 ** 3.0 - New baseline for separate OSK app repo compatible with cFE Bootes
 ** 4.0 - New baseline for separate OSK app repo compatible with cFE Caelum
 */
@@ -59,7 +59,7 @@
 
 /******************************************************************************
 ** JSON init file definitions/declarations.
-** - See osk_c_demo::app_cfg.h for how to define configuration macros 
+** - See app_c_demo::app_cfg.h for how to define configuration macros 
 */
 
 #define CFG_APP_CFE_NAME        APP_CFE_NAME
@@ -132,7 +132,7 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** - Commands implmented by child task are annotated with a comment
 ** - Load/dump table definitions are placeholders for JSON table
 ** - v4.0-beta: Other function codes defined in EDS. These will be added
-**   after osk_c_fw EDS is updated 
+**   after app_c_fw EDS is updated 
 */
 
 #define FILE_MGR_TBL_LOAD_CMD_FC            (CMDMGR_APP_START_FC +  0)
@@ -147,10 +147,10 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define FILE_MGR_BASE_EID  (OSK_C_FW_APP_BASE_EID +  0)
-#define DIR_BASE_EID       (OSK_C_FW_APP_BASE_EID + 20)
-#define FILE_BASE_EID      (OSK_C_FW_APP_BASE_EID + 40)
-#define FILESYS_BASE_EID   (OSK_C_FW_APP_BASE_EID + 60)
+#define FILE_MGR_BASE_EID  (APP_C_FW_APP_BASE_EID +  0)
+#define DIR_BASE_EID       (APP_C_FW_APP_BASE_EID + 20)
+#define FILE_BASE_EID      (APP_C_FW_APP_BASE_EID + 40)
+#define FILESYS_BASE_EID   (APP_C_FW_APP_BASE_EID + 60)
 
 
 #endif /* _app_cfg_ */

@@ -1,6 +1,6 @@
 {
   "time-stamp": "",
-  "title": "Payload Sim/MgrLib/App",
+  "title": "Payload Sim/Mgr Lib/App",
   "objective": [
     "Introduce the payload simulator lib/app, the payload manager app and use them as examples for using the cFS App Exchange"
   ],

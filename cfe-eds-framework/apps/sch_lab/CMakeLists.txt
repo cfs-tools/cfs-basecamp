@@ -5,7 +5,7 @@ include_directories(fsw/platform_inc)
 include_directories(${ci_lab_MISSION_DIR}/fsw/platform_inc)
 include_directories(${to_lab_MISSION_DIR}/fsw/platform_inc)
 include_directories(${sample_app_MISSION_DIR}/fsw/platform_inc)
-include_directories(${osk_c_demo_MISSION_DIR}/fsw/platform_inc)
+include_directories(${app_c_demo_MISSION_DIR}/fsw/platform_inc)
 include_directories(${file_mgr_MISSION_DIR}/fsw/platform_inc)
 include_directories(${file_xfer_MISSION_DIR}/fsw/platform_inc)
 

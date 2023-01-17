@@ -111,7 +111,7 @@
 		<!-- ##  Development App  ##  -->
 		<!-- #######################  -->
 		
-		<Define name="OSK_C_DEMO_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 28"/>
+		<Define name="APP_C_DEMO_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 28"/>
 		<Define name="PROTO_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 29"/>
 		<Define name="SAMPLE_APP_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 30"/>
 		<Define name="SAMPLE_APP_SEND_HK_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 31"/>
@@ -193,8 +193,8 @@
 		<!-- ##  Development App  ##  -->
 		<!-- #######################  -->
 		
-		<Define name="OSK_C_DEMO_STATUS_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 34"/>
-		<Define name="OSK_C_DEMO_BIN_PLAYBK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 35"/>
+		<Define name="APP_C_DEMO_STATUS_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 34"/>
+		<Define name="APP_C_DEMO_BIN_PLAYBK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 35"/>
 		<Define name="PROTO_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 36"/>
 		<Define name="SAMPLE_APP_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 37"/>
 		

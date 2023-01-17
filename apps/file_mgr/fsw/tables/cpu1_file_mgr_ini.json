@@ -3,7 +3,7 @@
    "description": [ "Define runtime configurations",
                     "APP_CFE_NAME, TBL_CFE_NAME: Must match filemgr_platform_cfg.h definitions",
                     "TBL_ERR_CODE: 3,472,883,840 = 0xCF000080. See cfe_error.h for field descriptions",
-                    "DIR_LIST_FILE_SUBTYPE: OSK cFE file header subtypes start at 100",
+                    "DIR_LIST_FILE_SUBTYPE: cFE file header subtypes",
                     "TASK_FILE_BLOCK_CNT: Number of consecutive CPU intensive file-based tasks to perform before delaying",
                     "TASK_FILE_BLOCK_DELAY: Delay (in MS) between task file blocks of execution",
                     "TASK_FILE_STAT_CNT: Number of consecutive CPU intensive stat-based tasks to perform before delaying",

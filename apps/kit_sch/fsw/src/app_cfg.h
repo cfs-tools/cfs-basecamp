@@ -35,7 +35,7 @@
 ** Includes
 */
 
-#include "osk_c_fw.h"
+#include "app_c_fw.h"
 #include "kit_sch_platform_cfg.h"
 #include "kit_sch_eds_typedefs.h"
 
@@ -111,10 +111,10 @@ DECLARE_ENUM(Config,APP_CONFIG)
 **
 */
 
-#define KIT_SCH_APP_BASE_EID  (OSK_C_FW_APP_BASE_EID +   0)
-#define SCHTBL_BASE_EID       (OSK_C_FW_APP_BASE_EID + 100)
-#define MSGTBL_BASE_EID       (OSK_C_FW_APP_BASE_EID + 200)
-#define SCHEDULER_BASE_EID    (OSK_C_FW_APP_BASE_EID + 300)
+#define KIT_SCH_APP_BASE_EID  (APP_C_FW_APP_BASE_EID +   0)
+#define SCHTBL_BASE_EID       (APP_C_FW_APP_BASE_EID + 100)
+#define MSGTBL_BASE_EID       (APP_C_FW_APP_BASE_EID + 200)
+#define SCHEDULER_BASE_EID    (APP_C_FW_APP_BASE_EID + 300)
 
 /*
 ** One event ID is used for all initialization debug messages. Uncomment one of

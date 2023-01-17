@@ -154,7 +154,7 @@ bool FILE_MGR_ResetAppCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 static int32 InitApp(void)
 {
 
-   int32 Status = OSK_C_FW_CFS_ERROR;
+   int32 Status = APP_C_FW_CFS_ERROR;
    
    CHILDMGR_TaskInit_t ChildTaskInit;
    

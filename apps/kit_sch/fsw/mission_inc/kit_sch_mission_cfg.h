@@ -7,7 +7,7 @@
 **
 ** References:
 **   1. OpenSatKit Object-based Application Developer's Guide and the
-**      osk_c_demo app that illustrates best practices with comments.  
+**      app_c_demo app that illustrates best practices with comments.  
 **   2. cFS Application Developer's Guide.
 **
 **   Written by David McComas, licensed under the Apache License, Version 2.0

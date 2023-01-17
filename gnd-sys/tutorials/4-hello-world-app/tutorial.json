@@ -4,6 +4,6 @@
   "objective": [
     "Introduces cFS app concepts by creating a Hello World ",
     "app and making some modifications to it. All Bascamp apps ",
-    "use the OSK C application framework (osk_c_fw)."
+    "use the Application C Framework (app_c_fw)."
   ]
 }

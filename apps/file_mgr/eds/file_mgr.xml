@@ -18,8 +18,8 @@
     edition license of cFSAT if purchased from the copyright holder.
 
     Purpose: 
-      This describes all interface objects for the OpenSatKit(OSK) File
-      Manager (FILE_MGR) application.
+      This describes all interface objects for the File Manager (FILE_MGR)
+      application.
 
     Notes:
       1. This document adheres to the Electronic Data Sheet (EDS) XML schema 
@@ -79,14 +79,14 @@
         <EntryList>
           <Entry name="DirName"         type="BASE_TYPES/PathName"    shortDescription="path/filename of directory to delete all of its files" />
           <Entry name="DirListOffset"   type="BASE_TYPES/uint16"      shortDescription="Offset into alphabetical listing" />
-          <Entry name="IncludeSizeTime" type="OSK_C_FW/BooleanUint16" shortDescription="True: Include file sizes and times" />
+          <Entry name="IncludeSizeTime" type="APP_C_FW/BooleanUint16" shortDescription="True: Include file sizes and times" />
         </EntryList>
       </ContainerDataType>
 
       <ContainerDataType name="SendDirTlm_Payload">
         <EntryList>
           <Entry name="DirName"         type="BASE_TYPES/PathName"    shortDescription="path/filename of directory to delete all of its files" />
-          <Entry name="IncludeSizeTime" type="OSK_C_FW/BooleanUint16" shortDescription="True: Include file sizes and times" />
+          <Entry name="IncludeSizeTime" type="APP_C_FW/BooleanUint16" shortDescription="True: Include file sizes and times" />
         </EntryList>
       </ContainerDataType>
 
@@ -94,7 +94,7 @@
         <EntryList>
           <Entry name="DirName"         type="BASE_TYPES/PathName"    shortDescription="path/filename of directory to delete all of its files" />
           <Entry name="Filename"        type="BASE_TYPES/PathName"    shortDescription="path/filename of file to contain the directory listing" />
-          <Entry name="IncludeSizeTime" type="OSK_C_FW/BooleanUint16" shortDescription="True: Include file sizes and times" />
+          <Entry name="IncludeSizeTime" type="APP_C_FW/BooleanUint16" shortDescription="True: Include file sizes and times" />
         </EntryList>
       </ContainerDataType>
 
@@ -147,7 +147,7 @@
       <ContainerDataType name="SendFileInfoTlm_Payload">
         <EntryList>
           <Entry name="Filename"   type="BASE_TYPES/PathName"   shortDescription="path/filename of file to send info for" />
-          <Entry name="ComputeCrc" type="OSK_C_FW/BooleanUint8" shortDescription="True: Compute CRC, FALSE: Do not compute CRC" />
+          <Entry name="ComputeCrc" type="APP_C_FW/BooleanUint8" shortDescription="True: Compute CRC, FALSE: Do not compute CRC" />
           <Entry name="CrcType"    type="CrcUint8"              shortDescription="Select which type of CRC algorithm to use" />
         </EntryList>
       </ContainerDataType>
@@ -280,13 +280,13 @@
 
       <ContainerDataType name="Noop" baseType="CommandBase" shortDescription="Generate an info event message with app version">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/NOOP_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/NOOP_CC}" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="Reset" baseType="CommandBase" shortDescription="Reset app to a known state">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/RESET_CC}" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
         </ConstraintSet>
       </ContainerDataType>
 
@@ -294,7 +294,7 @@
     
       <ContainerDataType name="CreateDir" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 0" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
           <Entry type="CreateDir_Payload" name="Payload" />
@@ -303,7 +303,7 @@
     
       <ContainerDataType name="DeleteDir" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 1" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
         <EntryList>
           <Entry type="DeleteDir_Payload" name="Payload" />
@@ -312,7 +312,7 @@
     
       <ContainerDataType name="DeleteAllDir" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 2" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
         <EntryList>
           <Entry type="DeleteAllDir_Payload" name="Payload" />
@@ -321,7 +321,7 @@
     
       <ContainerDataType name="SendDirListTlm" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 3" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SendDirListTlm_Payload" name="Payload" />
@@ -330,7 +330,7 @@
 
       <ContainerDataType name="SendDirTlm" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 4" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 4" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SendDirTlm_Payload" name="Payload" />
@@ -339,7 +339,7 @@
 
       <ContainerDataType name="WriteDirListFile" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 5" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 5" />
         </ConstraintSet>
         <EntryList>
           <Entry type="WriteDirListFile_Payload" name="Payload" />
@@ -350,7 +350,7 @@
     
       <ContainerDataType name="ConcatenateFile" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 6" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 6" />
         </ConstraintSet>
         <EntryList>
           <Entry type="ConcatenateFile_Payload" name="Payload" />
@@ -359,7 +359,7 @@
     
       <ContainerDataType name="CopyFile" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 7" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 7" />
         </ConstraintSet>
         <EntryList>
           <Entry type="CopyFile_Payload" name="Payload" />
@@ -368,7 +368,7 @@
     
       <ContainerDataType name="DecompressFile" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 8" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 8" />
         </ConstraintSet>
         <EntryList>
           <Entry type="DecompressFile_Payload" name="Payload" />
@@ -377,7 +377,7 @@
 
       <ContainerDataType name="DeleteFile" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 9" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 9" />
         </ConstraintSet>
         <EntryList>
           <Entry type="DeleteFile_Payload" name="Payload" />
@@ -386,7 +386,7 @@
 
       <ContainerDataType name="DeleteFileAlt" baseType="CommandBase" shortDescription="Alternate indicates the command counter is not incremented">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 10" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 10" />
         </ConstraintSet>
         <EntryList>
           <Entry type="DeleteFile_Payload" name="Payload" />
@@ -395,7 +395,7 @@
 
       <ContainerDataType name="MoveFile" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 11" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 11" />
         </ConstraintSet>
         <EntryList>
           <Entry type="MoveFile_Payload" name="Payload" />
@@ -404,7 +404,7 @@
 
       <ContainerDataType name="RenameFile" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 12" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 12" />
         </ConstraintSet>
         <EntryList>
           <Entry type="RenameFile_Payload" name="Payload" />
@@ -413,7 +413,7 @@
 
       <ContainerDataType name="SendFileInfoTlm" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 13" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 13" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SendFileInfoTlm_Payload" name="Payload" />
@@ -422,7 +422,7 @@
 
       <ContainerDataType name="SetFilePermissions" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 14" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 14" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SetFilePermissions_Payload" name="Payload" />
@@ -433,19 +433,19 @@
 
       <ContainerDataType name="SendFileSysTblTlm" baseType="CommandBase" shortDescription="Send the File System table contents in a telemetry message">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 15" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 15" />
         </ConstraintSet>
       </ContainerDataType>
 
       <ContainerDataType name="SendOpenFileTlm" baseType="CommandBase" shortDescription="Send a listof open files in a telemetry message">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 16" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 16" />
         </ConstraintSet>
       </ContainerDataType>
       
       <ContainerDataType name="SetFileSysTblState" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${OSK_C_FW/APP_BASE_CC} + 17" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 17" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SetFileSysTblState_Payload" name="Payload" />

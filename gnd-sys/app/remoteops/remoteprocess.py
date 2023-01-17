@@ -20,14 +20,17 @@
 """
 import os
 import sys
-sys.path.append('..')
 import logging
 import configparser
 import queue
 
 import paho.mqtt.client as mqtt
 
-from mqttconst import *
+if __name__ == '__main__' or 'remoteops' in os.getcwd():
+    from mqttconst import *
+else:
+    from .mqttconst import *
+
 
 ###############################################################################
 

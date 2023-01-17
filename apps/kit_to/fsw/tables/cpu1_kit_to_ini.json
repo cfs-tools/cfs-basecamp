@@ -1,5 +1,5 @@
 {
-   "title": "OSK Telemetry Output",
+   "title": "Telemetry Output",
    "description": [ "Define runtime configurations. See kit_to::app_cfg.h for definitions"],
    "config": {
       

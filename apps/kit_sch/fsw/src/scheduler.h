@@ -146,13 +146,13 @@
 
 /******************************************************************************
 ** Command Packets
-** - See EDS command definitions in osk_c_demo.xml
+** - See EDS command definitions in app_c_demo.xml
 */
 
 
 /******************************************************************************
 ** Telmetery Packets
-** - See EDS command definitions in osk_c_demo.xml
+** - See EDS command definitions in app_c_demo.xml
 ** - See SCHEDULER_SendSchEntryCmd() and SCHEDULER_SendMsgEntryCmd() prologues
 **   for how the KIT_SCH_TblEntryTlm packet is created for each command.
 */

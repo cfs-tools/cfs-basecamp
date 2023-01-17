@@ -437,7 +437,7 @@ class BasecampTelemetryMonitor(TelemetryObserver):
         self.tlm_callback = tlm_callback
         self.event_queue  = event_queue
         
-        self.sys_apps = ['CFE_ES', 'CFE_EVS', 'CFE_SB', 'CFE_TBL', 'CFE_TIME', 'OSK_C_DEMO' 'FILE_MGR' 'FILE_XFER']
+        self.sys_apps = ['CFE_ES', 'CFE_EVS', 'CFE_SB', 'CFE_TBL', 'CFE_TIME', 'APP_C_DEMO' 'FILE_MGR' 'FILE_XFER']
         
         for msg in self.tlm_server.tlm_messages:
             tlm_msg = self.tlm_server.tlm_messages[msg]
@@ -767,18 +767,19 @@ class ManageCfs():
                 try:
                     src=''   # Init for exception
                     dst=''
+                    target_prefix = DEFAULT_TARGET_NAME+'_'
                     for table in os.listdir(app_table_path):
-                        src_table = table.replace(DEFAULT_TARGET_NAME+'_','')
+                        src_table = table.replace(target_prefix,'')
                         if src_table in table_list:
                             src = os.path.join(app_table_path, table)
-                        #print('##src: ' + src)
-                        if target_equals_default:
-                            dst_table = table
-                        else:
-                            dst_table = self.cfs_target + '_' + src_table
-                        dst = os.path.join(self.cfs_abs_defs_path, dst_table)
-                        #print('##dst: ' + dst)
-                        shutil.copyfile(src, dst)
+                            #print('##src: ' + src)
+                            if target_equals_default:
+                                dst_table = table
+                            else:
+                                dst_table = self.cfs_target + '_' + src_table
+                            dst = os.path.join(self.cfs_abs_defs_path, dst_table)
+                            #print('##dst: ' + dst)
+                            shutil.copyfile(src, dst)
                     popup_text = f"Copied table files '{table_list}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
                 except IOError:
                     popup_text = f'Error copying table file\nFROM\n  {src}\nTO\n  {dst}\n'
@@ -1686,7 +1687,7 @@ class App():
                         if pop_event in ('-NOOP-', '-RESET-'):
                             app_name = pop_values['-APP_NAME-']
                             if app_name != EdsMission.TOPIC_CMD_TITLE_KEY:
-                                if app_name == 'CI_LAB':  #todo: Remove CI_LAB or update to use OSK_CI that follow osk_c_fw standards
+                                if app_name == 'CI_LAB':  #todo: Remove CI_LAB or update to use KIT_CI that follow app_c_fw standards
                                     if pop_event == '-NOOP-':
                                         self.send_cfs_cmd(app_name, 'NoopCmd', {})
                                     elif pop_event == '-RESET-':

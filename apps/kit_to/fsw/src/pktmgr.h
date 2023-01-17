@@ -74,13 +74,13 @@
 
 /******************************************************************************
 ** Command Packets
-** - See EDS command definitions in osk_c_demo.xml
+** - See EDS command definitions in app_c_demo.xml
 */
 
 
 /******************************************************************************
 ** Telmetery Packets
-** - See EDS command definitions in osk_c_demo.xml
+** - See EDS command definitions in app_c_demo.xml
 */
 
 
