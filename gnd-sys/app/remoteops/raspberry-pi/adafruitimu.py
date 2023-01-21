@@ -44,7 +44,6 @@ class AdaFruitImu(RemoteProcess):
         super().__init__(ini_file)
 
         self.i2c = None
-        self.imu = None
         self.control_delay = 0.5 # int(self.exec_config['CONTROL_DELAY'])
         
         self.client_name = f"{self.mqtt_config['TARGET_ID']}/{self.mqtt_config['SENSOR_ID']}"
@@ -83,7 +82,7 @@ class AdaFruitImu(RemoteProcess):
         
         #print("Acceleration: X:%.2f, Y: %.2f, Z: %.2f m/s^2" % (self.sensor.acceleration))
         #print("Gyro X:%.2f, Y: %.2f, Z: %.2f radians/s\n" % (self.sensor.gyro))
-        payload = '{ "rate": {"x": %2f, "y": %2f, "z": %2f} }' % \
+        payload = '{ "coord": {"x": %2f, "y": %2f, "z": %2f} }' % \
                   (self.sensor.gyro[0], self.sensor.gyro[1], self.sensor.gyro[2])         
         print(f'Publishing telemetry {self.imu_rate_topic}, {payload}')
         self.client.publish(self.imu_rate_topic, payload)

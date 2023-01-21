@@ -79,7 +79,7 @@ class DiscreteDemo(RemoteProcess):
         
     def control_led(self):
         
-        payload = '{ "discrete": {"item-1": %s, "item-2": %s, "item-3": %s, "item-4": %s} }' % \
+        payload = '{ "integer": {"item-1": %s, "item-2": %s, "item-3": %s, "item-4": %s} }' % \
                   (str(int(self.led_on)), '0', '0', '0')
 
         if self.led_on:
