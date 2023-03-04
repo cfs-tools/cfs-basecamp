@@ -69,7 +69,7 @@
 ** checksum capability.
 ** 
 */
-//#define CMDMGR_DISABLE_CHECKSUM_VALIDATION
+#define CMDMGR_DISABLE_CHECKSUM_VALIDATION
 
 
 /******************************************************************************
