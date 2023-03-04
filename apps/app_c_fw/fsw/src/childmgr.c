@@ -153,7 +153,7 @@ int32 CHILDMGR_Constructor(CHILDMGR_Class_t* ChildMgr,
    if (RetStatus != CFE_SUCCESS)
    {
        
-      CFE_EVS_SendEvent(CHILDMGR_INIT_ERR_EID, CFE_EVS_EventType_ERROR,
+      CFE_EVS_SendEvent(CHILDMGR_CONSTRUCTOR_EID, CFE_EVS_EventType_ERROR,
          "Child Task Manager initialization error: %s failed, Status=0x%8X",
          FailedFuncStr, (int)RetStatus);
    }
@@ -255,7 +255,7 @@ bool CHILDMGR_InvokeChildCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
       {
          
          sprintf(EventErrStr, "Error dispatching commmand function %d. Command message length %d exceed max %d",
-            FuncCode, (unsigned int)MsgSize, (unsigned int)sizeof(CHILDMGR_CmdQEntry_t));
+                 FuncCode, (unsigned int)MsgSize, (unsigned int)sizeof(CHILDMGR_CmdQEntry_t));
             
       }
    } /* End if command queue intact */
@@ -399,7 +399,7 @@ void ChildMgr_TaskMainCallback(void)
       
       ChildMgr->RunStatus = CFE_SUCCESS;
       
-      CFE_EVS_SendEvent(CHILDMGR_INIT_COMPLETE_EID, CFE_EVS_EventType_INFORMATION, "Child task initialization complete");
+      CFE_EVS_SendEvent(CHILDMGR_TASK_MAIN_CALLBACK_EID, CFE_EVS_EventType_INFORMATION, "Child task initialization complete");
 
       while (ChildMgr->RunStatus == CFE_SUCCESS)
       {
@@ -421,6 +421,7 @@ void ChildMgr_TaskMainCallback(void)
      
       } /* End task while loop */
    
+      CFE_EVS_SendEvent(CHILDMGR_TASK_MAIN_CALLBACK_EID, CFE_EVS_EventType_INFORMATION, "Child task exiting runtime loop");
    
       ChildMgr->WakeUpSemaphore = CHILDMGR_SEM_INVALID;  /* Prevent parent from invoking the child task */
    
@@ -459,7 +460,8 @@ void ChildMgr_TaskMainCmdDispatch(void)
 
       ChildMgr->RunStatus = CFE_SUCCESS;
       
-      CFE_EVS_SendEvent(CHILDMGR_INIT_COMPLETE_EID, CFE_EVS_EventType_INFORMATION, "Child task initialization complete");
+      CFE_EVS_SendEvent(CHILDMGR_MAIN_DISPATCH_EID, CFE_EVS_EventType_INFORMATION, 
+                        "Child task initialization complete");
 
       while (ChildMgr->RunStatus == CFE_SUCCESS)
       {
@@ -510,10 +512,13 @@ void ChildMgr_TaskMainCmdDispatch(void)
 
       } /* End task while loop */
    
+      CFE_EVS_SendEvent(CHILDMGR_MAIN_DISPATCH_EID, CFE_EVS_EventType_INFORMATION, // Could be expected or an error
+                        "Child task exiting main loop");
    
       ChildMgr->WakeUpSemaphore = CHILDMGR_SEM_INVALID;  /* Prevent parent from invoking the child task */
    
    } /* End if ChildMgr != NULL */
+   
    
    CFE_ES_ExitChildTask();  /* Clean-up system resources */
 

@@ -26,15 +26,15 @@ installation tool names may vary. If you're running on a Raspberry Pi with a 32-
 the [GPIO Demo tutorial](https://github.com/cfs-tools/cfs-basecamp/tree/main/gnd-sys/tutorials/6-pi-gpio-demo) for details on how to configure and build the cFS. 
 
     sudo apt-get update -y 
-    sudo apt-get install build-essential
-    sudo apt-get install cmake
-    sudo apt-get install libexpat1-dev
-    sudo apt-get install liblua5.3-dev
-    sudo apt-get install libjson-c-dev
-    sudo apt-get install python3-dev
-    sudo apt-get install python3-pip
-    sudo apt-get install python3-tk
-    sudo apt install default-jre
+    sudo apt-get install -y build-essential
+    sudo apt-get install -y cmake
+    sudo apt-get install -y libexpat1-dev
+    sudo apt-get install -y liblua5.3-dev
+    sudo apt-get install -y libjson-c-dev
+    sudo apt-get install -y python3-dev
+    sudo apt-get install -y python3-pip
+    sudo apt-get install -y python3-tk
+    sudo apt install -y default-jre
    
 Package Notes:
 - *sudo apt-get update* updates a platform's current package respositories
