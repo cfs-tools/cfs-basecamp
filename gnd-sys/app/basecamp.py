@@ -81,6 +81,7 @@ SH_BUILD_CFS_TOPICIDS = './build_cfs_topicids.sh'
 SH_BUILD_CFS = './build_cfs.sh'
 SH_STOP_CFS  = './stop_cfs.sh'
 SH_START_CFS = './start_cfs.sh'
+SH_SUDO_START_CFS = './sudo_start_cfs.sh'
 
 CFS_DEFS_FOLDER = 'basecamp_defs'
 
@@ -129,7 +130,7 @@ class TelecommandGui(TelecommandInterface):
         Example payload_gui_entries for FILE_MGR/SendDirListTlm_Payload:
         'DirName': 
         {
-            'eds_entry': EdsLib.DatabaseEntry('samplemission','BASE_TYPES/PathName'),
+            'eds_entry': EdsLib.DatabaseEntry(self.mission_name,'BASE_TYPES/PathName'),
             'eds_name': 'Payload.DirName', 'gui_type': 'BASE_TYPES/PathName',
             'gui_value': ['--null--'],
             'gui_input': 'text',
@@ -137,7 +138,7 @@ class TelecommandGui(TelecommandInterface):
          },
          'DirListOffset':
          {
-            'eds_entry': EdsLib.DatabaseEntry('samplemission','BASE_TYPES/uint16'),
+            'eds_entry': EdsLib.DatabaseEntry(self.mission_name,'BASE_TYPES/uint16'),
             'eds_name': 'Payload.DirListOffset',
             'gui_type': 'BASE_TYPES/uint16',
             'gui_value': ['--null--'],
@@ -146,7 +147,7 @@ class TelecommandGui(TelecommandInterface):
          },
          'IncludeSizeTime':
          {
-            'eds_entry': EdsLib.DatabaseEntry('samplemission','FILE_MGR/BooleanUint16'),
+            'eds_entry': EdsLib.DatabaseEntry(self.mission_name,'FILE_MGR/BooleanUint16'),
             'eds_name': 'Payload.IncludeSizeTime',
             'gui_type': 'FILE_MGR/BooleanUint16',
             'gui_value': ['FALSE', 'TRUE'],
@@ -392,7 +393,7 @@ class TelecommandGui(TelecommandInterface):
                             logger.debug(f'payload_entry = {str(payload_entry)}')
                             logger.debug(f'payload = {str(payload)}')
 
-                            #payload = EdsLib.DatabaseEntry('samplemission','FILE_MGR/SendDirListTlm_Payload')({'DirName': '', 'DirListOffset': 0, 'IncludeSizeTime': 'FALSE'})
+                            #payload = EdsLib.DatabaseEntry(self.EDS_MISSION_NAME,'FILE_MGR/SendDirListTlm_Payload')({'DirName': '', 'DirListOffset': 0, 'IncludeSizeTime': 'FALSE'})
                             #todo: Check if None? payload_struct = self.get_payload_struct(payload_entry, payload, 'Payload')
                             eds_payload = self.set_payload_values(self.payload_struct)
                             payload = payload_entry(eds_payload)                   
@@ -1087,10 +1088,11 @@ class App():
 
         self.APP_VERSION = self.config.get('APP','VERSION')
 
-        self.EDS_MISSION_NAME       = self.config.get('CFS_TARGET','MISSION_EDS_NAME')
-        self.EDS_CFS_TARGET_NAME    = self.config.get('CFS_TARGET','CPU_EDS_NAME')
+        self.EDS_MISSION_NAME    = self.config.get('CFS_TARGET','MISSION_EDS_NAME')
+        self.EDS_CFS_TARGET_NAME = self.config.get('CFS_TARGET','CPU_EDS_NAME')
+        self.SUDO_START_CFS      = self.config.getboolean('CFS_TARGET','SUDO_START_CFS')
 
-        self.CFS_IP_ADDR       = self.config.get('NETWORK','CFS_IP_ADDR')
+        self.CFS_IP_ADDR  = self.config.get('NETWORK','CFS_IP_ADDR')
         self.CFS_CMD_PORT = self.config.getint('NETWORK','CFS_CMD_PORT')
 
         self.GND_IP_ADDR      = self.config.get('NETWORK','GND_IP_ADDR')
@@ -1496,7 +1498,7 @@ class App():
                 self.create_app.execute()
 
             elif self.event == 'Download App':
-                repo_exclusions = self.config.get('APP','CFS_APPS').split(',')
+                repo_exclusions = self.config.get('CFS_TARGET','CFS_APPS').split(',')
                 print(repo_exclusions)
                 print(self.config.get('PATHS','USR_APP_PATH'))
                 app_store = AppStore(self.config.get('APP','APP_STORE_URL'), self.config.get('PATHS','USR_APP_PATH'),repo_exclusions)
@@ -1579,14 +1581,20 @@ class App():
                 """
                 
                 """
-                start_cfs_sh     = os.path.join(self.path, SH_START_CFS)
                 cfs_abs_exe_path = os.path.join(self.cfs_abs_base_path, self.cfs_exe_rel_path) 
+                if self.SUDO_START_CFS:
+                   start_sh  = os.path.join(self.path, SH_SUDO_START_CFS)
+                   password  = self.config.get('APP','PASSWORD')
+                   popen_str = f'{start_sh} {cfs_abs_exe_path} {self.cfs_exe_file} {password}'
+                else:
+                   start_sh  = os.path.join(self.path, SH_START_CFS)
+                   popen_str = f'{start_sh} {cfs_abs_exe_path} {self.cfs_exe_file}'
                 #self.cfs_subprocess = subprocess.Popen('%s %s %s' % (start_cfs_sh, cfs_abs_exe_path, self.cfs_exe_file), shell=True)
                 #self.cfs_subprocess = subprocess.Popen('%s %s %s' % (start_cfs_sh, cfs_abs_exe_path, self.cfs_exe_file),
                 #                                       stdout=self.cfs_pty_slave, stderr=self.cfs_pty_slave, close_fds=True,
-                #                                       shell=True) #, bufsize=1, universal_newlines=True)
-                self.cfs_subprocess = subprocess.Popen('%s %s %s' % (start_cfs_sh, cfs_abs_exe_path, self.cfs_exe_file),
-                                                       stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True,
+                #                                       shell=True) #, bufsize=1, universal_newlines=True)                
+                self.cfs_subprocess = subprocess.Popen(popen_str, stdout=subprocess.PIPE, shell=True, 
+                                                       bufsize=1, universal_newlines=True,
                                                        preexec_fn = lambda : (os.setsid(), os.nice(10)))
                 time.sleep(2.0)
                 if self.cfs_subprocess is not None:

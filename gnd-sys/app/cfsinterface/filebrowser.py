@@ -326,8 +326,8 @@ class FileBrowser(CmdTlmProcess):
     Provide a user interface for managing ground and flight directories and
     files. It also supports transferring files between the flight and ground.
     """
-    def __init__(self, gnd_path, flt_path, gnd_ip_addr, router_ctrl_port, browser_cmd_port, browser_tlm_port, browser_tlm_timeout):
-        super().__init__(gnd_ip_addr, router_ctrl_port, browser_cmd_port, browser_tlm_port, browser_tlm_timeout)
+    def __init__(self, mission_name, gnd_path, flt_path, gnd_ip_addr, router_ctrl_port, browser_cmd_port, browser_tlm_port, browser_tlm_timeout):
+        super().__init__(mission_name, gnd_ip_addr, router_ctrl_port, browser_cmd_port, browser_tlm_port, browser_tlm_timeout)
 
         self.default_gnd_path = gnd_path
         self.default_flt_path = flt_path
@@ -555,8 +555,9 @@ if __name__ == '__main__':
     router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     browser_cmd_port = config.getint('NETWORK','FILE_BROWSER_CMD_PORT')
     browser_tlm_port = config.getint('NETWORK','FILE_BROWSER_TLM_PORT')
+    mission_name     = config.get('CFS_TARGET','MISSION_EDS_NAME')
     
-    file_browser = FileBrowser(gnd_path, cfs_startup_path, cfs_ip_addr, router_ctrl_port, browser_cmd_port, browser_tlm_port, 1.0)
+    file_browser = FileBrowser(mission_name, gnd_path, cfs_startup_path, cfs_ip_addr, router_ctrl_port, browser_cmd_port, browser_tlm_port, 1.0)
     file_browser.execute()
     
     

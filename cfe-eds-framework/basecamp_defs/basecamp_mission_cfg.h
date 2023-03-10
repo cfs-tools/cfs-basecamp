@@ -40,7 +40,7 @@
 /*
  * Pull in defintions from EDS
  */
-#include "samplemission_eds_designparameters.h"
+#include "basecamp_eds_designparameters.h"
 
 /** \name Checksum/CRC algorithm identifiers */
 /** \{ */

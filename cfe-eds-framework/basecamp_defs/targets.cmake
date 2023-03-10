@@ -70,7 +70,11 @@
 # The MISSION_NAME will be compiled into the target build data structure
 # as well as being passed to "git describe" to filter the tags when building
 # the version string.
-SET(MISSION_NAME "SampleMission")
+#
+# The follwing definitions must match the MISSION_NAME
+# - MISSION_EDS_NAME in cfs-basecamp/gnd-sys/app/basecamp.ini
+# - 'xxx' in cfs-basecamp/cfe-eds-framework/basecamp_defs/xxx_mission_cfg.h
+SET(MISSION_NAME "Basecamp")
 
 # SPACECRAFT_ID gets compiled into the build data structure and the PSP may use it.
 # should be an integer.

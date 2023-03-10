@@ -38,7 +38,7 @@ else:
 class CmdProcess():
     """
     """
-    def __init__(self, gnd_ip_addr, router_cmd_port):
+    def __init__(self, mission_name, gnd_ip_addr, router_cmd_port):
         self.gnd_ip_addr = gnd_ip_addr
         self.router_cmd_port = router_cmd_port
         self.router_cmd_socket = None
@@ -46,7 +46,7 @@ class CmdProcess():
         self.router_cmd_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self.cfs_cmd_queue = Queue()
-        self.cmd_script = TelecommandScript('samplemission', 'cpu1', self.cfs_cmd_queue)  #TODO - Use kwarg?
+        self.cmd_script = TelecommandScript(mission_name, 'cpu1', self.cfs_cmd_queue)  #TODO - Use kwarg?
        
        
     def send_cfs_cmd(self, app_name, cmd_name, cmd_payload):
@@ -79,9 +79,9 @@ class CmdTlmProcess(CmdProcess):
       4. Create a shutdown method that terminates all threads
        
     """
-    def __init__(self, gnd_ip_addr, router_ctrl_port, router_cmd_port, router_tlm_port, router_tlm_timeout):
-        super().__init__(gnd_ip_addr, router_cmd_port)
-        self.tlm_server = TelemetrySocketServer('samplemission', 'cpu1', gnd_ip_addr, router_ctrl_port,
+    def __init__(self, mission_name, gnd_ip_addr, router_ctrl_port, router_cmd_port, router_tlm_port, router_tlm_timeout):
+        super().__init__(mission_name, gnd_ip_addr, router_cmd_port)
+        self.tlm_server = TelemetrySocketServer(mission_name, 'cpu1', gnd_ip_addr, router_ctrl_port,
                                                 router_tlm_port, router_tlm_timeout)
  
     def shutdown(self):

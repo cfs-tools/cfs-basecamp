@@ -75,9 +75,9 @@ class TlmScreen():
     """
     Create a screen that displays a single telemetry message
     """
-    def __init__(self, gnd_ip_addr, router_ctrl_port, screen_tlm_port, screen_tlm_timeout):
+    def __init__(self, mission_name, gnd_ip_addr, router_ctrl_port, screen_tlm_port, screen_tlm_timeout):
 
-        self.tlm_server = TelemetrySocketServer('samplemission', 'cpu1', gnd_ip_addr, router_ctrl_port, screen_tlm_port, screen_tlm_timeout)
+        self.tlm_server = TelemetrySocketServer(mission_name, 'cpu1', gnd_ip_addr, router_ctrl_port, screen_tlm_port, screen_tlm_timeout)
 
         self.app_name  = ''
         self.tlm_topic = ''
@@ -234,8 +234,9 @@ if __name__ == '__main__':
         tlm_topic   = 'MQTT_GW/Application/HK_TLM'
         tlm_topic   = 'MQTT_GW/Application/DISCRETE_TLM'
 
-    cfs_ip_addr = config.get('NETWORK', 'CFS_IP_ADDR')
+    cfs_ip_addr  = config.get('NETWORK', 'CFS_IP_ADDR')
+    mission_name = config.get('CFS_TARGET','MISSION_EDS_NAME')
 
-    tlm_screen = TlmScreen(cfs_ip_addr, router_ctrl_port, tlm_port, 2.0) #TODO - Parameterize timeout
+    tlm_screen = TlmScreen(mission_name, cfs_ip_addr, router_ctrl_port, tlm_port, 2.0) #TODO - Parameterize timeout
     tlm_screen.execute(app_name, tlm_topic) 
     

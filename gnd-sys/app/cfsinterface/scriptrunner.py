@@ -129,8 +129,8 @@ class TelemetryCurrentValue(TelemetryObserver):
 class ScriptRunner(CmdTlmProcess):
     """
     """
-    def __init__(self, gnd_ip_addr, router_ctrl_port, script_cmd_port, script_tlm_port, script_tlm_timeout):
-        super().__init__(gnd_ip_addr, router_ctrl_port, script_cmd_port, script_tlm_port, script_tlm_timeout)
+    def __init__(self, mission_name, gnd_ip_addr, router_ctrl_port, script_cmd_port, script_tlm_port, script_tlm_timeout):
+        super().__init__(mission_name, gnd_ip_addr, router_ctrl_port, script_cmd_port, script_tlm_port, script_tlm_timeout)
 
         self.tlm_current_value = TelemetryCurrentValue(self.tlm_server, self.event_msg)
         self.tlm_server.execute()
@@ -187,8 +187,9 @@ if __name__ == '__main__':
     router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     script_cmd_port  = config.getint('NETWORK', 'SCRIPT_RUNNER_CMD_PORT')
     script_tlm_port  = config.getint('NETWORK', 'SCRIPT_RUNNER_TLM_PORT')
+    mission_name     = config.get('CFS_TARGET','MISSION_EDS_NAME')
 
-    script_runner = ScriptRunner(cfs_ip_addr, router_ctrl_port, script_cmd_port, script_tlm_port, 1.0)
+    script_runner = ScriptRunner(mission_name, cfs_ip_addr, router_ctrl_port, script_cmd_port, script_tlm_port, 1.0)
     
     text_editor = TextEditor(demo_script, run_script_callback=script_runner.run_script)
     text_editor.execute()

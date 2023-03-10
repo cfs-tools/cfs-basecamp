@@ -98,7 +98,7 @@ class EdsMission:
     def load_eds_database(self):
         try:
             self.lib_db     = EdsLib.Database(self.mission_name)
-            self.cfe_db     = CFE_MissionLib.Database(self.mission_name, self.lib_db)  #cfe_db => CFE_MissionLib.Database('samplemission'), type => CFE_MissionLib.Database
+            self.cfe_db     = CFE_MissionLib.Database(self.mission_name, self.lib_db)  #cfe_db => CFE_MissionLib.Database(self.mission_name), type => CFE_MissionLib.Database
             self.interface  = self.cfe_db.Interface(self.interface_type)
         except RuntimeError:
             print("Error accessing EDS libraries. Verify your LD_LIBRARY_PATH, PYTHONPATH environment variable settings and mission name")

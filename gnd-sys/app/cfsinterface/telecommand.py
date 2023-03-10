@@ -517,7 +517,6 @@ def main():
     GND_TLM_PORT    = config.getint('NETWORK', 'GND_TLM_PORT')
     GND_TLM_TIMEOUT = float(config.getint('NETWORK', 'GND_TLM_TIMEOUT'))/1000.0
 
-
     system_string = f'Mission: {MISSION}, Target: {CFS_TARGET}, cFS: ({CFS_IP_ADDR}, {CFS_CMD_PORT}), Gnd: ({GND_IP_ADDR}, {GND_CMD_PORT}), {GND_TLM_PORT})'
     print(f'Creating telecommand objects for {system_string}')
 
