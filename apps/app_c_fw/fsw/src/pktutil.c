@@ -88,11 +88,14 @@ size_t PktUtil_HexDecode(uint8 *OutBuf, const char *InBuf, size_t BufLen)
 **   1. Each binary numeric value is encoded using 2 hex digits regardless of 
 **      whether the numeric value could be represented by one digit. Each byte
 **      has a value between 0-255 and is represented by 0x00-0xFF. As a result,
-**      encoded buffer will always be twice the size of binary.
+**      encoded buffer will always be twice the size of binary plus one for 
+**      null terminated string.
 **   2. The caller is responsible for ensuring the output buffer is big enough
 **      to hold the encoded binary.  
+**   3. If AddNullTerm is true then a '\0' character is added to the end of the
+**      encoded outbuffer which means the length of OutBuf is len(InBuf)*2+1
 */
-void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t BufLen)
+void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t BufLen, bool AddNullTerm)
 {
    size_t  i;
 
@@ -101,7 +104,8 @@ void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t BufLen)
       OutBuf[i*2]   = "0123456789ABCDEF"[InBuf[i] >> 4];
       OutBuf[i*2+1] = "0123456789ABCDEF"[InBuf[i] & 0x0F];
    }
-   OutBuf[BufLen*2] = '\0';
+   
+   if (AddNullTerm) OutBuf[BufLen*2] = '\0';
 
 } /* End PktUtil_HexEncode() */
 

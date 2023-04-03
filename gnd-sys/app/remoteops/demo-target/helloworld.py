@@ -158,7 +158,7 @@ class HelloWorld(MqttClient):
 
 
     def publish_rate_data(self):        
-        payload = '{ "coord": {"x": %2f, "y": %2f, "z": %2f} }' % \
+        payload = '{ "rate": {"x": %2f, "y": %2f, "z": %2f}}' % \
                   (self.sim_rate[X_AXIS], self.sim_rate[Y_AXIS], self.sim_rate[Z_AXIS])         
         print(f'Publishing telemetry {self.rate_topic}, {payload}')
         self.client.publish(self.rate_topic, payload)

@@ -30,10 +30,14 @@ import queue
 import socket
 import fcntl
 import struct
+import sys
 from datetime import datetime
 import paho.mqtt.client as mqtt
 
 from mqttconst import *
+
+SH_STOP_CFS  = './stop_cfs.sh'
+SH_START_CFS = './start_cfs.sh'
 
 ###############################################################################
 
@@ -235,12 +239,22 @@ class RemoteOps(MqttClient):
             if self.cfs_exe:
                 self.log_info_event("Start cFS rejected, cFS already running")
             else:
-                cfs_path = os.path.join(os.getcwd(), self.apps['CFS_PATH'])
-                self.cfs_process = subprocess.Popen(['sudo',self.apps['CFS_BINARY']],
-                                                    cwd=cfs_path,
-                                                    stdout=subprocess.PIPE,
-                                                    stderr=subprocess.STDOUT,
-                                                    shell=False)
+                #cfs_path = os.path.join(os.getcwd(), self.apps['CFS_PATH'])
+                #self.cfs_process = subprocess.Popen(['sudo',self.apps['CFS_BINARY']],
+                #                                    cwd=cfs_path,
+                #                                    stdout=subprocess.PIPE,
+                #                                    stderr=subprocess.STDOUT,
+                #                                    shell=False)
+                start_sh     = os.path.join(os.getcwd(), SH_START_CFS)
+                cfs_path     = os.path.join(os.getcwd(), self.apps['CFS_PATH'])
+                cfs_bin_file = self.apps['CFS_BINARY']
+                password     = self.exec['PASSWORD']
+                popen_str = f'{start_sh} {cfs_path} {cfs_bin_file} {password}'
+                print(f'Start popen_str: {popen_str}')
+                self.cfs_process = subprocess.Popen(popen_str, stdout=subprocess.PIPE, shell=True, 
+                                   bufsize=1, universal_newlines=True,
+                                   preexec_fn = lambda : (os.setsid(), os.nice(10)))
+
                 self.create_cfs_app_str(cfs_path)
                 self.cfs_exe = True
                 self.log_info_event(f'Start cFS, pid = {self.cfs_process.pid}')
@@ -254,7 +268,12 @@ class RemoteOps(MqttClient):
         if self.cfs_exe:
             self.cfs_apps = ''
             self.log_info_event(f'Stopping cFS, pid = {self.cfs_process.pid}')
-            subprocess.run(['sudo', 'kill', f'{self.cfs_process.pid}']) #'-9', 
+            stop_sh   = os.path.join(os.getcwd(), SH_STOP_CFS)
+            password  = self.exec['PASSWORD']
+            popen_str = f'{stop_sh} {password}'
+            print(f'Stop popen_str: {popen_str}')
+            self.cfs_process = subprocess.Popen(popen_str, stdout=subprocess.PIPE, shell=True)
+            #subprocess.run(['sudo', 'kill', f'{self.cfs_process.pid}']) #'-9', 
             #todo: self.cfs_process.kill()
             #self.cfs_process.wait()
             self.cfs_exe = False
@@ -268,7 +287,7 @@ class RemoteOps(MqttClient):
     def create_cfs_app_str(self, target_path):
         self.cfs_apps = ''
         startup_path_file = os.path.join(target_path, 'cf', 'cfe_es_startup.scr')
-        print(startup_path_file)
+        print(f'startup_path_file: {startup_path_file}')
         try:
             with open(startup_path_file) as f:
                 startup_file = f.readlines()
@@ -286,6 +305,8 @@ class RemoteOps(MqttClient):
                             first_app = False
                         else:
                             self.cfs_apps += ', ' + app
+            if self.cfs_apps == '':
+               self.cfs_apps = 'No user apps'
         except Exception as e:
             self.log_error_event(f'Error creating app list')
             self.log_error_event(f'Exception: {str(e)}')

@@ -19,7 +19,7 @@
 **    None 
 **
 **  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
+**    1. cFS Basecamp Object-based Application Developer's Guide
 **    2. cFS Application Developer's Guide
 **
 */
@@ -32,7 +32,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "cfe_evs_eds_cc.h"
 #include "cfe_evs_extern_typedefs.h"
+#include "kit_to_eds_defines.h"
 
 #include "evt_plbk.h"
 
@@ -66,20 +68,20 @@ void EVT_PLBK_Constructor(EVT_PLBK_Class_t *EvtPlbkPtr, INITBL_Class_t *IniTbl)
    memset ((void*)EvtPlbk, 0, sizeof(EVT_PLBK_Class_t));   /* Enabled set to FALSE */
    
    EvtPlbk->HkCyclePeriod = INITBL_GetIntConfig(IniTbl, CFG_EVT_PLBK_HK_PERIOD);
-   strncpy(EvtPlbk->EvsLogFilename, INITBL_GetStrConfig(IniTbl, CFG_EVT_PLBK_LOG_FILE), CFE_MISSION_MAX_PATH_LEN);
+   strncpy(EvtPlbk->EventLogFile, INITBL_GetStrConfig(IniTbl, CFG_EVT_PLBK_LOG_FILE), CFE_MISSION_MAX_PATH_LEN);
    
-   CFE_MSG_Init(CFE_MSG_PTR(EvtPlbk->TlmMsg),
-                  CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_EVS_CMD_TOPICID)),
-                  sizeof(CFE_EVS_WriteLogDataFileCmd_t));
+   CFE_MSG_Init(CFE_MSG_PTR(EvtPlbk->Tlm.TelemetryHeader),
+                CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_EVT_PLBK_TLM_TOPICID)),
+                sizeof(KIT_TO_PlbkEventTlm_t));
    
    /* 
    ** Initialize the static fields in the 'Write Log to File' command. The filename
    ** and checksum are set prior to sending the command
    */
    CFE_MSG_Init(CFE_MSG_PTR(WriteEvsLogFileCmd.CommandBase),
-                  CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_EVS_CMD_TOPICID)),
-                  sizeof(CFE_EVS_WriteLogDataFileCmd_t));
-   CFE_MSG_SetFcnCode(CFE_MSG_PTR(WriteEvsLogFileCmd.CommandBase), INITBL_GetIntConfig(IniTbl, CFG_CFE_EVS_WRITE_LOG_DATA_FILE_CC));
+                CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_EVS_CMD_TOPICID)),
+                sizeof(CFE_EVS_WriteLogDataFileCmd_t));
+   CFE_MSG_SetFcnCode(CFE_MSG_PTR(WriteEvsLogFileCmd.CommandBase), CFE_EVS_WRITE_LOG_DATA_FILE_CC);
                                                               
 } /* End EVT_PLBK_Constructor() */
 
@@ -104,10 +106,10 @@ void EVT_PLBK_Execute(void)
 {
 
    CFE_TIME_SysTime_t  AttemptTime;
-   
+ 
    if (EvtPlbk->Enabled)
    {
-   
+
       if (EvtPlbk->LogFileCopied)
       {
 
@@ -164,6 +166,8 @@ void EVT_PLBK_Execute(void)
 **   for details. 
 ** - Only verify filename is valid. CFE_EVS will perform checks regarding 
 **   whether the log file can be created.
+** - No limit check performed on HkCyclesPerPkt because no harmful affects it
+**   unreasonable value sent. 
 **
 */
 bool EVT_PLBK_ConfigCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
@@ -174,10 +178,10 @@ bool EVT_PLBK_ConfigCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
    EvtPlbk->HkCyclePeriod = CfgEvtLogPlbk->HkCyclesPerPkt;
 
-   if (FileUtil_VerifyFilenameStr(CfgEvtLogPlbk->EvsLogFilename))
+   if (FileUtil_VerifyFilenameStr(CfgEvtLogPlbk->EventLogFile))
    {
       
-      strncpy(EvtPlbk->EvsLogFilename, CfgEvtLogPlbk->EvsLogFilename, CFE_MISSION_MAX_PATH_LEN);
+      strncpy(EvtPlbk->EventLogFile, CfgEvtLogPlbk->EventLogFile, CFE_MISSION_MAX_PATH_LEN);
    
       CFE_EVS_SendEvent(EVT_PLBK_CFG_CMD_EID, CFE_EVS_EventType_INFORMATION, 
                         "Config playback command accepted with log file %s and HK period %d",
@@ -212,14 +216,14 @@ bool EVT_PLBK_StartCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
    FileUtil_FileInfo_t FileInfo;
 
-   FileInfo = FileUtil_GetFileInfo(EvtPlbk->EvsLogFilename, OS_MAX_PATH_LEN, false);
+   FileInfo = FileUtil_GetFileInfo(EvtPlbk->EventLogFile, OS_MAX_PATH_LEN, false);
 
    if (FileInfo.State == FILEUTIL_FILE_CLOSED)
    {
-      OS_remove(EvtPlbk->EvsLogFilename);
+      OS_remove(EvtPlbk->EventLogFile);
    }
    
-   strncpy(WriteEvsLogFileCmd.Payload.LogFilename, EvtPlbk->EvsLogFilename, CFE_MISSION_MAX_PATH_LEN);
+   strncpy(WriteEvsLogFileCmd.Payload.LogFilename, EvtPlbk->EventLogFile, CFE_MISSION_MAX_PATH_LEN);
    
    CFE_MSG_GenerateChecksum(CFE_MSG_PTR(WriteEvsLogFileCmd));
    CFE_SB_TransmitMsg(CFE_MSG_PTR(WriteEvsLogFileCmd), true);
@@ -273,20 +277,20 @@ static bool LoadLogFile(void)
    osal_id_t FileHandle;
    int32     FileStatus;
    int32     ReadLength;
-   os_err_name_t          OsErrStr;
-   EVT_PLBK_TlmEvent_t*   TlmEvent;
-   FileUtil_FileInfo_t    FileInfo;
-   CFE_FS_Header_t        CfeHeader;
-   CFE_EVS_LongEventTlm_t EvsLogEventTlm;
-   CFE_EVS_LongEventTlm_Payload_t* LogEvent;
+   os_err_name_t           OsErrStr;
+   KIT_TO_PlbkEvent_t      *PlbkTlmEvent;
+   FileUtil_FileInfo_t     FileInfo;
+   CFE_FS_Header_t         CfeHeader;
+   CFE_EVS_LongEventTlm_t  EvsLogEventTlm;
+   const CFE_EVS_LongEventTlm_Payload_t *EvsLogEvent;
 
 
-   FileInfo = FileUtil_GetFileInfo(EvtPlbk->EvsLogFilename, OS_MAX_PATH_LEN, false);
+   FileInfo = FileUtil_GetFileInfo(EvtPlbk->EventLogFile, OS_MAX_PATH_LEN, false);
     
    if (FILEUTIL_FILE_EXISTS(FileInfo.State))
    {
 
-      FileStatus = OS_OpenCreate(&FileHandle, EvtPlbk->EvsLogFilename, OS_FILE_FLAG_NONE, OS_READ_ONLY);
+      FileStatus = OS_OpenCreate(&FileHandle, EvtPlbk->EventLogFile, OS_FILE_FLAG_NONE, OS_READ_ONLY);
 
       if (FileStatus == OS_SUCCESS)
       {
@@ -312,16 +316,16 @@ static bool LoadLogFile(void)
                   if (ReadLength == sizeof(CFE_EVS_LongEventTlm_t))
                   {
                      
-                     TlmEvent = &EvtPlbk->EventLog.Msg[i].Tlm;
-                     LogEvent = &EvsLogEventTlm.Payload;
+                     PlbkTlmEvent = &EvtPlbk->EventLog.Entry[i].Event;
+                     EvsLogEvent  = &EvsLogEventTlm.Payload;
 
-                     CFE_MSG_GetMsgTime(CFE_MSG_PTR(EvsLogEventTlm),&TlmEvent->Time);
-                     TlmEvent->EventId   = LogEvent->PacketID.EventID;
-                     TlmEvent->EventType = LogEvent->PacketID.EventType;
-                     strncpy(TlmEvent->AppName, LogEvent->PacketID.AppName, CFE_MISSION_MAX_API_LEN);
-                     strncpy(TlmEvent->Message, LogEvent->Message, CFE_MISSION_EVS_MAX_MESSAGE_LENGTH);
-                     
-                     EvtPlbk->EventLog.Msg[i].Loaded = true;
+                     CFE_MSG_GetMsgTime(CFE_MSG_PTR(EvsLogEventTlm),&PlbkTlmEvent->Time);
+                     PlbkTlmEvent->PacketID.EventID   = EvsLogEvent->PacketID.EventID;
+                     PlbkTlmEvent->PacketID.EventType = EvsLogEvent->PacketID.EventType;
+                     strncpy(PlbkTlmEvent->PacketID.AppName, EvsLogEvent->PacketID.AppName, CFE_MISSION_MAX_API_LEN);
+                     strncpy(PlbkTlmEvent->Message, EvsLogEvent->Message, CFE_MISSION_EVS_MAX_MESSAGE_LENGTH);
+OS_printf("LoadLogFile() PlbkTlmEvent->Message: %s\n",PlbkTlmEvent->Message);                     
+                     EvtPlbk->EventLog.Entry[i].Loaded = true;
                   
                   }
                   else
@@ -337,7 +341,7 @@ static bool LoadLogFile(void)
                   
                CFE_EVS_SendEvent(EVT_PLBK_LOG_HDR_TYPE_ERR_EID, CFE_EVS_EventType_ERROR,
                                  "Invalid file header subtype %d for event log file %s", 
-                                 CfeHeader.SubType, EvtPlbk->EvsLogFilename);
+                                 CfeHeader.SubType, EvtPlbk->EventLogFile);
                                     
             } /* End if invalid file header subtype */
        
@@ -347,7 +351,7 @@ static bool LoadLogFile(void)
             
             CFE_EVS_SendEvent(EVT_PLBK_LOG_HDR_READ_ERR_EID, CFE_EVS_EventType_ERROR,
                               "Error reading event log %s file header. Return status = 0x%08X",
-                              EvtPlbk->EvsLogFilename, FileStatus);
+                              EvtPlbk->EventLogFile, FileStatus);
          
          } /* End if file header read error */
 
@@ -362,14 +366,14 @@ static bool LoadLogFile(void)
             while (i < CFE_PLATFORM_EVS_LOG_MAX)
             {
                
-               EvtPlbk->EventLog.Msg[i].Loaded = false;
-               TlmEvent = &EvtPlbk->EventLog.Msg[i].Tlm;
-               TlmEvent->Time.Seconds    = 0;
-               TlmEvent->Time.Subseconds = 0;
-               TlmEvent->EventId   = 0;
-               TlmEvent->EventType = 0;
-               strncpy(TlmEvent->AppName, "UNDEF", CFE_MISSION_MAX_API_LEN);
-               strncpy(TlmEvent->Message, "UNDEF", CFE_MISSION_EVS_MAX_MESSAGE_LENGTH);
+               EvtPlbk->EventLog.Entry[i].Loaded = false;
+               PlbkTlmEvent = &EvtPlbk->EventLog.Entry[i].Event;
+               PlbkTlmEvent->Time.Seconds    = 0;
+               PlbkTlmEvent->Time.Subseconds = 0;
+               PlbkTlmEvent->PacketID.EventID   = 0;
+               PlbkTlmEvent->PacketID.EventType = 0;
+               strncpy(PlbkTlmEvent->PacketID.AppName, "UNDEF", CFE_MISSION_MAX_API_LEN);
+               strncpy(PlbkTlmEvent->Message, "UNDEF", CFE_MISSION_EVS_MAX_MESSAGE_LENGTH);
 
                i++;
                
@@ -384,12 +388,12 @@ static bool LoadLogFile(void)
          RetStatus = true;
 
          /* Load telemetry that is fixed for each playback session */         
-         strncpy(EvtPlbk->TlmMsg.EvsLogFilename, EvtPlbk->EvsLogFilename, CFE_MISSION_MAX_PATH_LEN);
-         EvtPlbk->TlmMsg.EventCnt = EvtPlbk->EventLog.EventCnt;
+         strncpy(EvtPlbk->Tlm.Payload.EventLogFile, EvtPlbk->EventLogFile, CFE_MISSION_MAX_PATH_LEN);
+         EvtPlbk->Tlm.Payload.EventCnt = EvtPlbk->EventLog.EventCnt;
 
          CFE_EVS_SendEvent(EVT_PLBK_READ_LOG_SUCCESS_EID, CFE_EVS_EventType_INFORMATION,
                            "Successfully loaded %d event messages from %s",
-                           EvtPlbk->EventLog.EventCnt, EvtPlbk->EvsLogFilename);
+                           EvtPlbk->EventLog.EventCnt, EvtPlbk->EventLogFile);
          
       } /* End if open file */
       else
@@ -398,7 +402,7 @@ static bool LoadLogFile(void)
          OS_GetErrorName(FileStatus, &OsErrStr);
          CFE_EVS_SendEvent(EVT_PLBK_LOG_OPEN_ERR_EID, CFE_EVS_EventType_ERROR,
                            "Error opening event log file %s. Status = %s",
-                           EvtPlbk->EvsLogFilename, OsErrStr);
+                           EvtPlbk->EventLogFile, OsErrStr);
          
       } /* End if open failed */
    } /* End if file exists */
@@ -406,7 +410,7 @@ static bool LoadLogFile(void)
    {
    
       CFE_EVS_SendEvent(EVT_PLBK_LOG_NONEXISTENT_EID, CFE_EVS_EventType_ERROR, 
-                        "Event log file %s doesn't exist", EvtPlbk->EvsLogFilename);
+                        "Event log file %s doesn't exist", EvtPlbk->EventLogFile);
    
    } /* End if log file non-existent */
    
@@ -426,29 +430,31 @@ static void SendEventTlmMsg(void)
 {
 
    uint16 i;
-   EVT_PLBK_TlmEvent_t *LogEvent;
-   EVT_PLBK_TlmEvent_t *TlmEvent;
+   const EVT_PLBK_EventLogEntry_t *EventLogEntry;
+   KIT_TO_PlbkEvent_t             *EventTlmEntry;
    
-   for (i=0; i < EVT_PLBK_EVENTS_PER_TLM_MSG; i++)
+OS_printf("***SendEventTlmMsg()\n");
+   for (i=0; i < KIT_TO_PLBK_EVENTS_PER_TLM_MSG; i++)
    {
    
       if (EvtPlbk->EventLog.PlbkIdx >= CFE_PLATFORM_EVS_LOG_MAX) EvtPlbk->EventLog.PlbkIdx = 0;
-      if (i==0) EvtPlbk->TlmMsg.PlbkIdx = EvtPlbk->EventLog.PlbkIdx;
+      if (i==0) EvtPlbk->Tlm.Payload.PlbkIdx = EvtPlbk->EventLog.PlbkIdx;
       
-      LogEvent = &EvtPlbk->EventLog.Msg[EvtPlbk->EventLog.PlbkIdx].Tlm;
-      TlmEvent = &EvtPlbk->TlmMsg.Event[i];
+      EventLogEntry = (const EVT_PLBK_EventLogEntry_t *)&EvtPlbk->EventLog.Entry[EvtPlbk->EventLog.PlbkIdx].Event;
+      EventTlmEntry = &EvtPlbk->Tlm.Payload.Event[i];
       
-      TlmEvent->Time      = LogEvent->Time;
-      TlmEvent->EventId   = LogEvent->EventId;
-      TlmEvent->EventType = LogEvent->EventType;
-      strncpy(TlmEvent->AppName, LogEvent->AppName, CFE_MISSION_MAX_API_LEN);
-      strncpy(TlmEvent->Message, LogEvent->Message, CFE_MISSION_EVS_MAX_MESSAGE_LENGTH);
+      EventTlmEntry->Time = EventLogEntry->Event.Time;
+      EventTlmEntry->PacketID.EventID   = EventLogEntry->Event.PacketID.EventID;
+      EventTlmEntry->PacketID.EventType = EventLogEntry->Event.PacketID.EventType;
+      strncpy(EventTlmEntry->PacketID.AppName, EventLogEntry->Event.PacketID.AppName, CFE_MISSION_MAX_API_LEN);
+      strncpy(EventTlmEntry->Message, EventLogEntry->Event.Message, CFE_MISSION_EVS_MAX_MESSAGE_LENGTH);
                   
       EvtPlbk->EventLog.PlbkIdx++;
-   
+OS_printf("  [%d][%s]%s\n",i,EventLogEntry->Event.PacketID.AppName,EventLogEntry->Event.Message);
+OS_printf("  [%d][%s]%s\n",i,EventTlmEntry->PacketID.AppName,EventTlmEntry->Message);
    }
    
-   CFE_SB_TimeStampMsg(CFE_MSG_PTR(EvtPlbk->TlmMsg));
-   CFE_SB_TransmitMsg(CFE_MSG_PTR(EvtPlbk->TlmMsg), true);
+   CFE_SB_TimeStampMsg(CFE_MSG_PTR(EvtPlbk->Tlm.TelemetryHeader));
+   CFE_SB_TransmitMsg(CFE_MSG_PTR(EvtPlbk->Tlm.TelemetryHeader), true);
 
 } /* End SendEventTlmMsg() */

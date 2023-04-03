@@ -37,6 +37,7 @@
 /*******************************/
 
 static void DestructorCallback(void);
+static bool StartTransfer(const FILE_XFER_StartFitp_Payload_t *StartTransferCmd);
 
 
 /**********************/
@@ -44,13 +45,13 @@ static void DestructorCallback(void);
 /**********************/
 
 static FITP_Class_t* Fitp = NULL;
-
+static uint8 DataSegDecodeBuf[FITP_DATA_SEG_MAX_LEN];
 
 /******************************************************************************
 ** Function: FITP_Constructor
 **
 */
-void FITP_Constructor(FITP_Class_t*  FitpPtr)
+void FITP_Constructor(FITP_Class_t *FitpPtr)
 {
 
    Fitp = FitpPtr;
@@ -74,7 +75,7 @@ void FITP_Constructor(FITP_Class_t*  FitpPtr)
 **   2. Receiving a cancel command when no transfer is in progress is not
 **      considered an error because this command may be sent in the blind 
 */
-bool FITP_CancelTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool FITP_CancelTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
    bool RetStatus = true;
@@ -117,12 +118,14 @@ bool FITP_CancelTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 **      successful file writes. If a file write fails then the stats are not
 **      updated.
 */
-bool FITP_DataSegmentCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool FITP_DataSegmentCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_XFER_FitpDataSegment_Payload_t *DataSegmentCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_SendFitpDataSegment_t);
-   bool  RetStatus = false;
-   int32 BytesWritten;
+   const FILE_XFER_FitpDataSegment_Payload_t *DataSegmentCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_FitpDataSegment_t);
+   bool   RetStatus = false;
+   int32  BytesToWrite;
+   int32  BytesWritten;
+   const char *DataSegPtr;
 
    if (Fitp->FileTransferActive == true)
    {
@@ -132,18 +135,30 @@ bool FITP_DataSegmentCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
          
          if (DataSegmentCmd->Id == (Fitp->LastDataSegmentId+1))
          {
-            
-            BytesWritten = OS_write(Fitp->FileHandle, (void *)DataSegmentCmd->Data, DataSegmentCmd->Len);   
-  
-            if (BytesWritten == DataSegmentCmd->Len) 
+            if (Fitp->BinFile == true)
+            {
+OS_printf("DataSegmentCmd->Data[0]: %d, DataSegmentCmd->Data[0]: %d\n",DataSegmentCmd->Data[0],DataSegmentCmd->Data[1]);
+               BytesToWrite = PktUtil_HexDecode(DataSegDecodeBuf, (const char *)DataSegmentCmd->Data, DataSegmentCmd->Len*2);
+               DataSegPtr   = (const char *)DataSegDecodeBuf;
+OS_printf("DataSegDecodeBuf[0]: %d, DataSegDecodeBuf[0]: %d\n",DataSegDecodeBuf[0],DataSegDecodeBuf[1]);
+            }
+            else
+            {
+OS_printf("text file data segment\n");
+               BytesToWrite = DataSegmentCmd->Len;
+               DataSegPtr   = (const char *)DataSegmentCmd->Data;
+            }
+OS_printf("BytesToWrite: %d\n",BytesToWrite);
+            BytesWritten = OS_write(Fitp->FileHandle, (void *)DataSegPtr, BytesToWrite);   
+            if (BytesWritten == BytesToWrite) 
             {
             
                Fitp->LastDataSegmentId++;
-               Fitp->FileTransferByteCnt += DataSegmentCmd->Len;
-               Fitp->FileRunningCrc = CRC_32c(Fitp->FileRunningCrc, (const uint8 *)DataSegmentCmd->Data, DataSegmentCmd->Len);
+               Fitp->FileTransferByteCnt += BytesWritten;
+               Fitp->FileRunningCrc = CRC_32c(Fitp->FileRunningCrc, (const uint8 *)DataSegmentCmd->Data, BytesWritten);
               
                RetStatus = true;
-               CFE_EVS_SendEvent(FITP_DATA_SEGMENT_CMD_EID, CFE_EVS_EventType_DEBUG,
+               CFE_EVS_SendEvent(FITP_DATA_SEGMENT_CMD_EID, CFE_EVS_EventType_INFORMATION,
                                  "Data segment command passed: ID = %d, SegLen = %d, File Bytes = %d, File CRC = 0x%04x",
                                  Fitp->LastDataSegmentId, DataSegmentCmd->Len, Fitp->FileTransferByteCnt, Fitp->FileRunningCrc);
             }
@@ -155,7 +170,7 @@ bool FITP_DataSegmentCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
                    
                CFE_EVS_SendEvent(FITP_DATA_SEGMENT_CMD_ERR_EID, CFE_EVS_EventType_ERROR, 
                                  "Data segment command failed: Error writing data to file %s. Attempted %d bytes, wrote %d",
-                                 Fitp->DestFilename, DataSegmentCmd->Len, BytesWritten);
+                                 Fitp->DestFilename, BytesToWrite, BytesWritten);
             }
             
          
@@ -208,10 +223,10 @@ bool FITP_DataSegmentCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 **      file length, CRC, and sgement IDs are verified. If the expected values
 **      are not correct then there's a chance the file was transferred.
 */
-bool FITP_FinishTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool FITP_FinishTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
  
-   const FILE_XFER_FitpFinishTransfer_Payload_t *FinishTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_FinishFitpTransfer_t);
+   const FILE_XFER_FinishFitp_Payload_t *FinishTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_FinishFitp_t);
    bool    RetStatus = false;
    uint16  ValidityFailures = 0;
 
@@ -292,15 +307,65 @@ void FITP_ResetStatus(void)
 
 
 /******************************************************************************
+** Function: FITP_StartBinTransferCmd
+**
+** Notes:
+**   1. Must match CMDMGR_CmdFuncPtr_t function signature
+*/
+bool FITP_StartBinTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+{
+
+   const FILE_XFER_StartFitp_Payload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFitp_t);
+
+   Fitp->BinFile = true;
+OS_printf("FITP_StartBinTransferCmd()\n");
+   return StartTransfer(StartTransferCmd);
+   
+} /* FITP_StartBinTransferCmd() */
+
+
+/******************************************************************************
 ** Function: FITP_StartTransferCmd
 **
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FITP_StartTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool FITP_StartTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_XFER_FitpStartTransfer_Payload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_SendFile_t);
+   const FILE_XFER_StartFitp_Payload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFitp_t);
+   
+   Fitp->BinFile = false;
+OS_printf("FITP_StartTransferCmd()\n");   
+   return StartTransfer(StartTransferCmd);
+
+} /* FITP_StartTransferCmd() */
+
+
+/******************************************************************************
+** Function: DestructorCallback
+**
+** This function is called when the app is terminated. This should
+** never occur but if it does this will close an open file. 
+*/
+static void DestructorCallback(void)
+{
+ 
+   if (Fitp->FileTransferActive == true)
+   {
+      OS_close(Fitp->FileHandle);
+   }
+   
+} /* End DestructorCallback() */
+
+
+/******************************************************************************
+** Function: StartTransfer
+**
+*/
+static bool StartTransfer(const FILE_XFER_StartFitp_Payload_t *StartTransferCmd)
+{
+   
    bool RetStatus = false;
    
    uint32         OsStatus;
@@ -360,23 +425,4 @@ bool FITP_StartTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    
    return RetStatus;
    
-} /* FITP_StartTransferCmd() */
-
-
-/******************************************************************************
-** Function: DestructorCallback
-**
-** This function is called when the app is terminated. This should
-** never occur but if it does this will close an open file. 
-*/
-static void DestructorCallback(void)
-{
- 
-   if (Fitp->FileTransferActive == true)
-   {
-      OS_close(Fitp->FileHandle);
-   }
-   
-} /* End DestructorCallback() */
-
-
+} /* StartTransfer() */

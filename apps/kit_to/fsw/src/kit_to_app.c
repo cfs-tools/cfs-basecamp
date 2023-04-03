@@ -497,6 +497,7 @@ static int32 ProcessCommands(void)
          } 
          else if (CFE_SB_MsgId_Equal(MsgId, KitTo.SendHkMid))
          {   
+            EVT_PLBK_Execute();
             SendHousekeepingTlm();
          }
          else

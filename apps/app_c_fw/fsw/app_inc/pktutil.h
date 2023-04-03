@@ -140,9 +140,11 @@ size_t PktUtil_HexDecode(uint8 *OutBuf, const char *InBuf, size_t BufLen);
 **      has a value between 0-255 and is represented by 0x00-0xFF. As a result,
 **      encoded buffer will always be twice the size of binary.
 **   2. The caller is responsible for ensuring the output buffer is big enough
-**      to hold the encoded binary.  
+**      to hold the encoded binary.
+**   3. If AddNullTerm is true then a '\0' character is added to the end of the
+**      encoded outbuffer which means the length of OutBuf is len(InBuf)*2+1
 */
-void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t BufLen);
+void PktUtil_HexEncode(char *OutBuf, const uint8 *InBuf, size_t BufLen, bool AddNullTerm);
 
 
 /******************************************************************************

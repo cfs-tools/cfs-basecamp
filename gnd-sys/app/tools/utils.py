@@ -99,3 +99,66 @@ def hex_string(string, hex_per_line):
             hex_string += '\n'
     return hex_string 
 
+
+###############################################################################
+
+def bin_hex_decode(in_hex_string):
+    """
+    Must match app_c_fw PktUtil_HexEncode() which also means in must contain an
+    even number of bytes.
+    """
+    out_bin_array = bytearray(int(len(in_hex_string)/2))
+    
+    for i in range(0, len(out_bin_array)):
+        hi_nibble = hex_char_2_bin(in_hex_string[int(i*2)])
+        lo_nibble = hex_char_2_bin(in_hex_string[int(i*2+1)])
+        if hi_nibble is None or lo_nibble is None:
+            return None
+        else:
+            out_bin_array[i] = (hi_nibble << 4) | lo_nibble
+
+    return out_bin_array 
+    
+
+###############################################################################
+
+ORD_0 = ord('0')
+ORD_9 = ord('9')
+ORD_A = ord('A')
+ORD_F = ord('F')
+ORD_a = ord('a')
+ORD_f = ord('f')
+
+def hex_char_2_bin(hex_char):
+
+    bin_val = None
+    
+    hex_ord = ord(hex_char)
+    if (hex_ord >= ORD_0 and hex_ord <= ORD_9): 
+        bin_val = hex_ord - ORD_0;
+    elif (hex_ord >= ORD_A and hex_ord <= ORD_F):
+        bin_val = hex_ord - ORD_A + 10;
+    elif (hex_ord >= ORD_a and hex_ord <= ORD_f):
+        bin_val = hex_ord - ORD_a + 10;
+
+    return bin_val
+
+
+###############################################################################
+
+def bin_hex_encode(in_bin_buf):
+    """
+    Must match app_c_fw PktUtil_HexDecode() and PktUtil_HexEncode()
+    Each binary numeric value is encoded using 2 hex digits regardless of 
+    whether the numeric value could be represented by one digit. Each byte
+    has a value between 0-255 and is represented by 0x00-0xFF. As a result,
+    encoded buffer will always be twice the size of binary.
+    """
+    
+    hex_digit  = "0123456789ABCDEF"
+    hex_string = ''
+    for i in range(0, len(in_bin_buf)):
+        hex_string += hex_digit[in_bin_buf[i] >> 4]
+        hex_string += hex_digit[in_bin_buf[i] & 0x0F]
+        
+    return hex_string 

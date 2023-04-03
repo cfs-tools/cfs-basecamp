@@ -116,70 +116,14 @@ typedef enum
 
 /******************************************************************************
 ** Command Packets
-*/
-
-/* TODO - Delete
-typedef struct
-{
-
-   uint32  DataSegLen;
-   uint16  DataSegOffset;
-   char    SrcFilename[FOTP_FILENAME_LEN];
-
-} FOTP_StartTransferCmdPayload_t;
-
-typedef struct
-{
-
-   CFE_MSG_CommandHeader_t        CmdHeader;
-   FOTP_StartTransferCmdPayload_t Payload;
-   
-} FOTP_StartTransferCmdMsg_t;
-#define FOTP_START_TRANSFER_CMD_DATA_LEN  (sizeof(FOTP_StartTransferCmdMsg_t) - sizeof(CFE_MSG_CommandHeader_t))
-
-#define FOTP_PAUSE_TRANSFER_CMD_DATA_LEN   PKTUTIL_NO_PARAM_CMD_DATA_LEN
-#define FOTP_RESUME_TRANSFER_CMD_DATA_LEN  PKTUTIL_NO_PARAM_CMD_DATA_LEN
-#define FOTP_CANCEL_TRANSFER_CMD_DATA_LEN  PKTUTIL_NO_PARAM_CMD_DATA_LEN
+** See file_xfer.xml
 */
 
 /******************************************************************************
 ** Telemetry Packets
+** See file_xfer.xml
 */
 
-/* TODO - Delete
-typedef struct
-{
-
-   CFE_MSG_TelemetryHeader_t TlmHeader;
-   uint32  DataLen;                          // Either file length or file length minus commanded segment offset
-   char    SrcFilename[FOTP_FILENAME_LEN];
-
-} FOTP_StartTransferPkt_t;
-#define FOTP_START_TRANSFER_TLM_LEN sizeof (FOTP_StartTransferPkt_t)
-
-typedef struct
-{
-
-   CFE_MSG_TelemetryHeader_t TlmHeader;
-   uint16  Id;
-   uint16  Len;
-   uint8   Data[FOTP_DATA_SEG_MAX_LEN];   // Data must be defined last because it is variable length
-
-} FOTP_DataSegmentPkt_t;
-#define FOTP_DATA_SEGMENT_TLM_LEN sizeof (FOTP_DataSegmentPkt_t)
-#define FOTP_DATA_SEGMENT_NON_DATA_TLM_LEN (FOTP_DATA_SEGMENT_TLM_LEN-FOTP_DATA_SEG_MAX_LEN)
-
-typedef struct
-{
-
-   CFE_MSG_TelemetryHeader_t TlmHeader;
-   uint32  FileLen;
-   uint32  FileCrc;
-   uint16  LastDataSegmentId;
-
-} FOTP_FinishTransferPkt_t;
-#define FOTP_FINISH_TRANSFER_TLM_LEN sizeof (FOTP_FinishTransferPkt_t)
-*/
 
 /******************************************************************************
 ** FOTP Class
@@ -201,9 +145,9 @@ typedef struct
    ** Telemetry Packets
    */
    
-   FILE_XFER_FotpStartTransferTlm_t   StartTransferPkt;
-   FILE_XFER_FotpDataSegmentTlm_t     DataSegmentPkt;
-   FILE_XFER_FotpFinishTransferTlm_t  FinishTransferPkt;
+   FILE_XFER_StartFotpTlm_t       StartTransferPkt;
+   FILE_XFER_FotpDataSegmentTlm_t DataSegmentPkt;
+   FILE_XFER_FinishFotpTlm_t      FinishTransferPkt;
 
    /*
    ** FOTP State Data
@@ -223,6 +167,7 @@ typedef struct
    uint16    FileTransferCnt;
    bool      PrevSendDataSegmentFailed;
    bool      LastDataSegment;             /* In error scenarios this needs to be preserved across executions so it can't be local */
+   bool      BinFile;
 
    FOTP_FileTransferState_t FileTransferState;
    FOTP_FileTransferState_t PausedFileTransferState;  /* Identifies which state was paused */
@@ -287,6 +232,15 @@ void FOTP_ResetStatus(void);
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
 bool FOTP_ResumeTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+
+
+/******************************************************************************
+** Function: FOTP_StartBinTransferCmd
+**
+** Notes:
+**   1. Must match CMDMGR_CmdFuncPtr_t function signature
+*/
+bool FOTP_StartBinTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************

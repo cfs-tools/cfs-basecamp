@@ -25,7 +25,9 @@
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
   <Package name="KIT_TO" shortDescription="Telemetry Output App">
 
-    <Define name="MAX_WRAPPED_SB_MSG_LEN" value="2048"  shortDescription="MAximum size of SB message that can be used as a payload in a wrapped msg" />
+    <Define name="MAX_WRAPPED_SB_MSG_LEN" value="2048"  shortDescription="Maximum size of SB message that can be used as a payload in a wrapped msg" />
+
+    <Define name="PLBK_EVENTS_PER_TLM_MSG" value="4"    shortDescription="Number of events per playback telemetry message" />
 
     <DataTypeSet>
 
@@ -51,8 +53,20 @@
         </EnumerationList>
       </EnumeratedDataType>
 
-     <StringDataType name="WrappedSbMsgBuffer" length="${MAX_WRAPPED_SB_MSG_LEN}" shortDescription="" />
-      
+      <ContainerDataType name="PlbkEvent" shortDescription="">
+        <EntryList>
+          <Entry name="Time"     type="CFE_TIME/SysTime"     shortDescription="Event time stamp from message header" />
+          <Entry name="PacketID" type="CFE_EVS/PacketID"     shortDescription="Event packet information" />
+          <Entry name="Message"  type="CFE_EVS/EventMessage" shortDescription="Event text message" />
+       </EntryList>
+      </ContainerDataType>
+
+      <ArrayDataType name="PlbkEventArray" dataTypeRef="PlbkEvent">
+        <DimensionList>
+           <Dimension size="${PLBK_EVENTS_PER_TLM_MSG}"/>
+        </DimensionList>
+      </ArrayDataType>
+
       <!--***************************************-->
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
@@ -124,7 +138,7 @@
 
       <ContainerDataType name="CfgEvtLogPlbk_Payload" shortDescription="">
         <EntryList>
-          <Entry name="EvsLogFilename" type="BASE_TYPES/PathName" shortDescription="Filename to use when this command writes EVS log to a file" />
+          <Entry name="EventLogFile"   type="BASE_TYPES/PathName" shortDescription="Filename sent in CFE_EVS command to write EVS log to a file" />
           <Entry name="HkCyclesPerPkt" type="BASE_TYPES/uint16"   shortDescription="Number of HK request cycles between event log telemetry packets" />
        </EntryList>
       </ContainerDataType>
@@ -135,6 +149,8 @@
        </EntryList>
       </ContainerDataType>
 
+     <StringDataType name="WrappedSbMsgBuffer" length="${MAX_WRAPPED_SB_MSG_LEN}" shortDescription="" />
+      
       <!--*****************************************-->
       <!--**** DataTypeSet: Telemetry Payloads ****-->
       <!--*****************************************-->
@@ -149,13 +165,12 @@
           <Entry name="PktTblJsonObjCnt"     type="BASE_TYPES/uint16" />
           <Entry name="TlmSource"            type="TlmSource" />
           <Entry name="StatsValid"           type="BASE_TYPES/uint8"  />
-          <Entry name="PktMgrSpareAlignByte" type="BASE_TYPES/uint8"  />
           <Entry name="PktsPerSec"           type="BASE_TYPES/uint16" />
           <Entry name="BytesPerSec"          type="BASE_TYPES/uint32" />
           <Entry name="TlmSockId"            type="BASE_TYPES/uint16" />
           <Entry name="TlmDestIp"            type="char_x_16"/>
-          <Entry name="EvtPlbkEna"           type="BASE_TYPES/uint8"  />
-          <Entry name="EvtPlbkHkPeriod"      type="BASE_TYPES/uint8"  />
+          <Entry name="EvtPlbkEna"           type="APP_C_FW/BooleanUint8" />
+          <Entry name="EvtPlbkHkPeriod"      type="BASE_TYPES/uint8" />
         </EntryList>
       </ContainerDataType>
  
@@ -187,6 +202,15 @@
           <Entry name="BufLim"      type="BASE_TYPES/uint16" />
           <Entry name="FilterType"  type="APP_C_FW/PktFilterOptions"    shortDescription="" />
           <Entry name="FilterParam" type="APP_C_FW/PktUtil_FilterParam" shortDescription="" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="PlbkEventTlm_Payload" shortDescription="TO data types">
+        <EntryList>
+          <Entry name="EventLogFile" type="BASE_TYPES/PathName" />
+          <Entry name="EventCnt"     type="BASE_TYPES/uint16" />
+          <Entry name="PlbkIdx"      type="BASE_TYPES/uint16" />
+          <Entry name="Event"        type="PlbkEventArray" />
         </EntryList>
       </ContainerDataType>
 
@@ -360,6 +384,12 @@
         </EntryList>
       </ContainerDataType>
 
+      <ContainerDataType name="PlbkEventTlm" baseType="CFE_HDR/TelemetryHeader">
+        <EntryList>
+          <Entry type="PlbkEventTlm_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
       <ContainerDataType name="WrappedSbMsgTlm" baseType="CFE_HDR/TelemetryHeader">
         <EntryList>
           <Entry type="WrappedSbMsgTlm_Payload" name="Payload" />
@@ -401,6 +431,12 @@
             </GenericTypeMapSet>
           </Interface>
 
+          <Interface name="PLBK_EVENT_TLM" shortDescription="" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="PlbkEventTlm" />
+            </GenericTypeMapSet>
+          </Interface>
+
           <Interface name="LOCAL_TO_SB_WRAP_TLM" shortDescription="Local messages to be wrapped and sent on the software bus" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="WrappedSbMsgTlm" />
@@ -425,15 +461,18 @@
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"            initialValue="${CFE_MISSION/KIT_TO_HK_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="DataTypesTlmTopicId"     initialValue="${CFE_MISSION/KIT_TO_DATA_TYPES_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="PktTblTlmTopicId"        initialValue="${CFE_MISSION/KIT_TO_PKT_TBL_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="PlbkEventTlmTopicId"     initialValue="${CFE_MISSION/KIT_TO_EVENT_PLBK_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="LocalToSbWrapTlmTopicId" initialValue="${CFE_MISSION/KIT_TO_LOCAL_TO_SB_WRAP_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="SbWrapToUdpTlmTopicId"   initialValue="${CFE_MISSION/KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID}" />
           </VariableSet>
+          
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
             <ParameterMap interface="CMD"                   parameter="TopicId" variableRef="CmdTopicId" />
             <ParameterMap interface="HK_TLM"                parameter="TopicId" variableRef="HkTlmTopicId" />
             <ParameterMap interface="DATA_TYPES_TLM"        parameter="TopicId" variableRef="DataTypesTlmTopicId" />
             <ParameterMap interface="PKT_TBL_TLM"           parameter="TopicId" variableRef="PktTblTlmTopicId" />
+            <ParameterMap interface="PLBK_EVENT_TLM"        parameter="TopicId" variableRef="PlbkEventTlmTopicId" />
             <ParameterMap interface="LOCAL_TO_SB_WRAP_TLM"  parameter="TopicId" variableRef="LocalToSbWrapTlmTopicId" />
             <ParameterMap interface="SB_WRAP_TO_UDP_TLM"    parameter="TopicId" variableRef="SbWrapToUdpTlmTopicId" />
           </ParameterMapSet>

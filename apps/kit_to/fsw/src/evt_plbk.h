@@ -59,22 +59,21 @@
 
 
 /******************************************************************************
-** Command Packets
+** Command & Telemetry Packets
 **
-** - See EDS command definitions in app_c_demo.xml
-** - Use separate configuration command so start/stop commands do not require
-**   any parameters
-** - No limit check performed on HkCyclesPerPkt because no harmful affects it
-**   unreasonable value sent. 
+** - Packets are defined in EDS definition file kit_to.xml
+** - Separate start/stop commands are defined so command parameters are not
+**   required. This simplifies soem remote ops configurations. 
 */
 
+/**********TODO: Start Remove
 typedef struct
 {
 
    CFE_MSG_CommandHeader_t  CmdHeader;
 
-   char    EvsLogFilename[CFE_MISSION_MAX_PATH_LEN];   /* Filename to use when command write EVS log file */
-   uint16  HkCyclesPerPkt;                             /* Number of HK request cycles between event log telemetry packets */
+   char    EvsLogFilename[CFE_MISSION_MAX_PATH_LEN];   // Filename to use when command write EVS log file
+   uint16  HkCyclesPerPkt;                             // Number of HK request cycles between event log telemetry packets
    
 } EVT_PLBK_ConfigCmdMsg_t;
 #define EVT_PLBK_CONFIG_CMD_DATA_LEN  (sizeof(EVT_PLBK_ConfigCmdMsg_t) - sizeof(CFE_MSG_CommandHeader_t))
@@ -88,12 +87,6 @@ typedef struct
 #define EVT_PLBK_NO_PARAM_CMD_DATA_LEN  (sizeof(EVT_PLBK_NoParamCmdMsg_t) - sizeof(CFE_MSG_CommandHeader_t))
 #define EVT_PLBK_START_CMD_DATA_LEN (EVT_PLBK_NO_PARAM_CMD_DATA_LEN)
 #define EVT_PLBK_STOP_CMD_DATA_LEN  (EVT_PLBK_NO_PARAM_CMD_DATA_LEN)
-
-
-/******************************************************************************
-** Telemetry Packets
-*/
-
 
 typedef struct 
 {
@@ -122,13 +115,15 @@ typedef struct
 
 #define EVT_PLBK_TLM_MSG_LEN sizeof (EVT_PLBK_TlmMsg_t)
 
+TODO: End Remove ************/
+
 
 /******************************************************************************
 ** Event Playback Class
 **
 ** Since KIT_TO is non-flight without memory constraints and the default event 
 ** log message count is 20, I took the simple approach to just read the entire
-** log into memory. Using default values it's less than 3K bytes.
+** log into memory. Using default configurations it's less than 3K bytes.
 **
 */
 
@@ -136,16 +131,16 @@ typedef struct
 {
 
    bool Loaded;
-   EVT_PLBK_TlmEvent_t Tlm;
+   KIT_TO_PlbkEvent_t Event;
 
-} EVT_PLBK_EventLogMsg_t;
+} EVT_PLBK_EventLogEntry_t;
 
 typedef struct
 {
 
    uint16 EventCnt;    /* Number of entries loaded from log file. */
    uint16 PlbkIdx;     /* Currrent index used during playback */
-   EVT_PLBK_EventLogMsg_t Msg[CFE_PLATFORM_EVS_LOG_MAX];
+   EVT_PLBK_EventLogEntry_t Entry[CFE_PLATFORM_EVS_LOG_MAX];
 
 } EVT_PLBK_EventLog_t;
 
@@ -156,7 +151,7 @@ typedef struct
    ** Telemetry Packets
    */
    
-   EVT_PLBK_TlmMsg_t    TlmMsg;
+   KIT_TO_PlbkEventTlm_t   Tlm;
 
    /*
    ** Event Playback Data
@@ -171,7 +166,7 @@ typedef struct
 
    CFE_TIME_SysTime_t  StartTime;
    
-   char EvsLogFilename[CFE_MISSION_MAX_PATH_LEN];
+   char EventLogFile[CFE_MISSION_MAX_PATH_LEN];
       
    EVT_PLBK_EventLog_t  EventLog;
    

@@ -176,7 +176,7 @@ class CmdTlmRouter(Thread):
         self.tlm_dest_mutex.acquire()
         try:
             del self.tlm_dest_addr[tlm_port]
-            logger.info('Removed telemetry destination port {tlm_port}')
+            logger.info(f'Removed telemetry destination port {tlm_port}')
         except KeyError:
             logger.error(f'Error removing nonexitent telemetry source {tlm_port} from tlm destination dictionary')  
         self.tlm_dest_mutex.release()

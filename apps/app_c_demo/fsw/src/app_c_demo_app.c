@@ -88,6 +88,11 @@ void APP_C_DEMO_AppMain(void)
    {
       RunStatus = CFE_ES_RunStatus_APP_RUN; 
    }
+
+   /*
+   ** At this point flight apps may use CFE_ES_WaitForStartupSync()
+   ** to synchronize their startup timing with other apps.
+   */
    
    /*
    ** Main process loop

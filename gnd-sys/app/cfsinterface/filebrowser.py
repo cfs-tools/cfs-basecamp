@@ -43,7 +43,7 @@ else:
     from .telecommand   import TelecommandScript
     from .telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
     from .cmdtlmprocess import CmdTlmProcess
-from tools import crc_32c, compress_abs_path, TextEditor
+from tools import crc_32c, compress_abs_path, bin_hex_decode, bin_hex_encode, TextEditor
 
 import PySimpleGUI as sg
     
@@ -193,16 +193,54 @@ class FileXfer():
     def __init__(self, cmd_tlm_process: CmdTlmProcess):
         self.cmd_tlm_process = cmd_tlm_process
 
-        self.recv_state = 'IDLE'
-        self.recv_file  = None
+        self.recv_state    = 'IDLE'
+        self.recv_file     = None
+        self.recv_bin_file = False
         self.recv_flt_filename = None
         self.recv_gnd_filename = None
         self.gnd_file_list_refresh = None  # Callback function to refresh ground display
 
+    def send_bin_file(self, gnd_file, flt_file):
+        """
+        Send a binary file to the cFS as hex encoded text file. There's interest in 
+        using NASA apps with Basecamp so binary file transfer is needed before the 
+        I didn't use the python encode/decode because I already had my FSW PktUtil_
+        functions and I didn't feel like researching a standards-based solution.
+        The data_seg_len represents the binary data length and not the encoded length.
+        """
+        max_bin_data_seg_len = int(Cfe.FILE_XFER_DATA_SEG_LEN/2) # Encoding doubles the data size
+        file_crc     = 0
+        bytes_read   = 0
+        data_seg_id  = 1
+        file_len = os.stat(gnd_file).st_size
+        
+        #TODO popup_text = f'Before SendFile command. max_bin_data_seg_len: {max_bin_data_seg_len}'
+        #TODO sg.popup(popup_text, title='FILE_XFER Debug', grab_anywhere=True, modal=False)
+        self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'StartBinFitp', {'DestFilename': flt_file})
+        
+        with open(gnd_file,'rb') as f: 
+            while True:
+                bin_data_segment = f.read(max_bin_data_seg_len)
+                if not bin_data_segment: # Null indicates EOF
+                    #TODO sg.popup('End of File', title='FILE_XFER Debug', grab_anywhere=True, modal=False)
+                    break
+                hex_data_segment = bin_hex_encode(bin_data_segment)
+                if len(hex_data_segment) != int(len(bin_data_segment)*2):
+                    popup_text = f'Error encoding binary data segment. hex_len: {len(hex_data_segment)}, bin_len: {len(bin_data_segment)}'
+                    sg.popup(popup_text, title='FILE_XFER Error', grab_anywhere=True, modal=False)                
+                #TODO popup_text = f'Before FitpDataSegment command. bin_data_segment: {len(bin_data_segment)}'
+                #TODO sg.popup(popup_text, title='FILE_XFER Debug', grab_anywhere=True, modal=False)
+                self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'FitpDataSegment', {'Id': data_seg_id, 'Len': len(bin_data_segment), 'Data': hex_data_segment})
+                file_crc = crc_32c(file_crc, bin_data_segment)
+                data_seg_id += 1
+                time.sleep(0.25)
+            #TODO sg.popup('Before FinishFitpTransfer command', title='FILE_XFER Debug', grab_anywhere=True, modal=False)
+            self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'FinishFitp', {'FileLen': file_len, 'FileCrc': file_crc, 'LastDataSegmentId': data_seg_id-1})
+
     def send_file(self, gnd_file, flt_file):
         """
         Send a file to the cFS. This is a prototype 
-        TODO - General to binary once the EDS binary block updates are approved
+        TODO - Generalize to binary once the EDS binary block updates are approved
         TODO - and implemented in cfe-eds-framework 
         """
         file_crc    = 0
@@ -211,7 +249,7 @@ class FileXfer():
         file_len = os.stat(gnd_file).st_size
                 
         #TODO sg.popup("Before SendFile command", title='FILE_XFER Debug', grab_anywhere=True, modal=False)
-        self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'SendFile', {'DestFilename': flt_file})
+        self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'StartFitp', {'DestFilename': flt_file})
 
         # https://stackoverflow.com/questions/52722787/problem-sending-binary-files-via-sockets-python
         # send file size as big endian 64 bit value (8 bytes)
@@ -222,36 +260,45 @@ class FileXfer():
                 if not data_segment: # Null indicates EOF
                     break
                 
-                #TODO sg.popup("Before SendFitpDataSegment command", title='FILE_XFER Debug', grab_anywhere=True, modal=False)
-                self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'SendFitpDataSegment', {'Id': data_seg_id, 'Len': len(data_segment), 'Data': data_segment})
+                #TODO sg.popup("Before FitpDataSegment command", title='FILE_XFER Debug', grab_anywhere=True, modal=False)
+                self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'FitpDataSegment', {'Id': data_seg_id, 'Len': len(data_segment), 'Data': data_segment})
                 file_crc = crc_32c(file_crc, bytearray(data_segment,'utf-8'))
                 data_seg_id += 1
                 time.sleep(0.25)
             #TODO sg.popup("Before FinishFitpTransfer command", title='FILE_XFER Debug', grab_anywhere=True, modal=False)
-            self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'FinishFitpTransfer', {'FileLen': file_len, 'FileCrc': file_crc, 'LastDataSegmentId': data_seg_id-1})
+            self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'FinishFitp', {'FileLen': file_len, 'FileCrc': file_crc, 'LastDataSegmentId': data_seg_id-1})
 
     def tlm_callback(self, tlm_msg: TelemetryMessage):
         """
         """
         print("filexfer_callback()")
-        payload = payload = tlm_msg.payload()
-        if tlm_msg.msg_name == 'FOTP_START_TRANSFER_TLM':
+        payload = tlm_msg.payload()
+        if tlm_msg.msg_name == 'START_FOTP_TLM':
             self.recv_state = 'START'
-            print('Start receive file for %s with length %d' % (payload.SrcFilename, payload.DataLen))
-            self.recv_file = open(self.recv_gnd_filename, "w")
+            print(f'Start receive file for {payload.SrcFilename} with length {payload.DataLen} binary flag {payload.BinFile}')
+            open_flags = 'w'
+            if payload.BinFile:
+                open_flags = 'wb'
+                self.recv_bin_file = True
+            self.recv_file = open(self.recv_gnd_filename, open_flags)
         elif tlm_msg.msg_name == 'FOTP_DATA_SEGMENT_TLM':
             self.recv_state = 'RECV_DATA'
-            print('Receive file data segment %d, length %d, data: %s' % (payload.Id, payload.Len, str(payload.Data)))
-            self.recv_file.write(str(payload.Data))
-        elif tlm_msg.msg_name == 'FOTP_FINISH_TRANSFER_TLM':
+            print(f'Receive file data segment {payload.Id}, length {payload.Len}, data: {str(payload.Data)}')
+            if self.recv_bin_file:
+                bin_data_segment = bin_hex_decode(str(payload.Data))
+                self.recv_file.write(bin_data_segment)
+            else:
+                self.recv_file.write(str(payload.Data))
+        elif tlm_msg.msg_name == 'FINISH_FOTP_TLM':
             self.recv_state = 'FINISH'
-            print('Finish receive file with length %d, CRC %d, Last Data Segment ID %d' % (payload.FileLen, payload.FileCrc, payload.LastDataSegmentId))
+            print(f'Finish receive file with length {payload.FileLen}, CRC {payload.FileCrc}, Last Data Segment ID {payload.LastDataSegmentId}')
             self.recv_file.close()
-            self.recv_file = None
+            self.recv_file     = None
+            self.recv_bin_file = False
             if self.gnd_file_list_refresh is not None:
                 self.gnd_file_list_refresh()
                 
-    def start_recv_file(self, flt_file, gnd_file, gnd_file_list_refresh):
+    def start_recv_file(self, flt_file, gnd_file, gnd_file_list_refresh, bin_file):
         self.recv_flt_filename = flt_file
         self.recv_gnd_filename = gnd_file
         self.gnd_file_list_refresh = gnd_file_list_refresh
@@ -260,11 +307,15 @@ class FileXfer():
             self.recv_file = None
         if self.recv_state not in ('IDLE', 'FINISH'):
             self.cancel_recv_file()
-        self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'StartReceiveFile', {'DataSegLen': Cfe.FILE_XFER_DATA_SEG_LEN, 'DataSegOffset': 0, 'SrcFilename': ''.join(flt_file)})
+        if bin_file:
+            data_seg_len = int(Cfe.FILE_XFER_DATA_SEG_LEN/2) # Encoding doubles the data size
+            self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'StartBinFotp', {'DataSegLen': data_seg_len, 'DataSegOffset': 0, 'SrcFilename': ''.join(flt_file)})
+        else:
+            self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'StartFotp', {'DataSegLen': Cfe.FILE_XFER_DATA_SEG_LEN, 'DataSegOffset': 0, 'SrcFilename': ''.join(flt_file)})
 
 
     def cancel_recv_file(self):
-        self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'CancelSendFile', {})
+        self.cmd_tlm_process.send_cfs_cmd('FILE_XFER', 'CancelFotp', {})
         self.recv_state = 'IDLE'
             
 
@@ -358,14 +409,14 @@ class FileBrowser(CmdTlmProcess):
         pri_hdr_font   = ('Arial bold',14)
         list_font      = ('Courier',11)
         log_font       = ('Courier',11)
-        self.gnd_file_menu = ['_', ['Refresh', '---', 'Send to Flight', 'Edit File', '---',  'Rename File', 'Delete File']] #TODO - Decide on dir support 
+        self.gnd_file_menu = ['_', ['Refresh', '---', 'Send Text to Flight', 'Send Binary to Flight', '---', 'Edit File', 'Rename File', 'Delete File']] #TODO - Decide on dir support 
         self.gnd_col = [
             [sg.Text('Ground', font=col_title_font)],
             [sg.Text('Folder'), sg.In(self.default_gnd_path, size=(25,1), enable_events=True ,key='-GND_FOLDER-'), sg.FolderBrowse(initial_folder=self.default_gnd_path)],
             [sg.Listbox(values=[], font=list_font, enable_events=True, size=(50,20), key='-GND_FILE_LIST-', right_click_menu=self.gnd_file_menu)]]
         
         # Duplicate ground names have a trailing space to differentiate them. A little kludgy but it works
-        self.flt_file_menu = ['_', [ 'Refresh ', '---', 'List Dir', 'Send to Ground', 'Cancel Send', '---',  'Create Dir', 'Delete Dir', '---', 'Rename File ', 'Delete File ']] 
+        self.flt_file_menu = ['_', [ 'Refresh ', '---', 'List Dir', 'Send Text to Ground', 'Send Binary to Ground', 'Cancel Send', '---',  'Create Dir', 'Delete Dir', '---', 'Rename File ', 'Delete File ']] 
         self.flt_col = [
             [sg.Text('Flight', font=col_title_font)],
             [sg.Text('Folder'), sg.In(self.default_flt_path, size=(25,1), enable_events=True ,key='-FLT_FOLDER-'),
@@ -410,23 +461,29 @@ class FileBrowser(CmdTlmProcess):
 
             ### File Transfer ###
 
-            elif self.event == 'Send to Flight':
+            elif self.event in ('Send Text to Flight', 'Send Binary to Flight'):
                 if len(self.values['-GND_FILE_LIST-']) > 0:
                     filename = self.get_filename(self.values['-GND_FILE_LIST-'][0])
                     gnd_file = self.gnd_dir.path_filename(filename)
                     flt_file = self.flt_dir.path_filename(filename)
-                    self.file_xfer.send_file(gnd_file, flt_file)
+                    if self.event == 'Send Text to Flight':
+                        self.file_xfer.send_file(gnd_file, flt_file)
+                    else:
+                        self.file_xfer.send_bin_file(gnd_file, flt_file)
                     self.flt_dir.create_file_list()
                 else:
-                    sg.popup("Please select/highlight a file to be transferred to the cFS", title='Send File to FLight', grab_anywhere=True, modal=False)
+                    sg.popup("Please select/highlight a file to be transferred to the cFS", title='Send File to Flight', grab_anywhere=True, modal=False)
             
-            elif self.event == 'Send to Ground':
+            elif self.event in ('Send Text to Ground', 'Send Binary to Ground'):
                 if len(self.values['-FLT_FILE_LIST-']) > 0:
                     filename = self.get_filename(self.values['-FLT_FILE_LIST-'][0])
                     flt_file = self.flt_dir.path_filename(filename)
                     gnd_file = self.gnd_dir.path_filename(filename)
                     print('>>>>flt_file: %s, gnd_file: %s' % (flt_file, gnd_file))
-                    self.file_xfer.start_recv_file(flt_file, gnd_file, self.gnd_dir.create_file_list)
+                    if self.event == 'Send Text to Ground':
+                        self.file_xfer.start_recv_file(flt_file, gnd_file, self.gnd_dir.create_file_list, False)
+                    else:
+                        self.file_xfer.start_recv_file(flt_file, gnd_file, self.gnd_dir.create_file_list, True)                    
                     #TODO - Trigger ground file list display refresh
                 else:
                     sg.popup("Please select/highlight a file to be transferred to the ground", title='Send File to FLight', grab_anywhere=True, modal=False)

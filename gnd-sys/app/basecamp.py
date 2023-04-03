@@ -632,7 +632,7 @@ class ManageCfs():
                 Errors are reported in a popup by each function. The success string is an aggregate of each successful return
                 that will be reported in a single popup. 
                 A boolean return value of True from each function indicates there weren't any errors, it doesn't mean a paricular
-                update was performed, becuase the update may notbe required.
+                update was performed, because the update may notbe required.
                 """ 
                 auto_popup_text = f"{self.selected_app.upper()} was successfully added to Basecamp's cFS target:\n\n"
                 display_auto_popup = False 
@@ -1593,6 +1593,7 @@ class App():
                 #self.cfs_subprocess = subprocess.Popen('%s %s %s' % (start_cfs_sh, cfs_abs_exe_path, self.cfs_exe_file),
                 #                                       stdout=self.cfs_pty_slave, stderr=self.cfs_pty_slave, close_fds=True,
                 #                                       shell=True) #, bufsize=1, universal_newlines=True)                
+                print(f'popen_str: {popen_str}')
                 self.cfs_subprocess = subprocess.Popen(popen_str, stdout=subprocess.PIPE, shell=True, 
                                                        bufsize=1, universal_newlines=True,
                                                        preexec_fn = lambda : (os.setsid(), os.nice(10)))

@@ -44,18 +44,73 @@ else:
 from remoteops import mqttconst as mc
 from tools import get_ip_addr
 
+
+###############################################################################
+
+class EnableTlm():
+    """
+    Choose how remote telemetry is managed
+    """
+    NONE   = 0
+    SOCKET = 1
+    MQTT   = 2
+    def __init__(self):
+        self.window   = None
+        self.tlm_type = EnableTlm.NONE
+        
+    def create_window(self):
+        hdr_label_font = ('Arial bold',12)
+        hdr_value_font = ('Arial',12)
+        layout = [
+                     [sg.Radio("Socket", "TLM", default=True,  font=hdr_label_font, size=(15,0), key='-SOCKET-')],  
+                     [sg.Radio("MQTT",   "TLM", default=False, font=hdr_label_font, size=(15,0), key='-MQTT-')],
+                     [sg.Button('OK', font=hdr_label_font, button_color=('SpringGreen4')), sg.Button('Cancel', font=hdr_label_font)]
+                 ]
+        window = sg.Window('Select Telemetry Connection', layout, modal=False)
+        return window
+
+    def gui(self):
+        """
+        """        
+        self.window = self.create_window() 
+        
+        while True: # Event Loop
+            
+            self.event, self.values = self.window.read()
+
+            if self.event in (sg.WIN_CLOSED, 'Cancel') or self.event is None:       
+                break
+            
+            if self.event == 'OK':
+                if self.values["-SOCKET-"] == True:
+                    self.tlm_type = EnableTlm.SOCKET
+                else:
+                    self.tlm_type = EnableTlm.MQTT
+                break
+                
+        self.window.close()
+
+    def execute(self):
+        """
+        """
+        self.gui()
+        return self.tlm_type
+
+
 ###############################################################################
 
 class TargetControl(CmdProcess):
     """
     Manage the target interface 
     """
-    def __init__(self, gnd_ip_addr, router_ctrl_port, router_cmd_port, 
+    TIMER_SET_CFS_IP = 6
+    TIMER_ENABLE_TLM = 12
+    def __init__(self, mission_name, gnd_ip_addr, router_ctrl_port, router_cmd_port, 
                 target_mqtt_topic, broker_addr, broker_port, client_name,
                 local_network_adapter):
         """
         """
-        super().__init__(gnd_ip_addr, router_cmd_port)
+        super().__init__(mission_name, gnd_ip_addr, router_cmd_port)
         
         self.local_network_adapter = local_network_adapter
         try:
@@ -175,22 +230,22 @@ class TargetControl(CmdProcess):
     def start_remote_cfs_tlm(self, timer):
         """
         The timer is used to space out sending commands to the cmdtlmrouter. 
-        Sleep() can't be used because it would blocks the window event loop and
-        if telemetry is received when the loop is blocked then an error occurs.
-        If the event loop timeout value is changed then this timing will need to 
-        change.
+        Sleep() can't be used because it blocks the window event loop and if
+        telemetry is received when the loop is blocked then an error occurs.
+        If the event loop timeout value is changed then this timing will need
+        to change.
         """
         ret_status = True
         if timer == 0:
             print('Commanding KIT_TO to remote')
             self.send_cfs_cmd('KIT_TO', 'SetTlmSource',  {'Source': 'REMOTE'})
-        elif timer == 6:
-            print('Setting router cFS IP address')
+        elif timer == TargetControl.TIMER_SET_CFS_IP:
+            print(f'Setting router cFS IP address to {self.remote_ip_addr}')
             datagram = f'{RouterCmd.SET_CFS_IP_ADDR}:{self.remote_ip_addr}'.encode('utf-8')
             self.router_ctrl_socket.sendto(datagram, self.router_ctrl_socket_addr)
-        elif timer > 12:
-            print('Commanding remote KIT_TO to enable telemetry')
-            self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'DestIp': '127.0.0.1'})
+        elif timer > TargetControl.TIMER_ENABLE_TLM:
+            print(f'Commanding remote KIT_TO to enable telemetry to ground IP address {self.gnd_ip_addr}')
+            self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'DestIp': self.gnd_ip_addr})
             ret_status = False
             
         return ret_status
@@ -292,8 +347,14 @@ class TargetControl(CmdProcess):
                 self.cfe_time_event_filter = False
                                  
             elif self.event == '-CFS_START_TLM-':
-                start_remote_cfs_tlm   = True
-                start_remote_cfs_timer = 0
+                enable_tlm = EnableTlm()
+                tlm_type = enable_tlm.execute()
+                if tlm_type == EnableTlm.SOCKET:
+                    start_remote_cfs_tlm   = True
+                    start_remote_cfs_timer = TargetControl.TIMER_SET_CFS_IP
+                elif tlm_type == EnableTlm.MQTT:
+                    start_remote_cfs_tlm   = True
+                    start_remote_cfs_timer = 0
 
             elif self.event == '-CFS_STOP-':
                 self.publish_cmd(mc.JSON_CMD_SUBSYSTEM_CFS, mc.JSON_CMD_CFS_STOP)
@@ -370,6 +431,7 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
 
+    mission_name     = config.get('CFS_TARGET','MISSION_EDS_NAME')
     router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     
     gnd_ip_addr = config.get('NETWORK','GND_IP_ADDR')
@@ -384,7 +446,7 @@ if __name__ == '__main__':
     
     local_network_adapter = config.get('NETWORK','LOCAL_NET_ADAPTER')
     
-    target_control = TargetControl(gnd_ip_addr, router_ctrl_port, cmd_port, 
+    target_control = TargetControl(mission_name, gnd_ip_addr, router_ctrl_port, cmd_port, 
                                    remote_target_mqtt_topic, broker_addr, broker_port, client_name,
                                    local_network_adapter)
     target_control.execute()

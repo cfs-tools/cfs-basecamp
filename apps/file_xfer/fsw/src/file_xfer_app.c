@@ -40,7 +40,7 @@
 
 #include <string.h>
 #include "file_xfer_app.h"
-
+#include "file_xfer_eds_cc.h"
 
 /***********************/
 /** Macro Definitions **/
@@ -241,18 +241,20 @@ static int32 InitApp(void)
       if (Status == CFE_SUCCESS)
       {         
          CMDMGR_Constructor(CMDMGR_OBJ);
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, CMDMGR_NOOP_CMD_FC,   NULL, FILE_XFER_NoOpCmd,     0);
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, CMDMGR_RESET_CMD_FC,  NULL, FILE_XFER_ResetAppCmd, 0);
-         
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FITP_START_TRANSFER_CMD_FC,  FITP_OBJ, FITP_StartTransferCmd,  sizeof(FILE_XFER_FitpStartTransfer_Payload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FITP_DATA_SEGMENT_CMD_FC,    FITP_OBJ, FITP_DataSegmentCmd,    sizeof(FILE_XFER_FitpDataSegment_Payload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FITP_FINISH_TRANSFER_CMD_FC, FITP_OBJ, FITP_FinishTransferCmd, sizeof(FILE_XFER_FitpFinishTransfer_Payload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FITP_CANCEL_TRANSFER_CMD_FC, FITP_OBJ, FITP_CancelTransferCmd, 0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_NOOP_CC,   NULL, FILE_XFER_NoOpCmd,     0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_RESET_CC,  NULL, FILE_XFER_ResetAppCmd, 0);
+                                         
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_FITP_CC,        FITP_OBJ, FITP_StartTransferCmd,    sizeof(FILE_XFER_StartFitp_Payload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_BIN_FITP_CC,    FITP_OBJ, FITP_StartBinTransferCmd, sizeof(FILE_XFER_StartFitp_Payload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_FITP_DATA_SEGMENT_CC, FITP_OBJ, FITP_DataSegmentCmd,      sizeof(FILE_XFER_FitpDataSegment_Payload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_FINISH_FITP_CC,       FITP_OBJ, FITP_FinishTransferCmd,   sizeof(FILE_XFER_FinishFitp_Payload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_CANCEL_FITP_CC,       FITP_OBJ, FITP_CancelTransferCmd,   0);
 
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FOTP_START_TRANSFER_CMD_FC,  FOTP_OBJ, FOTP_StartTransferCmd,  sizeof(FILE_XFER_FotpStartTransfer_Payload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FOTP_CANCEL_TRANSFER_CMD_FC, FOTP_OBJ, FOTP_CancelTransferCmd, 0);
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FOTP_PAUSE_TRANSFER_CMD_FC,  FOTP_OBJ, FOTP_PauseTransferCmd,  0);
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FOTP_RESUME_TRANSFER_CMD_FC, FOTP_OBJ, FOTP_ResumeTransferCmd, 0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_FOTP_CC,     FOTP_OBJ, FOTP_StartTransferCmd,    sizeof(FILE_XFER_StartFotp_Payload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_BIN_FOTP_CC, FOTP_OBJ, FOTP_StartBinTransferCmd, sizeof(FILE_XFER_StartFotp_Payload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_CANCEL_FOTP_CC,    FOTP_OBJ, FOTP_CancelTransferCmd,   0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_PAUSE_FOTP_CC,     FOTP_OBJ, FOTP_PauseTransferCmd,    0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_RESUME_FOTP_CC,    FOTP_OBJ, FOTP_ResumeTransferCmd,   0);
 
          CFE_MSG_Init(CFE_MSG_PTR(FileXfer.HkPkt.TlmHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_FILE_XFER_HK_TLM_TOPICID)), sizeof(FILE_XFER_HkPkt_t));
 

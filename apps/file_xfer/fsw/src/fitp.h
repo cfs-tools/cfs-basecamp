@@ -155,7 +155,8 @@ typedef struct
    uint32    FileRunningCrc;
    bool      FileTransferActive;
    uint16    FileTransferCnt;
-
+   bool      BinFile;
+   
    uint16    LastDataSegmentId;
    uint16    DataSegmentErrCnt;   
 
@@ -216,6 +217,17 @@ bool FITP_FinishTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 **
 */
 void FITP_ResetStatus(void);
+
+
+/******************************************************************************
+** Function: FITP_StartBinTransferCmd
+**
+** 
+**
+** Notes:
+**   1. Must match CMDMGR_CmdFuncPtr_t function signature
+*/
+bool FITP_StartBinTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************

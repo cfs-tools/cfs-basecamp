@@ -31,23 +31,7 @@
       <!--**** DataTypeSet:  Entry Types ****-->
       <!--***********************************-->
     
-      <EnumeratedDataType name="BooleanUint8" shortDescription="8-bit Boolean for commands" >
-        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
-        <EnumerationList>
-          <Enumeration label="FALSE" value="0" shortDescription="" />
-          <Enumeration label="TRUE"  value="1" shortDescription="" />
-        </EnumerationList>
-      </EnumeratedDataType>
-
-      <EnumeratedDataType name="BooleanUint16" shortDescription="8-bit Boolean for commands" >
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
-        <EnumerationList>
-          <Enumeration label="FALSE" value="0" shortDescription="" />
-          <Enumeration label="TRUE"  value="1" shortDescription="" />
-        </EnumerationList>
-      </EnumeratedDataType>
-
-      <EnumeratedDataType name="FotpTransferState" shortDescription="" >
+      <EnumeratedDataType name="FotpState" shortDescription="" >
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
         <EnumerationList>
           <Enumeration label="UNDEF"     value="0" shortDescription="" />
@@ -84,7 +68,7 @@
 
       <!-- FileXfer::Fitp -->
 
-      <ContainerDataType name="FitpStartTransfer_Payload">
+      <ContainerDataType name="StartFitp_Payload">
         <EntryList>
           <Entry name="DestFilename" type="BASE_TYPES/PathName" shortDescription="path/filename of file to be received" />
         </EntryList>
@@ -98,7 +82,7 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="FitpFinishTransfer_Payload">
+      <ContainerDataType name="FinishFitp_Payload">
         <EntryList>
           <Entry name="FileLen"           type="BASE_TYPES/uint32" shortDescription="Total file length in bytes" />
           <Entry name="FileCrc"           type="BASE_TYPES/uint32" shortDescription="File CRC" />
@@ -110,14 +94,13 @@
       <!-- FileXfer::Fotp -->
 
 
-      <ContainerDataType name="FotpStartTransfer_Payload">
+      <ContainerDataType name="StartFotp_Payload">
         <EntryList>
           <Entry name="DataSegLen"     type="BASE_TYPES/uint32"   shortDescription="Length of data segment telmeetry packets. Must be less than FILE_XFER/FOTP_DATA_SEG_MAX_LEN" />
           <Entry name="DataSegOffset"  type="BASE_TYPES/uint16"   shortDescription="Starting segment number. Typically 0 unless resuming an incomplete transfer" />
           <Entry name="SrcFilename"    type="BASE_TYPES/PathName" shortDescription="path/filename of file to be sent" />
         </EntryList>
       </ContainerDataType>
-
 
       <!--*****************************************-->
       <!--**** DataTypeSet: Telemetry Payloads ****-->
@@ -141,22 +124,22 @@
 
       <ContainerDataType name="HkTlm_Fotp_Payload" shortDescription="File Output Transport Protocol HK data">
         <EntryList>
-          <Entry name="FileTransferCnt"     type="BASE_TYPES/uint8"  shortDescription="Number of complete file transfers" />
-          <Entry name="FileTransferState"   type="FotpTransferState" shortDescription="See type definition" />
-          <Entry name="PausedTransferState" type="FotpTransferState" shortDescription="Identify which state was paused" />
-          <Entry name="PrevSegmentFailed"   type="BooleanUint8"      shortDescription="If true then FOTP attempts to resend" />
-          <Entry name="FileTransferByteCnt" type="BASE_TYPES/uint32" shortDescription="Number of file data bytes received/written" />
-          <Entry name="FileRunningCrc"      type="BASE_TYPES/uint32" shortDescription="Running CRC of file data received" />
+          <Entry name="FileTransferCnt"     type="BASE_TYPES/uint8"      shortDescription="Number of complete file transfers" />
+          <Entry name="FileTransferState"   type="FotpState"             shortDescription="See type definition" />
+          <Entry name="PausedTransferState" type="FotpState"             shortDescription="Identify which state was paused" />
+          <Entry name="PrevSegmentFailed"   type="APP_C_FW/BooleanUint8" shortDescription="If true then FOTP attempts to resend" />
+          <Entry name="FileTransferByteCnt" type="BASE_TYPES/uint32"     shortDescription="Number of file data bytes received/written" />
+          <Entry name="FileRunningCrc"      type="BASE_TYPES/uint32"     shortDescription="Running CRC of file data received" />
 
-          <Entry name="DataTransferLen"     type="BASE_TYPES/uint32" shortDescription="" />
-          <Entry name="FileLen"             type="BASE_TYPES/uint32" shortDescription="" />
-          <Entry name="FileByteOffset"      type="BASE_TYPES/uint32" shortDescription="DataSegmentOffset*DataSegmentLen" />
+          <Entry name="DataTransferLen"     type="BASE_TYPES/uint32"     shortDescription="" />
+          <Entry name="FileLen"             type="BASE_TYPES/uint32"     shortDescription="" />
+          <Entry name="FileByteOffset"      type="BASE_TYPES/uint32"     shortDescription="DataSegmentOffset*DataSegmentLen" />
           
-          <Entry name="DataSegmentLen"      type="BASE_TYPES/uint16" shortDescription="Length in start transfer command" />
-          <Entry name="DataSegmentOffset"   type="BASE_TYPES/uint16" shortDescription="Starting data segment" />
-          <Entry name="NextDataSegmentId"   type="BASE_TYPES/uint16" shortDescription="Starting data segment" />
+          <Entry name="DataSegmentLen"      type="BASE_TYPES/uint16"     shortDescription="Length in start transfer command" />
+          <Entry name="DataSegmentOffset"   type="BASE_TYPES/uint16"     shortDescription="Starting data segment" />
+          <Entry name="NextDataSegmentId"   type="BASE_TYPES/uint16"     shortDescription="Starting data segment" />
 
-          <Entry name="SrcFilename"         type="BASE_TYPES/PathName" shortDescription="path/filename of file being sent" />
+          <Entry name="SrcFilename"         type="BASE_TYPES/PathName"   shortDescription="path/filename of file being sent" />
         </EntryList>
       </ContainerDataType>
 
@@ -173,10 +156,11 @@
       <!-- FileXfer::FOTP -->
 
 
-      <ContainerDataType name="FotpStartTransferTlm_Payload" shortDescription="">
+      <ContainerDataType name="StartFotpTlm_Payload" shortDescription="">
         <EntryList>
-          <Entry name="DataLen"      type="BASE_TYPES/uint32" shortDescription="Either file length or file length minus commanded segment offset" />
-          <Entry name="SrcFilename"  type="BASE_TYPES/PathName" shortDescription="path/filename of file being sent" />
+          <Entry name="BinFile"     type="APP_C_FW/BooleanUint8" shortDescription="True: binary file, False: text file" />
+          <Entry name="DataLen"     type="BASE_TYPES/uint32"     shortDescription="Either file length or file length minus commanded segment offset" />
+          <Entry name="SrcFilename" type="BASE_TYPES/PathName"   shortDescription="path/filename of file being sent" />
         </EntryList>
       </ContainerDataType>
 
@@ -188,7 +172,7 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="FotpFinishTransferTlm_Payload" shortDescription="">
+      <ContainerDataType name="FinishFotpTlm_Payload" shortDescription="">
         <EntryList>
           <Entry name="FileLen"           type="BASE_TYPES/uint32" shortDescription="Total file length in bytes" />
           <Entry name="FileCrc"           type="BASE_TYPES/uint32" shortDescription="File CRC" />
@@ -222,72 +206,90 @@
       <!-- 
         There two categories of commands:
            1. User issued commands that have user goal oriented names
-           2. Protocal commands used to implement FITP have technical names that describe their role in the protocol
+           2. Protocol commands used to implement FITP have technical names that describe their role in the protocol
       -->
 
-      <ContainerDataType name="SendFile" baseType="CommandBase" shortDescription="">
+      <ContainerDataType name="StartFitp" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="FitpStartTransfer_Payload" name="Payload" />
+          <Entry type="StartFitp_Payload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SendFitpDataSegment" baseType="CommandBase" shortDescription="">
+      <ContainerDataType name="StartBinFitp" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="StartFitp_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="FitpDataSegment" baseType="CommandBase" shortDescription="">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
         <EntryList>
           <Entry type="FitpDataSegment_Payload" name="Payload" />
         </EntryList>
       </ContainerDataType>
       
-      <ContainerDataType name="FinishFitpTransfer" baseType="CommandBase" shortDescription="">
+      <ContainerDataType name="FinishFitp" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="FitpFinishTransfer_Payload" name="Payload" />
+          <Entry type="FinishFitp_Payload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="CancelSendFile" baseType="CommandBase" shortDescription="Cancel a send file transfer in progress">
+      <ContainerDataType name="CancelFitp" baseType="CommandBase" shortDescription="Cancel a send file transfer in progress">
         <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 4" />
         </ConstraintSet>
       </ContainerDataType>
 
       <!-- FileXfer::Fotp -->
 
-      <ContainerDataType name="StartReceiveFile" baseType="CommandBase" shortDescription="">
-        <ConstraintSet>
-          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 4" />
-        </ConstraintSet>
-        <EntryList>
-          <Entry type="FotpStartTransfer_Payload" name="Payload" />
-        </EntryList>
-      </ContainerDataType>
-
-      <ContainerDataType name="PauseReceiveFile" baseType="CommandBase" shortDescription="Pause a receive file transaction">
+      <ContainerDataType name="StartFotp" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 5" />
         </ConstraintSet>
+        <EntryList>
+          <Entry type="StartFotp_Payload" name="Payload" />
+        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="ResumeReceiveFile" baseType="CommandBase" shortDescription="Resume a receive file transaction">
+      <ContainerDataType name="StartBinFotp" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 6" />
         </ConstraintSet>
+        <EntryList>
+          <Entry type="StartFotp_Payload" name="Payload" />
+        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="CancelReceiveFile" baseType="CommandBase" shortDescription="Cancel a receive file transaction">
+      <ContainerDataType name="PauseFotp" baseType="CommandBase" shortDescription="Pause a receive file transaction">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 7" />
         </ConstraintSet>
       </ContainerDataType>
-    
 
+      <ContainerDataType name="ResumeFotp" baseType="CommandBase" shortDescription="Resume a receive file transaction">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 8" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="CancelFotp" baseType="CommandBase" shortDescription="Cancel a receive file transaction">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 9" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+    
       <!--****************************************-->
       <!--**** DataTypeSet: Telemetry Packets ****-->
       <!--****************************************-->
@@ -302,9 +304,9 @@
 
       <!-- FileMgr::Fotp -->
 
-      <ContainerDataType name="FotpStartTransferTlm" baseType="CFE_HDR/TelemetryHeader">
+      <ContainerDataType name="StartFotpTlm" baseType="CFE_HDR/TelemetryHeader">
         <EntryList>
-          <Entry type="FotpStartTransferTlm_Payload" name="Payload" />
+          <Entry type="StartFotpTlm_Payload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -314,9 +316,9 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="FotpFinishTransferTlm" baseType="CFE_HDR/TelemetryHeader">
+      <ContainerDataType name="FinishFotpTlm" baseType="CFE_HDR/TelemetryHeader">
         <EntryList>
-          <Entry type="FotpFinishTransferTlm_Payload" name="Payload" />
+          <Entry type="FinishFotpTlm_Payload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -342,9 +344,9 @@
               <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
             </GenericTypeMapSet>
           </Interface>
-          <Interface name="FOTP_START_TRANSFER_TLM" shortDescription="Start a file output data transfer" type="CFE_SB/Telemetry">
+          <Interface name="START_FOTP_TLM" shortDescription="Start a file output data transfer" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
-              <GenericTypeMap name="TelemetryDataType" type="FotpStartTransferTlm" />
+              <GenericTypeMap name="TelemetryDataType" type="StartFotpTlm" />
             </GenericTypeMapSet>
           </Interface>
           <Interface name="FOTP_DATA_SEGMENT_TLM" shortDescription="Send a file data segment" type="CFE_SB/Telemetry">
@@ -352,9 +354,9 @@
               <GenericTypeMap name="TelemetryDataType" type="FotpDataSegmentTlm" />
             </GenericTypeMapSet>
           </Interface>
-          <Interface name="FOTP_FINISH_TRANSFER_TLM" shortDescription="Complete a file output data transfer" type="CFE_SB/Telemetry">
+          <Interface name="FINISH_FOTP_TLM" shortDescription="Complete a file output data transfer" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
-              <GenericTypeMap name="TelemetryDataType" type="FotpFinishTransferTlm" />
+              <GenericTypeMap name="TelemetryDataType" type="FinishFotpTlm" />
             </GenericTypeMapSet>
           </Interface>
         </RequiredInterfaceSet>
@@ -365,19 +367,19 @@
 
         <Implementation>
           <VariableSet>
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"                  initialValue="${CFE_MISSION/FILE_XFER_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"                initialValue="${CFE_MISSION/FILE_XFER_HK_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FotpStartTransferTlmTopicId" initialValue="${CFE_MISSION/FILE_XFER_FOTP_START_TRANSFER_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FotpDataSegmentTlmTopicId"   initialValue="${CFE_MISSION/FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FotpFinishSegmentTlmTopicId" initialValue="${CFE_MISSION/FILE_XFER_FOTP_FINISH_TRANSFER_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"                initialValue="${CFE_MISSION/FILE_XFER_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"              initialValue="${CFE_MISSION/FILE_XFER_HK_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="StartFotpTlmTopicId"       initialValue="${CFE_MISSION/FILE_XFER_START_FOTP_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FotpDataSegmentTlmTopicId" initialValue="${CFE_MISSION/FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FinishFotpTlmTopicId"       initialValue="${CFE_MISSION/FILE_XFER_FINISH_FOTP_TLM_TOPICID}" />
           </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
-            <ParameterMap interface="CMD"                      parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="HK_TLM"                   parameter="TopicId" variableRef="HkTlmTopicId" />
-            <ParameterMap interface="FOTP_START_TRANSFER_TLM"  parameter="TopicId" variableRef="FotpStartTransferTlmTopicId" />
-            <ParameterMap interface="FOTP_DATA_SEGMENT_TLM"    parameter="TopicId" variableRef="FotpDataSegmentTlmTopicId" />
-            <ParameterMap interface="FOTP_FINISH_TRANSFER_TLM" parameter="TopicId" variableRef="FotpFinishSegmentTlmTopicId" />
+            <ParameterMap interface="CMD"                   parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="HK_TLM"                parameter="TopicId" variableRef="HkTlmTopicId" />
+            <ParameterMap interface="START_FOTP_TLM"        parameter="TopicId" variableRef="StartFotpTlmTopicId" />
+            <ParameterMap interface="FOTP_DATA_SEGMENT_TLM" parameter="TopicId" variableRef="FotpDataSegmentTlmTopicId" />
+            <ParameterMap interface="FINISH_FOTP_TLM"       parameter="TopicId" variableRef="FinishFotpTlmTopicId" />
           </ParameterMapSet>
         </Implementation>
       </Component>

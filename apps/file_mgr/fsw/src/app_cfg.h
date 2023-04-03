@@ -129,7 +129,7 @@ DECLARE_ENUM(Config,APP_CONFIG)
 
 /******************************************************************************
 ** Command Macros
-** - Commands implmented by child task are annotated with a comment
+** - Commands implemented by child task are annotated with a comment
 ** - Load/dump table definitions are placeholders for JSON table
 ** - v4.0-beta: Other function codes defined in EDS. These will be added
 **   after app_c_fw EDS is updated 

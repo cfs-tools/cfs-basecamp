@@ -50,10 +50,11 @@
 **       app level commands
 ** 2.1 - Added event log playback
 ** 3.0 - New baseline for separate OSK app repo compatible with cFE Bootes
+** 3.1 - Implement https://github.com/cfs-tools/cfs-basecamp/issues/31 
 */
 
 #define  KIT_TO_MAJOR_VER     3
-#define  KIT_TO_MINOR_VER     0
+#define  KIT_TO_MINOR_VER     1
 
 
 /******************************************************************************
@@ -94,8 +95,7 @@
 #define CFG_EVT_PLBK_HK_PERIOD  EVT_PLBK_HK_PERIOD  /* Number of HK request cycles between event tlm messages */
 #define CFG_EVT_PLBK_LOG_FILE   EVT_PLBK_LOG_FILE 
 
-#define CFG_EVS_CMD_TOPICID                 EVS_CMD_TOPICID                  /* Name must be identical to the EDS name */
-#define CFG_CFE_EVS_WRITE_LOG_DATA_FILE_CC  CFE_EVS_WRITE_LOG_DATA_FILE_CC   /* Name must be identical to the EDS name */ 
+#define CFG_EVS_CMD_TOPICID     EVS_CMD_TOPICID     /* Name must be identical to the EDS name */
 
 
 #define APP_CONFIG(XX) \
@@ -124,7 +124,6 @@
    XX(EVT_PLBK_HK_PERIOD,uint32) \
    XX(EVT_PLBK_LOG_FILE,char*) \
    XX(EVS_CMD_TOPICID,uint32) \
-   XX(CFE_EVS_WRITE_LOG_DATA_FILE_CC,uint32) \
 
 DECLARE_ENUM(Config,APP_CONFIG)
 

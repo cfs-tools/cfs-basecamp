@@ -97,23 +97,6 @@ DECLARE_ENUM(Config,APP_CONFIG)
 
 
 /******************************************************************************
-** Command Macros
-*/
-
-/* File Input Transfer Protocol */
-
-#define FITP_START_TRANSFER_CMD_FC    (CMDMGR_APP_START_FC + 0)
-#define FITP_DATA_SEGMENT_CMD_FC      (CMDMGR_APP_START_FC + 1)
-#define FITP_FINISH_TRANSFER_CMD_FC   (CMDMGR_APP_START_FC + 2)
-#define FITP_CANCEL_TRANSFER_CMD_FC   (CMDMGR_APP_START_FC + 3)
-
-#define FOTP_START_TRANSFER_CMD_FC    (CMDMGR_APP_START_FC + 4)
-#define FOTP_PAUSE_TRANSFER_CMD_FC    (CMDMGR_APP_START_FC + 5)
-#define FOTP_RESUME_TRANSFER_CMD_FC   (CMDMGR_APP_START_FC + 6)
-#define FOTP_CANCEL_TRANSFER_CMD_FC   (CMDMGR_APP_START_FC + 7)
-
-
-/******************************************************************************
 ** Event Macros
 **
 ** Define the base event message IDs used by each object/component used by the
