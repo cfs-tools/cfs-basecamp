@@ -297,7 +297,10 @@ uint16 PKTMGR_OutputTelemetry(void)
             if (PktTblEntry->Forward)
             {
                // TODO - Can message length be tailored to wrapped message size?
-               OS_printf("Forwarding app ID %d, length %d\n", MsgAppId, (int16)MsgLen);
+               // TODO - Could make message information with a filter
+               CFE_EVS_SendEvent(PKTMGR_FORWARD_EID, CFE_EVS_EventType_DEBUG,
+                                 "Forwarding app ID %d, length %d", MsgAppId, (int16)MsgLen);
+               
                memcpy(&(PktMgr->LocalToSbWrapTlm.Payload), &SbBufPtr->Msg, MsgLen);
                CFE_SB_TimeStampMsg(CFE_MSG_PTR(PktMgr->LocalToSbWrapTlm.TelemetryHeader));
                CFE_SB_TransmitMsg(CFE_MSG_PTR(PktMgr->LocalToSbWrapTlm.TelemetryHeader), true);
@@ -325,7 +328,9 @@ uint16 PKTMGR_OutputTelemetry(void)
                      if (CFE_SB_MsgId_Equal(MsgId, PktMgr->SbWrapToUdpTlmMid))
                      {
                         // TODO - Verify unwrapped message
-                        OS_printf("Unwrapping msg ID %d\n", CFE_SB_MsgIdToValue(MsgId));
+                        // TODO - Could make message information with a filter
+                        CFE_EVS_SendEvent(PKTMGR_UNWRAP_EID, CFE_EVS_EventType_DEBUG,
+                                          "Unwrapping msg ID %d", CFE_SB_MsgIdToValue(MsgId));
                         const KIT_TO_WrappedSbMsgTlm_Payload_t *SbMsgPayload = CMDMGR_PAYLOAD_PTR(&(SbBufPtr->Msg), KIT_TO_WrappedSbMsgTlm_t);
                         SendMsg = true;
                         MsgPtr  = (CFE_MSG_Message_t *)SbMsgPayload;

@@ -64,7 +64,9 @@
 #define PKTMGR_UPDATE_FILTER_CMD_EID    (PKTMGR_BASE_EID +  8)
 #define PKTMGR_SET_TLM_SOURCE_CMD_EID   (PKTMGR_BASE_EID +  9)
 #define PKTMGR_SUBSCRIBE_EID            (PKTMGR_BASE_EID + 10)
-#define PKTMGR_DEBUG_EID                (PKTMGR_BASE_EID + 11)
+#define PKTMGR_FORWARD_EID              (PKTMGR_BASE_EID + 11)
+#define PKTMGR_UNWRAP_EID               (PKTMGR_BASE_EID + 12)
+#define PKTMGR_DEBUG_EID                (PKTMGR_BASE_EID + 13)
 
 
 /**********************/

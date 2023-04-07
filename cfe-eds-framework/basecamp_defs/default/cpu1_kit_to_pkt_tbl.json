@@ -48,7 +48,7 @@
       "KIT_TO_HK_TLM_TOPICID"             : "topic-id-33",
       "KIT_TO_DATA_TYPES_TOPICID"         : "topic-id-34",
       "KIT_TO_PKT_TBL_TOPICID"            : "topic-id-35",
-      "KIT_TO_PKT_PLBK_TOPICID"           : "topic-id-36",
+      "KIT_TO_EVENT_PLBK_TLM_TOPICID"     : "topic-id-36",
       "KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID" : "topic-id-37",
       
       "APP_C_DEMO_STATUS_TLM_TOPICID"     : "topic-id-40",
@@ -441,7 +441,7 @@
       }},
 
       {"packet": {
-         "name": "KIT_TO_PKT_PLBK_TOPICID",
+         "name": "KIT_TO_EVENT_PLBK_TLM_TOPICID",
          "topic-id-36": 0,
          "topic-id": 0,
          "forward": false,

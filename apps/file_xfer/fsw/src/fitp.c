@@ -137,18 +137,15 @@ bool FITP_DataSegmentCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
          {
             if (Fitp->BinFile == true)
             {
-OS_printf("DataSegmentCmd->Data[0]: %d, DataSegmentCmd->Data[0]: %d\n",DataSegmentCmd->Data[0],DataSegmentCmd->Data[1]);
                BytesToWrite = PktUtil_HexDecode(DataSegDecodeBuf, (const char *)DataSegmentCmd->Data, DataSegmentCmd->Len*2);
                DataSegPtr   = (const char *)DataSegDecodeBuf;
-OS_printf("DataSegDecodeBuf[0]: %d, DataSegDecodeBuf[0]: %d\n",DataSegDecodeBuf[0],DataSegDecodeBuf[1]);
             }
             else
             {
-OS_printf("text file data segment\n");
                BytesToWrite = DataSegmentCmd->Len;
                DataSegPtr   = (const char *)DataSegmentCmd->Data;
             }
-OS_printf("BytesToWrite: %d\n",BytesToWrite);
+            
             BytesWritten = OS_write(Fitp->FileHandle, (void *)DataSegPtr, BytesToWrite);   
             if (BytesWritten == BytesToWrite) 
             {
@@ -318,7 +315,6 @@ bool FITP_StartBinTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    const FILE_XFER_StartFitp_Payload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFitp_t);
 
    Fitp->BinFile = true;
-OS_printf("FITP_StartBinTransferCmd()\n");
    return StartTransfer(StartTransferCmd);
    
 } /* FITP_StartBinTransferCmd() */
@@ -336,7 +332,6 @@ bool FITP_StartTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    const FILE_XFER_StartFitp_Payload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFitp_t);
    
    Fitp->BinFile = false;
-OS_printf("FITP_StartTransferCmd()\n");   
    return StartTransfer(StartTransferCmd);
 
 } /* FITP_StartTransferCmd() */

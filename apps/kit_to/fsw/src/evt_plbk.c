@@ -324,7 +324,6 @@ static bool LoadLogFile(void)
                      PlbkTlmEvent->PacketID.EventType = EvsLogEvent->PacketID.EventType;
                      strncpy(PlbkTlmEvent->PacketID.AppName, EvsLogEvent->PacketID.AppName, CFE_MISSION_MAX_API_LEN);
                      strncpy(PlbkTlmEvent->Message, EvsLogEvent->Message, CFE_MISSION_EVS_MAX_MESSAGE_LENGTH);
-OS_printf("LoadLogFile() PlbkTlmEvent->Message: %s\n",PlbkTlmEvent->Message);                     
                      EvtPlbk->EventLog.Entry[i].Loaded = true;
                   
                   }
@@ -430,28 +429,26 @@ static void SendEventTlmMsg(void)
 {
 
    uint16 i;
-   const EVT_PLBK_EventLogEntry_t *EventLogEntry;
-   KIT_TO_PlbkEvent_t             *EventTlmEntry;
-   
-OS_printf("***SendEventTlmMsg()\n");
+   const KIT_TO_PlbkEvent_t *EventLogEntry;
+   KIT_TO_PlbkEvent_t       *EventTlmEntry;
+      
    for (i=0; i < KIT_TO_PLBK_EVENTS_PER_TLM_MSG; i++)
    {
    
       if (EvtPlbk->EventLog.PlbkIdx >= CFE_PLATFORM_EVS_LOG_MAX) EvtPlbk->EventLog.PlbkIdx = 0;
       if (i==0) EvtPlbk->Tlm.Payload.PlbkIdx = EvtPlbk->EventLog.PlbkIdx;
       
-      EventLogEntry = (const EVT_PLBK_EventLogEntry_t *)&EvtPlbk->EventLog.Entry[EvtPlbk->EventLog.PlbkIdx].Event;
+      EventLogEntry = &EvtPlbk->EventLog.Entry[EvtPlbk->EventLog.PlbkIdx].Event;
       EventTlmEntry = &EvtPlbk->Tlm.Payload.Event[i];
       
-      EventTlmEntry->Time = EventLogEntry->Event.Time;
-      EventTlmEntry->PacketID.EventID   = EventLogEntry->Event.PacketID.EventID;
-      EventTlmEntry->PacketID.EventType = EventLogEntry->Event.PacketID.EventType;
-      strncpy(EventTlmEntry->PacketID.AppName, EventLogEntry->Event.PacketID.AppName, CFE_MISSION_MAX_API_LEN);
-      strncpy(EventTlmEntry->Message, EventLogEntry->Event.Message, CFE_MISSION_EVS_MAX_MESSAGE_LENGTH);
+      EventTlmEntry->Time = EventLogEntry->Time;
+      EventTlmEntry->PacketID.EventID   = EventLogEntry->PacketID.EventID;
+      EventTlmEntry->PacketID.EventType = EventLogEntry->PacketID.EventType;
+      strncpy(EventTlmEntry->PacketID.AppName, EventLogEntry->PacketID.AppName, CFE_MISSION_MAX_API_LEN);
+      strncpy(EventTlmEntry->Message, EventLogEntry->Message, CFE_MISSION_EVS_MAX_MESSAGE_LENGTH);
                   
       EvtPlbk->EventLog.PlbkIdx++;
-OS_printf("  [%d][%s]%s\n",i,EventLogEntry->Event.PacketID.AppName,EventLogEntry->Event.Message);
-OS_printf("  [%d][%s]%s\n",i,EventTlmEntry->PacketID.AppName,EventTlmEntry->Message);
+
    }
    
    CFE_SB_TimeStampMsg(CFE_MSG_PTR(EvtPlbk->Tlm.TelemetryHeader));

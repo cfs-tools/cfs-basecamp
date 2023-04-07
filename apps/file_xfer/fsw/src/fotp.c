@@ -583,7 +583,10 @@ static bool StartTransfer(const FILE_XFER_StartFotp_Payload_t *StartTransferCmd)
    bool    ValidCmdParams = false;
    bool    RetStatus = false;
    
-   OS_printf("FOTP_StartTransferCmd: %s, DataSegLen %d, DataSegOffset %d\n", StartTransferCmd->SrcFilename, StartTransferCmd->DataSegLen, StartTransferCmd->DataSegOffset);
+
+   CFE_EVS_SendEvent(FOTP_START_TRANSFER_CMD_EID, CFE_EVS_EventType_DEBUG, 
+                     "FOTP_StartTransferCmd: %s, DataSegLen %d, DataSegOffset %d",
+                     StartTransferCmd->SrcFilename, StartTransferCmd->DataSegLen, StartTransferCmd->DataSegOffset);
    if (Fotp->FileTransferState == FOTP_IDLE)
    {
             
@@ -654,7 +657,10 @@ static bool StartTransfer(const FILE_XFER_StartFotp_Payload_t *StartTransferCmd)
                      break;
                   }                  
                }
-OS_printf("i=%d, StartTransferCmd->DataSegOffset=%d\n",i,StartTransferCmd->DataSegOffset);               
+
+               CFE_EVS_SendEvent(FOTP_START_TRANSFER_CMD_EID, CFE_EVS_EventType_DEBUG,
+                                 "i=%d, StartTransferCmd->DataSegOffset=%d",
+                                 i,StartTransferCmd->DataSegOffset);               
                if (i == StartTransferCmd->DataSegOffset)
                {
                   Fotp->FileTransferState = FOTP_START;
