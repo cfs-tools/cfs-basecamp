@@ -50,6 +50,7 @@
       "KIT_TO_PKT_TBL_TOPICID"            : "topic-id-35",
       "KIT_TO_EVENT_PLBK_TLM_TOPICID"     : "topic-id-36",
       "KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID" : "topic-id-37",
+      "KIT_TO_TUNNEL_TLM_TOPICID"         : "topic-id-38",
       
       "APP_C_DEMO_STATUS_TLM_TOPICID"     : "topic-id-40",
       "APP_C_DEMO_BIN_PLAYBK_TLM_TOPICID" : "topic-id-41",
@@ -61,14 +62,18 @@
       "BERRY_IMU_RATE_TLM_TOPICID"  : "topic-id-51",
       "GPIO_DEMO_HK_TLM_TOPICID"    : "topic-id-52",
       "MQTT_GW_HK_TLM_TOPICID"      : "topic-id-53",
-      "MQTT_GW_TOPIC_1_TLM_TOPICID" : "topic-id-54",
-      "MQTT_GW_TOPIC_2_TLM_TOPICID" : "topic-id-55",
-      "MQTT_GW_TOPIC_3_TLM_TOPICID" : "topic-id-56",
-      "MQTT_GW_TOPIC_4_TLM_TOPICID" : "topic-id-57",
-      "MQTT_GW_TOPIC_5_TLM_TOPICID" : "topic-id-58",
+      "MQTT_GW_DISCRETE_PLUGIN_TOPICID" : "topic-id-54",
+      "MQTT_GW_RATE_PLUGIN_TOPICID" : "topic-id-55",
+      "MQTT_GW_TOPIC_SPARE_TOPICID" : "topic-id-56",
+      "MQTT_GW_TOPIC_SPARE_TOPICID" : "topic-id-57",
+      "MQTT_GW_TOPIC_SPARE_TOPICID" : "topic-id-58",
       "PL_MGR_STATUS_TLM_TOPICID"   : "topic-id-59",
       "PL_SIM_STATUS_TLM_TOPICID"   : "topic-id-60",
-
+      "TBL_SAT_STATUS_TLM_TOPICID"  : "topic-id-61",
+      "SC_SIM_HK_TLM_TOPICID"       : "topic-id-62",
+      "SC_SIM_MGMT_TLM_TOPICID"     : "topic-id-63",
+      "SC_SIM_MODEL_TLM_TOPICID"    : "topic-id-64",
+      
       "SPARE_70_TOPICID": "topic-id-70",
       "SPARE_71_TOPICID": "topic-id-71",
       "SPARE_72_TOPICID": "topic-id-72",
@@ -453,7 +458,18 @@
 
       {"packet": {
          "name": "KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID",
-         "topic-id-37": 0,
+         "topic-id-37": 2145,
+         "topic-id": 2145,
+         "forward": false,
+         "priority": 0,
+         "reliability": 0,
+         "buf-limit": 10,
+         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
+      }},
+
+      {"packet": {
+         "name": "KIT_TO_TUNNEL_TLM_TOPICID",
+         "topic-id-38": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -562,7 +578,7 @@
       }},
 
       {"packet": {
-         "name": "MQTT_GW_TOPIC_1_TLM_TOPICID",
+         "name": "MQTT_GW_DISCRETE_PLUGIN_TOPICID",
          "topic-id-54": 0,
          "topic-id": 0,
          "forward": false,
@@ -573,7 +589,7 @@
       }},
 
       {"packet": {
-         "name": "MQTT_GW_TOPIC_2_TLM_TOPICID",
+         "name": "MQTT_GW_RATE_PLUGIN_TOPICID",
          "topic-id-55": 0,
          "topic-id": 0,
          "forward": false,
@@ -584,7 +600,7 @@
       }},
 
       {"packet": {
-         "name": "MQTT_GW_TOPIC_3_TLM_TOPICID",
+         "name": "MQTT_GW_TOPIC_SPARE_TOPICID",
          "topic-id-56": 0,
          "topic-id": 0,
          "forward": false,
@@ -595,7 +611,7 @@
       }},
 
       {"packet": {
-         "name": "MQTT_GW_TOPIC_4_TLM_TOPICID",
+         "name": "MQTT_GW_TOPIC_SPARE_TOPICID",
          "topic-id-57": 0,
          "topic-id": 0,
          "forward": false,
@@ -606,7 +622,7 @@
       }},
 
       {"packet": {
-         "name": "MQTT_GW_TOPIC_5_TLM_TOPICID",
+         "name": "MQTT_GW_TOPIC_SPARE_TOPICID",
          "topic-id-58": 0,
          "topic-id": 0,
          "forward": false,
@@ -629,8 +645,52 @@
 
       {"packet": {
          "name": "PL_SIM_STATUS_TLM_TOPICID",
-         "topic-id-60": 2159,
-         "topic-id": 2159,
+         "topic-id-60": 2158,
+         "topic-id": 2158,
+         "forward": false,
+         "priority": 0,
+         "reliability": 0,
+         "buf-limit": 4,
+         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
+      }},
+
+      {"packet": {
+         "name": "TBL_SAT_STATUS_TLM_TOPICID",
+         "topic-id-61": 0,
+         "topic-id": 0,
+         "forward": false,
+         "priority": 0,
+         "reliability": 0,
+         "buf-limit": 4,
+         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
+      }},
+
+      {"packet": {
+         "name": "SC_SIM_HK_TLM_TOPICID",
+         "topic-id-62": 0,
+         "topic-id": 0,
+         "forward": false,
+         "priority": 0,
+         "reliability": 0,
+         "buf-limit": 4,
+         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
+      }},
+
+      {"packet": {
+         "name": "SC_SIM_MGMT_TLM_TOPICID",
+         "topic-id-63": 0,
+         "topic-id": 0,
+         "forward": false,
+         "priority": 0,
+         "reliability": 0,
+         "buf-limit": 4,
+         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
+      }},
+
+      {"packet": {
+         "name": "SC_SIM_MODEL_TLM_TOPICID",
+         "topic-id-64": 0,
+         "topic-id": 0,
          "forward": false,
          "priority": 0,
          "reliability": 0,

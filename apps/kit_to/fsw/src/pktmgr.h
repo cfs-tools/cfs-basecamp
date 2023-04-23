@@ -139,7 +139,7 @@ typedef struct
    */
    
    KIT_TO_PktTblTlm_t        PktTblTlm;
-   KIT_TO_WrappedSbMsgTlm_t  LocalToSbWrapTlm;
+   KIT_TO_WrappedSbMsgTlm_t  TunnelTlm;
 
    /*
    ** PktMgr Data
@@ -149,7 +149,7 @@ typedef struct
    uint32           TlmUdpPort;
    osal_id_t        TlmSockId;
    char             TlmDestIp[PKTMGR_IP_STR_LEN];
-   CFE_SB_MsgId_t   LocalToSbWrapTlmMid;
+   CFE_SB_MsgId_t   TunnelTlmMid;
    CFE_SB_MsgId_t   SbWrapToUdpTlmMid;
    
    bool                    DownlinkOn;

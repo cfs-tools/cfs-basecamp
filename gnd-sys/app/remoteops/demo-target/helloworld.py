@@ -60,7 +60,7 @@ class MqttClient():
             self.log_info_event(f'Client initialized on {self.broker_addr}:{self.broker_port}')
             connect = True
         except Exception as e:
-            self.log_error_event(f'Client initializaation error for {self.broker_addr}:{self.broker_port}')
+            self.log_error_event(f'Client initialization error for {self.broker_addr}:{self.broker_port}')
             self.log_error_event(f'Error: {e}')
         return connect
 

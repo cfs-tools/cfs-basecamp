@@ -26,7 +26,9 @@ else()
   set(MISSION_RESOURCEID_MODE "SIMPLE") # less type safe, but more backward compatible
 endif (OMIT_DEPRECATED)
 
-# Search user apps first so they can override the default basecamp apps provide in ../apps 
+# Search local user apps first. These apps are either under development or they're an app 
+# like mqtt_gw that needs modifications to support another app and you don't want the main
+# repo of the support app being modified.
 list(APPEND MISSION_MODULE_SEARCH_PATH
     "../usr/apps"
     "../apps"

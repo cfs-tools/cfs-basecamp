@@ -86,8 +86,8 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr, INITBL_Class_t *IniTbl)
    PktMgr->TlmSockId    = 0;
    PktMgr->TlmUdpPort   = INITBL_GetIntConfig(PktMgr->IniTbl, CFG_PKTMGR_UDP_TLM_PORT);
    strncpy(PktMgr->TlmDestIp, "000.000.000.000", PKTMGR_IP_STR_LEN);
-   PktMgr->SbWrapToUdpTlmMid   = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID));
-   PktMgr->LocalToSbWrapTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_MQTT_GW_TOPIC_1_TLM_TOPICID));
+   PktMgr->SbWrapToUdpTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID));
+   PktMgr->TunnelTlmMid      = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_TUNNEL_TLM_TOPICID));
 
    PKTMGR_InitStats(INITBL_GetIntConfig(IniTbl, CFG_APP_RUN_LOOP_DELAY),
                     INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_STATS_INIT_DELAY));
@@ -102,7 +102,7 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr, INITBL_Class_t *IniTbl)
                 CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_PKT_TBL_TLM_TOPICID)), 
                 sizeof(KIT_TO_PktTblTlm_t));
    
-   CFE_MSG_Init(CFE_MSG_PTR(PktMgr->LocalToSbWrapTlm), PktMgr->LocalToSbWrapTlmMid, sizeof(KIT_TO_WrappedSbMsgTlm_t));
+   CFE_MSG_Init(CFE_MSG_PTR(PktMgr->TunnelTlm), PktMgr->TunnelTlmMid, sizeof(KIT_TO_WrappedSbMsgTlm_t));
    
    OS_TaskInstallDeleteHandler(&DestructorCallback); /* Called when application terminates */
 
@@ -301,9 +301,9 @@ uint16 PKTMGR_OutputTelemetry(void)
                CFE_EVS_SendEvent(PKTMGR_FORWARD_EID, CFE_EVS_EventType_DEBUG,
                                  "Forwarding app ID %d, length %d", MsgAppId, (int16)MsgLen);
                
-               memcpy(&(PktMgr->LocalToSbWrapTlm.Payload), &SbBufPtr->Msg, MsgLen);
-               CFE_SB_TimeStampMsg(CFE_MSG_PTR(PktMgr->LocalToSbWrapTlm.TelemetryHeader));
-               CFE_SB_TransmitMsg(CFE_MSG_PTR(PktMgr->LocalToSbWrapTlm.TelemetryHeader), true);
+               memcpy(&(PktMgr->TunnelTlm.Payload), &SbBufPtr->Msg, MsgLen);
+               CFE_SB_TimeStampMsg(CFE_MSG_PTR(PktMgr->TunnelTlm.TelemetryHeader));
+               CFE_SB_TransmitMsg(CFE_MSG_PTR(PktMgr->TunnelTlm.TelemetryHeader), true);
             } 
             
             if(PktMgr->DownlinkOn)
@@ -315,7 +315,7 @@ uint16 PKTMGR_OutputTelemetry(void)
                {
                   if (PktMgr->TlmSource == KIT_TO_TlmSource_LOCAL)
                   {
-                     // If it's not a wrapped message then send it
+                     // If it's not a wrapped message then sent it
                      if (!CFE_SB_MsgId_Equal(MsgId, PktMgr->SbWrapToUdpTlmMid))
                      {
                         SendMsg = true;
@@ -329,8 +329,8 @@ uint16 PKTMGR_OutputTelemetry(void)
                      {
                         // TODO - Verify unwrapped message
                         // TODO - Could make message information with a filter
-                        CFE_EVS_SendEvent(PKTMGR_UNWRAP_EID, CFE_EVS_EventType_DEBUG,
-                                          "Unwrapping msg ID %d", CFE_SB_MsgIdToValue(MsgId));
+                        CFE_EVS_SendEvent(PKTMGR_UNWRAP_EID, CFE_EVS_EventType_INFORMATION,
+                                          "Unwrapping msg ID 0x%04X(%d)", CFE_SB_MsgIdToValue(MsgId),CFE_SB_MsgIdToValue(MsgId));
                         const KIT_TO_WrappedSbMsgTlm_Payload_t *SbMsgPayload = CMDMGR_PAYLOAD_PTR(&(SbBufPtr->Msg), KIT_TO_WrappedSbMsgTlm_t);
                         SendMsg = true;
                         MsgPtr  = (CFE_MSG_Message_t *)SbMsgPayload;
@@ -881,7 +881,7 @@ static int32 SubscribeNewPkt(PKTTBL_Pkt_t *NewPkt)
    CFE_SB_MsgId_t MsgId = CFE_SB_ValueToMsgId(NewPkt->MsgId);
 
    // Don't subscribe to messages that get wrapped and forwarded because they'd immediately get forwarded to KIT_TO
-   if (!CFE_SB_MsgId_Equal(MsgId, PktMgr->LocalToSbWrapTlmMid))
+   if (!CFE_SB_MsgId_Equal(MsgId, PktMgr->TunnelTlmMid))
    {
       Status = CFE_SB_SubscribeEx(CFE_SB_ValueToMsgId(NewPkt->MsgId), PktMgr->TlmPipe, NewPkt->Qos, NewPkt->BufLim);
       CFE_EVS_SendEvent(PKTMGR_SUBSCRIBE_EID, CFE_EVS_EventType_DEBUG,
@@ -890,7 +890,7 @@ static int32 SubscribeNewPkt(PKTTBL_Pkt_t *NewPkt)
    else
    {
       CFE_EVS_SendEvent(PKTMGR_SUBSCRIBE_EID, CFE_EVS_EventType_INFORMATION,
-                        "Skip subscribing to message 0x%04X(%d)",NewPkt->MsgId, NewPkt->MsgId);    
+                        "Skip subscribing to tunnel message 0x%04X(%d)",NewPkt->MsgId, NewPkt->MsgId);    
    }
 
    return Status;
