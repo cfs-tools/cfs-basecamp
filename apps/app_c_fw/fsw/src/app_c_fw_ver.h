@@ -33,7 +33,7 @@
 
 
 #define APP_C_FW_MAJOR_VER    4
-#define APP_C_FW_MINOR_VER    0
+#define APP_C_FW_MINOR_VER    1
 #define APP_C_FW_LOCAL_REV    0
 
       

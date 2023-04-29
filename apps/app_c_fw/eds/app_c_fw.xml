@@ -58,6 +58,22 @@
         </EnumerationList>
       </EnumeratedDataType>
     
+      <EnumeratedDataType name="ConfigEnaAction" shortDescription="Common terminology for enable/disable configuration" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="ENABLE"  value="1" shortDescription="" />
+          <Enumeration label="DISABLE" value="2" shortDescription="" />
+        </EnumerationList>
+      </EnumeratedDataType>
+
+      <EnumeratedDataType name="ConfigExeAction" shortDescription="Common terminaology for execution configuration" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="START"  value="1" shortDescription="" />
+          <Enumeration label="STOP" value="2" shortDescription="" />
+        </EnumerationList>
+      </EnumeratedDataType>
+
       <!-- APP_C_FW::FileUtil -->
 
       <EnumeratedDataType name="FileState" shortDescription="Define file state possibilities" >
