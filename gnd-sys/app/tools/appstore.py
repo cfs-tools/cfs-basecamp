@@ -29,6 +29,7 @@ import os
 import requests
 import json
 import configparser
+import shutil
 from datetime import datetime
 
 import logging
@@ -75,16 +76,12 @@ class GitHubAppProject():
             if self.app_repo.status_code == 200:
                 app_repo_list = self.app_repo.json() 
                 # Create a dictionary with app names as the key
-                for repo in app_repo_list:                
-                    print(repo['name'])
-                    print(repo['git_url'])
+                for repo in app_repo_list:
                     if repo['name'] not in self.repo_exclusions:
                         self.app_dict[repo['name']] = repo
-                #print(self.app_dict['kit_ci'])
                 ret_status = True
         except requests.exceptions.ConnectionError as e:
             pass
-            #print (e)
             
         return ret_status
         
@@ -92,18 +89,26 @@ class GitHubAppProject():
     def clone(self, app_name):
         """
         """
-        ret_status = False
         if app_name in self.app_dict:
-            saved_cwd = os.getcwd()
-            os.chdir(self.usr_clone_path)
-            clone_url = self.app_dict[app_name]["clone_url"]
-            print("Cloning " + clone_url)
-            os.system("git clone {}".format(self.app_dict[app_name]["clone_url"]))
-            os.chdir(saved_cwd)
-            ret_status = True
-        return ret_status
-        
-      
+            clone_repo = True
+            target_dir = compress_abs_path(os.path.join(os.getcwd(), self.usr_clone_path, app_name))
+            if os.path.exists(target_dir):
+                overwrite = sg.popup_yes_no(f"{target_dir} exists. Do you want to overwrite it?",  title="AppStore")
+                if (overwrite == 'Yes'):
+                    shutil.rmtree(target_dir)
+                else:
+                    clone_repo = False
+            if clone_repo:
+                saved_cwd = os.getcwd()
+                os.chdir(self.usr_clone_path)
+                clone_url = self.app_dict[app_name]["clone_url"]
+                sys_status = os.system("git clone {}".format(self.app_dict[app_name]["clone_url"]))
+                if (sys_status == 0):
+                    sg.popup(f'Successfully cloned {app_name} into {target_dir}', title='AppStore')
+                else:
+                    sg.popup(f'Error cloning {app_name} into {target_dir}', title='AppStore Error')
+                os.chdir(saved_cwd)
+     
     def get_descr(self, app_name):
         """
         """
@@ -116,35 +121,38 @@ class GitHubAppProject():
 ###############################################################################
 
 class AppSpec():
-    '''
+    """
     The access methods are defined according to the activities a developer
     needs to do to integrate an app.
-    '''
+    
+    Libraries can have an EDS spec, but they don't define command and telemetry
+    topic IDs.
+    """
     def __init__(self, app_path, app_name):
 
-        self.app_path  = app_path
-        self.app_name  = app_name
-        self.eds_path  = os.path.join(app_path, 'eds')
-        self.eds_file  = os.path.join(self.eds_path, app_name+'.xml')
-        self.json_file = os.path.join(app_path, app_name+'.json')
-        print(self.eds_file)
-        print(self.json_file)
-        self.eds_dir = False
-        self.eds   = None                
-        self.valid = False
-        self.json  = None
-        self.cfs   = None
+        self.app_path   = app_path
+        self.app_name   = app_name
+        self.eds_path   = os.path.join(app_path, 'eds')
+        self.eds_file   = os.path.join(self.eds_path, app_name+'.xml')
+        self.json_file  = os.path.join(app_path, app_name+'.json')
+        self.is_valid   = False
+        self.has_topics = False
+        self.eds  = None                
+        self.json = None
+        self.cfs  = None
+        
+        # is_valid and has_topics are False and will be set to True as needed
         if self.read_json_file():
-            self.eds_dir = os.path.exists(self.eds_path)
-            if self.eds_dir:
-                if self.read_eds_file():
-                    self.valid = True
-            else:
-                if self.cfs['cfe-type'] == 'CFE_APP':
+            if self.cfs['cfe-type'] == 'CFE_APP':
+                if os.path.exists(self.eds_path):
+                    if self.read_eds_file():
+                        self.is_valid   = True
+                        self.has_topics = True
+                else:
                     sg.popup(f'App is missing an EDS spec. Expected {self.eds_path} to exist', title='AppStore Error', grab_anywhere=True, modal=False)
-                else:                
-                    self.valid = True
-
+            elif self.cfs['cfe-type'] == 'CFE_LIB':
+                self.is_valid = True
+            
     def read_json_file(self):
     
         if os.path.exists(self.json_file):
@@ -152,7 +160,6 @@ class AppSpec():
                 f = open(self.json_file)
                 self.json = json.load(f)
                 f.close()
-                #todo print(str(self.json))
             except:
                 sg.popup(f'Error loading JSON spec file {self.json_file}', title='AppStore Error', grab_anywhere=True, modal=False)
                 return False
@@ -166,18 +173,20 @@ class AppSpec():
             sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'cfs' object", title='AppStore Error', grab_anywhere=True, modal=False)
             return False
         
-        #todo print('self.cfs = ' + str(self.cfs))
         return True
         
-    def has_eds(self):
-        return self.eds_dir
+    def has_topic_ids(self):
+        return self.has_topics
         
     def read_eds_file(self):        
         try:
             self.eds = AppEds(self.eds_file)
         except Exception as e: 
             if (self.cfs['cfe-type'] == 'CFE_APP'):
-                sg.popup(f'Exception {repr(e)} raised when attepting to read app EDS file {self.eds_file}', title='AppStore Error', grab_anywhere=True, modal=False)
+                sg.popup(f'Exception {repr(e)} raised when attempting to read app EDS file {self.eds_file}', title='AppStore Error', grab_anywhere=True, modal=False)
+                return False
+            elif (self.cfs['cfe-type'] == 'CFE_LIB'):
+                sg.popup(f'Exception {repr(e)} raised when attempting to read library EDS file {self.eds_file}', title='AppStore Error', grab_anywhere=True, modal=False)
                 return False
             else:
                 pass
@@ -241,7 +250,7 @@ class ManageUsrApps():
     """
     Discover what user apps exists (each app in separate directory) and
     create a 'database' of app specs that can be used by the user to integrate
-    apps into their cFS target.
+    apps into a cFS target.
     """
     def __init__(self, usr_app_abs_path):
 
@@ -252,16 +261,13 @@ class ManageUsrApps():
         usr_app_list.sort()
         # Assumes app directory name equals app name
         for app_name in usr_app_list:
-            print("User app folder/name: " + app_name)
-            #todo: AppSpec constructor could raise exception if JSON doesn't exist or is malformed
             app_path = os.path.join(usr_app_abs_path, app_name)
             if os.path.isdir(os.path.join(usr_app_abs_path, app_name)):
+                # AppSpec manages exceptions so caller can simply check 'is_valid'
                 app_spec = AppSpec(app_path, app_name)
-                if app_spec.valid:
+                if app_spec.is_valid:
                     self.app_specs[app_name] = app_spec        
         
-        print("User app specs: " + str(self.app_specs))
-
     def get_app_specs(self):
         return self.app_specs
 
@@ -290,12 +296,11 @@ class AppStore():
         hdr_value_font = ('Arial',12)
         app_layout = []
         for app in self.git_app_repo.app_dict.keys():
-            print(app)
-            app_layout.append([sg.Radio(app.upper(), "APPS", default=False, font=hdr_label_font, size=(10,0), key='-%s-'%app),  
-                               sg.Text(self.git_app_repo.get_descr(app), font=hdr_value_font, size=(100,1))])
+            app_layout.append([sg.Checkbox(app.upper(), default=False, font=hdr_label_font, size=(10,0), key=f'-{app}-'),  
+                              sg.Text(self.git_app_repo.get_descr(app), font=hdr_value_font, size=(100,1))])
                 
         layout = [
-                  [sg.Text("Select an app to download then follow the steps in 'Add App to cFS'. See 'Add App' tutorial if you are unfamiliar with the steps.\n", font=hdr_value_font)],
+                  [sg.Text("Select one or more apps to download then follow the steps in 'Add App'. See 'Add App' tutorial if you are unfamiliar with the steps.\n", font=hdr_value_font)],
                   app_layout, 
                   [sg.Button('Download', font=hdr_label_font, button_color=('SpringGreen4')), sg.Button('Cancel', font=hdr_label_font)]
                  ]
@@ -319,11 +324,7 @@ class AppStore():
             if self.event == 'Download':
                 for app in self.git_app_repo.app_dict.keys():
                     if self.values["-%s-"%app] == True:
-                        if self.git_app_repo.clone(app):
-                            sg.popup(f'Successfully cloned {app} into {self.usr_app_abs_path}', title='AppStore')
-                        else:
-                            sg.popup(f'Error cloning {app} into {self.usr_app_abs_path}', title='AppStore Error')
-
+                        self.git_app_repo.clone(app) # Clone reports status to user via popups
                 break
                 
         self.window.close()

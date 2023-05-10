@@ -71,7 +71,7 @@ void EVT_PLBK_Constructor(EVT_PLBK_Class_t *EvtPlbkPtr, INITBL_Class_t *IniTbl)
    strncpy(EvtPlbk->EventLogFile, INITBL_GetStrConfig(IniTbl, CFG_EVT_PLBK_LOG_FILE), CFE_MISSION_MAX_PATH_LEN);
    
    CFE_MSG_Init(CFE_MSG_PTR(EvtPlbk->Tlm.TelemetryHeader),
-                CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_EVT_PLBK_TLM_TOPICID)),
+                CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_EVENT_PLBK_TLM_TOPICID)),
                 sizeof(KIT_TO_PlbkEventTlm_t));
    
    /* 

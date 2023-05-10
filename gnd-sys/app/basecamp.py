@@ -478,7 +478,7 @@ class BasecampTelemetryMonitor(TelemetryObserver):
 
 class ManageCfs():
     """
-    Manage the display for building and running the cFS.
+    Manage the display for configuring, building and running the cFS.
     app_abs_path is the python application path, not cFS apps
     #TODO - Define path and file constants
     """
@@ -502,6 +502,7 @@ class ManageCfs():
         self.cmake_file_list        = cfs_target + '_FILELIST'
         self.build_subprocess       = None
         self.selected_app           = None
+        self.usr_app_spec           = None
         
         self.b_size  = (4,1)
         self.b_pad   = ((0,2),(2,2))
@@ -540,46 +541,51 @@ class ManageCfs():
         window.close()       
               
     
-    def add_usr_app_gui(self):
+    def add_usr_app_gui(self, usr_app_list):
         """
-        Provide steps for the user to integrate an app. This is only invoked
-        after an app has been selected.
+        Provide steps for the user to integrate an app. Allow the user to add
+        multiple apps before moving onto the build step. 
         The steps have some degree of independence in case the user doesn't do
         things in order which means some processing may be repeated. For example
         the table files are recomputed for the edit targets.cmake step and the
         copy files to cFS '_defs' steps. 
         """
         #TODO - Use a loop to construct the layout
+
         layout = [
-                  [sg.Text("Perform the following steps to add an app. Use 'Auto' (automatically) or 'Man' (manually) buttons for step 2.\n", font=self.t_font)],
-                  [sg.Text('1. Stop the cFS prior to modifying or adding an app', font=self.step_font, pad=self.b_pad)],
-                  [sg.Text('', size=self.b_size), sg.Text('Close this window and click <Stop cFS>, open a terminal window & kill the cFS process, or', font=self.t_font)],
-                  [sg.Text('', size=self.b_size), sg.Text('Submit [sudo] password', font=self.t_font)],
-                  [sg.Text('', size=self.b_size), sg.Button('Submit', size=(6,1), button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1_AUTO-'),
-                   sg.InputText(password_char='*', size=(15,1), font=self.t_font, pad=self.b_pad, key='-PASSWORD-')],
+                  [sg.Text("Perform the following steps to add one or more apps. For step 1, choose 'Auto' to automatically\nperform all of the steps or 'Man' to manually perform each step. Libraries MUST be added prior\nto the apps that depend upon it.\n", font=self.t_font)],
                   
-                  [sg.Text('2. Update cFS build configuration', font=self.step_font, pad=self.b_pad)],
-                  [sg.Text('', size=self.b_size), sg.Button('Auto', size=self.b_size, button_color=('SpringGreen4'), font=self.b_font, pad=self.b_pad, enable_events=True, key='-2_AUTO-'),
-                   sg.Text('Automatically perform all steps', font=self.t_font)],
-                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2A_MAN-'),
+                  [sg.Text('1. Add app to the cFS build configuration', font=self.step_font, pad=self.b_pad)],
+                  [sg.Text('', size=self.b_size), sg.Combo(usr_app_list, pad=self.b_pad, font=self.b_font, enable_events=True, key="-USR_APP-", default_value=usr_app_list[0]),
+                   sg.Text('Select an app from the dropdown list', font=self.t_font)],
+                  [sg.Text('', size=self.b_size), sg.Button('Auto', size=self.b_size, button_color=('SpringGreen4'), font=self.b_font, pad=self.b_pad, enable_events=True, key='-1_AUTO-'),
+                   sg.Text('Automatically perform all steps or ...', font=self.t_font)],
+                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1A_MAN-'),
                    sg.Text('Copy table files to %s' % CFS_DEFS_FOLDER, font=self.t_font)],
-                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2B_MAN-'),
+                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1B_MAN-'),
                    sg.Text("Update targets.cmake's %s and %s" % (self.cmake_app_list, self.cmake_file_list), font=self.t_font)],
-                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2C_MAN-'),
+                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1C_MAN-'),
                    sg.Text('Update cpu1_cfe_es_startup.scr', font=self.t_font)],
-                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2D_MAN-'),
+                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1D_MAN-'),
                    sg.Text('Update EDS cfe-topicids.xml', font=self.t_font)], 
-                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2E_MAN-'),
+                  [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1E_MAN-'),
                    sg.Text('Update telemetry output app table', font=self.t_font)],
                   
-                  [sg.Text('3. Build the cfS', font=self.step_font, pad=self.b_pad)],
-                  [sg.Text('', size=self.b_size), sg.Button('Build', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-3_AUTO-')],
+                  [sg.Text('2. Build the cfS', font=self.step_font, pad=self.b_pad)],
+                  [sg.Text('', size=self.b_size), sg.Button('Build', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2_AUTO-')],
                   
+                  [sg.Text('3. Stop the cFS if it is running', font=self.step_font, pad=self.b_pad)],
+                  [sg.Text('', size=self.b_size), sg.Text('Close this window and click <Stop cFS> from the main window or ...', font=self.t_font)],
+                  [sg.Text('', size=self.b_size), sg.Text('Open a terminal window & kill the cFS process or ...', font=self.t_font)],
+                  [sg.Text('', size=self.b_size), sg.Text('Submit [sudo] password and click <Submit>', font=self.t_font)],
+                  [sg.Text('', size=self.b_size), sg.Button('Submit', size=(6,1), button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-3_AUTO-'),
+                   sg.InputText(password_char='*', size=(15,1), font=self.t_font, pad=self.b_pad, key='-PASSWORD-')],
+
                   [sg.Text('4. Exit and restart Basecamp', font=self.step_font, pad=self.b_pad)],
                   [sg.Text('', size=self.b_size), sg.Button('Restart', size=(6,1), button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-4_AUTO-')],
                  ]
         # sg.Button('Exit', enable_events=True, key='-EXIT-')
-        window = sg.Window(f'Add {self.usr_app_spec.app_name.upper()}', layout, resizable=True, finalize=True) # modal=True)
+        window = sg.Window(f'Add User Apps', layout, resizable=True, finalize=True) # modal=True)
         
         restart_main_window = False
         while True:
@@ -588,10 +594,72 @@ class ManageCfs():
         
             if self.event in (sg.WIN_CLOSED, 'Exit', '-EXIT-') or self.event is None:
                 break
+
+            ## Step 1 - Update cFS build configuration with selected app
             
-            ## Step 1 - Stop the cFS prior to modifying or adding an app
+            elif self.event == '-1_AUTO-': # Autonomously perform step 1
+                """
+                Errors are reported in a popup by each function. The success string is an aggregate of each successful return
+                that will be reported in a single popup. 
+                A boolean return value of True from each function indicates there weren't any errors, it doesn't mean a paricular
+                update was performed, because the update may not be required.
+                """ 
+                self.selected_app = self.values['-USR_APP-']
+                self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
+                auto_popup_text = f"{self.selected_app.upper()} was successfully added to Basecamp's cFS target:\n\n"
+                display_auto_popup = False 
+                copy_tables_passed, copy_tables_text = self.copy_app_tables(auto_copy=True)
+                if copy_tables_passed:
+                    auto_popup_text += f'1. {copy_tables_text}\n\n' 
+                    update_cmake_passed, update_cmake_text = self.update_targets_cmake(auto_update=True)
+                    if update_cmake_passed:
+                        auto_popup_text += f'2. {update_cmake_text}\n\n'
+                        update_startup_passed, update_startup_text = self.update_startup_scr(auto_update=True)
+                        if update_startup_passed:
+                            auto_popup_text += f'3. {update_startup_text}\n\n'
+                            if self.usr_app_spec.has_topic_ids():
+                                update_topics_passed, update_topics_text = self.update_topic_ids()
+                                auto_popup_text += f'4. {update_topics_text}\n\n'
+                                display_auto_popup = update_topics_passed
+                            else:
+                                auto_popup_text += f"4. Topic IDs not updated since it's a library\n\n"
+                                display_auto_popup = True
+                if display_auto_popup:
+                    sg.popup(auto_popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                                
+                
+            elif self.event == '-1A_MAN-':
+                self.copy_app_tables(auto_copy=False)  # Copy table files from app dir to cFS '_defs' file
+            elif self.event == '-1B_MAN-':
+                self.update_targets_cmake(auto_update=False)
+            elif self.event == '-1C_MAN-':
+                self.update_startup_scr(auto_update=False)
+            elif self.event == '-1D_MAN-':
+                popup_text = f"After this dialogue, {self.cfe_topic_id_filename} will open in an editor.\n Replace spare topic IDs with the app's topic ID names"
+                sg.popup(popup_text, title=f'Update {self.cfe_topic_id_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                self.text_editor = sg.execute_py_file('texteditor.py', parms=self.cfe_topic_id_file, cwd=self.basecamp_tools_path)
+            elif self.event == '-1E_MAN-':
+                popup_text = f"After this dialogue, {self.kit_to_tbl_filename} will open in an editor.\n Replace spare topic IDs with the app's topic ID names"
+                sg.popup(popup_text, title=f'Update {self.kit_to_tbl_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                self.text_editor = sg.execute_py_file('texteditor.py', parms=self.kit_to_tbl_file, cwd=self.basecamp_tools_path)
+                
+            ## Step 2 - Build the cFS
+
+            elif self.event == '-2_AUTO-': # Build the cfS
+                build_cfs_sh = os.path.join(self.basecamp_abs_path, SH_BUILD_CFS_TOPICIDS)
+                self.build_subprocess = subprocess.Popen(f'{build_cfs_sh} {self.cfs_abs_base_path}',
+                                        stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True)
+                if self.build_subprocess is not None:
+                    self.cfs_stdout = CfsStdout(self.build_subprocess, self.main_window)
+                    self.cfs_stdout.start()
             
-            elif self.event == '-1_AUTO-': # Stop the cFS prior to modifying or adding an app
+            elif self.event == '-2_MAN-': # Build the cfS
+                popup_text = f"Open a terminal window, change directory to {self.cfs_abs_base_path} and build the cFS. See '{SH_BUILD_CFS_TOPICIDS}' for guidance"
+                sg.popup(popup_text, title='Manually Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)   
+
+            ## Step 3 - Stop the cFS prior to modifying or adding an app
+            
+            elif self.event == '-3_AUTO-': # Stop the cFS prior to modifying or adding an app
                 """
                 #todo: 
                 #1 - Current window blocked this from working.
@@ -621,74 +689,14 @@ class ManageCfs():
                     popup_text = 'No attempt to stop the cFS, since no password supplied'
                     sg.popup(popup_text, title='Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                             
-            elif self.event == '-1_MAN-': # Stop the cFS prior to modifying or adding an app
+            elif self.event == '-3_MAN-': # Stop the cFS prior to modifying or adding an app
                 popup_text = f"Open a terminal window and kill any running cFS processes. See '{SH_STOP_CFS}' for guidance" 
                 sg.popup(popup_text, title='Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
-
-            ## Step 2 - Update cFS build configuration
-            
-            elif self.event == '-2_AUTO-': # Autonomously perform step 2 
-                """
-                Errors are reported in a popup by each function. The success string is an aggregate of each successful return
-                that will be reported in a single popup. 
-                A boolean return value of True from each function indicates there weren't any errors, it doesn't mean a paricular
-                update was performed, because the update may notbe required.
-                """ 
-                auto_popup_text = f"{self.selected_app.upper()} was successfully added to Basecamp's cFS target:\n\n"
-                display_auto_popup = False 
-                copy_tables_passed, copy_tables_text = self.copy_app_tables(auto_copy=True)
-                if copy_tables_passed:
-                    auto_popup_text += f'1. {copy_tables_text}\n\n' 
-                    update_cmake_passed, update_cmake_text = self.update_targets_cmake(auto_update=True)
-                    if update_cmake_passed:
-                        auto_popup_text += f'2. {update_cmake_text}\n\n'
-                        update_startup_passed, update_startup_text = self.update_startup_scr(auto_update=True)
-                        if update_startup_passed:
-                            auto_popup_text += f'3. {update_startup_text}\n\n'
-                            if self.usr_app_spec.has_eds():
-                                update_topics_passed, update_topics_text = self.update_topic_ids()
-                                auto_popup_text += f'4. {update_topics_text}\n\n'
-                                display_auto_popup = update_topics_passed
-                            else:
-                                auto_popup_text += f'4. Library without an EDS spec\n\n'
-                                display_auto_popup = True
-                if display_auto_popup:
-                    sg.popup(auto_popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
-                                
-                
-            elif self.event == '-2A_MAN-':
-                self.copy_app_tables(auto_copy=False)  # Copy table files from app dir to cFS '_defs' file
-            elif self.event == '-2B_MAN-':
-                self.update_targets_cmake(auto_update=False)
-            elif self.event == '-2C_MAN-':
-                self.update_startup_scr(auto_update=False)
-            elif self.event == '-2D_MAN-':
-                popup_text = f"After this dialogue, {self.cfe_topic_id_filename} will open in an editor.\n Replace spare topic IDs with the app's topic ID names"
-                sg.popup(popup_text, title=f'Update {self.cfe_topic_id_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
-                self.text_editor = sg.execute_py_file('texteditor.py', parms=self.cfe_topic_id_file, cwd=self.basecamp_tools_path)
-            elif self.event == '-2E_MAN-':
-                popup_text = f"After this dialogue, {self.kit_to_tbl_filename} will open in an editor.\n Replace spare topic IDs with the app's topic ID names"
-                sg.popup(popup_text, title=f'Update {self.kit_to_tbl_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
-                self.text_editor = sg.execute_py_file('texteditor.py', parms=self.kit_to_tbl_file, cwd=self.basecamp_tools_path)
-                
-            ## Step 3 - Build the cFS
-
-            elif self.event == '-3_AUTO-': # Build the cfS
-                build_cfs_sh = os.path.join(self.basecamp_abs_path, SH_BUILD_CFS_TOPICIDS)
-                self.build_subprocess = subprocess.Popen(f'{build_cfs_sh} {self.cfs_abs_base_path}',
-                                        stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True)
-                if self.build_subprocess is not None:
-                    self.cfs_stdout = CfsStdout(self.build_subprocess, self.main_window)
-                    self.cfs_stdout.start()
-            
-            elif self.event == '-3_MAN-': # Build the cfS
-                popup_text = f"Open a terminal window, change directory to {self.cfs_abs_base_path} and build the cFS. See '{SH_BUILD_CFS_TOPICIDS}' for guidance"
-                sg.popup(popup_text, title='Manually Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)   
 
             ## Step 4 - Restart Basecamp
 
             elif self.event == '-4_AUTO-': # Reload cFS python EDS definitions                
-                sg.popup(f'Basecamp will be closed after this dialogue.\nYou must restart Basecamp to use {self.usr_app_spec.app_name.upper()}',
+                sg.popup(f'Basecamp will be closed after this dialogue.\nYou must restart Basecamp to use the new cFS target',
                          title='Reload cFS EDS definitions', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
                 restart_main_window = True
                 break
@@ -717,7 +725,7 @@ class ManageCfs():
                 self.remove_app_tables()
                 self.restore_targets_cmake()
                 self.restore_startup_scr()
-                if self.usr_app_spec.has_eds():
+                if self.usr_app_spec.has_topic_ids():
                     self.restore_topic_ids()                
                 if self.values['-DELETE_FILES-'] == 'Yes':
                     self.remove_app_src_files()
@@ -727,15 +735,22 @@ class ManageCfs():
         window.close()
         
     def execute(self, action):
+        """
+        This design has evolved and may need refactoring. Originally select_usr_app_gui()
+        was used for both add and remove because only one add could be managed at a time.
+        Add app now allows multiple apps to be selected before adding them. Remove only
+        operates on a single app.        
+        """
         self.manage_usr_apps = ManageUsrApps(self.usr_app_path)
         self.cfs_app_specs = self.manage_usr_apps.get_app_specs()
         if len(self.cfs_app_specs) > 0:
-            self.select_usr_app_gui(list(self.cfs_app_specs.keys()), action.lower())
-            if self.selected_app is not None:
-                self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
-                if action == 'Add':
-                    self.add_usr_app_gui()
-                elif action == 'Remove':
+            usr_app_list = list(self.cfs_app_specs.keys())
+            if action == 'Add':
+                self.add_usr_app_gui(usr_app_list)
+            elif action == 'Remove':
+                self.select_usr_app_gui(usr_app_list, action.lower())
+                if self.selected_app is not None:
+                    self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
                     self.remove_usr_app_gui()
         else:
             sg.popup('Your usr/apps directory is empty', title=f'{action} App', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
@@ -760,7 +775,7 @@ class ManageCfs():
         popup_text = 'Undefined'
         table_list = self.get_app_table_list()
         if len(table_list) == 0:
-            popup_text = 'Library without tables to copy'
+            popup_text = "No tables copied since it's a library"
         else:
             app_table_path = os.path.join(self.usr_app_path, self.selected_app, 'fsw', 'tables')
             if auto_copy:
@@ -842,17 +857,19 @@ class ManageCfs():
         line_modified = False
         if INSERT_KEYWORD in line:
             if self.cmake_app_list in line:
+                # The string search logic looks for an exact match and allows
+                # the name being searched to exist in an end-of-line comment
                 if not line.strip().startswith('#'):  # Non-commented line
-                    if not app_cmake_files['obj-file'] in line:
-                        i = line.find(')')
+                    i = line.find(')')
+                    if not app_cmake_files['obj-file'] in line[:i].split(' '):
                         line = line[:i] + ' ' + app_cmake_files['obj-file'] + line[i:]     
                         line_modified = True
                         print('app_list_new: ' + line)
             elif self.cmake_file_list in line:
                 if not line.strip().startswith('#'):  # Non-commented line
                     for table in app_cmake_files['tables']:
-                        if not table in line:
-                            i = line.find(')')
+                        i = line.find(')')
+                        if not table in line[:i].split(' '):
                             line = line[:i] + ' ' + table + line[i:]     
                             line_modified = True
                             print('file_list_new: ' + line)
@@ -895,7 +912,7 @@ class ManageCfs():
             with open(self.startup_scr_file) as f:
                 for line in f:
                     if check_for_entry:
-                        if self.selected_app in line:
+                        if self.selected_app in line.split(','):
                             check_for_entry = False
                             original_entry = line
                         if INSERT_KEYWORD in line:
@@ -906,7 +923,7 @@ class ManageCfs():
             if file_modified:
                 with open(self.startup_scr_file, 'w') as f:
                     f.write(instantiated_text)
-                popup_text = f'Added {self.selected_app} startup script entry'
+                popup_text = f'Added {self.selected_app} to startup script entry'
             else:
                 popup_text = f'Preserved startup script, it already contains {self.selected_app}'
             #todo: Remove? sg.popup(popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
