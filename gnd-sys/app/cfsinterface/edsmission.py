@@ -64,7 +64,8 @@ class EdsMission:
     
     #todo: Are there invalid ID conventions in the EDS to use as default values & for validity checks
     NULL_ID  = -1
-    NULL_STR = '--null--' 
+    NULL_CMD_STR = '--'        # Command parameter default value, keep short to simplify user entry
+    NULL_TLM_STR = '--Null--'  # Display when no value received yet
     
     #todo: Decide how to manage these. They are a subset of 'standard' definitions
     # Supported interface types defined in the EDS
@@ -168,9 +169,11 @@ class EdsMission:
         """
         return EdsLib.DatabaseEntry(self.lib_db, eds_id)
 
+
     def get_topic_payload(self, topic_name):
         eds_id = self.get_eds_id_from_topic(topic_name)
         return self.get_database_entry(eds_id)()['Payload']
+
 
     def get_database_named_entry(self, eds_name):
         """

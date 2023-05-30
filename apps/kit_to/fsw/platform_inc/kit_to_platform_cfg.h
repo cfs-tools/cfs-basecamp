@@ -13,7 +13,7 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Define platform configurations for the OpenSatKit File Transfer application
+**    Define platform configurations for the KIT_CI application
 **
 **  Notes:
 **    1. These definitions should be minimal and only contain parameters that
@@ -23,7 +23,7 @@
 **       file for parameters that can be defined at runtime.
 **
 **  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
+**    1. cFS Basecamp Application Developer's Guide.
 **    2. cFS Application Developer's Guide.
 **
 */

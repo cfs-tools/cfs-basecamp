@@ -13,17 +13,17 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Define configurations for the OpenSatKit Scheduler application
+**    Define configurations for the KIT_TO application
 **
 **  Notes:
 **    1. These configurations should have an application scope and define
 **       parameters that shouldn't need to change across deployments. If
 **       a change is made to this file or any other app source file during
-**       a deployment then the definition of the KIT_SCH_PLATFORM_REV
-**       macro in kit_sch_platform_cfg.h should be updated.
+**       a deployment then the definition of the KIT_TO_PLATFORM_REV
+**       macro in kit_to_platform_cfg.h should be updated.
 **
 **  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
+**    1. cFS Basecamp Application Developer's Guide.
 **    2. cFS Application Developer's Guide.
 **
 */
@@ -51,10 +51,11 @@
 ** 2.1 - Added event log playback
 ** 3.0 - New baseline for separate OSK app repo compatible with cFE Bootes
 ** 3.1 - Implement https://github.com/cfs-tools/cfs-basecamp/issues/31 
+** 3.2 - Implement https://github.com/cfs-tools/cfs-basecamp/issues/40
 */
 
 #define  KIT_TO_MAJOR_VER     3
-#define  KIT_TO_MINOR_VER     1
+#define  KIT_TO_MINOR_VER     2
 
 
 /******************************************************************************
@@ -73,14 +74,14 @@
 #define CFG_APP_RUN_LOOP_DELAY_MIN APP_RUN_LOOP_DELAY_MIN   /* Minimum command value to set delay  */
 #define CFG_APP_RUN_LOOP_DELAY_MAX APP_RUN_LOOP_DELAY_MAX   /* Maximum command value to set delay  */
 
-#define CFG_KIT_TO_CMD_TOPICID                KIT_TO_CMD_TOPICID
-#define CFG_KIT_TO_SEND_HK_TOPICID            BC_SCH_4_SEC_TOPICID
-#define CFG_KIT_TO_HK_TLM_TOPICID             KIT_TO_HK_TLM_TOPICID
-#define CFG_KIT_TO_DATA_TYPES_TOPICID         KIT_TO_DATA_TYPES_TOPICID
-#define CFG_KIT_TO_PKT_TBL_TLM_TOPICID        KIT_TO_PKT_TBL_TLM_TOPICID
-#define CFG_KIT_TO_EVENT_PLBK_TLM_TOPICID     KIT_TO_EVENT_PLBK_TLM_TOPICID
-#define CFG_KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID
-#define CFG_KIT_TO_TUNNEL_TLM_TOPICID         KIT_TO_TUNNEL_TLM_TOPICID
+#define CFG_KIT_TO_CMD_TOPICID              KIT_TO_CMD_TOPICID
+#define CFG_KIT_TO_SEND_HK_TOPICID          BC_SCH_4_SEC_TOPICID
+#define CFG_KIT_TO_HK_TLM_TOPICID           KIT_TO_HK_TLM_TOPICID
+#define CFG_KIT_TO_DATA_TYPES_TOPICID       KIT_TO_DATA_TYPES_TOPICID
+#define CFG_KIT_TO_PKT_TBL_TLM_TOPICID      KIT_TO_PKT_TBL_TLM_TOPICID
+#define CFG_KIT_TO_EVENT_PLBK_TLM_TOPICID   KIT_TO_EVENT_PLBK_TLM_TOPICID
+#define CFG_KIT_TO_SUB_WRAPPED_TLM_TOPICID  KIT_TO_SUB_WRAPPED_TLM_TOPICID
+#define CFG_KIT_TO_PUB_WRAPPED_TLM_TOPICID  KIT_TO_PUB_WRAPPED_TLM_TOPICID
 
 #define CFG_PKTMGR_PIPE_NAME           PKTMGR_PIPE_NAME
 #define CFG_PKTMGR_PIPE_DEPTH          PKTMGR_PIPE_DEPTH
@@ -112,8 +113,8 @@
    XX(KIT_TO_DATA_TYPES_TOPICID,uint32) \
    XX(KIT_TO_PKT_TBL_TLM_TOPICID,uint32) \
    XX(KIT_TO_EVENT_PLBK_TLM_TOPICID,uint32) \
-   XX(KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID,uint32) \
-   XX(KIT_TO_TUNNEL_TLM_TOPICID,uint32) \
+   XX(KIT_TO_SUB_WRAPPED_TLM_TOPICID,uint32) \
+   XX(KIT_TO_PUB_WRAPPED_TLM_TOPICID,uint32) \
    XX(PKTMGR_PIPE_NAME,char*) \
    XX(PKTMGR_PIPE_DEPTH,uint32) \
    XX(PKTMGR_UDP_TLM_PORT,uint32) \
@@ -126,16 +127,6 @@
    XX(EVS_CMD_TOPICID,uint32) \
 
 DECLARE_ENUM(Config,APP_CONFIG)
-
-
-/******************************************************************************
-** Command Macros
-*/
-
-
-#define KIT_TO_EVT_PLBK_CONFIG_CMD_FC    (CMDMGR_APP_START_FC +  9)
-#define KIT_TO_EVT_PLBK_START_CMD_FC     (CMDMGR_APP_START_FC + 10)
-#define KIT_TO_EVT_PLBK_STOP_CMD_FC      (CMDMGR_APP_START_FC + 11)
 
 
 /******************************************************************************

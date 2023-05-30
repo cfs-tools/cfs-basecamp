@@ -13,15 +13,14 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Define mission level configurations for the OpenSatKit File Transfer
-**    application
+**    Define mission level configurations for the KIT_TO application
 **
 **  Notes:
 **    1. Compile-time configurations that are applied to all platform
 **       deployments of this app for a mission.
 **
 **  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
+**    1. cFS Basecamp Application Developer's Guide.
 **    2. cFS Application Developer's Guide.
 **
 */

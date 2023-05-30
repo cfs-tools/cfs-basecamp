@@ -39,9 +39,11 @@ if 'LD_LIBRARY_PATH' not in os.environ:
         print("Auto define LD_LIBRARY_PATH failed")
         sys.exit(1)
     """
+import inspect
 import importlib
 import ctypes
 import time
+import random
 import socket
 import configparser
 import operator
@@ -55,12 +57,14 @@ import io
 import shutil
 from contextlib import redirect_stdout
 from datetime import datetime
+from enum import Enum
 
 import logging
 from logging.config import fileConfig
 fileConfig('logging.ini')
 logger = logging.getLogger(__name__)
 
+import paho.mqtt.client as mqtt
 import PySimpleGUI as sg
 
 import EdsLib
@@ -104,9 +108,10 @@ class TelecommandGui(TelecommandInterface):
         host        - String containing the socket address, e.g. '127.0.0.1:1234'
         port        - Integer containing socket pManageUsrAppsort
         """
-        self.NULL_STR = self.eds_mission.NULL_STR
+        self.NULL_CMD_STR = self.eds_mission.NULL_CMD_STR
+        self.NULL_TLM_STR = self.eds_mission.NULL_TLM_STR
        
-        self.UNDEFINED_LIST = [self.NULL_STR]
+        self.UNDEFINED_CMD_LIST = [self.NULL_CMD_STR]
 
         self.PAYLOAD_ROWS, self.PAYLOAD_COLS, self.PAYLOAD_HEADINGS = 8, 3, ('Parameter Name','Type','Value',)
         self.PAYLOAD_INPUT_START = 2 # First row of input payloads (see SendCmd() payload_layout comment)
@@ -132,18 +137,18 @@ class TelecommandGui(TelecommandInterface):
         {
             'eds_entry': EdsLib.DatabaseEntry(self.mission_name,'BASE_TYPES/PathName'),
             'eds_name': 'Payload.DirName', 'gui_type': 'BASE_TYPES/PathName',
-            'gui_value': ['--null--'],
+            'gui_value': [self.NULL_CMD_STR],
             'gui_input': 'text',
-            'gui_value_key': '--null--'
+            'gui_value_key': '--'
          },
          'DirListOffset':
          {
             'eds_entry': EdsLib.DatabaseEntry(self.mission_name,'BASE_TYPES/uint16'),
             'eds_name': 'Payload.DirListOffset',
             'gui_type': 'BASE_TYPES/uint16',
-            'gui_value': ['--null--'],
+            'gui_value': ['--'],
             'gui_input': 'text',
-            'gui_value_key': '--null--'
+            'gui_value_key': '--'
          },
          'IncludeSizeTime':
          {
@@ -152,7 +157,7 @@ class TelecommandGui(TelecommandInterface):
             'gui_type': 'FILE_MGR/BooleanUint16',
             'gui_value': ['FALSE', 'TRUE'],
             'gui_input': 'combo',
-            'gui_value_key': '--null--'}}
+            'gui_value_key': '--'}}
         """
         
         self.sg_values = None
@@ -190,7 +195,7 @@ class TelecommandGui(TelecommandInterface):
             gui_type  = eds_obj_list[1].replace("'","").replace(")","")
             gui_input = self.PAYLOAD_TEXT_INPUT
             if payload_struct[2] == 'entry':
-                gui_value = [self.NULL_STR]
+                gui_value = [self.NULL_CMD_STR]
             elif payload_struct[2] == 'enum':
                 gui_input = self.PAYLOAD_COMBO_INPUT
                 gui_value = []
@@ -201,7 +206,7 @@ class TelecommandGui(TelecommandInterface):
             logger.debug(gui_type)
             self.payload_gui_entries[gui_name] = {'eds_entry': eds_entry, 'eds_name': eds_name,       
                                                   'gui_type': gui_type,   'gui_value': gui_value, 
-                                                  'gui_input': gui_input, 'gui_value_key': self.NULL_STR}
+                                                  'gui_input': gui_input, 'gui_value_key': self.NULL_CMD_STR}
             
         else:
             return_str = f'Error extracting entries from unkown payload structure instance type: {str(payload_struct)}'
@@ -213,12 +218,12 @@ class TelecommandGui(TelecommandInterface):
     def display_payload_gui_entries(self):
         """
         See SendCmd() payload_layout definition comment for initial payload display
-        When there are no payload paramaters (zero length) hide all rows except the first parameter.
+        When there are no payload parameters (zero length) hide all rows except the first parameter.
         """
         for row in range(self.PAYLOAD_ROWS):
             self.window[f'-PAYLOAD_{row}_NAME-'].update(visible=False)
             self.window[f'-PAYLOAD_{row}_TYPE-'].update(visible=False)
-            self.window[f'-PAYLOAD_{row}_VALUE-'].update(visible=False, value=self.UNDEFINED_LIST[0])
+            self.window[f'-PAYLOAD_{row}_VALUE-'].update(visible=False, value=self.UNDEFINED_CMD_LIST[0])
 
         enum_row  = 0
         entry_row = self.PAYLOAD_INPUT_START
@@ -248,7 +253,7 @@ class TelecommandGui(TelecommandInterface):
 
     def load_payload_entry_value(self, payload_name, payload_eds_entry, payload_type, payload_list):
         """
-        Virtual function used by based Telesommand class set_payload_values() to retrieve values
+        Virtual function used by base Telesommand class set_payload_values() to retrieve values
         from a derived class source: GUI or command line
         """
         logger.debug('load_payload_entry_value() - Entry')
@@ -261,11 +266,17 @@ class TelecommandGui(TelecommandInterface):
         value = self.sg_values[value_key]
         return value
         
-    def execute(self, topic_name):
-    
-        cmd_sent = True
-        cmd_text = 'Send command aborted'
-        cmd_status = ''
+    def execute(self, topic_name, return_cmd=False):
+        """
+        The initial design always sent the command. New use cases required this function to
+        return the cmd_obj rather than send it so the 'return_cmd ' parameter was added. If
+        'return_cmd' is True then 'cmd_sent' should be interpretted as the command would have
+        been sent therefore the command is valid.        
+        """
+        cmd_sent   = False
+        cmd_text   = 'No command selected'
+        cmd_status = f'Send {topic_name} command aborted'
+        cmd_obj    = None
 
         topic_list = list(self.get_topics().keys())
         logger.debug("topic_list = " + str(topic_list))
@@ -289,9 +300,9 @@ class TelecommandGui(TelecommandInterface):
         self.payload_layout = [[sg.Text(heading, font=row_title_font, size=row_label_size) for i, heading in enumerate(self.PAYLOAD_HEADINGS)]]
         for row in range(self.PAYLOAD_ROWS):
             if row < self.PAYLOAD_INPUT_START:
-                self.payload_layout += [[sg.pin(sg.Text('Name', font=row_font, size=row_label_size, key="-PAYLOAD_%d_NAME-"%row))] + [sg.pin(sg.Text('Type', font=row_font, size=row_label_size, key="-PAYLOAD_%d_TYPE-"%row))] + [sg.pin(sg.Combo((self.UNDEFINED_LIST), font=row_font, size=row_input_size, enable_events=True, key="-PAYLOAD_%d_VALUE-"%row, default_value=self.UNDEFINED_LIST[0]))]]
+                self.payload_layout += [[sg.pin(sg.Text('Name', font=row_font, size=row_label_size, key="-PAYLOAD_%d_NAME-"%row, visible=False))] + [sg.pin(sg.Text('Type', font=row_font, size=row_label_size, key="-PAYLOAD_%d_TYPE-"%row, visible=False))] + [sg.pin(sg.Combo((self.UNDEFINED_CMD_LIST), font=row_font, size=row_input_size, enable_events=True, key="-PAYLOAD_%d_VALUE-"%row, default_value=self.UNDEFINED_CMD_LIST[0], visible=False))]]
             else:
-                self.payload_layout += [[sg.pin(sg.Text('Name', font=row_font, size=row_label_size, key="-PAYLOAD_%d_NAME-"%row))] + [sg.pin(sg.Text('Type', font=row_font, size=row_label_size, key="-PAYLOAD_%d_TYPE-"%row))] + [sg.pin(sg.Input(self.UNDEFINED_LIST[0], font=row_font, size=row_input_size, enable_events=True, key="-PAYLOAD_%d_VALUE-"%row))]]
+                self.payload_layout += [[sg.pin(sg.Text('Name', font=row_font, size=row_label_size, key="-PAYLOAD_%d_NAME-"%row, visible=False))] + [sg.pin(sg.Text('Type', font=row_font, size=row_label_size, key="-PAYLOAD_%d_TYPE-"%row, visible=False))] + [sg.pin(sg.Input(self.UNDEFINED_CMD_LIST[0], font=row_font, size=row_input_size, enable_events=True, key="-PAYLOAD_%d_VALUE-"%row, visible=False))]]
 
             
         #todo: [sg.Text('Topic', size=(10,1)),  sg.Combo((topic_list),   size=(40,1), enable_events=True, key='-TOPIC-',   default_value=topic_list[0])], 
@@ -358,12 +369,10 @@ class TelecommandGui(TelecommandInterface):
 
                 if topic_name == self.eds_mission.TOPIC_CMD_TITLE_KEY:
                     cmd_text  = 'Please select a topic before sending a command'
-                    cmd_sent = False
                     break
                     
                 if (cmd_name == self.eds_mission.COMMAND_TITLE_KEY and len(self.command_list) > 1):
                     cmd_text  = 'Please select a command before sending a command'
-                    cmd_sent = False
                     break
                 
                 topic_id, topic_text = self.get_topic_id(topic_name)
@@ -401,25 +410,30 @@ class TelecommandGui(TelecommandInterface):
     
                         except:
                            send_command = False
-                           cmd_status = f'{topic_name} {cmd_name} command not sent. Error loading parameters from command window.'
+                           cmd_status = f'{topic_name}/{cmd_name} command not sent. Error loading parameters from command window.'
                     
                     if send_command:
-                        (cmd_sent, cmd_text, cmd_status) = self.send_command(cmd_obj)
-                        if cmd_sent:
-                            cmd_status = f'{topic_name} {cmd_name} command sent'
+                        if return_cmd:
+                            cmd_sent   = True
+                            cmd_text   = 'Send command returned command object'
+                            cmd_status = f'{topic_name}/{cmd_name} command object created'
+                        else:
+                            (cmd_sent, cmd_text) = self.send_command(cmd_obj)
+                            if cmd_sent:
+                                cmd_status = f'Sent {topic_name}/{cmd_name} command'
                     
                 else:
                     popup_text = f'Error retrieving command {cmd_name} using topic ID {topic_id}' 
                     sg.popup(popup_text, title='Send Command Error', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)            
 
 
-                # Keep GUI active if a command error occurs to allow user to fixed and resend or cancel
+                # Keep GUI active if a command error occurs to allow user to fix and resend or cancel
                 if cmd_sent:
                     break
                     
         self.window.close()
 
-        return (cmd_sent, cmd_text, cmd_status)
+        return (cmd_sent, cmd_text, cmd_status, cmd_obj)
 
 
 ###############################################################################
@@ -571,7 +585,7 @@ class ManageCfs():
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1E_MAN-'),
                    sg.Text('Update telemetry output app table', font=self.t_font)],
                   
-                  [sg.Text('2. Build the cfS', font=self.step_font, pad=self.b_pad)],
+                  [sg.Text('2. Build the cFS', font=self.step_font, pad=self.b_pad)],
                   [sg.Text('', size=self.b_size), sg.Button('Build', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2_AUTO-')],
                   
                   [sg.Text('3. Stop the cFS if it is running', font=self.step_font, pad=self.b_pad)],
@@ -645,7 +659,7 @@ class ManageCfs():
                 
             ## Step 2 - Build the cFS
 
-            elif self.event == '-2_AUTO-': # Build the cfS
+            elif self.event == '-2_AUTO-': # Build the cFS
                 build_cfs_sh = os.path.join(self.basecamp_abs_path, SH_BUILD_CFS_TOPICIDS)
                 self.build_subprocess = subprocess.Popen(f'{build_cfs_sh} {self.cfs_abs_base_path}',
                                         stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True)
@@ -653,7 +667,7 @@ class ManageCfs():
                     self.cfs_stdout = CfsStdout(self.build_subprocess, self.main_window)
                     self.cfs_stdout.start()
             
-            elif self.event == '-2_MAN-': # Build the cfS
+            elif self.event == '-2_MAN-': # Build the cFS
                 popup_text = f"Open a terminal window, change directory to {self.cfs_abs_base_path} and build the cFS. See '{SH_BUILD_CFS_TOPICIDS}' for guidance"
                 sg.popup(popup_text, title='Manually Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)   
 
@@ -1088,14 +1102,62 @@ class CfsStdout(threading.Thread):
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             print('Exception raise failure')
 
- 
+###############################################################################
+
+class CfsMqttCmdClient():
+
+    def __init__(self, broker_addr, client_base_name, cfs_cmd_topic, send_event):
+        self.broker_addr  = broker_addr
+        self.client_name  = f'{client_base_name}-{str(random.randint(0,10000))}'
+        self.cmd_topic    = cfs_cmd_topic
+        self.send_event   = send_event
+        
+        self.connected = False
+        self.client = None
+        
+    def connect(self):
+        self.connected = False
+        try:
+            self.client = mqtt.Client(self.client_name)
+            self.client.on_connect = self.on_connect   # Callback function for successful connection
+            self.client.connect(self.broker_addr)
+            self.connected = True
+        except Exception as e:
+            self.send_event(f'cFS MQTT command client connection error for {self.broker_addr}:{self.broker_port}')
+            self.client = None
+        return self.connected
+    
+    def disconnect(self):
+        if self.connected:
+           self.client.disconnect()
+           self.client = None
+        self.connected = False
+
+    def on_connect(self, client, userdata, flags, rc):
+        """
+        """
+        print('@@TODO: GOT HERE not happening@@')
+        self.send_event(f'cFS MQTT command client {self.client_name} connected with result code {rc}')
+        self.client.subscribe(self.cmd_topic)
+        
+    def send_cmd(self, cmd_text):
+        """
+        """
+        status, msg_id = self.client.publish(self.cmd_topic, cmd_text)
+        return (status == 0)
+
+
 ###############################################################################
 
 class App():
 
-    GUI_NO_IMAGE_TXT = '--None Selected--'
-    GUI_NULL_TXT     = 'Null'
-
+    GUI_NO_IMAGE_TXT  = '--None Selected--'
+    GUI_NON_APP_STR   = '--'  # Dropdown menu substring used to determine whether selection is a valid app name
+    GUI_APP_TITLE_STR = '-- App --'
+    GUI_APP_SEPARATOR = '---------------'
+    
+    CFS_CMD_DEST = Enum('cFSCmdDest', ['UDP', 'MQTT'])
+    
     def __init__(self, ini_file):
 
         self.path = os.getcwd()
@@ -1109,9 +1171,19 @@ class App():
         self.EDS_CFS_TARGET_NAME = self.config.get('CFS_TARGET','CPU_EDS_NAME')
         self.SUDO_START_CFS      = self.config.getboolean('CFS_TARGET','SUDO_START_CFS')
 
-        self.CFS_IP_ADDR  = self.config.get('NETWORK','CFS_IP_ADDR')
-        self.CFS_CMD_PORT = self.config.getint('NETWORK','CFS_CMD_PORT')
-
+        self.CFS_IP_ADDR     = self.config.get('NETWORK','CFS_IP_ADDR')
+        self.CFS_CMD_PORT    = self.config.getint('NETWORK','CFS_CMD_PORT')
+        self.CFS_IP_DEST_STR = f'{self.CFS_IP_ADDR}:{self.CFS_CMD_PORT}'
+        
+        self.CFS_IP_ADDR     = self.config.get('NETWORK','CFS_IP_ADDR')
+        self.CFS_CMD_PORT    = self.config.getint('NETWORK','CFS_CMD_PORT')
+        self.CFS_IP_DEST_STR = f'{self.CFS_IP_ADDR}:{self.CFS_CMD_PORT}'
+        
+        self.CFS_MQTT_BROKER_ADDR = self.config.get('NETWORK','MQTT_BROKER_ADDR')
+        self.CFS_MQTT_BROKER_PORT = self.config.get('NETWORK','MQTT_BROKER_PORT')
+        self.CFS_MQTT_CMD_TOPIC   = self.config.get('NETWORK','MQTT_CFS_CMD_TOPIC')
+        self.CFS_MQTT_DEST_STR    = f'{self.CFS_MQTT_BROKER_ADDR}:{self.CFS_MQTT_BROKER_PORT}/{self.CFS_MQTT_CMD_TOPIC}'
+        
         self.GND_IP_ADDR      = self.config.get('NETWORK','GND_IP_ADDR')
         self.GND_TLM_PORT     = self.config.getint('NETWORK','GND_TLM_PORT')
         self.GND_TLM_TIMEOUT  = float(self.config.getint('NETWORK','GND_TLM_TIMEOUT'))/1000.0
@@ -1125,20 +1197,25 @@ class App():
         self.cfs_subprocess     = None
         self.cfs_subprocess_log = ""
         self.cfs_stdout         = None
+        self.cfs_cmd_dest       = self.CFS_CMD_DEST.UDP
         self.cfe_time_event_filter = False  #todo: Retaining the state here doesn't work if user starts and stops the cFS and doesn't restart Basecamp
         self.cfs_build_subprocess  = None
-
+        
         self.event_log   = ""        
         self.event_queue = queue.Queue()
         self.window = None
         
-        self.cfe_apps = ['CFE_ES', 'CFE_EVS', 'CFE_SB', 'CFE_TBL', 'CFE_TIME']
+        self.cfe_app_list = ['CFE_ES', 'CFE_EVS', 'CFE_SB', 'CFE_TBL', 'CFE_TIME']
         self.app_cmd_list = []  # Non-cFE apps
         self.app_tlm_list = []  # Non-cFE apps
+        self.usr_app_list = [self.GUI_APP_TITLE_STR]  # Non-cFE apps
+        self.all_app_list = []  # Combined user and cFE app list
 
         self.manage_tutorials = ManageTutorials(self.config.get('PATHS', 'TUTORIALS_PATH'))
         self.create_app       = CreateApp(self.config.get('PATHS', 'APP_TEMPLATES_PATH'),
                                           self.config.get('PATHS', 'USR_APP_PATH'))
+        self.cfs_mqtt_cmd_client = CfsMqttCmdClient(self.CFS_MQTT_BROKER_ADDR, self.config.get('NETWORK','MQTT_CLIENT_NAME'),
+                                                    self.CFS_MQTT_CMD_TOPIC, self.display_event)
         
         self.file_browser   = None
         self.script_runner  = None
@@ -1167,16 +1244,40 @@ class App():
         #TODO: print("Received [%s, %s, %s] %s" % (app_name, tlm_msg, tlm_item, tlm_text))
         self.window["-CFS_TIME-"].update(tlm_text)
 
+    def send_cfs_mqtt_cmd(self, cmd_obj):
+        """
+        Assumes a valid cmd_obj
+        """
+        cmd_packed = self.telecommand_script.eds_mission.get_packed_obj(cmd_obj)
+        cmd_text   = cmd_packed.hex()
+        cmd_name   = self.telecommand_script.get_cmd_obj_name(cmd_obj)
+        if self.cfs_mqtt_cmd_client.send_cmd(cmd_text):
+            self.display_event(f'Sent cFS command {cmd_name} to MQTT broker')
+        else:
+            self.display_event(f'Error sending cFS command {cmd_name} to MQTT broker')
+
     def send_cfs_cmd(self, app_name, cmd_name, cmd_payload):
-        (cmd_sent, cmd_text, cmd_status) = self.telecommand_script.send_cfs_cmd(app_name, cmd_name, cmd_payload)
-        self.display_event(cmd_status) # cmd_status will describe success and failure cases
-        
+        if self.cfs_cmd_dest == self.CFS_CMD_DEST.UDP:
+            (cmd_sent, cmd_text, cmd_status) = self.telecommand_script.send_cfs_cmd(app_name, cmd_name, cmd_payload)
+            self.display_event(cmd_status)
+            #TODO: Provide config switch? self.display_event(cmd_text)
+        elif self.cfs_cmd_dest == self.CFS_CMD_DEST.MQTT:
+            if self.cfs_mqtt_cmd_client.connected:
+                (cmd_valid, cmd_status, cmd_obj) = self.telecommand_script.get_cfs_cmd_obj(app_name, cmd_name, cmd_payload)
+                if cmd_valid:
+                    self.send_cfs_mqtt_cmd(cmd_obj)
+                else:
+                    self.display_event(cmd_status)
+            else:
+                self.display_event(f'Failed to send {app_name}/{cmd_name}. Configured for MQTT commanding, but MQTT client is disconnected.')
+            
+            
     def enable_telemetry(self):
         """
         The user must enable telemetry every time the cFS is started and most if not all users want
         the time fly wheel event disabled as well so it is also done here
         """
-        self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'DestIp': self.CFS_IP_ADDR})
+        self.send_cfs_cmd('KIT_TO', 'EnableOutput', {'DestIp': self.GND_IP_ADDR})
         # Disable flywheel events. Assume new cFS instance running so set time_event_filter to false 
         self.cfe_time_event_filter = False 
         time.sleep(0.5)
@@ -1232,9 +1333,11 @@ class App():
         """
         for topic in cmd_topics:
             app_name = topic.split('/')[0]
-            if app_name not in self.cfe_apps and app_name not in self.app_cmd_list:
+            if app_name not in self.cfe_app_list and app_name not in self.app_cmd_list:
                 self.app_cmd_list.append(app_name)
-
+        self.usr_app_list = self.usr_app_list + self.app_cmd_list[1:]
+        self.all_app_list = self.usr_app_list + [self.GUI_APP_SEPARATOR] + self.cfe_app_list
+        
     def create_app_tlm_list(self, tlm_topics):
         """
         Populate self.app_tlm_list with the app names defined in tlm_topics. Assumes the app name 
@@ -1242,7 +1345,7 @@ class App():
         """
         for topic in tlm_topics:
             app_name = topic.split('/')[0]
-            if app_name not in self.cfe_apps and app_name not in self.app_tlm_list:
+            if app_name not in self.cfe_app_list and app_name not in self.app_tlm_list:
                 self.app_tlm_list.append(app_name)
 
                                      
@@ -1367,12 +1470,12 @@ class App():
         menu_def = [
                        ['System', ['Options', 'About', 'Exit']],
                        ['Developer', ['Create App', 'Download App', 'Add App', 'Remove App', '---', 'Run Perf Monitor']], #todo: 'Certify App' 
-                       ['Operator', ['Browse Files', 'Run Script', 'Plot Data', '---', 'Control Remote Target']],
+                       ['Operator', ['Browse Files', 'Run Script', 'Plot Data', '---', 'Control Remote Target', 'Configure Remote Commands']],
                        ['Documents', ['cFS Overview', 'cFE Overview', 'App Dev Guide']],
                        ['Tutorials', self.manage_tutorials.tutorial_titles]
                    ]
 
-        self.common_cmds = ['-- Common Commands--', 'Enable Telemetry', 'Reset Time', 'Noop/Reset App', 'Restart App', 'Configure Events', 'Ena/Dis Flywheel', 'Set Tlm Source', 'cFE Version']
+        self.common_cmds = ['-- Common Commands--', 'Enable Telemetry', 'Reset Time', 'Noop/Reset App', 'Restart App', 'Configure Event Types', 'Reset Event Filter', 'Ena/Dis Flywheel', 'Set Tlm Source', 'cFE Version']
 
 
         # Events can't be posted until after first window.read() so initialization string is format here and used as the default string
@@ -1408,7 +1511,7 @@ class App():
                       sg.Combo(cmd_topics, enable_events=True, key="-CMD_TOPICS-", default_value=cmd_topics[0], pad=((0,5),(12,12))),
                       sg.Text('View Tlm:', font=sec_hdr_font, pad=((5,0),(12,12))),
                       sg.Combo(tlm_topics, enable_events=True, key="-TLM_TOPICS-", default_value=tlm_topics[0], pad=((0,5),(12,12))),]], pad=((0,0),(15,15)))],
-                     [sg.Text('cFS Process Window', font=pri_hdr_font), sg.Text('Time: ', font=sec_hdr_font, pad=(2,1)), sg.Text(self.GUI_NULL_TXT, key='-CFS_TIME-', font=sec_hdr_font, text_color='blue'), sg.Button('Restart', enable_events=True, key='-RESTART-', visible=False)],
+                     [sg.Text('cFS Process Window', font=pri_hdr_font), sg.Text(f' [{self.CFS_IP_DEST_STR}] ', key='-CFS_CMD_DEST-', font=sec_hdr_font, text_color='black'), sg.Text('Time: ', font=sec_hdr_font, pad=(2,1)), sg.Text(EdsMission.NULL_TLM_STR, key='-CFS_TIME-', font=sec_hdr_font, text_color='blue'), sg.Button('Restart', enable_events=True, key='-RESTART-', visible=False)],
                      #[sg.Output(font=log_font, size=(125, 10))],
                      [sg.MLine(default_text=self.cfs_subprocess_log, font=log_font, enable_events=True, size=(125, 15), key='-CFS_PROCESS_TEXT-')],
                      [sg.Text('Ground & Flight Events', font=pri_hdr_font), sg.Button('Clear', enable_events=True, key='-CLEAR_EVENTS-', pad=(5,1))],
@@ -1417,7 +1520,7 @@ class App():
 
         #sg.Button('Send Cmd', enable_events=True, key='-SEND_CMD-', pad=(10,1)),
         #sg.Button('View Tlm', enable_events=True, key='-VIEW_TLM-', pad=(10,1)),
-        window = sg.Window('cFS Basecamp', layout, auto_size_text=True, finalize=True)
+        window = sg.Window(f'cFS Basecamp - v{self.APP_VERSION}', layout, auto_size_text=True, finalize=True)
         return window
   
     def reload_eds_libs(self):
@@ -1428,8 +1531,8 @@ class App():
         
     def execute(self):
     
-        sys_target_str = "Basecamp version %s initialized with mission %s, target %s on %s" % (self.APP_VERSION, self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, datetime.now().strftime("%m/%d/%Y"))
-        sys_comm_str = "Basecamp target host %s, command port %d, telemetry port %d" % (self.CFS_IP_ADDR, self.CFS_CMD_PORT, self.GND_TLM_PORT)
+        sys_target_str = f"Basecamp version {self.APP_VERSION} initialized with mission '{self.EDS_MISSION_NAME}', target '{self.EDS_CFS_TARGET_NAME}' on {datetime.now().strftime('%m/%d/%Y')} at {datetime.now().strftime('%H:%M:%S')}"
+        sys_comm_str = f'Basecamp target host {self.CFS_IP_ADDR}, command port {self.CFS_CMD_PORT}, telemetry port {self.GND_TLM_PORT}'
     
         logger.info(sys_target_str)
         logger.info(sys_comm_str)
@@ -1437,31 +1540,34 @@ class App():
         self.tlm_monitors = {'CFE_ES': {'HK_TLM': ['Seconds']}, 'FILE_MGR': {'DIR_LIST_TLM': ['Seconds']}}
         
         try:
-
-             # Command & Telemetry Router
+            # Command & Telemetry Router
                              
-             self.cmd_tlm_router = CmdTlmRouter(self.CFS_IP_ADDR, self.CFS_CMD_PORT, 
-                                   self.GND_IP_ADDR, self.ROUTER_CTRL_PORT, self.GND_TLM_PORT, self.GND_TLM_TIMEOUT)
-             self.cfs_cmd_output_queue = self.cmd_tlm_router.get_cfs_cmd_queue()
-             self.cfs_cmd_input_queue  = self.cmd_tlm_router.get_cfs_cmd_source_queue()
+            self.cmd_tlm_router = CmdTlmRouter(self.CFS_IP_ADDR, self.CFS_CMD_PORT, 
+                                  self.GND_IP_ADDR, self.ROUTER_CTRL_PORT, self.GND_TLM_PORT, self.GND_TLM_TIMEOUT)
+            self.cfs_cmd_output_queue = self.cmd_tlm_router.get_cfs_cmd_queue()
+            self.cfs_cmd_input_queue  = self.cmd_tlm_router.get_cfs_cmd_source_queue()
+
+        except Exception as e:
+            logger.error(f'Error creating command-telemetry router\n{str(e)}')
+            sys.exit(2)
+            
+        try:
+            # Command Objects    
              
-             # Command Objects    
+            self.telecommand_gui    = TelecommandGui(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cfs_cmd_output_queue)
+            self.telecommand_script = TelecommandScript(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cfs_cmd_output_queue)
              
-             self.telecommand_gui    = TelecommandGui(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cfs_cmd_output_queue)
-             self.telecommand_script = TelecommandScript(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cfs_cmd_output_queue)
+            # Telemetry Objects
              
-             # Telemetry Objects
+            self.tlm_server  = TelemetryQueueServer(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cmd_tlm_router.get_gnd_tlm_queue())
+            self.tlm_monitor = BasecampTelemetryMonitor(self.tlm_server, self.tlm_monitors, self.display_tlm_monitor, self.event_queue)
+            self.tlm_server.execute()      
+            self.cmd_tlm_router.start()
              
-             self.tlm_server  = TelemetryQueueServer(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cmd_tlm_router.get_gnd_tlm_queue())
-             self.tlm_monitor = BasecampTelemetryMonitor(self.tlm_server, self.tlm_monitors, self.display_tlm_monitor, self.event_queue)
-             self.tlm_server.execute()      
-             self.cmd_tlm_router.start()
-             
-             logger.info("Successfully created application objects")
+            logger.info("Successfully created application objects")
         
-        except RuntimeError:
-            print("Error creating telecommand/telemetry objects and/or telemetry server. See log file for details")
-            logger.error("Error creating application objects")
+        except Exception as e:
+            logger.error(f'Error creating command-telemetry objects/server\n{str(e)}')
             sys.exit(2)
 
         self.window = self.create_window(sys_target_str, sys_comm_str)
@@ -1555,6 +1661,34 @@ class App():
                 tools_dir = os.path.join(self.path, "cfsinterface")
                 self.target_control = sg.execute_py_file("targetcontrol.py", cwd=tools_dir)
 
+            elif self.event == 'Configure Remote Commands':
+                    pop_win = sg.Window('Configure Remote Commands',
+                                        [[sg.Text("")],
+                                         [sg.Text("UDP:",  size=(6,1)), sg.Text("Send commands to cFS IP address/port defined in basecamp.ini")],
+                                         [sg.Text("MQTT:", size=(6,1)), sg.Text("Send commands to MQTT broker/topic defined in basecamp.ini")],
+                                         [sg.Text("")],
+                                         [sg.Button('UDP',  button_color=('SpringGreen4'), enable_events=True, key='-UDP-',  pad=(10,1)),
+                                          sg.Button('MQTT', button_color=('SpringGreen4'), enable_events=True, key='-MQTT-', pad=(10,1)), 
+                                          sg.Cancel(button_color=('gray'), pad=(10,1))]])
+                
+                    while True:  # Event Loop
+                        pop_event, pop_values = pop_win.read(timeout=200)
+                        if pop_event in (sg.WIN_CLOSED, 'Cancel'):
+                            break
+                        if pop_event == '-UDP-':
+                            self.cfs_cmd_dest = self.CFS_CMD_DEST.UDP
+                            self.display_event('cFS command destination set to UDP')
+                            self.window["-CFS_CMD_DEST-"].update(f' [{self.CFS_IP_DEST_STR}] ')
+                            break
+                        elif pop_event == '-MQTT-':
+                            if self.cfs_mqtt_cmd_client.connect():
+                                self.cfs_cmd_dest = self.CFS_CMD_DEST.MQTT
+                                self.window["-CFS_CMD_DEST-"].update(f' [{self.CFS_MQTT_DEST_STR}] ')
+                                self.display_event(f'cFS command destination set to MQTT: {self.CFS_MQTT_DEST_STR}')
+                            break
+                            
+                    pop_win.close()
+                
             ### DOCUMENTS ###
             
             elif self.event == 'cFS Overview':
@@ -1641,10 +1775,10 @@ class App():
                     os.killpg(os.getpgid(self.cfs_subprocess.pid), signal.SIGTERM)  # Send the signal to all the process groups
                     self.cfs_subprocess = None
                     self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
-                    self.window["-CFS_TIME-"].update(self.GUI_NULL_TXT)
+                    self.window["-CFS_TIME-"].update(EdsMission.NULL_TLM_STR)
                 else:
                     self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
-                    self.window["-CFS_TIME-"].update(self.GUI_NULL_TXT)
+                    self.window["-CFS_TIME-"].update(EdsMission.NULL_TLM_STR)
                     """
                     History of 
                     #1
@@ -1682,7 +1816,7 @@ class App():
                          print("PID exception")
                          self.cfs_subprocess = None
                          self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
-                         self.window["-CFS_TIME-"].update(self.GUI_NULL_TXT)
+                         self.window["-CFS_TIME-"].update(EdsMission.NULL_TLM_STR)
                     """
         
             elif self.event == '-COMMON_CMD-':
@@ -1697,10 +1831,9 @@ class App():
                     self.send_cfs_cmd('CFE_TIME', 'SetTimeCmd', {'Seconds': 0,'MicroSeconds': 0 })
             
                 elif cfs_config_cmd == self.common_cmds[3]: #### Noop/Reset App ####
-
                     pop_win = sg.Window('Noop-Reset Application',
                                         [[sg.Text("")],
-                                         [sg.Text("Select App"), sg.Combo((self.app_cmd_list), size=(20,1), key='-APP_NAME-', default_value=self.app_cmd_list[0])],
+                                         [sg.Text("Select App"), sg.Combo((self.all_app_list), size=(20,1), key='-APP_NAME-', default_value=self.all_app_list[0])],
                                          [sg.Text("")],
                                          [sg.Button('Noop', button_color=('SpringGreen4'), enable_events=True, key='-NOOP-', pad=(10,1)),
                                           sg.Button('Reset', button_color=('SpringGreen4'), enable_events=True, key='-RESET-', pad=(10,1)),
@@ -1712,8 +1845,10 @@ class App():
                             break
                         if pop_event in ('-NOOP-', '-RESET-'):
                             app_name = pop_values['-APP_NAME-']
-                            if app_name != EdsMission.TOPIC_CMD_TITLE_KEY:
-                                if app_name == 'CI_LAB':  #todo: Remove CI_LAB or update to use KIT_CI that follow app_c_fw standards
+                            if self.GUI_NON_APP_STR in app_name:
+                                sg.popup(f'{app_name} is not a valid app name. Please select an app from the dropdown list', title='Noop-Reset Application', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                            else:
+                                if app_name in self.cfe_app_list + ['CI_LAB']:  #todo: Remove CI_LAB or update to use KIT_CI that follow app_c_fw standards
                                     if pop_event == '-NOOP-':
                                         self.send_cfs_cmd(app_name, 'NoopCmd', {})
                                     elif pop_event == '-RESET-':
@@ -1723,13 +1858,14 @@ class App():
                                         self.send_cfs_cmd(app_name, 'Noop', {})
                                     elif pop_event == '-RESET-':
                                         self.send_cfs_cmd(app_name, 'Reset', {})
-                            break        
+                                break        
+                                        
                     pop_win.close()
                     
                 elif cfs_config_cmd == self.common_cmds[4]: #### Restart App  ####
                     pop_win = sg.Window('Restart Application',
                                         [[sg.Text("")],
-                                         [sg.Text("Select App"), sg.Combo((self.app_cmd_list), size=(20,1), key='-APP_NAME-', default_value=self.app_cmd_list[0])],
+                                         [sg.Text("Select App"), sg.Combo((self.usr_app_list), size=(20,1), key='-APP_NAME-', default_value=self.usr_app_list[0])],
                                          [sg.Text("")],
                                          [sg.Button('Restart', button_color=('SpringGreen4'), enable_events=True, key='-RESTART-', pad=(10,1)),
                                           sg.Cancel(button_color=('gray'))]])
@@ -1740,22 +1876,24 @@ class App():
                             break
                         if pop_event == '-RESTART-':
                             app_name = pop_values['-APP_NAME-']
-                            if app_name != EdsMission.TOPIC_CMD_TITLE_KEY:
+                            if self.GUI_NON_APP_STR in app_name:
+                                sg.popup(f'{app_name} is not a valid app name. Please select an app from the dropdown list', title='Restart Application', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                            else:
                                 self.send_cfs_cmd('CFE_ES', 'RestartAppCmd',  {'Application': app_name})
-                            break        
+                                break        
                     pop_win.close()
 
-                elif cfs_config_cmd == self.common_cmds[5]: #### Configure Events ####
-                    app_list = self.cfe_apps + self.app_cmd_list
-                    pop_win = sg.Window('Configure App Events',
+                elif cfs_config_cmd == self.common_cmds[5]: #### Configure App Event Types ####
+                    pop_win = sg.Window('Configure App Event Types',
                                         [[sg.Text("")],
-                                         [sg.Text("Select App"), sg.Combo((app_list), size=(20,1), key='-APP_NAME-', default_value=app_list[0])],
+                                         [sg.Text("Select App"), sg.Combo((self.all_app_list), size=(20,1), key='-APP_NAME-', default_value=self.all_app_list[0])],
+                                         [sg.Text("")],
                                          [sg.Checkbox('Debug', key='-DEBUG-', default=False), sg.Checkbox('Information', key='-INFO-', default=True),
                                           sg.Checkbox('Error', key='-ERROR-', default=True),  sg.Checkbox('Critical', key='-CRITICAL-', default=True)], 
                                          [sg.Text("")],
                                          [sg.Button('Enable', button_color=('SpringGreen4'), enable_events=True, key='-ENABLE-', pad=(10,1)),
                                           sg.Button('Disable', button_color=('red4'), enable_events=True, key='-DISABLE-', pad=(10,1)), 
-                                          sg.Cancel(button_color=('gray'))]])
+                                          sg.Cancel(button_color=('gray'), pad=(10,1))]])
                 
                     while True:  # Event Loop
                         pop_event, pop_values = pop_win.read(timeout=200)
@@ -1763,21 +1901,58 @@ class App():
                             break
                         if pop_event in ('-ENABLE-', '-DISABLE-'):
                             app_name = pop_values['-APP_NAME-'] 
-                            bit_mask = 0
-                            bit_mask = (bit_mask | (Cfe.EVS_DEBUG_MASK    if pop_values['-DEBUG-']    else 0))
-                            bit_mask = (bit_mask | (Cfe.EVS_INFO_MASK     if pop_values['-INFO-']     else 0))
-                            bit_mask = (bit_mask | (Cfe.EVS_ERROR_MASK    if pop_values['-ERROR-']    else 0))
-                            bit_mask = (bit_mask | (Cfe.EVS_CRITICAL_MASK if pop_values['-CRITICAL-'] else 0))
+                            if self.GUI_NON_APP_STR in app_name:
+                                sg.popup(f'{app_name} is not a valid app name. Please select an app from the dropdown list', title='Configure App Event Types', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                            else:
+                                bit_mask = 0
+                                bit_mask = (bit_mask | (Cfe.EVS_DEBUG_MASK    if pop_values['-DEBUG-']    else 0))
+                                bit_mask = (bit_mask | (Cfe.EVS_INFO_MASK     if pop_values['-INFO-']     else 0))
+                                bit_mask = (bit_mask | (Cfe.EVS_ERROR_MASK    if pop_values['-ERROR-']    else 0))
+                                bit_mask = (bit_mask | (Cfe.EVS_CRITICAL_MASK if pop_values['-CRITICAL-'] else 0))
 
-                            if pop_event == '-ENABLE-':
-                                self.send_cfs_cmd('CFE_EVS', 'EnableAppEventTypeCmd',  {'AppName': app_name, 'BitMask': bit_mask})
-                            if pop_event == '-DISABLE-':
-                                self.send_cfs_cmd('CFE_EVS', 'DisableAppEventTypeCmd',  {'AppName': app_name, 'BitMask': bit_mask})
-                            break        
+                                if pop_event == '-ENABLE-':
+                                    self.send_cfs_cmd('CFE_EVS', 'EnableAppEventTypeCmd',  {'AppName': app_name, 'BitMask': bit_mask})
+                                if pop_event == '-DISABLE-':
+                                    self.send_cfs_cmd('CFE_EVS', 'DisableAppEventTypeCmd',  {'AppName': app_name, 'BitMask': bit_mask})
+                                break        
 
                     pop_win.close()
                 
-                elif cfs_config_cmd == self.common_cmds[6]: #### Ena/Dis Flywheel ####
+                elif cfs_config_cmd == self.common_cmds[6]: #### Reset Event Filter ####
+                    pop_win = sg.Window('Reset App Event Filter',
+                                        [[sg.Text("")],
+                                         [sg.Text("Select App"), sg.Combo((self.all_app_list), size=(20,1), key='-APP_NAME-', default_value=self.all_app_list[0], pad=(5,1))],
+                                         [sg.Text("")],
+                                         [sg.Text("Event ID"), sg.Input('0', size=(8, 1), font='Any 12', key='-EID-', pad=(5,1))],
+                                         [sg.Text("")],
+                                         [sg.Button('Reset All', button_color=('SpringGreen4'), enable_events=True, key='-RESET_ALL-', pad=(10,1)),
+                                          sg.Button('Reset EID', button_color=('SpringGreen4'), enable_events=True, key='-RESET_EID-', pad=(10,1)), 
+                                          sg.Cancel(button_color=('gray'), pad=(10,1))]])
+                
+                    while True:  # Event Loop
+                        pop_event, pop_values = pop_win.read(timeout=200)
+                        if pop_event in (sg.WIN_CLOSED, 'Cancel'):
+                            break
+                        if pop_event in ('-RESET_ALL-', '-RESET_EID-'):
+                            app_name = pop_values['-APP_NAME-'] 
+                            if self.GUI_NON_APP_STR in app_name:
+                                sg.popup(f'{app_name} is not a valid app name. Please select an app from the dropdown list', title='Reset App Event Filter', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                            else:
+                                if pop_event == '-RESET_ALL-':
+                                    self.send_cfs_cmd('CFE_EVS', 'ResetAllFiltersCmd',  {'AppName': app_name})
+                                    break
+                                if pop_event == '-RESET_EID-':
+                                    event_id = pop_values['-EID-']
+                                    if event_id.isdigit():
+                                        self.send_cfs_cmd('CFE_EVS', 'ResetFilterCmd',  {'AppName': app_name, 'EventID': event_id})
+                                        break
+                                    else:
+                                        sg.popup(f'{event_id} is not an integer. Please enter a valid event message ID', title='Reset App Event Filter', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)                                    
+                                        
+
+                    pop_win.close()
+
+                elif cfs_config_cmd == self.common_cmds[7]: #### Ena/Dis Flywheel ####
             
                     pop_text = "cFE TIME outputs an event when it starts/stops flywheel mode\nthat occurs when time can't synch to the 1Hz pulse. Use the\nbuttons to enable/disable the flywheel event messages..."
                     pop_win = sg.Window('Flywheel Message Configuration',
@@ -1801,7 +1976,7 @@ class App():
                             break
                     pop_win.close()
 
-                elif cfs_config_cmd == self.common_cmds[7]: #### Set KIT_TO Telemetry source ####
+                elif cfs_config_cmd == self.common_cmds[8]: #### Set KIT_TO Telemetry source ####
 
                     pop_text = "Remote telemetry should only be selected\nif an app like MQTT_GW is installed that\nsupports routing remote telemetry to KIT_TO..."
 
@@ -1826,26 +2001,36 @@ class App():
                     pop_win.close()
       
             
-                elif cfs_config_cmd == self.common_cmds[8]: #### cFE Version (CFE ES Noop) ####
+                elif cfs_config_cmd == self.common_cmds[9]: #### cFE Version (CFE ES Noop) ####
                     self.send_cfs_cmd('CFE_ES', 'NoopCmd', {})
             
                    
             elif self.event == '-CMD_TOPICS-':
-                #todo: Create a command string for event window. Raw text may be an option so people can capture commands
+                """
+                This is very similar to self.send_cfs_cmd() but not exact so a common function was not created.   
+                TODO: Create a command string for event window. Raw text may be an option so people can capture commands
+                """
                 cmd_topic = self.values['-CMD_TOPICS-']
                 if cmd_topic != EdsMission.TOPIC_CMD_TITLE_KEY:
-                    (cmd_sent, cmd_text, cmd_status) = self.telecommand_gui.execute(cmd_topic)
-                    # If a command is aborted the status string is empty
-                    if len(cmd_status) > 0:
+                    if self.cfs_cmd_dest == self.CFS_CMD_DEST.UDP:
+                        (cmd_sent, cmd_text, cmd_status, cmd_obj) = self.telecommand_gui.execute(cmd_topic)
                         self.display_event(cmd_status)
-                    self.display_event(cmd_text)
+                        #TODO: Add config switch? self.display_event(cmd_text)
+                    elif self.cfs_cmd_dest == self.CFS_CMD_DEST.MQTT:
+                        if self.cfs_mqtt_cmd_client.connected:
+                            (cmd_valid, cmd_text, cmd_status, cmd_obj) = self.telecommand_gui.execute(cmd_topic, return_cmd=True)
+                            if cmd_valid:
+                                self.send_cfs_mqtt_cmd(cmd_obj)
+                            else:
+                                self.display_event(cmd_status) # cmd_status will describe success and failure cases
+                        else:
+                            self.display_event(f'Failed to send {app_name}:{cmd_name}. Configured for MQTT commanding, but MQTT client is disconnected.')
                 else:
                     sg.popup('Please select a command topic from the dropdown list', title='Command Topic', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
             
             elif self.event == '-TLM_TOPICS-':
                 tlm_topic = self.values['-TLM_TOPICS-']
-                if tlm_topic != EdsMission.TOPIC_TLM_TITLE_KEY:
-                    
+                if tlm_topic != EdsMission.TOPIC_TLM_TITLE_KEY:                    
                     app_name = self.tlm_server.get_app_name_from_topic(tlm_topic)
                     tlm_screen_cmd_parms = f'{self.tlm_screen_port} {app_name} {tlm_topic}'
                     self.cmd_tlm_router.add_gnd_tlm_dest(self.tlm_screen_port)

@@ -23,6 +23,7 @@ import socket
 import time
 import sys
 import os
+import re
 
 import logging
 logger = logging.getLogger(__name__)
@@ -85,13 +86,14 @@ class TelecommandInterface(CfeEdsTarget):
     def get_topic_id(self, topic_name):
 
         topic_id = EdsMission.NULL_ID
-        topic_text = ""
+        topic_status = f'Retrieved topic {topic_name} from target {self.target_name}'
+        
         try:
             topic_id = self.topic_dict[topic_name]
         except KeyError:
-            topic_text = "Error retrieving topic %s from current target %s" % (topic_name, self.target_name)
+            topic_status = f'Error retrieving topic {topic_name} from target {self.target_name}'
             
-        return topic_id, topic_text
+        return topic_id, topic_status
         
         
     def get_topic_commands(self, topic_name):
@@ -99,16 +101,17 @@ class TelecommandInterface(CfeEdsTarget):
         Return a dictionary of commands based on a given telecommand topic
         """
         logger.debug("self.topic_dict = " + str(self.topic_dict))
-        topic_id = self.topic_dict[topic_name]
+        topic_id, topic_status = self.get_topic_id(topic_name)
         
         self.command_dict = {EdsMission.COMMAND_TITLE_KEY: EdsMission.NULL_ID}
-        try:
-            topic_obj = self.eds_mission.interface.Topic(topic_id)
-            for command in topic_obj:
-                self.command_dict[command[0]] = command[1]
-            self.command_topic = topic_name
-        except RuntimeError:
-            pass
+        if topic_id != EdsMission.NULL_ID:
+            try:
+                topic_obj = self.eds_mission.interface.Topic(topic_id)
+                for command in topic_obj:
+                    self.command_dict[command[0]] = command[1]
+                self.command_topic = topic_name
+            except RuntimeError:
+                pass
             
         return self.command_dict
 
@@ -116,13 +119,14 @@ class TelecommandInterface(CfeEdsTarget):
     def get_cmd_id(self, command_name):
 
         command_id = EdsMission.NULL_ID
-        command_text = ""
+        command_status = f'Retrieved command {command_name} from topic {self.command_topic}'
+        
         try:
             command_id = self.command_dict[command_name]
         except KeyError:
-            command_text = "Error retrieving command %s from current topic %s" % (command_name, self.command_topic)
+            command_text = f'Error retrieving command {command_name} from topic {self.command_topic}'
             
-        return command_id, command_text
+        return command_id, command_status
         
 
     def get_cmd_entry(self, topic_name, command_name):
@@ -153,7 +157,6 @@ class TelecommandInterface(CfeEdsTarget):
 
     def set_cmd_hdr(self, topic_id, cmd_obj):
         """
-        
         """
         self.eds_mission.cfe_db.SetPubSub(self.id, topic_id, cmd_obj)
         cmd_obj.CCSDS.SeqFlag = 3
@@ -171,6 +174,50 @@ class TelecommandInterface(CfeEdsTarget):
         return has_payload, payload_item
         
                
+    def get_cfs_cmd_obj(self, app_name, cmd_name, cmd_payload):
+    
+        self.cmd_payload = cmd_payload
+        
+        cmd_valid  = False
+        cmd_status = f'Error creating {app_name}/{cmd_name} command'
+            
+        topic_name = app_name.upper() + self.eds_mission.APP_CMD_TOPIC_SUFFIX 
+        topic_id, topic_status = self.get_topic_id(topic_name)
+
+        if topic_id == EdsMission.NULL_ID:
+            cmd_status = cmd_status + ': ' + topic_status       
+        
+        else:
+            cmd_valid, cmd_entry, cmd_obj = self.get_cmd_entry(topic_name, cmd_name)
+            
+            if cmd_valid:    
+                self.set_cmd_hdr(topic_id, cmd_obj)
+
+                cmd_has_payload, cmd_payload_item = self.get_cmd_entry_payload(cmd_entry)
+                    
+                if cmd_has_payload:
+                    
+                    payload_entry = self.eds_mission.get_database_named_entry(cmd_payload_item[2])
+                    payload = payload_entry()
+
+                    payload_struct = self.get_payload_struct(payload_entry, payload, 'Payload')
+                    eds_payload = self.set_payload_values(payload_struct)
+                    payload = payload_entry(eds_payload)
+
+                    cmd_obj['Payload'] = payload
+                
+                cmd_status = f'Successfully created {app_name}/{cmd_name} command'
+                
+        return (cmd_valid, cmd_status, cmd_obj)
+
+    def get_cmd_obj_name(self, cmd_obj):
+        """
+        Assumes a valid cmd_obj
+        The cmd_obj class name contains the command name. For exmAple
+            EdsLib.DatabaseEntry('basecamp','KIT_TO/Noop')
+        """
+        return re.findall("'([^']*)'", str(cmd_obj.__class__))[1]
+
     def get_payload_struct(self, base_entry, base_object, base_name):
         """
         Recursive function that goes through an EDS object structure (arrays and structs)
@@ -285,17 +332,15 @@ class TelecommandInterface(CfeEdsTarget):
     
     def send_command(self, cmd_obj):
         """
-         
         """
         cmd_packed = self.eds_mission.get_packed_obj(cmd_obj)
 
         cmd_sent   = True
         cmd_text   = cmd_packed.hex()
-        cmd_status = "Sent command " + self.cmd_entry.Name
         
         self.cmd_router_queue.put(bytes(cmd_packed))
 
-        return (cmd_sent, cmd_text, cmd_status)
+        return (cmd_sent, cmd_text)
         """
         try:
             self.cmd_router_queue.put(bytes(cmd_packed))
@@ -337,42 +382,66 @@ class TelecommandScript(TelecommandInterface):
 
     def send_cfs_cmd(self, app_name, cmd_name, cmd_payload):
     
-        self.cmd_payload = cmd_payload
-        
-        topic_name = app_name.upper() + self.eds_mission.APP_CMD_TOPIC_SUFFIX 
-        topic_id, topic_text = self.get_topic_id(topic_name)
-            
-        cmd_valid, cmd_entry, cmd_obj = self.get_cmd_entry(topic_name, cmd_name)
-        
         cmd_sent   = False
-        cmd_text   = "%s: %s" % (app_name,cmd_name)
-        cmd_status = "Error sending %s's %s command" % (app_name,cmd_name)
-        
-        if cmd_valid:    
-            self.set_cmd_hdr(topic_id, cmd_obj)
+        cmd_text   = f'{app_name}/{cmd_name}'
+        cmd_status = f'Error sending {cmd_text} command'
 
-            cmd_has_payload, cmd_payload_item = self.get_cmd_entry_payload(cmd_entry)
-                
-            if cmd_has_payload:
-                
-                payload_entry = self.eds_mission.get_database_named_entry(cmd_payload_item[2])
-                payload = payload_entry()
-
-                payload_struct = self.get_payload_struct(payload_entry, payload, 'Payload')
-                eds_payload = self.set_payload_values(payload_struct)
-                payload = payload_entry(eds_payload)
-
-                cmd_obj['Payload'] = payload
-        
-            (cmd_sent, cmd_text, cmd_status) = self.send_command(cmd_obj)
+        cmd_valid, cmd_status, cmd_obj = self.get_cfs_cmd_obj(app_name, cmd_name, cmd_payload)
+    
+        if cmd_valid:
+            
+            (cmd_sent, cmd_text) = self.send_command(cmd_obj)
             
             if cmd_sent == True:
-                cmd_status = "%s %s command sent" % (app_name, cmd_name)
+                cmd_status = f'Sent {app_name}/{cmd_name} command'
                 logger.debug(hex_string(cmd_text, 8))        
             else:
                 logger.info(cmd_status)
+                
+        return (cmd_sent, cmd_text, cmd_status)
+
+
+    def send_cfs_cmd_old(self, app_name, cmd_name, cmd_payload):
+    
+        self.cmd_payload = cmd_payload
         
+        cmd_sent   = False
+        cmd_text   = f'{app_name}/{cmd_name}'
+        cmd_status = f'Error sending {cmd_text}'
+
+        topic_name = app_name.upper() + self.eds_mission.APP_CMD_TOPIC_SUFFIX 
+        topic_id, topic_status = self.get_topic_id(topic_name)
+
+        if topic_id == EdsMission.NULL_ID:
+            cmd_status = cmd_status + ': ' + topic_status       
         
+        else:
+            cmd_valid, cmd_entry, cmd_obj = self.get_cmd_entry(topic_name, cmd_name)
+            
+            if cmd_valid:    
+                self.set_cmd_hdr(topic_id, cmd_obj)
+
+                cmd_has_payload, cmd_payload_item = self.get_cmd_entry_payload(cmd_entry)
+                    
+                if cmd_has_payload:
+                    
+                    payload_entry = self.eds_mission.get_database_named_entry(cmd_payload_item[2])
+                    payload = payload_entry()
+
+                    payload_struct = self.get_payload_struct(payload_entry, payload, 'Payload')
+                    eds_payload = self.set_payload_values(payload_struct)
+                    payload = payload_entry(eds_payload)
+
+                    cmd_obj['Payload'] = payload
+            
+                (cmd_sent, cmd_text) = self.send_command(cmd_obj)
+                
+                if cmd_sent == True:
+                    cmd_status = f'Sent {app_name}/{cmd_name} command'
+                    logger.debug(hex_string(cmd_text, 8))        
+                else:
+                    logger.info(cmd_status)
+                
         return (cmd_sent, cmd_text, cmd_status)
 
 
@@ -410,7 +479,7 @@ class TelecommandCmdLine(TelecommandInterface):
 
 
     def send_user_command(self):
-    
+
         topic_dict = self.get_topics()
         logger.debug("topics = " + str(topic_dict))
         print("Topic List:")
@@ -426,7 +495,7 @@ class TelecommandCmdLine(TelecommandInterface):
             user_id = int(input("\nInput numeric topic ID> "))
             if user_id > 0 and user_id < user_topic_id:
                 topic_name = topic_list[user_id]
-                topic_id, topic_text = self.get_topic_id(topic_name)
+                topic_id, topic_status = self.get_topic_id(topic_name)
                 print("Selected topic %s with EDS ID %d" % (topic_name, topic_id))
                 break
             else:
@@ -456,6 +525,7 @@ class TelecommandCmdLine(TelecommandInterface):
                     print("Aborted command selection")
                     break
 
+        # TODO: Consider using get_cfs_cmd_obj()
         (cmd_valid, cmd_entry, cmd_obj) = self.get_cmd_entry(topic_name, command_name)
 
         if cmd_valid == True:
@@ -482,16 +552,17 @@ class TelecommandCmdLine(TelecommandInterface):
 
                 cmd_obj['Payload'] = payload
     
-            (cmd_sent, cmd_text, cmd_status) = self.send_command(cmd_obj)
+            (cmd_sent, cmd_text) = self.send_command(cmd_obj)
     
+            cmd_name = self.get_cmd_obj_name(cmd_obj)
             if cmd_sent == True:
+                print(f'Sent {cmd_name} command')
                 print(hex_string(cmd_text, 8))
             else:
-                print(cmd_text)
+                print(f'Error sending {cmd_name} command')
 
-        else:    
-            
-            print("Error retrieving command %s using topic ID %d" % (command_name, topic_id)) 
+        else:
+            print(f'Error retrieving command {command_name} using topic ID {topic_id}')
     
 
     def execute(self):
@@ -513,7 +584,7 @@ def main():
     CFS_IP_ADDR     = config.get('NETWORK', 'CFS_IP_ADDR')
     CFS_CMD_PORT    = config.getint('NETWORK', 'CFS_CMD_PORT')
     GND_IP_ADDR     = config.get('NETWORK', 'GND_IP_ADDR')
-    GND_CMD_PORT    = config.getint('NETWORK','CMD_TLM_ROUTER_CMD_PORT')
+    GND_CMD_PORT    = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     GND_TLM_PORT    = config.getint('NETWORK', 'GND_TLM_PORT')
     GND_TLM_TIMEOUT = float(config.getint('NETWORK', 'GND_TLM_TIMEOUT'))/1000.0
 

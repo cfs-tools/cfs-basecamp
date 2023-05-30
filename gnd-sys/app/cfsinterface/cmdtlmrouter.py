@@ -187,7 +187,7 @@ class CmdTlmRouter(Thread):
         """
         self.cfs_ip_addr = ip_addr
         self.cfs_cmd_socket_addr = (self.cfs_ip_addr, self.cfs_cmd_port)
-        logger.info(f'cfS IP address set to {self.cfs_cmd_socket_addr}')
+        logger.info(f'cFS IP address set to {self.cfs_cmd_socket_addr}')
 
     def run(self):
 

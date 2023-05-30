@@ -74,6 +74,12 @@ static void  SendHousekeepingTlm(void);
 */
 DEFINE_ENUM(Config,APP_CONFIG)  
 
+static CFE_EVS_BinFilter_t  EventFilters[] =
+{  
+   /* Event ID                   Mask */
+   {SCHEDULER_MULTI_SLOTS_EID,   CFE_EVS_FIRST_4_STOP}
+};
+
 
 /*****************/
 /** Global Data **/
@@ -91,7 +97,8 @@ void KIT_SCH_AppMain(void)
 	
    uint32 RunStatus = CFE_ES_RunStatus_APP_ERROR;
    
-   CFE_EVS_Register(NULL, 0, CFE_EVS_NO_FILTER);
+   CFE_EVS_Register(EventFilters, sizeof(EventFilters)/sizeof(CFE_EVS_BinFilter_t),
+                    CFE_EVS_EventFilter_BINARY);
 
    /* 
    ** Load KIT_SCH towards the end in cfe_es_startup.scr (see file comments) to
@@ -157,6 +164,8 @@ bool KIT_SCH_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool KIT_SCH_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
+   CFE_EVS_ResetAllFilters();
+   
    CMDMGR_ResetStatus(CMDMGR_OBJ);
    TBLMGR_ResetStatus(TBLMGR_OBJ);
 

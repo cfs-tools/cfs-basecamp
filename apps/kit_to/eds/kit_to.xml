@@ -164,7 +164,7 @@
           <Entry name="PktTblActionStatus"   type="APP_C_FW/TblActionStatus" />
           <Entry name="PktTblJsonObjCnt"     type="BASE_TYPES/uint16" />
           <Entry name="TlmSource"            type="TlmSource" />
-          <Entry name="StatsValid"           type="BASE_TYPES/uint8"  />
+          <Entry name="StatsValid"           type="APP_C_FW/BooleanUint8"  />
           <Entry name="PktsPerSec"           type="BASE_TYPES/uint16" />
           <Entry name="BytesPerSec"          type="BASE_TYPES/uint32" />
           <Entry name="TlmSockId"            type="BASE_TYPES/uint16" />
@@ -437,13 +437,13 @@
             </GenericTypeMapSet>
           </Interface>
 
-          <Interface name="TUNNEL_TLM" shortDescription="Wrap messages whose forward flag is set to true" type="CFE_SB/Telemetry">
+          <Interface name="PUB_WRAPPED_TLM" shortDescription="Wrapped messages published by KIT_TO. Their forward flag is set to true" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="WrappedSbMsgTlm" />
             </GenericTypeMapSet>
           </Interface>
 
-          <Interface name="SB_WRAP_TO_UDP_TLM" shortDescription="SB messages that an SB message as a payload. They are unwrapped and output over UDP" type="CFE_SB/Telemetry">
+          <Interface name="SUB_WRAPPED_TLM" shortDescription= "Wrapped messages subscribed to by KIT_TO. They are unwrapped and output over UDP" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="WrappedSbMsgTlm" />
             </GenericTypeMapSet>
@@ -462,19 +462,19 @@
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="DataTypesTlmTopicId"     initialValue="${CFE_MISSION/KIT_TO_DATA_TYPES_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="PktTblTlmTopicId"        initialValue="${CFE_MISSION/KIT_TO_PKT_TBL_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="PlbkEventTlmTopicId"     initialValue="${CFE_MISSION/KIT_TO_EVENT_PLBK_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SbWrapToUdpTlmTopicId"   initialValue="${CFE_MISSION/KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="TunnelTlmTopicId"        initialValue="${CFE_MISSION/KIT_TO_TUNNEL_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SubWrappedTlmTopicId"    initialValue="${CFE_MISSION/KIT_TO_SUB_WRAPPED_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="PubWrappedTlmTopicId"    initialValue="${CFE_MISSION/KIT_TO_PUB_WRAPPED_TLM_TOPICID}" />
           </VariableSet>
           
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
-            <ParameterMap interface="CMD"                   parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="HK_TLM"                parameter="TopicId" variableRef="HkTlmTopicId" />
-            <ParameterMap interface="DATA_TYPES_TLM"        parameter="TopicId" variableRef="DataTypesTlmTopicId" />
-            <ParameterMap interface="PKT_TBL_TLM"           parameter="TopicId" variableRef="PktTblTlmTopicId" />
-            <ParameterMap interface="PLBK_EVENT_TLM"        parameter="TopicId" variableRef="PlbkEventTlmTopicId" />
-            <ParameterMap interface="SB_WRAP_TO_UDP_TLM"    parameter="TopicId" variableRef="SbWrapToUdpTlmTopicId" />
-            <ParameterMap interface="TUNNEL_TLM"            parameter="TopicId" variableRef="TunnelTlmTopicId" />
+            <ParameterMap interface="CMD"              parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="HK_TLM"           parameter="TopicId" variableRef="HkTlmTopicId" />
+            <ParameterMap interface="DATA_TYPES_TLM"   parameter="TopicId" variableRef="DataTypesTlmTopicId" />
+            <ParameterMap interface="PKT_TBL_TLM"      parameter="TopicId" variableRef="PktTblTlmTopicId" />
+            <ParameterMap interface="PLBK_EVENT_TLM"   parameter="TopicId" variableRef="PlbkEventTlmTopicId" />
+            <ParameterMap interface="SUB_WRAPPED_TLM"  parameter="TopicId" variableRef="SubWrappedTlmTopicId" />
+            <ParameterMap interface="PUB_WRAPPED_TLM"  parameter="TopicId" variableRef="PubWrappedTlmTopicId" />
           </ParameterMapSet>
         </Implementation>
       </Component>

@@ -59,7 +59,7 @@
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="StartHistogramLog_Payload" shortDescription="Start logging data samples for a specific bin to a text log file">
+      <ContainerDataType name="StartHistogramLog_Payload"   shortDescription="Start logging data samples for a specific bin to a text log file">
         <EntryList>
           <Entry name="BinNum"     type="BASE_TYPES/uint16" shortDescription="Bin number to be logged. Bins are defined by the histogram bin table" />
           <Entry name="MaxEntries" type="BASE_TYPES/uint16" shortDescription="Maximum number of data samples to store in the log file" />

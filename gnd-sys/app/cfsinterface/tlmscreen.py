@@ -82,7 +82,7 @@ class TlmScreen():
         self.app_name  = ''
         self.tlm_topic = ''
 
-        self.NULL_STR = self.tlm_server.eds_mission.NULL_STR
+        self.NULL_STR = self.tlm_server.eds_mission.NULL_TLM_STR
 
 
         self.payload_fmt_str = "{:<50}: {}\n"

@@ -63,7 +63,7 @@ class MqttClient():
             self.log_info_event(f'Client initialized on {self.broker_addr}:{self.broker_port}')
             connect = True
         except Exception as e:
-            self.log_error_event(f'Client initializaation error for {self.broker_addr}:{self.broker_port}')
+            self.log_error_event(f'Client connection error for {self.broker_addr}:{self.broker_port}')
             self.log_error_event(f'Error: {e}')
         return connect
 
@@ -234,6 +234,7 @@ class RemoteOps(MqttClient):
     ###########
     ### cFS ###
     ###########
+    
     def cfs_start_cmd(self, param):
         try:
             if self.cfs_exe:
@@ -315,6 +316,7 @@ class RemoteOps(MqttClient):
     ##############
     ### Python ###
     ##############
+    
     def python_list_apps_cmd(self, param):
         self.log_info_event('List apps not implemented')
 
@@ -388,6 +390,7 @@ class RemoteOps(MqttClient):
     ##############
     ### Target ###
     ##############
+    
     def target_noop_cmd(self, param):
         timestamp = datetime.now().strftime("%m/%d/%Y-%H:%M:%S")
         self.log_info_event(f'Noop received at {timestamp}')

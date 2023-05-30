@@ -96,9 +96,9 @@
 		<Define name="BC_SCH_4_SEC_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 20"/>
 		<Define name="BC_SCH_8_SEC_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 21"/>
 		
-		<!-- #######################  -->
-		<!-- ## Runtime App Suite ##  -->
-		<!-- #######################  -->
+		<!-- ###########################  -->
+		<!-- ## Ops Service App Suite ##  -->
+		<!-- ###########################  -->
 		
 		<Define name="CI_LAB_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 22"/>
 		<Define name="CI_LAB_SEND_HK_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 23"/>
@@ -166,9 +166,9 @@
 		<Define name="TIME_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 13"/>
 		<Define name="TIME_DIAG_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 14"/>
 		
-		<!-- #######################  -->
-		<!-- ## Runtime App Suite ##  -->
-		<!-- #######################  -->
+		<!-- ###########################  -->
+		<!-- ## Ops Service App Suite ##  -->
+		<!-- ###########################  -->
 		
 		<Define name="CI_LAB_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 15"/>
 		<Define name="FILE_MGR_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 16"/>
@@ -188,8 +188,8 @@
 		<Define name="KIT_TO_PKT_TBL_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 30"/>
 		<Define name="KIT_TO_EVENT_PLBK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 31"/>
 		<Define name="KIT_TO_LOCAL_TO_SB_WRAP_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 32"/>
-		<Define name="KIT_TO_SB_WRAP_TO_UDP_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 33"/>
-		<Define name="KIT_TO_TUNNEL_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 34"/>
+		<Define name="KIT_TO_SUB_WRAPPED_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 33"/>
+		<Define name="KIT_TO_PUB_WRAPPED_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 34"/>
 		
 		<!-- #######################  -->
 		<!-- ##  Development App  ##  -->

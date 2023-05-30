@@ -178,8 +178,8 @@ class TargetControl(CmdProcess):
 
     def client_disconnect(self):
         """
-        This method will be called on the MQTT initiating a disconnect. It has not been detmereined whether calling
-        the client's diconnect in this scenario causes an issue 
+        This method will be called on the MQTT initiating a disconnect. It has not been determined whether calling
+        the client's disconnect in this scenario causes an issue 
         """
         self.client_connected=False
         self.client.disconnect()
@@ -205,7 +205,7 @@ class TargetControl(CmdProcess):
                 "cmd-cnt":  integer,
                 "event":    "Event message string",
                 "cfs-exe":  boolean, Is the cFS running?
-                "cfs-apps": "Comma separated app names (cfS non-runtime app suite apps)",
+                "cfs-apps": "Comma separated app names (cFS non-runtime app suite apps)",
                 "py-exe":   boolean, Is a python app running?
                 "py-apps":  "Comma separated python scripts (An asterick indicates the script is running)",
             }
@@ -442,12 +442,12 @@ if __name__ == '__main__':
     print("Broker Address: %s, Port: %s" % (broker_addr, broker_port))
     
     client_name   = config.get('NETWORK','MQTT_CLIENT_NAME')
-    remote_target_mqtt_topic = config.get('NETWORK','REMOTE_TARGET_MQTT_TOPIC')
+    mqtt_remote_ops_topic = config.get('NETWORK','MQTT_REMOTE_OPS_TOPIC')
     
     local_network_adapter = config.get('NETWORK','LOCAL_NET_ADAPTER')
     
     target_control = TargetControl(mission_name, gnd_ip_addr, router_ctrl_port, cmd_port, 
-                                   remote_target_mqtt_topic, broker_addr, broker_port, client_name,
+                                   mqtt_remote_ops_topic, broker_addr, broker_port, client_name,
                                    local_network_adapter)
     target_control.execute()
     

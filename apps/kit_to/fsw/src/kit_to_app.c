@@ -27,7 +27,7 @@
 **    3. Most functions are global to assist in unit testing
 **
 **  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
+**    1. cFS Basecamp Application Developer's Guide
 **    2. cFS Application Developer's Guide
 **
 */
@@ -73,6 +73,12 @@ static void  SendHousekeepingTlm(void);
 */
 DEFINE_ENUM(Config,APP_CONFIG)
 
+static CFE_EVS_BinFilter_t  EventFilters[] =
+{  
+   /* Event ID            Mask */
+   {PKTMGR_FORWARD_EID,   CFE_EVS_FIRST_4_STOP},
+   {PKTMGR_UNWRAP_EID,    CFE_EVS_FIRST_4_STOP}
+};
 
 /*****************/
 /** Global Data **/
@@ -92,7 +98,8 @@ void KIT_TO_AppMain(void)
    uint16  NumPktsOutput;
    uint32  RunStatus = CFE_ES_RunStatus_APP_ERROR;
    
-   CFE_EVS_Register(NULL, 0, CFE_EVS_NO_FILTER);
+   CFE_EVS_Register(EventFilters, sizeof(EventFilters)/sizeof(CFE_EVS_BinFilter_t),
+                    CFE_EVS_EventFilter_BINARY);
 
    if (InitApp() == CFE_SUCCESS)      /* Performs initial CFE_ES_PerfLogEntry() call */
    {
@@ -167,6 +174,8 @@ bool KIT_TO_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool KIT_TO_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
+   CFE_EVS_ResetAllFilters();
+   
    CMDMGR_ResetStatus(CMDMGR_OBJ);
    TBLMGR_ResetStatus(TBLMGR_OBJ);
 
