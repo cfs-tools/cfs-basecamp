@@ -1157,6 +1157,7 @@ class App():
     GUI_APP_SEPARATOR = '---------------'
     
     CFS_CMD_DEST = Enum('cFSCmdDest', ['UDP', 'MQTT'])
+    CFS_TLM_SRC  = {'LOCAL': 'Local', 'REMOTE': 'Remote'}
     
     def __init__(self, ini_file):
 
@@ -1171,10 +1172,6 @@ class App():
         self.EDS_CFS_TARGET_NAME = self.config.get('CFS_TARGET','CPU_EDS_NAME')
         self.SUDO_START_CFS      = self.config.getboolean('CFS_TARGET','SUDO_START_CFS')
 
-        self.CFS_IP_ADDR     = self.config.get('NETWORK','CFS_IP_ADDR')
-        self.CFS_CMD_PORT    = self.config.getint('NETWORK','CFS_CMD_PORT')
-        self.CFS_IP_DEST_STR = f'{self.CFS_IP_ADDR}:{self.CFS_CMD_PORT}'
-        
         self.CFS_IP_ADDR     = self.config.get('NETWORK','CFS_IP_ADDR')
         self.CFS_CMD_PORT    = self.config.getint('NETWORK','CFS_CMD_PORT')
         self.CFS_IP_DEST_STR = f'{self.CFS_IP_ADDR}:{self.CFS_CMD_PORT}'
@@ -1198,6 +1195,7 @@ class App():
         self.cfs_subprocess_log = ""
         self.cfs_stdout         = None
         self.cfs_cmd_dest       = self.CFS_CMD_DEST.UDP
+        
         self.cfe_time_event_filter = False  #todo: Retaining the state here doesn't work if user starts and stops the cFS and doesn't restart Basecamp
         self.cfs_build_subprocess  = None
         
@@ -1470,7 +1468,7 @@ class App():
         menu_def = [
                        ['System', ['Options', 'About', 'Exit']],
                        ['Developer', ['Create App', 'Download App', 'Add App', 'Remove App', '---', 'Run Perf Monitor']], #todo: 'Certify App' 
-                       ['Operator', ['Browse Files', 'Run Script', 'Plot Data', '---', 'Control Remote Target', 'Configure Remote Commands']],
+                       ['Operator', ['Browse Files', 'Run Script', 'Plot Data', '---', 'Control Remote Target', 'Configure Command Destination', 'Configure Telemetry Source']],
                        ['Documents', ['cFS Overview', 'cFE Overview', 'App Dev Guide']],
                        ['Tutorials', self.manage_tutorials.tutorial_titles]
                    ]
@@ -1511,7 +1509,14 @@ class App():
                       sg.Combo(cmd_topics, enable_events=True, key="-CMD_TOPICS-", default_value=cmd_topics[0], pad=((0,5),(12,12))),
                       sg.Text('View Tlm:', font=sec_hdr_font, pad=((5,0),(12,12))),
                       sg.Combo(tlm_topics, enable_events=True, key="-TLM_TOPICS-", default_value=tlm_topics[0], pad=((0,5),(12,12))),]], pad=((0,0),(15,15)))],
-                     [sg.Text('cFS Process Window', font=pri_hdr_font), sg.Text(f' [{self.CFS_IP_DEST_STR}] ', key='-CFS_CMD_DEST-', font=sec_hdr_font, text_color='black'), sg.Text('Time: ', font=sec_hdr_font, pad=(2,1)), sg.Text(EdsMission.NULL_TLM_STR, key='-CFS_TIME-', font=sec_hdr_font, text_color='blue'), sg.Button('Restart', enable_events=True, key='-RESTART-', visible=False)],
+                     [sg.Text('cFS Target Process Window', font=pri_hdr_font, pad=(4,1)), 
+                      sg.Text('  ', font=sec_hdr_font, pad=(4,1)),
+                      sg.Text('Telecommand:', font=sec_hdr_font, pad=(4,1)), sg.Text(self.CFS_IP_DEST_STR, key='-CFS_CMD_DEST-', font=sec_hdr_font, text_color='blue'), 
+                      sg.Text('  ', font=sec_hdr_font, pad=(4,1)),
+                      sg.Text('Telemetry:', font=sec_hdr_font, pad=(4,1)), sg.Text(self.CFS_TLM_SRC['LOCAL'], key='-CFS_TLM_SRC-', font=sec_hdr_font, text_color='blue'), 
+                      sg.Text('  ', font=sec_hdr_font, pad=(4,1)),
+                      sg.Text('Time:', font=sec_hdr_font, pad=(4,1)), sg.Text(EdsMission.NULL_TLM_STR, key='-CFS_TIME-', font=sec_hdr_font, text_color='blue'), 
+                      sg.Button('Restart', enable_events=True, key='-RESTART-', visible=False)],
                      #[sg.Output(font=log_font, size=(125, 10))],
                      [sg.MLine(default_text=self.cfs_subprocess_log, font=log_font, enable_events=True, size=(125, 15), key='-CFS_PROCESS_TEXT-')],
                      [sg.Text('Ground & Flight Events', font=pri_hdr_font), sg.Button('Clear', enable_events=True, key='-CLEAR_EVENTS-', pad=(5,1))],
@@ -1661,8 +1666,8 @@ class App():
                 tools_dir = os.path.join(self.path, "cfsinterface")
                 self.target_control = sg.execute_py_file("targetcontrol.py", cwd=tools_dir)
 
-            elif self.event == 'Configure Remote Commands':
-                    pop_win = sg.Window('Configure Remote Commands',
+            elif self.event == 'Configure Command Destination':
+                    pop_win = sg.Window('Configure Command Destination',
                                         [[sg.Text("")],
                                          [sg.Text("UDP:",  size=(6,1)), sg.Text("Send commands to cFS IP address/port defined in basecamp.ini")],
                                          [sg.Text("MQTT:", size=(6,1)), sg.Text("Send commands to MQTT broker/topic defined in basecamp.ini")],
@@ -1678,17 +1683,40 @@ class App():
                         if pop_event == '-UDP-':
                             self.cfs_cmd_dest = self.CFS_CMD_DEST.UDP
                             self.display_event('cFS command destination set to UDP')
-                            self.window["-CFS_CMD_DEST-"].update(f' [{self.CFS_IP_DEST_STR}] ')
+                            self.window["-CFS_CMD_DEST-"].update(self.CFS_IP_DEST_STR)
                             break
                         elif pop_event == '-MQTT-':
                             if self.cfs_mqtt_cmd_client.connect():
                                 self.cfs_cmd_dest = self.CFS_CMD_DEST.MQTT
-                                self.window["-CFS_CMD_DEST-"].update(f' [{self.CFS_MQTT_DEST_STR}] ')
+                                self.window["-CFS_CMD_DEST-"].update(f'{self.CFS_MQTT_DEST_STR}')
                                 self.display_event(f'cFS command destination set to MQTT: {self.CFS_MQTT_DEST_STR}')
                             break
                             
                     pop_win.close()
                 
+            elif self.event == 'Configure Telemetry Source':
+                    pop_win = sg.Window('Configure Telemetry Source',
+                                        [[sg.Text("")],
+                                         [sg.Text("LOCAL:",  size=(6,1)), sg.Text("KIT_TO configured to send telemetry from the local target")],
+                                         [sg.Text("REMOTE:", size=(6,1)), sg.Text("KIT_TO configured to send telemetry from a remote target. Requires MQTT_GW")],
+                                         [sg.Text("")],
+                                         [sg.Button('Local',  button_color=('SpringGreen4'), enable_events=True, key='-LOCAL-',  pad=(10,1)),
+                                          sg.Button('Remote', button_color=('SpringGreen4'), enable_events=True, key='-REMOTE-', pad=(10,1)), 
+                                          sg.Cancel(button_color=('gray'), pad=(10,1))]])
+                
+                    while True:  # Event Loop
+                        pop_event, pop_values = pop_win.read(timeout=200)
+                        if pop_event in (sg.WIN_CLOSED, 'Cancel'):
+                            break
+                        if pop_event in ('-LOCAL-','-REMOTE-'):
+                            tlm_src = pop_event.strip('-')
+                            self.send_cfs_cmd('KIT_TO', 'SetTlmSource',  {'Source': tlm_src})
+                            self.display_event(f'cFS telemetry source set to {tlm_src}')
+                            self.window["-CFS_TLM_SRC-"].update(tlm_src.title())
+                            break
+                            
+                    pop_win.close()
+
             ### DOCUMENTS ###
             
             elif self.event == 'cFS Overview':

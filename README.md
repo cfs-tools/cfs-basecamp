@@ -17,7 +17,7 @@ For users who are working on a flight mission, plans are underway to create an a
 
 Basecamp store approach is made possible by using a standard application framework that includes runtime JSON initialization files and by using the [cfe-eds-framework](https://github.com/jphickey/cfe-eds-framework) cFS distribution that includes a CCSDS Electronic Data Sheets (EDS) toolchain. Each cFS application interface is defined using EDS specifications and the cfe-eds-framework build toolchain generates artifacts that are used by both the flight and ground software systems. App specification and packaging standards are being defined that will allow the cFS community to easily share apps. 
 
-Basecamp uses a Linux-based cFS target. [cFS Platform List](https://github.com/cfs-tools/cfs-platform-list provides links to additional cFS ports.
+Basecamp uses a Linux-based cFS target. [cFS Platform List](https://github.com/cfs-tools/cfs-platform-list) provides links to additional cFS ports.
 
 # Getting Started
 
