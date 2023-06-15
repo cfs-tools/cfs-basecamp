@@ -1004,7 +1004,7 @@ class ManageCfs():
                 print(tlm)
             cfe_topic_ids.write_doc_to_file()
             kit_to_pkt_tbl.replace_spare_topics(tlm_topics)
-            popup_text = f'Updated topid IDs in {self.cfe_topic_id_file} and {self.kit_to_tbl_file}'
+            popup_text = f'Updated topic IDs in {self.cfe_topic_id_file} and {self.kit_to_tbl_file}'
             update_passed = True
             #todo: Remove? sg.popup(popup_text, title='Update Topic IDs', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         return update_passed, popup_text 
@@ -1518,9 +1518,9 @@ class App():
                       sg.Text('Time:', font=sec_hdr_font, pad=(4,1)), sg.Text(EdsMission.NULL_TLM_STR, key='-CFS_TIME-', font=sec_hdr_font, text_color='blue'), 
                       sg.Button('Restart', enable_events=True, key='-RESTART-', visible=False)],
                      #[sg.Output(font=log_font, size=(125, 10))],
-                     [sg.MLine(default_text=self.cfs_subprocess_log, font=log_font, enable_events=True, size=(125, 15), key='-CFS_PROCESS_TEXT-')],
-                     [sg.Text('Ground & Flight Events', font=pri_hdr_font), sg.Button('Clear', enable_events=True, key='-CLEAR_EVENTS-', pad=(5,1))],
-                     [sg.MLine(default_text=self.event_log, font=log_font, enable_events=True, size=(125, 15), key='-EVENT_TEXT-')]
+                     [sg.MLine(default_text=self.cfs_subprocess_log, font=log_font, enable_events=True, size=(135, 15), key='-CFS_PROCESS_TEXT-')],
+                     [sg.Text('Ground Events', font=pri_hdr_font), sg.Button('Clear', enable_events=True, key='-CLEAR_EVENTS-', pad=(5,1))],
+                     [sg.MLine(default_text=self.event_log, font=log_font, enable_events=True, size=(135, 15), key='-EVENT_TEXT-')]
                  ]
 
         #sg.Button('Send Cmd', enable_events=True, key='-SEND_CMD-', pad=(10,1)),

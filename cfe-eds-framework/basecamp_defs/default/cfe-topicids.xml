@@ -120,22 +120,32 @@
 		<!-- ##  User Apps   ##  -->
 		<!-- ##################  -->
 		
-        <Define name="BERRY_IMU_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 32"  />
-        <Define name="GPIO_DEMO_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 33"  />
-        <Define name="MQTT_GW_CMD_TOPICID"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 34"  />
-        <Define name="PL_MGR_CMD_TOPICID"    value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 35"  />
-        <Define name="PL_SIM_CMD_TOPICID"    value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 36"  />
-        <Define name="TBL_SAT_CMD_TOPICID"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 37"  />
-        <Define name="SC_SIM_CMD_TOPICID"    value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 38"  />
-		<Define name="SPARE_CMD_TOPICID_1"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 45" shortDescription="SPARE_CMD_TOPICID_1"/>
-		<Define name="SPARE_CMD_TOPICID_2"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 45" shortDescription="SPARE_CMD_TOPICID_2"/>
-		<Define name="SPARE_CMD_TOPICID_3"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 45" shortDescription="SPARE_CMD_TOPICID_3"/>
-		<Define name="SPARE_CMD_TOPICID_4"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 45" shortDescription="SPARE_CMD_TOPICID_4"/>
-		<Define name="SPARE_CMD_TOPICID_5"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 45" shortDescription="SPARE_CMD_TOPICID_5"/>
-		<Define name="SPARE_CMD_TOPICID_6"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 45" shortDescription="SPARE_CMD_TOPICID_6"/>
+      <Define name="BERRY_IMU_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 32"  />
+      <Define name="GPIO_DEMO_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 33"  />
+      <Define name="MQTT_GW_CMD_TOPICID"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 34"  />
+      <Define name="PL_MGR_CMD_TOPICID"    value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 35"  />
+      <Define name="PL_SIM_CMD_TOPICID"    value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 36"  />
+      <Define name="TBL_SAT_CMD_TOPICID"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 37"  />
+      <Define name="SC_SIM_CMD_TOPICID"    value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 38"  />
+		
+      <!-- ############################################################################### -->
+      <!-- ## Spare Command Topic IDs conventions assumed by tools:                     ## -->
+      <!-- ##   'name' and 'shortDescription' attributes defined as SPARE_CMD_TOPICID_X ## -->
+      <!-- ##   TELECOMMAND_BASE_TOPICID offsets must be unique and incrementing        ## -->
+      <!-- ##   TELECOMMAND_NUM_TOPICIDS defines the maximum number of topic IDs        ## -->
+      <!-- ############################################################################### -->
+		<Define name="SPARE_CMD_TOPICID_1"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 39" shortDescription="SPARE_CMD_TOPICID_1"/>
+		<Define name="SPARE_CMD_TOPICID_2"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 40" shortDescription="SPARE_CMD_TOPICID_2"/>
+		<Define name="SPARE_CMD_TOPICID_3"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 41" shortDescription="SPARE_CMD_TOPICID_3"/>
+		<Define name="SPARE_CMD_TOPICID_4"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 42" shortDescription="SPARE_CMD_TOPICID_4"/>
+		<Define name="SPARE_CMD_TOPICID_5"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 43" shortDescription="SPARE_CMD_TOPICID_5"/>
+		<Define name="SPARE_CMD_TOPICID_6"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 44" shortDescription="SPARE_CMD_TOPICID_6"/>
 		<Define name="SPARE_CMD_TOPICID_7"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 45" shortDescription="SPARE_CMD_TOPICID_7"/>
-		<Define name="SPARE_CMD_TOPICID_8"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 45" shortDescription="SPARE_CMD_TOPICID_8"/>
-		<Define name="SPARE_CMD_TOPICID_9"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 45" shortDescription="SPARE_CMD_TOPICID_9"/>
+		<Define name="SPARE_CMD_TOPICID_8"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 46" shortDescription="SPARE_CMD_TOPICID_8"/>
+		<Define name="SPARE_CMD_TOPICID_9"   value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 47" shortDescription="SPARE_CMD_TOPICID_9"/>
+		<Define name="SPARE_CMD_TOPICID_10"  value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 48" shortDescription="SPARE_CMD_TOPICID_10"/>
+		<Define name="SPARE_CMD_TOPICID_11"  value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 49" shortDescription="SPARE_CMD_TOPICID_11"/>
+		<Define name="SPARE_CMD_TOPICID_12"  value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 50" shortDescription="SPARE_CMD_TOPICID_12"/>
 		
 		<!-- ###########################  -->
 		<!-- ## core Flight Executive ##  -->
@@ -204,37 +214,44 @@
 		<!-- ##  User Apps   ##  -->
 		<!-- ##################  -->
 		
-        <Define name="BERRY_IMU_HK_TLM_TOPICID"        value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 39"  />
-        <Define name="BERRY_IMU_RATE_TLM_TOPICID"      value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 40"  />
-        <Define name="GPIO_DEMO_HK_TLM_TOPICID"        value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 41"  />
-        <Define name="MQTT_GW_HK_TLM_TOPICID"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 42"  />
-        <Define name="MQTT_GW_DISCRETE_PLUGIN_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 43"  />
-        <Define name="MQTT_GW_RATE_PLUGIN_TOPICID"     value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 44"  />
-        <Define name="PL_MGR_STATUS_TLM_TOPICID"       value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 45"  />
-        <Define name="PL_SIM_STATUS_TLM_TOPICID"       value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 46"  />
-        <Define name="TBL_SAT_STATUS_TLM_TOPICID"      value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 47"  />
-        <Define name="SC_SIM_HK_TLM_TOPICID"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 48"  />
-        <Define name="SC_SIM_MGMT_TLM_TOPICID"         value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 49"  />
-        <Define name="SC_SIM_MODEL_TLM_TOPICID"        value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 50"  />
-		<Define name="SPARE_TLM_TOPICID_1"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_1"/>
-		<Define name="SPARE_TLM_TOPICID_2"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_2"/>
-		<Define name="SPARE_TLM_TOPICID_3"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_3"/>
-		<Define name="SPARE_TLM_TOPICID_4"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_4"/>
-		<Define name="SPARE_TLM_TOPICID_5"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_5"/>
-		<Define name="SPARE_TLM_TOPICID_6"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_6"/>
-		<Define name="SPARE_TLM_TOPICID_7"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_7"/>
-		<Define name="SPARE_TLM_TOPICID_8"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_8"/>
-		<Define name="SPARE_TLM_TOPICID_9"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_9"/>
-		<Define name="SPARE_TLM_TOPICID_10"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_10"/>
-		<Define name="SPARE_TLM_TOPICID_11"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_11"/>
-		<Define name="SPARE_TLM_TOPICID_12"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_12"/>
-		<Define name="SPARE_TLM_TOPICID_13"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_13"/>
-		<Define name="SPARE_TLM_TOPICID_14"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_14"/>
-		<Define name="SPARE_TLM_TOPICID_15"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_15"/>
-		<Define name="SPARE_TLM_TOPICID_16"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_16"/>
-		<Define name="SPARE_TLM_TOPICID_17"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_17"/>
+      <Define name="BERRY_IMU_HK_TLM_TOPICID"        value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 39"  />
+      <Define name="BERRY_IMU_RATE_TLM_TOPICID"      value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 40"  />
+      <Define name="GPIO_DEMO_HK_TLM_TOPICID"        value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 41"  />
+      <Define name="MQTT_GW_HK_TLM_TOPICID"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 42"  />
+      <Define name="MQTT_GW_DISCRETE_PLUGIN_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 43"  />
+      <Define name="MQTT_GW_RATE_PLUGIN_TOPICID"     value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 44"  />
+      <Define name="PL_MGR_STATUS_TLM_TOPICID"       value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 45"  />
+      <Define name="PL_SIM_STATUS_TLM_TOPICID"       value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 46"  />
+      <Define name="TBL_SAT_STATUS_TLM_TOPICID"      value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 47"  />
+      <Define name="SC_SIM_HK_TLM_TOPICID"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 48"  />
+      <Define name="SC_SIM_MGMT_TLM_TOPICID"         value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 49"  />
+      <Define name="SC_SIM_MODEL_TLM_TOPICID"        value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 50"  />
+
+      <!-- ############################################################################### -->
+      <!-- ## Spare Telemetry Topic IDs conventions assumed by tools:                   ## -->
+      <!-- ##   'name' and 'shortDescription' attributes defined as SPARE_TLM_TOPICID_X ## -->
+      <!-- ##   TELEMETRY_BASE_TOPICID offsets must be unique and incrementing          ## -->
+      <!-- ##   TELEMETRY_NUM_TOPICIDS defines the maximum number of topic IDs          ## -->
+      <!-- ############################################################################### -->
+		<Define name="SPARE_TLM_TOPICID_1"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 51" shortDescription="SPARE_TLM_TOPICID_1"/>
+		<Define name="SPARE_TLM_TOPICID_2"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 52" shortDescription="SPARE_TLM_TOPICID_2"/>
+		<Define name="SPARE_TLM_TOPICID_3"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 53" shortDescription="SPARE_TLM_TOPICID_3"/>
+		<Define name="SPARE_TLM_TOPICID_4"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 54" shortDescription="SPARE_TLM_TOPICID_4"/>
+		<Define name="SPARE_TLM_TOPICID_5"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 55" shortDescription="SPARE_TLM_TOPICID_5"/>
+		<Define name="SPARE_TLM_TOPICID_6"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 56" shortDescription="SPARE_TLM_TOPICID_6"/>
+		<Define name="SPARE_TLM_TOPICID_7"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 57" shortDescription="SPARE_TLM_TOPICID_7"/>
+		<Define name="SPARE_TLM_TOPICID_8"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 58" shortDescription="SPARE_TLM_TOPICID_8"/>
+		<Define name="SPARE_TLM_TOPICID_9"           value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 59" shortDescription="SPARE_TLM_TOPICID_9"/>
+		<Define name="SPARE_TLM_TOPICID_10"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 60" shortDescription="SPARE_TLM_TOPICID_10"/>
+		<Define name="SPARE_TLM_TOPICID_11"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 61" shortDescription="SPARE_TLM_TOPICID_11"/>
+		<Define name="SPARE_TLM_TOPICID_12"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 62" shortDescription="SPARE_TLM_TOPICID_12"/>
+		<Define name="SPARE_TLM_TOPICID_13"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 63" shortDescription="SPARE_TLM_TOPICID_13"/>
+		<Define name="SPARE_TLM_TOPICID_14"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 64" shortDescription="SPARE_TLM_TOPICID_14"/>
+		<Define name="SPARE_TLM_TOPICID_15"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 65" shortDescription="SPARE_TLM_TOPICID_15"/>
+		<Define name="SPARE_TLM_TOPICID_16"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 66" shortDescription="SPARE_TLM_TOPICID_16"/>
+		<Define name="SPARE_TLM_TOPICID_17"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 67" shortDescription="SPARE_TLM_TOPICID_17"/>
 		<Define name="SPARE_TLM_TOPICID_18"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_18"/>
-		<Define name="SPARE_TLM_TOPICID_19"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_19"/>
-		<Define name="SPARE_TLM_TOPICID_20"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 68" shortDescription="SPARE_TLM_TOPICID_20"/>
+		<Define name="SPARE_TLM_TOPICID_19"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 69" shortDescription="SPARE_TLM_TOPICID_19"/>
+		<Define name="SPARE_TLM_TOPICID_20"          value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 70" shortDescription="SPARE_TLM_TOPICID_20"/>
 	</Package>
 </DesignParameters>

@@ -3,7 +3,7 @@
    "version": "1.0",
 
    "description": [
-      "Defines default configuration paramters for the app_template processing",
+      "Defines default configuration parameters for the app_template processing",
       "This file must be in the directory that contains the app_templates directory"
    ],
 
