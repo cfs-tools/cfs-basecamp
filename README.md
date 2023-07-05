@@ -48,7 +48,7 @@ Package Notes:
 
 The python appplication uses [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/), [Requests](https://docs.python-requests.org/en/latest/), [paho-mqtt](https://pypi.org/project/paho-mqtt/), and [NumPy](https://numpy.org/) that can be installed with the following command:
 
-    pip3 install PySimpleGUI requests paho-mqtt numpy
+    pip3 install PySimpleGUI requests paho-mqtt numpy pymupdf
 
 ## Clone Basecamp Repository
     git clone https://github.com/cfs-tools/cfs-basecamp.git
