@@ -1,23 +1,9 @@
 # core Flight System (cFS) Basecamp
-*Basecamp* provides a lightweight environment to help you learn NASA’s core Flight System (cFS) and create app-based solutions for your projects.  The built-in hands-on tutorials allow you to be immediately productive.  You can download and integrate apps from Basecamp's [App Store](https://github.com/orgs/cfs-apps/repositories) with only a few mouse clicks. 
+*cFS Basecamp* provides a lightweight environment to help you learn NASA’s core Flight System (cFS) and create app-based solutions for your projects. Basecamp's default cFS target runs on Linux and includes an app suite that provides a complete operational environment including support for onboard file management and transferring files between the ground and flight systems. The built-in hands-on tutorials allow you to be immediately productive. The [Open Mission Stack](https://openmissionstack.com/) website contains cFS educational material that includes cFS-based projects. These goal-oriented software/hardware projects rely on [cFS Basecamp's Apps](https://github.com/orgs/cfs-apps/repositories) to provide the project functionality.  The cFS Basecamp Python GUI automates the app integration process.
 
-Basecamp is ideal for cFS training and STEM educational products. For example, if you want to learn how to use the cFS to interface to a hardware device, the *Raspberry Pi GPIO Demo* tutorial walks you through the following steps so you can have a running system in a very short time. 
+This 'App Store' approach is made possible by using a standard application framework that includes runtime JSON initialization files and by using the [cfe-eds-framework](https://github.com/jphickey/cfe-eds-framework) cFS distribution that includes a CCSDS Electronic Data Sheets (EDS) toolchain. Each cFS application interface is defined using EDS specifications and the cfe-eds-framework build toolchain generates artifacts that are used by both the flight and ground software systems. App specification and packaging standards are being defined that will allow the cFS community to easily share apps. 
 
-1.	Wire an LED to a Raspberry Pi’s interface pins
-2.	Install Basecamp on a Raspberry Pi
-3.	From the Basecamp GUI:
-   * Clone the [Pi IO Library](https://github.com/cfs-apps/pi_iolib) and [GPIO Demo App]( https://github.com/cfs-apps/gpio_demo) 
-   * Add the library and app to the cFS target
-   * Build the new cFS target
-4.	Restart the Basecamp GUI
-5. Run the new cFS target and operate the GPIO Demo app using the GUI’s command and telemetry menus
-
-Basecamp uses goal-oriented software and hardware projects, so users learn how to create app-based solutions to meet their needs. These projects and additional cFS learning material can be found at [Open Mission Stack](https://openmissionstack.com/).  This approach is made possible because Basecamp’s cFS target app suite provides a complete operational environment including transferring files between the ground and flight systems and managing onboard files. 
-For users who are working on a flight mission, plans are underway to create an automated transition process from Basecamp’s command and telemetry GUI to a fully functional ground system such as [OpenC3]( https://openc3.com/) 
-
-Basecamp store approach is made possible by using a standard application framework that includes runtime JSON initialization files and by using the [cfe-eds-framework](https://github.com/jphickey/cfe-eds-framework) cFS distribution that includes a CCSDS Electronic Data Sheets (EDS) toolchain. Each cFS application interface is defined using EDS specifications and the cfe-eds-framework build toolchain generates artifacts that are used by both the flight and ground software systems. App specification and packaging standards are being defined that will allow the cFS community to easily share apps. 
-
-Basecamp uses a Linux-based cFS target. [cFS Platform List](https://github.com/cfs-tools/cfs-platform-list) provides links to additional cFS ports.
+For users who are working on a flight mission, plans are underway to create an automated transition process from Basecamp’s command and telemetry GUI to a fully functional ground system such as [OpenC3]( https://openc3.com/). The [cFS Platform List](https://github.com/cfs-tools/cfs-platform-list) provides links to additional cFS ports.
 
 # Getting Started
 
@@ -72,3 +58,4 @@ This must be done prior to running the python ground system because it creates p
 
 ![](https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/next-steps.png)
 
+[![cFS Basecamp](https://i.ytimg.com/vi/jwV3_9W8dcY/maxresdefault.jpg)](https://youtu.be/jwV3_9W8dcY)
