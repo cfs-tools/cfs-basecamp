@@ -73,7 +73,7 @@ class PdfViewer():
             ]
         ]
         
-        window = sg.Window(f'{self.filename}', layout, return_keyboard_events=True, use_default_focus=False)
+        window = sg.Window(f'{self.filename}', layout, return_keyboard_events=True, use_default_focus=False, modal=True)
         return window        
 
 

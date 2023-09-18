@@ -1,7 +1,0 @@
-{
-   "app-name": "@TEMPLATE@",
-   "tbl-name": "Limits",
-   "description": "Example table",
-   "low-limit":  0, 
-   "high-limit": 100
-}

@@ -19,7 +19,7 @@
 **    1. The static "TblData" serves as a table load buffer. Table dump data is
 **       read directly from table owner's table storage.
 **    2. The number of bins defined in the JSON bin array must match the maximum
-**       bin count. The JSON bin-cnt can be less than the maimum count, however
+**       bin count. The JSON bin-cnt can be less than the maximum count, however
 **       the unused bin array entries must still be defined. The bins are
 **       processed sequentially so unused bins are at the end of the array. 
 **

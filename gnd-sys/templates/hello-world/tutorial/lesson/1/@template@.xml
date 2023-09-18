@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+    This program is free software; you can modify and/or redistribute it
+    under the terms of the GNU Affero General Public License
+    as published by the Free Software Foundation; version 3 with
+    attribution addendums as found in the LICENSE.txt.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+      
+    Purpose: 
+      Define @TEMPLATE@ application interfaces 
+
+    Notes:
+      1. This document adheres to the Electronic Data Sheet (EDS) XML schema 
+         as prescribed in CCSDS book 876.0. 
+      
+-->
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+  <Package name="@TEMPLATE@" shortDescription="Auto-generated Hello World app">
+      <DataTypeSet>
+
+      <!--***********************************-->
+      <!--**** DataTypeSet:  Entry Types ****-->
+      <!--***********************************-->
+
+
+      <!-- EX1 -->
+      <!--***************************************-->
+      <!--**** DataTypeSet: Command Payloads ****-->
+      <!--***************************************-->
+
+      <ContainerDataType name="SetParamCmd_Payload" shortDescription="Example command payload">
+        <EntryList>
+          <Entry name="Param" type="BASE_TYPES/uint16" shortDescription="" />
+       </EntryList>
+      </ContainerDataType>
+      <!-- EX1 -->
+
+      <!--*****************************************-->
+      <!--**** DataTypeSet: Telemetry Payloads ****-->
+      <!--*****************************************-->
+    
+      <ContainerDataType name="HkTlm_Payload" shortDescription="App's state and status summary, 'housekeeping data'">
+        <EntryList>
+          <Entry name="ValidCmdCnt"         type="BASE_TYPES/uint16" />
+          <Entry name="InvalidCmdCnt"       type="BASE_TYPES/uint16" />
+        </EntryList>
+      </ContainerDataType>
+      
+      <!-- EX2 -->     
+      <!--**************************************-->
+      <!--**** DataTypeSet: Command Packets ****-->
+      <!--**************************************-->
+
+      <ContainerDataType name="CommandBase" baseType="CFE_HDR/CommandHeader">
+      </ContainerDataType>
+
+      <ContainerDataType name="NoopCmd" baseType="CommandBase" shortDescription="Generate an info event message with app version">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/NOOP_CC}" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="ResetCmd" baseType="CommandBase" shortDescription="Reset app to a known state">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
+        </ConstraintSet>
+      </ContainerDataType>
+      
+
+      <ContainerDataType name="SetParamCmd" baseType="CommandBase" shortDescription="">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="SetParamCmd_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+      <!-- EX2 -->
+
+
+      <!--****************************************-->
+      <!--**** DataTypeSet: Telemetry Packets ****-->
+      <!--****************************************-->
+
+      <ContainerDataType name="HkTlm" baseType="CFE_HDR/TelemetryHeader">
+        <EntryList>
+          <Entry type="HkTlm_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+     
+    </DataTypeSet>
+    
+    <ComponentSet>
+      <Component name="Application">
+
+        <!--***********************************-->
+        <!--**** Component Set: Interfaces ****-->
+        <!--***********************************-->
+
+        <RequiredInterfaceSet>
+
+          <Interface name="CMD" shortDescription="Software bus telecommand interface" type="CFE_SB/Telecommand">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelecommandDataType" type="CommandBase" />
+            </GenericTypeMapSet>
+          </Interface>
+
+          <Interface name="HK_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
+            </GenericTypeMapSet>
+          </Interface>
+        </RequiredInterfaceSet>
+
+        <!--***************************************-->
+        <!--**** Component Set: Implementation ****-->
+        <!--***************************************-->
+
+        <Implementation>
+          <VariableSet>
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_HK_TLM_TOPICID}" />
+          </VariableSet>
+          <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
+          <ParameterMapSet>          
+            <ParameterMap interface="CMD" parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="HK_TLM" parameter="TopicId" variableRef="HkTlmTopicId" />
+          </ParameterMapSet>
+        </Implementation>
+      </Component>
+    </ComponentSet>
+    
+  </Package>
+</PackageFile>

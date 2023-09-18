@@ -152,7 +152,7 @@ class AppTemplate():
         """
         Since template files should be short no need for fancy optimized 
         algorithms. Keep it simple and readable. 
-        Comment blocks Delimited with keywords are skipped. 
+        Comment blocks delimited with keywords are skipped. 
         """
         logger.debug("template_file_path = " + template_file_path)
         logger.debug("new_app_file_path  = " + new_app_file_path)
@@ -220,14 +220,15 @@ class CreateApp():
         
         app_template_layout = []
         for app_title, app_meta_data in self.app_template_lookup.items():
-            logger.debug("self.app_template_lookup[%s] => %s" % (app_title, str(app_meta_data)))
-            app_template_layout.append([sg.Radio(app_title, "APP_TEMPLATES", default=False, font=hdr_value_font, size=(30,0), key=app_title)])
+            logger.debug(f'self.app_template_lookup[{app_title}] => {str(app_meta_data)}')
+            app_template_layout.append([sg.Radio(app_title, "APP_TEMPLATES", default=False, font=hdr_value_font, size=(12,0), key=app_title),
+                                        sg.Text(app_meta_data.json.short_description(), font=hdr_value_font, size=(75,1))])
         
         layout = [
                   [sg.Text('Select Application Template: ', font=hdr_label_font)],
                   app_template_layout, 
                   [sg.Text('', font=hdr_label_font)],
-                  [sg.Button('Description'), sg.Button('Create App', button_color=('SpringGreen4')), sg.Button('Cancel')]
+                  [sg.Button('Create App', button_color=('SpringGreen4'), pad=(2,0)), sg.Button('Description', pad=(2,0)), sg.Button('Cancel', pad=(2,0))]
                  ]
         
         window = sg.Window('Create Application', layout, modal=False)

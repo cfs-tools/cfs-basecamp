@@ -65,6 +65,9 @@ class JsonFile():
     def reset_child(self):
         raise NotImplementedError
             
+    def short_description(self):
+        return self.json['short-descr']
+
     def update(self):
         self.json['time-stamp'] = datetime.now().strftime("%m/%d/%Y-%H:%M:%S")
         self.write_file()

@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# cfsat folders and files
+# Basecamp folders and files
 cfe-eds-framework/build
 gnd-sys/logs/*.logs.*
 

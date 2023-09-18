@@ -1,0 +1,63 @@
+{
+   "title": "Hello World",
+   "version": "1.0",
+   "short-descr": "Minimal app with command and telemetry interfaces",
+   "description": [
+      "Minimal app with command and telemetry interfaces. It has two commands that by convention ",
+      "are part of every  app. The 'No Operation(NOOP)' commands sends an event message with the ",
+      "app's version number. The Reset app command resets the app to a known state. Historially ",
+      "this command only reset counters. The Basecamp convention is to reset any status or state ",
+      "that makes sens for the app. The app has one telemetry message that by convention is called ",
+      "the 'Housekeeping' message. This message is sent in response to an onboard scheduling message ",
+      "that is sent by the Scheduler App. It contains status information that includes command ",
+      "valid and invalid counters. This app uses the Basecamp C Application Framework. This framework ",
+      "is object-based and uses design patterns to allow developers to create consistent app designs ",
+      "that are robust and easy to maintain. A common app component is the initialization parameter ",
+      "file. This is a JSON file that is read when an app initializes and contains parameters that ",
+      "can be defined at runtime"
+   ],
+
+   "dir": [
+      {
+         "path": "",
+         "files": ["CMakeLists.txt", "@template@.json"]
+      },
+      {
+         "path": "fsw/mission_inc",
+         "files": ["@template@_mission_cfg.h"]
+      },
+      {
+         "path": "fsw/platform_inc",
+         "files": ["@template@_platform_cfg.h"]
+      },
+      {
+         "path": "fsw/src",
+         "files": ["@template@_app.c", "@template@_app.h", "app_cfg.h"]
+      },
+      {
+         "path": "fsw/tables",
+         "files": ["cpu1_@template@_ini.json"]
+      },
+      {
+         "path": "eds",
+         "files": ["@template@.xml"]
+      },
+      {
+         "path": "tutorial",
+         "files": ["tutorial.json"]
+      },
+      {
+         "path": "tutorial/lesson/1",
+         "files": ["lesson.json", "@template@.xml", "@template@_app.h", "@template@_app.c"]
+      },
+      {
+         "path": "tutorial/lesson/2",
+         "files": ["lesson.json", "@template@.xml", "@template@_app.h", "@template@_app.c"]
+      },
+      {
+         "path": "tutorial/lesson/3",
+         "files": ["lesson.json", "app_cfg.h", "@template@_app.c", "cpu1_@template@_ini.json"]
+      }
+   ]
+}
+

@@ -23,6 +23,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+from .appcodetutorial import ManageCodeTutorials
 from .appstore import AppStore, AppSpec, ManageUsrApps
 from .apptemplate import CreateApp
 from .eds import CfeTopicIds, AppEds

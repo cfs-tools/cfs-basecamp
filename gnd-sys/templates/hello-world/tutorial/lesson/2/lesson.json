@@ -1,0 +1,45 @@
+{
+  "time-stamp": "",
+  "title": "Add Telemetry Data Point",
+  "objective": [
+    "Learn how to modify an Electronic Data Sheet telemetry message payload definition and telemeter the value."
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "eds",
+      "name": "@template@.xml",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "Locate the 'DataTypeSet: Telemetry Payloads' comment block. Add the following entry to HkTlm_Payload's <EntryList>:\n  Entry name='SetParamCmdVal'\n  type='BASE_TYPES/uint16'"
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "Locate the @TEMPLATE@_Class_t definition. In the '@TEMPLATE@ State & Contained Objects' section add:\n  'uint16  SetParamCmdVal;'"
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "Locate the @TEMPLATE@_SetParamCmd() function added in lesson 1. Before the return line add:\n  '@Template@.SetParamCmdVal = CmdPayload->Param;'"
+        },
+        {
+          "id": "EX2",
+          "instructions": "Locate the SendHousekeepingTlm() function. After the command counter lines add:\n  'Payload->SetParamCmdVal = @Template@.SetParamCmdVal;'"
+        }
+      ]
+    }
+  ]
+}

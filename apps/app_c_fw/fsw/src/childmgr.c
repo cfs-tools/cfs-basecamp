@@ -81,7 +81,7 @@ static ChildTask_t ChildTask = { 0, {NULL, NULL, NULL, NULL, NULL} };
 **   1. This function must be called prior to any other functions being
 **      called using the same cmdmgr instance.
 **   2. Constructors typically have void return type. This returns status
-**      because it's failure could  prevent the parent app from initializing.
+**      because it's failure could prevent the parent app from initializing.
 */
 int32 CHILDMGR_Constructor(CHILDMGR_Class_t* ChildMgr,
                            CFE_ES_ChildTaskMainFuncPtr_t ChildTaskMainFunc,
