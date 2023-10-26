@@ -1,0 +1,15 @@
+{
+   "app-name": "@TEMPLATE@",
+   "tbl-name": "Limits",
+   "description": "Example table",
+   "increment":
+   {
+      "low-limit":  0, 
+      "high-limit": 49
+   },
+   "decrement":
+   {
+      "low-limit":  50, 
+      "high-limit": 99
+   }
+}

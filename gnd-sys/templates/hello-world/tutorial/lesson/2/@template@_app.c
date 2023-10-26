@@ -46,7 +46,7 @@
 
 static int32 InitApp(void);
 static int32 ProcessCommands(void);
-static void SendHousekeepingTlm(void);
+static void SendStatusTlm(void);
 
 
 /**********************/
@@ -149,12 +149,12 @@ bool @TEMPLATE@_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 */
 bool @TEMPLATE@_SetParamCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
-   const @TEMPLATE@_SetParamCmd_Payload_t *CmdPayload = CMDMGR_PAYLOAD_PTR(MsgPtr, @TEMPLATE@_SetParamCmd_t);
+   const @TEMPLATE@_SetParam_CmdPayload_t *CmdPayload = CMDMGR_PAYLOAD_PTR(MsgPtr, @TEMPLATE@_SetParam_t);
    
    CFE_EVS_SendEvent (@TEMPLATE@_SET_PARAM_EID, CFE_EVS_EventType_INFORMATION,
                       "Set Parameter commmand received a parameter value %d",
                       CmdPayload->Param);
-                      
+
    @Template@.SetParamCmdVal = CmdPayload->Param;
    
    return true;
@@ -184,8 +184,8 @@ static int32 InitApp(void)
       @Template@.PerfId  = INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_PERF_ID);
       CFE_ES_PerfLogEntry(@Template@.PerfId);
 
-      @Template@.CmdMid     = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_CMD_TOPICID));
-      @Template@.SendHkMid  = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_SEND_HK_TOPICID));
+      @Template@.CmdMid         = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_CMD_TOPICID));
+      @Template@.SendStatusMid  = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_SEND_STATUS_TOPICID));
       
       /*
       ** Constuct app's contained objects
@@ -197,21 +197,21 @@ static int32 InitApp(void)
       */
       
       CFE_SB_CreatePipe(&@Template@.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_NAME));  
-      CFE_SB_Subscribe(@Template@.CmdMid,     @Template@.CmdPipe);
-      CFE_SB_Subscribe(@Template@.SendHkMid,  @Template@.CmdPipe);
+      CFE_SB_Subscribe(@Template@.CmdMid,        @Template@.CmdPipe);
+      CFE_SB_Subscribe(@Template@.SendStatusMid, @Template@.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_NOOP_CC,      NULL, @TEMPLATE@_NoOpCmd,     0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_RESET_CC,     NULL, @TEMPLATE@_ResetAppCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_SET_PARAM_CC, NULL, @TEMPLATE@_SetParamCmd, sizeof(@TEMPLATE@_SetParamCmd_Payload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_SET_PARAM_CC, NULL, @TEMPLATE@_SetParamCmd, sizeof(@TEMPLATE@_SetParam_CmdPayload_t));
       
       /*
       ** Initialize app messages 
       */
 
-      CFE_MSG_Init(CFE_MSG_PTR(@Template@.HkTlm.TelemetryHeader), 
-                   CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_HK_TLM_TOPICID)),
-                   sizeof(@TEMPLATE@_HkTlm_t));
+      CFE_MSG_Init(CFE_MSG_PTR(@Template@.StatusTlm.TelemetryHeader), 
+                   CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_STATUS_TLM_TOPICID)),
+                   sizeof(@TEMPLATE@_StatusTlm_t));
 
       /*
       ** Application startup event message
@@ -259,9 +259,9 @@ static int32 ProcessCommands(void)
          {
             CMDMGR_DispatchFunc(CMDMGR_OBJ, &SbBufPtr->Msg);
          } 
-         else if (CFE_SB_MsgId_Equal(MsgId, @Template@.SendHkMid))
+         else if (CFE_SB_MsgId_Equal(MsgId, @Template@.SendStatusMid))
          {   
-            SendHousekeepingTlm();
+            SendStatusTlm();
          }
          else
          {   
@@ -283,26 +283,25 @@ static int32 ProcessCommands(void)
 
 //EX2
 /******************************************************************************
-** Function: SendHousekeepingTlm
+** Function: SendStatusTlm
 **
 */
-static void SendHousekeepingTlm(void)
+static void SendStatusTlm(void)
 {
 
-   @TEMPLATE@_HkTlm_Payload_t *Payload = &@Template@.HkTlm.Payload;
+   @TEMPLATE@_StatusTlm_Payload_t *Payload = &@Template@.StatusTlm.Payload;
 
    /*
    ** Framework Data
    */
    
-   Payload->ValidCmdCnt    = @Template@.CmdMgr.ValidCmdCnt;
-   Payload->InvalidCmdCnt  = @Template@.CmdMgr.InvalidCmdCnt;
+   Payload->ValidCmdCnt   = @Template@.CmdMgr.ValidCmdCnt;
+   Payload->InvalidCmdCnt = @Template@.CmdMgr.InvalidCmdCnt;
    
    Payload->SetParamCmdVal = @Template@.SetParamCmdVal;
-   
-   CFE_SB_TimeStampMsg(CFE_MSG_PTR(@Template@.HkTlm.TelemetryHeader));
-   CFE_SB_TransmitMsg(CFE_MSG_PTR(@Template@.HkTlm.TelemetryHeader), true);
+      
+   CFE_SB_TimeStampMsg(CFE_MSG_PTR(@Template@.StatusTlm.TelemetryHeader));
+   CFE_SB_TransmitMsg(CFE_MSG_PTR(@Template@.StatusTlm.TelemetryHeader), true);
 
-} /* End SendHousekeepingTlm() */
+} /* End SendStatusTlm() */
 //EX2
-

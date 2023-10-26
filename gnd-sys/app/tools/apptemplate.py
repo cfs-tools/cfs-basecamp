@@ -26,6 +26,7 @@ import os
 import errno
 import json
 import configparser
+import shutil
 from datetime import datetime
 
 import logging
@@ -152,7 +153,9 @@ class AppTemplate():
         """
         Since template files should be short no need for fancy optimized 
         algorithms. Keep it simple and readable. 
-        Comment blocks delimited with keywords are skipped. 
+        Comment blocks delimited with keywords are skipped.
+        Binary files have an ampersand(&) appended to the filename. This indicates that the
+        file should be copied and not interpreted as a text template file. 
         """
         logger.debug("template_file_path = " + template_file_path)
         logger.debug("new_app_file_path  = " + new_app_file_path)
@@ -160,27 +163,37 @@ class AppTemplate():
         replace_tokens = True
         instantiated_text = ""
       
-        with open(os.path.join(template_file_path, template_file)) as f:
-            for line in f:
+        if template_file.endswith('&'):
+            binary_file = template_file[:-1]
+            src_pathfile = os.path.join(template_file_path, binary_file)
+            dst_pathfile = os.path.join(new_app_file_path, binary_file)
+            print(f'Copying binary file from {src_pathfile} to {dst_pathfile}')
+            try:
+                shutil.copyfile(src_pathfile, dst_pathfile)
+            except FileNotFoundError:
+                logger.error(f'Error copying binary file from {src_pathfile} to {dst_pathfile}')
+        else:
+            with open(os.path.join(template_file_path, template_file)) as f:
+                for line in f:
 
-                # Continue skipping until end of comment. Assume nothing else on last comment line
-                if (replace_tokens):
-                    if TEMPLATE_COMMENT_START in line:
-                        replace_tokens = False
+                    # Continue skipping until end of comment. Assume nothing else on last comment line
+                    if (replace_tokens):
+                        if TEMPLATE_COMMENT_START in line:
+                            replace_tokens = False
+                        else:
+                           # Replace all occurrences for each case
+                           for template_token, app_name in self.app_name_map.items():
+                               line = line.replace(template_token, app_name)
+                           instantiated_text += line
                     else:
-                       # Replace all occurrences for each case
-                       for template_token, app_name in self.app_name_map.items():
-                           line = line.replace(template_token, app_name)
-                       instantiated_text += line
-                else:
-                    replace_tokens = True if TEMPLATE_COMMENT_END in line else False
+                        replace_tokens = True if TEMPLATE_COMMENT_END in line else False
 
-        # Replace template variable in filename 
-        for template_token, app_name in self.app_name_map.items():
-            template_file = template_file.replace(template_token, app_name)
-        
-        with open(os.path.join(new_app_file_path, template_file), 'w') as f:
-            f.write(instantiated_text)
+            # Replace template variable in filename 
+            for template_token, app_name in self.app_name_map.items():
+                template_file = template_file.replace(template_token, app_name)
+            
+            with open(os.path.join(new_app_file_path, template_file), 'w') as f:
+                f.write(instantiated_text)
     			
 
         

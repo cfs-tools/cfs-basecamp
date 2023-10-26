@@ -13,7 +13,7 @@
       "exercise": [
         {
           "id": "~FILE~",
-          "instructions": "Find the 'APP_CMD_PIPE_DEPTH' line and change:\n  APP_CMD_PIPE_DEPTH to APP_CMD_PIPE_MAX\n  5 to 7"
+          "instructions": "1. Find the 'APP_CMD_PIPE_DEPTH' line and change:\n    The parameter name from APP_CMD_PIPE_DEPTH to APP_CMD_PIPE_MAX\n    The value from 5 to 7"
         }
       ]
     },
@@ -23,7 +23,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "Locate #define APP_CMD_PIPE_DEPTH line and change:\n   CFG_APP_CMD_PIPE_DEPTH to CFG_APP_CMD_PIPE_MAX\n   APP_CMD_PIPE_DEPTH to APP_CMD_PIPE_MAX\n\nLocate XX(APP_CMD_PIPE_DEPTH,uint32) and change:\n APP_CMD_PIPE_DEPTH to APP_CMD_PIPE_MAX"
+          "instructions": "1. Locate #define APP_CMD_PIPE_DEPTH line and change:\n    CFG_APP_CMD_PIPE_DEPTH to CFG_APP_CMD_PIPE_MAX\n    APP_CMD_PIPE_DEPTH to APP_CMD_PIPE_MAX\n2. Locate XX(APP_CMD_PIPE_DEPTH,uint32) and change:\n    APP_CMD_PIPE_DEPTH to APP_CMD_PIPE_MAX"
         }
       ]
     },
@@ -33,7 +33,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "Locate the CFE_SB_CreatePipe() and change CFG_APP_CMD_PIPE_DEPTH to CFG_APP_CMD_PIPE_MAX.\n\nSee the tutorial document for instructions to show how this change took affect."
+          "instructions": "1. Locate the CFE_SB_CreatePipe() and change CFG_APP_CMD_PIPE_DEPTH to CFG_APP_CMD_PIPE_MAX.\n\nRefer to the tutorial document for instructions on how to confirm this change took affect."
         }
       ]
     }

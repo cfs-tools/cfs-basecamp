@@ -57,6 +57,10 @@
       {
          "path": "tutorial/lesson/3",
          "files": ["lesson.json", "app_cfg.h", "@template@_app.c", "cpu1_@template@_ini.json"]
+      },
+      {
+         "path": "tutorial/docs",
+         "files": ["basecamp-hello-world.pdf&"]
       }
    ]
 }

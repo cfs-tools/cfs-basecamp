@@ -1,0 +1,21 @@
+{
+  "time-stamp": "",
+  "title": "Add table load acceptance check",
+  "objective": [
+    ""
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "fsw/src",
+      "name": "exobj.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the AcceptNewTable() function.\n    Replace the 'RetStatus = true;' with the EX1 code in the lesson file"
+        }
+      ]
+    }
+  ]
+}

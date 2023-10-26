@@ -1,0 +1,25 @@
+{
+  "time-stamp": "",
+  "title": "Add Object Reset Functionality",
+  "objective": [
+    "Demonstrate object-specific object reset behavior"
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "fsw/src",
+      "name": "exobj.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the EXOBJ_ResetStatus() function. Before the return statement:\n    Add the logic from the lesson file to set the ExObj->CounterValue reset value"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the CFE_EVS_SendEvent() call in the EXOBJ_Execute() function:\n    Change the event type from 'CFE_EVS_EventType_INFORMATION' to 'CFE_EVS_EventType_DEBUG'"
+        }
+      ]
+    }
+  ]
+}

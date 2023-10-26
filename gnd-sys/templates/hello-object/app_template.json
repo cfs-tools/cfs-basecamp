@@ -1,0 +1,64 @@
+{
+   "title": "Hello Object",
+   "version": "1.0",
+   "short-descr": "'Hello World' app plus an example object",
+   "description": [
+      "This app builds upon the Hello World app by adding an example object that is owned by ",
+      "the main app. This object is very simple. It implements a counter that can either ",
+      "increment or decrement between a high and low limit. The counter mode can be changed ",
+      "by a command. The counter's execution is triggered by a 1Hz message received from the ",
+      "scheduler app. The counter mode and counter value are part of the app's status telemetry."
+   ],
+
+   "dir": [
+      {
+         "path": "",
+         "files": ["CMakeLists.txt", "@template@.json"]
+      },
+      {
+         "path": "fsw/mission_inc",
+         "files": ["@template@_mission_cfg.h"]
+      },
+      {
+         "path": "fsw/platform_inc",
+         "files": ["@template@_platform_cfg.h"]
+      },
+      {
+         "path": "fsw/src",
+         "files": ["@template@_app.c", "@template@_app.h", "app_cfg.h", "exobj.c", "exobj.h"]
+      },
+      {
+         "path": "fsw/tables",
+         "files": ["cpu1_@template@_ini.json"]
+      },
+      {
+         "path": "eds",
+         "files": ["@template@.xml"]
+      },
+      {
+         "path": "tutorial",
+         "files": ["tutorial.json"]
+      },
+      {
+         "path": "tutorial/lesson/1",
+         "files": ["lesson.json", "@template@.xml", "exobj.h"]
+      },
+      {
+         "path": "tutorial/lesson/2",
+         "files": ["lesson.json", "app_cfg.h", "cpu1_@template@_ini.json", "exobj.h", "exobj.c"]
+      },
+      {
+         "path": "tutorial/lesson/3",
+         "files": ["lesson.json", "@template@_app.c", "exobj.c"]
+      },
+      {
+         "path": "tutorial/lesson/4",
+         "files": ["lesson.json", "exobj.c"]
+      },
+      {
+         "path": "tutorial/docs",
+         "files": ["basecamp-hello-object.pdf&"]
+      }
+   ]
+}
+

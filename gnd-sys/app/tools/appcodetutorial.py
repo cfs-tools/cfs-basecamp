@@ -647,7 +647,8 @@ class CodeLessonEditor():
                 self.write_lesson_window(window)
                 
             elif encoded_event in ("b'-INSTRUCTIONS-'",):
-                sg.popup(self.code_lesson.exercise_instructions(), title=f'{self.code_lesson.exercise_id()} Instructions', line_width=132)
+                title = f'{self.code_lesson.user_filename()}: {self.code_lesson.exercise_id()} Instructions' 
+                sg.popup(self.code_lesson.exercise_instructions(), title=title , line_width=132, font = 'Courier 12')
 
             prev_encoded_event = encoded_event
 
@@ -675,7 +676,7 @@ if __name__ == '__main__':
         #    f.write(tutorial_dir)
     else:
         tutorial_dir = compress_abs_path(os.path.join(os.getcwd(),'../../templates/hello-world/tutorial'))
-        tutorial_dir = compress_abs_path(os.path.join(os.getcwd(),'../../../usr/apps/hello-1/tutorial'))
+        tutorial_dir = compress_abs_path(os.path.join(os.getcwd(),'../../../usr/apps/hello_obj/tutorial'))
     print ("Main: tutorial_dir = " + tutorial_dir)
             
     tutorial = CodeTutorial(tutorial_dir)

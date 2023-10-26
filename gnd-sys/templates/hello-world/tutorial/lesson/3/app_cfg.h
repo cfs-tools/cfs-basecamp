@@ -47,7 +47,7 @@
 #define  @TEMPLATE@_MAJOR_VER   1
 #define  @TEMPLATE@_MINOR_VER   0
 
-//EX1
+
 /******************************************************************************
 ** Init JSON file declarations. The following steps show how to define and
 ** use initialization parameters defined in the JSON ini file. Users don't 
@@ -95,7 +95,7 @@
 **    ConfigEnum GetConfigVal(const char *str);
 **
 */
-
+//EX1
 #define CFG_APP_CFE_NAME  APP_CFE_NAME
 #define CFG_APP_PERF_ID   APP_PERF_ID
 

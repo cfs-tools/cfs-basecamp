@@ -1,0 +1,31 @@
+{
+  "time-stamp": "",
+  "title": "Add EDS Enum Type to Status Tlm",
+  "objective": [
+    "Learn how to work with Electronic Data Sheet data types"
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "eds",
+      "name": "@template@.xml",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. In 'StatusTlm_Payload':\n    Change CounterMode type from 'BASE_TYPES/uint16' to 'CounterMode'\n\nNote the GUI needs to be retarted after building the new lesson cFS target."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "exobj.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate 'State Data' comment block in the EXOBJ_Class_t typedef:\n    Change the CounterMode variable type from uint16 to @TEMPLATE@_CounterMode_Enum_t\n\nNote app_cfg.h already includes '@template@_eds_typedefs.h' so you don't need to add it."
+        }
+      ]
+    }
+  ]
+}

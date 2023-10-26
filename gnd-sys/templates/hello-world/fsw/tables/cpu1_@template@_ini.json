@@ -11,7 +11,7 @@
 
       "@TEMPLATE@_CMD_TOPICID": 0,
       "BC_SCH_4_SEC_TOPICID": 0,
-      "@TEMPLATE@_HK_TLM_TOPICID": 0
+      "@TEMPLATE@_STATUS_TLM_TOPICID": 0
       
    }
 }

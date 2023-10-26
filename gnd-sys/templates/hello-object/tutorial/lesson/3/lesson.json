@@ -1,0 +1,39 @@
+{
+  "time-stamp": "",
+  "title": "Add Event Message Filter",
+  "objective": [
+    "Learn how to use event message filters"
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the 'File Global Data' comment block. After the 'DEFINE_ENUM(Config,APP_CONFIG)' line add:\n    The entire 'static CFE_EVS_BinFilter_t  EventFilters[] =' definition and default values shown in the lesson file."
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the call to CFE_EVS_Register() in @TEMPLATE@_AppMain().\n    Replace the parameters with 'EventFilters, sizeof(EventFilters)/sizeof(CFE_EVS_BinFilter_t),CFE_EVS_EventFilter_BINARY'"
+        },
+        {
+          "id": "EX3",
+          "instructions": "1. Locate the @TEMPLATE@_ResetAppCmd() function. Before the 'CMDMGR_ResetStatus(CMDMGR_OBJ);' line add:\n    'CFE_EVS_ResetAllFilters();'\n\nNote resetting the event filter as part of the app reset is a design decision. Event Service provides a command to reset an app's event filters."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "exobj.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the CFE_EVS_SendEvent() call in the EXOBJ_Execute() function:\n    Change the event type from 'CFE_EVS_EventType_DEBUG' to 'CFE_EVS_EventType_INFORMATION'"
+        }
+      ]
+    }
+  ]
+}

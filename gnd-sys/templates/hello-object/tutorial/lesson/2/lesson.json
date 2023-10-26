@@ -1,0 +1,59 @@
+{
+  "time-stamp": "",
+  "title": "Move Limits to JSON Init File",
+  "objective": [
+    "Learn how to define configuration parameters in an app's JSON init file."
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "../../../cfe-eds-framework/basecamp_defs",
+      "name": "cpu1_@template@_ini.json",
+      "exercise": [
+        {
+          "id": "~FILE~",
+          "instructions": "1. Add a comma at the end of the @TEMPLATE@_STATUS_TLM_TOPICID line\n2. Add EXOBJ_COUNTER_LO_LIM: 10,\n3. Add EXOBJ_COUNTER_HI_LIM: 50\n\nNote the parameter variable names must be in double quotes."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "app_cfg.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the '#define CFG_HELLO_OBJ_STATUS_TLM_TOPICID' and after that line add:\n    '#define CFG_EXOBJ_COUNTER_LO_LIM   EXOBJ_COUNTER_LO_LIM'\n    '#define CFG_EXOBJ_COUNTER_HI_LIM   EXOBJ_COUNTER_HI_LIM'\n2. Locate the 'XX(@TEMPLATE@_STATUS_TLM_TOPICID,uint32) \\' and after that line add:\n    'XX(EXOBJ_COUNTER_LO_LIM,uint32) \\'\n    'XX(EXOBJ_COUNTER_HI_LIM,uint32)'\n\nNote the #define and XX() definitions don't have to be in the same order but it helps readability."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "exobj.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the 'Counter Limits' comment block and comment out the EXOBJ_COUNTER_HI_LIM and EXOBJ_COUNTER_LO_LIM macros definitions"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the 'State Data' comment block in the EXOBJ_Class_t typedef. After the uint16 CounterValue line add:\n    uint16  CounterLoLim;\n    uint16  CounterHiLim;\n\nNote the init parameter supports a 32 bit range, but we'll leave it up to the user to define a uin16 bit range."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "exobj.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the EXOBJ_Constructor() function and after the 'ExObj->CounterMode = @TEMPLATE@_CounterMode_Increment;' line add:\n    A. 'ExObj->CounterLoLim = INITBL_GetIntConfig(IniTbl, CFG_EXOBJ_COUNTER_LO_LIM);'\n    B. 'ExObj->CounterHiLim = INITBL_GetIntConfig(IniTbl, CFG_EXOBJ_COUNTER_HI_LIM);'\n    C. Change ExObj->CounterValue = from EXOBJ_COUNTER_LO_LIM to ExObj->CounterLoLim;"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the EXOBJ_Execute() function:\n    A. Replace all 'EXOBJ_COUNTER_LO_LIM' occurrences with ExObj->CounterLoLim\n    B. Replace all 'EXOBJ_COUNTER_HI_LIM' occurrences with ExObj->CounterHiLim"
+        }
+      ]
+    }    
+  ]
+}

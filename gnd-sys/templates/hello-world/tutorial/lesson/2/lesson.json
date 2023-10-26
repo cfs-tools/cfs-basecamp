@@ -13,7 +13,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "Locate the 'DataTypeSet: Telemetry Payloads' comment block. Add the following entry to HkTlm_Payload's <EntryList>:\n  Entry name='SetParamCmdVal'\n  type='BASE_TYPES/uint16'"
+          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. Add the following entry to StatusTlm_Payload's <EntryList>:\n    Entry name='SetParamCmdVal'\n    type='BASE_TYPES/uint16'\n\nNote the GUI needs to be retarted after building the new lesson cFS target."
         }
       ]
     },
@@ -23,7 +23,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "Locate the @TEMPLATE@_Class_t definition. In the '@TEMPLATE@ State & Contained Objects' section add:\n  'uint16  SetParamCmdVal;'"
+          "instructions": "1. Locate the @TEMPLATE@_Class_t definition. In the '@TEMPLATE@ State & Contained Objects' section add:\n    'uint16  SetParamCmdVal;'"
         }
       ]
     },
@@ -33,11 +33,11 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "Locate the @TEMPLATE@_SetParamCmd() function added in lesson 1. Before the return line add:\n  '@Template@.SetParamCmdVal = CmdPayload->Param;'"
+          "instructions": "1. Locate the @TEMPLATE@_SetParamCmd() function added in lesson 1. Before the return line add:\n    '@Template@.SetParamCmdVal = CmdPayload->Param;'"
         },
         {
           "id": "EX2",
-          "instructions": "Locate the SendHousekeepingTlm() function. After the command counter lines add:\n  'Payload->SetParamCmdVal = @Template@.SetParamCmdVal;'"
+          "instructions": "1. Locate the SendHousekeepingTlm() function. After the command counter lines add:\n    'Payload->SetParamCmdVal = @Template@.SetParamCmdVal;'"
         }
       ]
     }

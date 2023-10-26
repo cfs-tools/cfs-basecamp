@@ -43,7 +43,7 @@
       <!--**** DataTypeSet: Telemetry Payloads ****-->
       <!--*****************************************-->
     
-      <ContainerDataType name="HkTlm_Payload" shortDescription="App's state and status summary, 'housekeeping data'">
+      <ContainerDataType name="StatusTlm_Payload" shortDescription="App's state and status summary, Historically known as 'housekeeping data'">
         <EntryList>
           <Entry name="ValidCmdCnt"         type="BASE_TYPES/uint16" />
           <Entry name="InvalidCmdCnt"       type="BASE_TYPES/uint16" />
@@ -57,13 +57,13 @@
       <ContainerDataType name="CommandBase" baseType="CFE_HDR/CommandHeader">
       </ContainerDataType>
 
-      <ContainerDataType name="NoopCmd" baseType="CommandBase" shortDescription="Generate an info event message with app version">
+      <ContainerDataType name="Noop" baseType="CommandBase" shortDescription="Generate an information event message with app version">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/NOOP_CC}" />
         </ConstraintSet>
       </ContainerDataType>
 
-      <ContainerDataType name="ResetCmd" baseType="CommandBase" shortDescription="Reset app to a known state">
+      <ContainerDataType name="Reset" baseType="CommandBase" shortDescription="Reset app to a known state">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
         </ConstraintSet>
@@ -74,9 +74,9 @@
       <!--**** DataTypeSet: Telemetry Packets ****-->
       <!--****************************************-->
 
-      <ContainerDataType name="HkTlm" baseType="CFE_HDR/TelemetryHeader">
+      <ContainerDataType name="StatusTlm" baseType="CFE_HDR/TelemetryHeader">
         <EntryList>
-          <Entry type="HkTlm_Payload" name="Payload" />
+          <Entry type="StatusTlm_Payload" name="Payload" />
         </EntryList>
       </ContainerDataType>
      
@@ -97,9 +97,9 @@
             </GenericTypeMapSet>
           </Interface>
 
-          <Interface name="HK_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
+          <Interface name="STATUS_TLM" shortDescription="Software bus status telemetry interface" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
-              <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
+              <GenericTypeMap name="TelemetryDataType" type="StatusTlm" />
             </GenericTypeMapSet>
           </Interface>
         </RequiredInterfaceSet>
@@ -111,12 +111,12 @@
         <Implementation>
           <VariableSet>
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_HK_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="StatusTlmTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_STATUS_TLM_TOPICID}" />
           </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
             <ParameterMap interface="CMD" parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="HK_TLM" parameter="TopicId" variableRef="HkTlmTopicId" />
+            <ParameterMap interface="STATUS_TLM" parameter="TopicId" variableRef="StatusTlmTopicId" />
           </ParameterMapSet>
         </Implementation>
       </Component>

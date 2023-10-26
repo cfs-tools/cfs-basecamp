@@ -1,9 +1,11 @@
 {
-  "time-stamp": "07/05/2023-15:32:49",
-  "title": "Create Hello World App",
+  "time-stamp": "",
+  "title": "Create App Tool",
   "objective": [
-    "Introduces cFS app concepts by creating a Hello World ",
-    "app and making some modifications to it. All Bascamp apps ",
-    "use the Application C Framework (app_c_fw)."
+    "Introduces the create app tool. This tool uses templates ",
+    "to generate an app. Templates can include coding tutorials ",
+    "so hands-on lessons can help users learn how to build upon ",
+    "the app. Bascecamp supports adding user-defined app templates ",
+    "so educators can new apps with coding lessons." 
   ]
 }

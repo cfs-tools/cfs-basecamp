@@ -1,0 +1,45 @@
+{
+  "time-stamp": "",
+  "title": "Add a new table parameter",
+  "objective": [
+    ""
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "../../../cfe-eds-framework/basecamp_defs",
+      "name": "cpu1_@template@_tbl.json",
+      "exercise": [
+        {
+          "id": "~FILE~",
+        "instructions": "1. Add a comma after the 'decrement' object closing bracket '}'\n2. Add the following new line: limit-range-max: 100\n\nNote limit-range-max must be in double quotes."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "exobjtbl.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the EXOBJTBL_Data_t typedef structure. After the DecrLimit variable:\n    Add the following line: uint16  LimitRangeMax;"
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "exobjtbl.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the JsonTblObjs[] declaration.\n    Put a comma at the end of the 'TblData.DecrLimit.High' row\n    Copy the '&TblData.LimitRangeMax' row from the lesson file to the source file"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate sprintf() statement for the decrement object.\n    Change the 'high-limit' end of line from '%d\\n   }\\n}' to '%d\\n   },\\n'\n    Copy the 'limit-range-max' sprintf() and OS_write() lines from the lesson file to the source file"
+        }
+      ]
+    }
+  ]
+}

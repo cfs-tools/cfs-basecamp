@@ -585,7 +585,7 @@ class ManageCfs():
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1E_MAN-'),
                    sg.Text('Update telemetry output app table', font=self.t_font)],
                   
-                  [sg.Text('2. Build the cFS', font=self.step_font, pad=self.b_pad)],
+                  [sg.Text('2. Build new cFS target', font=self.step_font, pad=self.b_pad)],
                   [sg.Text('', size=self.b_size), sg.Button('Build', size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-2_AUTO-')],
                   
                   [sg.Text('3. Stop the cFS if it is running', font=self.step_font, pad=self.b_pad)],

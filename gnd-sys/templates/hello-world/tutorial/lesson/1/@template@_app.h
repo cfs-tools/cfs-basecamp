@@ -86,7 +86,7 @@ typedef struct
    ** Telemetry Packets
    */
    
-   @TEMPLATE@_HkTlm_t  HkTlm;
+   @TEMPLATE@_StatusTlm_t  StatusTlm;
    
    /*
    ** @TEMPLATE@ State & Contained Objects
@@ -95,7 +95,7 @@ typedef struct
    uint32           PerfId;
    CFE_SB_PipeId_t  CmdPipe;
    CFE_SB_MsgId_t   CmdMid;
-   CFE_SB_MsgId_t   SendHkMid;
+   CFE_SB_MsgId_t   SendStatusMid;
    
 } @TEMPLATE@_Class_t;
 
@@ -124,6 +124,7 @@ void @TEMPLATE@_AppMain(void);
 **
 */
 bool @TEMPLATE@_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+
 
 //EX2
 /******************************************************************************

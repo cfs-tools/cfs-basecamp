@@ -1,0 +1,56 @@
+{
+   "title": "Hello Table",
+   "version": "1.0",
+   "short-descr": "'Hello Object' app plus a JSON parameter table",
+   "description": [
+      "This app builds upon the 'Hello Object' app by adding a table that is owned by the ",
+      "example object. Basecamp apps use JSON files for their tables unlike the NASA cFS ",
+      "apps that use binary files. Basecamp's app framework provides JSON table services to ",
+      "simplify table management. The FreeRTOS JSON parser is used whch is very suitable for ",
+      "realtime embedded software."
+   ],
+
+   "dir": [
+      {
+         "path": "",
+         "files": ["CMakeLists.txt", "@template@.json"]
+      },
+      {
+         "path": "fsw/mission_inc",
+         "files": ["@template@_mission_cfg.h"]
+      },
+      {
+         "path": "fsw/platform_inc",
+         "files": ["@template@_platform_cfg.h"]
+      },
+      {
+         "path": "fsw/src",
+         "files": ["@template@_app.c", "@template@_app.h", "app_cfg.h", "exobj.c", "exobj.h", "exobjtbl.c", "exobjtbl.h"]
+      },
+      {
+         "path": "fsw/tables",
+         "files": ["cpu1_@template@_ini.json", "cpu1_@template@_tbl.json"]
+      },
+      {
+         "path": "eds",
+         "files": ["@template@.xml"]
+      },
+      {
+         "path": "tutorial",
+         "files": ["tutorial.json"]
+      },
+      {
+         "path": "tutorial/lesson/1",
+         "files": ["lesson.json", "cpu1_@template@_tbl.json", "exobjtbl.h", "exobjtbl.c"]
+      },
+      {
+         "path": "tutorial/lesson/2",
+         "files": ["lesson.json", "exobj.c"]
+      },
+      {
+         "path": "tutorial/docs",
+         "files": ["basecamp-hello-table.pdf&"]
+      }
+   ]
+}
+

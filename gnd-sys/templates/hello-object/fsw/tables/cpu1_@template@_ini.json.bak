@@ -1,0 +1,18 @@
+{
+   "title": "@Template@ initialization file",
+   "description": ["Define runtime configurations"],
+   "config": {
+      
+      "APP_CFE_NAME": "@TEMPLATE@",
+      "APP_PERF_ID":  127,
+          
+      "APP_CMD_PIPE_DEPTH": 5,
+      "APP_CMD_PIPE_NAME":  "@TEMPLATE@_CMD",
+
+      "@TEMPLATE@_CMD_TOPICID": 0,
+      "BC_SCH_1_HZ_TOPICID": 0,
+      "BC_SCH_4_SEC_TOPICID": 0,
+      "@TEMPLATE@_HK_TLM_TOPICID": 0
+      
+   }
+}
