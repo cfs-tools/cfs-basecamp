@@ -45,7 +45,7 @@
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
 
-      <ContainerDataType name="CounterMode_CmdPayload" shortDescription="Set Counter Mode payload">
+      <ContainerDataType name="SetCounterMode_CmdPayload" shortDescription="Set Counter Mode payload">
         <EntryList>
           <Entry name="Mode" type="CounterMode" shortDescription="" />
        </EntryList>
@@ -90,7 +90,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="CounterMode_CmdPayload" name="Payload" />
+          <Entry type="SetCounterMode_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 

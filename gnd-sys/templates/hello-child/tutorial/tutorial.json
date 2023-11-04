@@ -1,0 +1,8 @@
+{
+  "time-stamp": "",
+  "title": "Hello Child",
+  "objective": [
+    "Introduce developers to cFS child tasking. This does not use Basecamp's app framework child task support"
+  ],
+  "document": "hello-child-tutorial.pdf"
+}

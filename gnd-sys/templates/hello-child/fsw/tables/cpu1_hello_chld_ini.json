@@ -1,0 +1,27 @@
+{
+   "title": "Hello Child initialization file",
+   "description": ["Define runtime configurations"],
+   "config": {
+      
+      "APP_CFE_NAME": "@TEMPLATE@",
+      "APP_PERF_ID":  127,
+          
+      "APP_CMD_PIPE_DEPTH": 5,
+      "APP_CMD_PIPE_NAME":  "@TEMPLATE@_CMD",
+
+      "@TEMPLATE@_CMD_TOPICID": 0,
+      "BC_SCH_1_HZ_TOPICID": 0,
+      "BC_SCH_4_SEC_TOPICID": 0,
+      "@TEMPLATE@_STATUS_TLM_TOPICID": 0,
+
+      "CHILD_NAME":       "HELLO_CHILD_TASK",
+      "CHILD_PERF_ID":    44,
+      "CHILD_STACK_SIZE": 16384,
+      "CHILD_PRIORITY":   40,
+      "CHILD_DELAY":      1000,
+            
+      "EXOBJ_COUNTER_LO_LIM":  0,
+      "EXOBJ_COUNTER_HI_LIM": 99
+      
+   }
+}

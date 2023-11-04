@@ -26,7 +26,7 @@
       
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
-  <Package name="@TEMPLATE@" shortDescription="Auto-generated Hello Object app">
+  <Package name="@TEMPLATE@" shortDescription="Auto-generated Hello Child app">
       <DataTypeSet>
 
       <!--***********************************-->
@@ -45,6 +45,12 @@
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
 
+      <ContainerDataType name="SetChildDelay_CmdPayload" shortDescription="Set Child Delay payload">
+        <EntryList>
+          <Entry name="Delay" type="BASE_TYPES/uint32" shortDescription="" />
+       </EntryList>
+      </ContainerDataType>
+
       <ContainerDataType name="SetCounterMode_CmdPayload" shortDescription="Set Counter Mode payload">
         <EntryList>
           <Entry name="Mode" type="CounterMode" shortDescription="" />
@@ -55,11 +61,11 @@
       <!--**** DataTypeSet: Telemetry Payloads ****-->
       <!--*****************************************-->
     
-      <ContainerDataType name="StatusTlm_Payload" shortDescription="App's state and status summary, Historically known as 'housekeeping data'">
+      <ContainerDataType name="StatusTlm_Payload" shortDescription="App's state and status summary, 'housekeeping data'">
         <EntryList>
           <Entry name="ValidCmdCnt"         type="BASE_TYPES/uint16" />
           <Entry name="InvalidCmdCnt"       type="BASE_TYPES/uint16" />
-          <Entry name="CounterMode"         type="BASE_TYPES/uint16" shortDescription="" />
+          <Entry name="CounterMode"         type="CounterMode"       shortDescription="" />
           <Entry name="CounterValue"        type="BASE_TYPES/uint16" shortDescription="" />
         </EntryList>
       </ContainerDataType>
@@ -71,7 +77,7 @@
       <ContainerDataType name="CommandBase" baseType="CFE_HDR/CommandHeader">
       </ContainerDataType>
 
-      <ContainerDataType name="Noop" baseType="CommandBase" shortDescription="Generate an information event message with app version">
+      <ContainerDataType name="Noop" baseType="CommandBase" shortDescription="Generate an info event message with app version">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/NOOP_CC}" />
         </ConstraintSet>
@@ -83,9 +89,18 @@
         </ConstraintSet>
       </ContainerDataType>
 
-      <ContainerDataType name="SetCounterMode" baseType="CommandBase" shortDescription="Set the counter mode">
+      <ContainerDataType name="SetChildDelay" baseType="CommandBase" shortDescription="Set the child task delay">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="SetChildDelay_CmdPayload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="SetCounterMode" baseType="CommandBase" shortDescription="Set the counter mode">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
         <EntryList>
           <Entry type="SetCounterMode_CmdPayload" name="Payload" />
@@ -119,7 +134,7 @@
             </GenericTypeMapSet>
           </Interface>
 
-          <Interface name="STATUS_TLM" shortDescription="Software bus status telemetry interface" type="CFE_SB/Telemetry">
+          <Interface name="STATUS_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="StatusTlm" />
             </GenericTypeMapSet>
@@ -132,12 +147,12 @@
 
         <Implementation>
           <VariableSet>
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"       initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="StatusTlmTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_STATUS_TLM_TOPICID}" />
           </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
-            <ParameterMap interface="CMD" parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="CMD"        parameter="TopicId" variableRef="CmdTopicId" />
             <ParameterMap interface="STATUS_TLM" parameter="TopicId" variableRef="StatusTlmTopicId" />
           </ParameterMapSet>
         </Implementation>

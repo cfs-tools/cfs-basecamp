@@ -40,16 +40,16 @@
          "files": ["tutorial.json"]
       },
       {
+         "path": "tutorial/docs",
+         "files": ["hello-table-tutorial.pdf&"]
+      },
+      {
          "path": "tutorial/lesson/1",
          "files": ["lesson.json", "cpu1_@template@_tbl.json", "exobjtbl.h", "exobjtbl.c"]
       },
       {
          "path": "tutorial/lesson/2",
          "files": ["lesson.json", "exobj.c"]
-      },
-      {
-         "path": "tutorial/docs",
-         "files": ["basecamp-hello-table.pdf&"]
       }
    ]
 }

@@ -31,10 +31,6 @@
 **         try to solve every conceivable scenario. These callbacks can serve
 **         as starting points for developers to create their own functions.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _childmgr_
@@ -73,7 +69,6 @@
 #define CHILDMGR_DISPATCH_UNUSED_FUNC_CODE_EID   (CHILDMGR_BASE_EID +  9)
 #define CHILDMGR_RUNTIME_ERR_EID                 (CHILDMGR_BASE_EID + 10)
 #define CHILDMGR_DEBUG_EID                       (CHILDMGR_BASE_EID + 11)
-
 
 
 /**********************/
@@ -155,7 +150,7 @@ typedef struct
 typedef struct
 {
 
-   void*                  DataPtr;
+   void                  *DataPtr;
    CHILDMGR_CmdFuncPtr_t  FuncPtr; 
    
    CHILDMGR_AltCnt_t      AltCnt;
@@ -201,10 +196,10 @@ typedef struct CHILDMGR_Struct
 **    3. The AppMainCallback function can be NULL and is only used if the
 **       ChildTaskMainFunc has a callback feature.
 */
-int32 CHILDMGR_Constructor(CHILDMGR_Class_t* ChildMgr,
+int32 CHILDMGR_Constructor(CHILDMGR_Class_t *ChildMgr,
                            CFE_ES_ChildTaskMainFuncPtr_t ChildTaskMainFunc,
                            CHILDMGR_TaskCallback_t AppMainCallback,
-                           CHILDMGR_TaskInit_t* TaskInit);
+                           CHILDMGR_TaskInit_t *TaskInit);
 
 
 /******************************************************************************
@@ -214,7 +209,7 @@ int32 CHILDMGR_Constructor(CHILDMGR_Class_t* ChildMgr,
 **   1. This command function is registered with the app's cmdmgr with all of
 **      the function codes that use the child task to process the command.
 */
-bool CHILDMGR_InvokeChildCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool CHILDMGR_InvokeChildCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -226,7 +221,7 @@ bool CHILDMGR_InvokeChildCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 **      periodically suspended to prevent CPU hogging.
 **
 */
-bool CHILDMGR_PauseTask(uint16* TaskBlockCnt, uint16 TaskBlockLim, 
+bool CHILDMGR_PauseTask(uint16 *TaskBlockCnt, uint16 TaskBlockLim, 
                         uint32 TaskBlockDelayMs, uint32 PerfId);
 
 
@@ -234,8 +229,8 @@ bool CHILDMGR_PauseTask(uint16* TaskBlockCnt, uint16 TaskBlockLim,
 ** Function: CHILDMGR_RegisterFunc
 **
 */
-bool CHILDMGR_RegisterFunc(CHILDMGR_Class_t* ChildMgr,
-                           uint16 FuncCode, void* ObjDataPtr,
+bool CHILDMGR_RegisterFunc(CHILDMGR_Class_t *ChildMgr,
+                           uint16 FuncCode, void *ObjDataPtr,
                            CHILDMGR_CmdFuncPtr_t ObjFuncPtr);
 
             
@@ -243,7 +238,7 @@ bool CHILDMGR_RegisterFunc(CHILDMGR_Class_t* ChildMgr,
 ** Function: CHILDMGR_ResetStatus
 **
 */
-void CHILDMGR_ResetStatus(CHILDMGR_Class_t* ChildMgr);
+void CHILDMGR_ResetStatus(CHILDMGR_Class_t *ChildMgr);
 
 
 /******************************************************************************

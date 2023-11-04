@@ -50,7 +50,7 @@
 #define @TEMPLATE@_PLATFORM_REV   0
 
 // Do not use user supplied template to ensure filename length is less than default OS_MAX_FILE_NAME (includes \0)
-#define @TEMPLATE@_INI_FILENAME   "/cf/hello_wrld_ini.json"
+#define @TEMPLATE@_INI_FILENAME   "/cf/hello_chld_ini.json" 
 
 
 #endif /* _@template@_platform_cfg_ */

@@ -1,0 +1,65 @@
+{
+  "time-stamp": "",
+  "title": "Mutex Semaphores",
+  "objective": [
+    "Introduce how Mutex Semaphores are used to protect data that is shared between two threads of execution which is typically a parent app and a child task."
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "fsw/src",
+      "name": "exobj.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the EXOBJ_Class_t typedef and below the 'uin32 ChildTaskDelay' line add:\n    'uint32  ChildDataSemaphore;'"
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "exobj.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the 'Local Function Prototypes'comment block:\n    Add 'static bool StackPush(uint16 CounterValue, const char *TimeStr);' to the list of function prototypes"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the EXOBJ_Constructor() function:\n    Add 'OS_MutSemCreate(&ExObj->ChildDataSemaphore, \"HELLO_CHILD_DATA\", 0);' after the CounterValue line"
+        },
+        {
+          "id": "EX3",
+          "instructions": "1. Locate the EXOBJ_StackPop() function:\n    Add 'OS_MutSemTake(ExObj->ChildDataSemaphore);' and 'OS_MutSemGive(ExObj->ChildDataSemaphore);' as shown in the lesson file"
+        },
+        {
+          "id": "EX4",
+          "instructions": "1. Locate the ManageCounter() function:\n    Add 'StackPush(ExObj->CounterValue, TimeStr);' before the CFE_EVS_SendEvent() call"
+        },
+        {
+          "id": "EX5",
+          "instructions": "1. Goto to the end of the file:\n    After ManageCounter()After the ProcessCommands() function, copy the StackPush() function body from the lesson file.\n\n Note Basecamp coding convention is to implement static functions alphabetically after the global functions."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the 'Local Function Prototypes'comment block:\n    Add 'static void ProcessExObjStack(void);' to the list of function prototypes"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the ProcessCommands() function body:\n    After the ProcessCommands() function, copy the ProcessExObjStack() function body from the lesson file.\n\n Note Basecamp coding convention is to implement static functions alphabetically after the global functions."
+        },
+        {
+          "id": "EX3",
+          "instructions": "1. Locate the ProcessCommands() function:\n    Add a call to 'ProcessExObjStack();' in the '@Template@.ExecuteMid' conditional block"
+        }
+      ]
+    }    
+  ]
+}

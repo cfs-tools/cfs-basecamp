@@ -1,0 +1,63 @@
+{
+  "time-stamp": "",
+  "title": "Counting Semaphores",
+  "objective": [
+    "Introduce how Counting Semaphores can be used to control a child task's execution"
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "fsw/src",
+      "name": "exobj.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the EXOBJ_Class_t typedef:\n    Add 'uint32  ChildExecSemaphore;' below the ChildDataSemaphore line added in Lesson 1"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the EXOBJ_Constructor() function prototype definition.\n    Add 'uint32  ChildExecSemaphore' as the last parameter\n\nNote the parent app will create the semaphore."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "exobj.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the EXOBJ_Constructor() function:\n    A. Add 'uint32  ChildExecSemaphore' to the parameter list\n    B. Add 'ExObj->ChildExecSemaphore = ChildExecSemaphore;' after the CounterValue line"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the EXOBJ_ChildTask() function:\n    Replace 'OS_TaskDelay(ExObj->ChildTaskDelay);' with 'OS_CountSemTake(ExObj->ChildExecSemaphore);'"
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the @TEMPLATE@_Class_t typedef:\n    Add 'uint32  ChildExecSemaphore;' below the 'uin32 ChildTaskDelay' line"
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "Locate the EXOBJ_Constructor() in the InitApp() function:\n    A. Before the EXOBJ_Constructor() call add 'OS_CountSemCreate(&@Template@.ChildExecSemaphore, \"HELLO_CHILD_EXEC\", 0, 0);'\n    B. Add '@Template@.ChildExecSemaphore' as the last parameter in the EXOBJ_Constructor() call"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the ProcessCommands() function:\n    A. In the '@Template@.ExecuteMid' conditional block replace the call to 'ProcessExObjStack();' with OS_CountSemGive(@Template@.ChildExecSemaphore);\n    B. In the '@Template@.SendStatusMid' conditional block add a call to 'ProcessExObjStack();'"
+        }
+      ]
+    }
+  ]
+}

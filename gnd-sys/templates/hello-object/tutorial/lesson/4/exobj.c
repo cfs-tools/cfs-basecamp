@@ -91,8 +91,6 @@ void EXOBJ_ResetStatus()
 /******************************************************************************
 ** Function: EXOBJ_SetModeCmd
 **
-** Notes:
-**   1. See file prologue for logging/playback logic.
 */
 bool EXOBJ_SetModeCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {

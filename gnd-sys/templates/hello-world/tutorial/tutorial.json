@@ -4,5 +4,5 @@
   "objective": [
     "Introduce developers to application design, telecommand processing, telemetry message generation, and JSON initialization parameter files."
   ],
-  "document": "basecamp-hello-world.pdf"
+  "document": "hello-world-tutorial.pdf"
 }

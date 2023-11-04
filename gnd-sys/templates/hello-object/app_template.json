@@ -40,6 +40,10 @@
          "files": ["tutorial.json"]
       },
       {
+         "path": "tutorial/docs",
+         "files": ["hello-object-tutorial.pdf&"]
+      },
+      {
          "path": "tutorial/lesson/1",
          "files": ["lesson.json", "@template@.xml", "exobj.h"]
       },
@@ -54,10 +58,6 @@
       {
          "path": "tutorial/lesson/4",
          "files": ["lesson.json", "exobj.c"]
-      },
-      {
-         "path": "tutorial/docs",
-         "files": ["basecamp-hello-object.pdf&"]
       }
    ]
 }

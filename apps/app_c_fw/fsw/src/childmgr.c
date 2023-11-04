@@ -19,10 +19,6 @@
 **    1. 'Command' does not necessarily mean a ground command. 
 **    2. See header file for prototype notes.  
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 /*
@@ -47,10 +43,11 @@
 ** Child Task Management
 */
 
-typedef struct {
+typedef struct
+{
    
    uint16  Count;
-   CHILDMGR_Class_t* Instance[CHILDMGR_MAX_TASKS];
+   CHILDMGR_Class_t *Instance[CHILDMGR_MAX_TASKS];
    
 } ChildTask_t;
 
@@ -59,11 +56,11 @@ typedef struct {
 /** Local Function Prototypes **/
 /*******************************/
 
-static void AppendIdToStr(char* NewStr, const char* BaseStr);
-static bool UnusedFuncCode(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
-static void DispatchCmdFunc(CHILDMGR_Class_t* ChildMgr);
-static bool RegChildMgrInstance(CHILDMGR_Class_t* ChildMgr);
-static CHILDMGR_Class_t* GetChildMgrInstance(void);
+static void AppendIdToStr(char *NewStr, const char *BaseStr);
+static bool UnusedFuncCode(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+static void DispatchCmdFunc(CHILDMGR_Class_t *ChildMgr);
+static bool RegChildMgrInstance(CHILDMGR_Class_t *ChildMgr);
+static CHILDMGR_Class_t *GetChildMgrInstance(void);
 
 
 /*****************/
@@ -80,13 +77,13 @@ static ChildTask_t ChildTask = { 0, {NULL, NULL, NULL, NULL, NULL} };
 ** Notes:
 **   1. This function must be called prior to any other functions being
 **      called using the same cmdmgr instance.
-**   2. Constructors typically have void return type. This returns status
-**      because it's failure could prevent the parent app from initializing.
+**   2. Constructors typically have a void return type. This returns a status
+**      so the caller can respond to failures.
 */
-int32 CHILDMGR_Constructor(CHILDMGR_Class_t* ChildMgr,
+int32 CHILDMGR_Constructor(CHILDMGR_Class_t *ChildMgr,
                            CFE_ES_ChildTaskMainFuncPtr_t ChildTaskMainFunc,
                            CHILDMGR_TaskCallback_t AppMainCallback,
-                           CHILDMGR_TaskInit_t* TaskInit)
+                           CHILDMGR_TaskInit_t *TaskInit)
 {
 
    int i;
@@ -172,10 +169,10 @@ int32 CHILDMGR_Constructor(CHILDMGR_Class_t* ChildMgr,
 **      CHILDMGR_RegisterFunc() and the object data pointer must reference
 **      the ChildMgr instance.
 */
-bool CHILDMGR_InvokeChildCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool CHILDMGR_InvokeChildCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   CHILDMGR_Class_t* ChildMgr = (CHILDMGR_Class_t*)ObjDataPtr;
+   CHILDMGR_Class_t *ChildMgr = (CHILDMGR_Class_t*)ObjDataPtr;
    
    bool  RetStatus       = false;
    uint8 LocalQueueCount = ChildMgr->CmdQ.Count; /* Use local instance during checks */
@@ -277,7 +274,7 @@ bool CHILDMGR_InvokeChildCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 ** Function: CHILDMGR_PauseTask
 ** 
 */
-bool CHILDMGR_PauseTask(uint16* TaskBlockCnt, uint16 TaskBlockLim, 
+bool CHILDMGR_PauseTask(uint16 *TaskBlockCnt, uint16 TaskBlockLim, 
                         uint32 TaskBlockDelayMs, uint32 PerfId) 
 {
    
@@ -306,8 +303,8 @@ bool CHILDMGR_PauseTask(uint16* TaskBlockCnt, uint16 TaskBlockLim,
 ** Function: CHILDMGR_RegisterFunc
 **
 */
-bool CHILDMGR_RegisterFunc(CHILDMGR_Class_t* ChildMgr, uint16 FuncCode, 
-                           void* ObjDataPtr, CHILDMGR_CmdFuncPtr_t ObjFuncPtr)
+bool CHILDMGR_RegisterFunc(CHILDMGR_Class_t *ChildMgr, uint16 FuncCode, 
+                           void *ObjDataPtr, CHILDMGR_CmdFuncPtr_t ObjFuncPtr)
 {
 
    bool RetStatus = false;
@@ -338,8 +335,8 @@ bool CHILDMGR_RegisterFunc(CHILDMGR_Class_t* ChildMgr, uint16 FuncCode,
 ** Function: CHILDMGR_RegisterFuncAltCnt
 **
 */
-bool CHILDMGR_RegisterFuncAltCnt(CHILDMGR_Class_t* ChildMgr, uint16 FuncCode, 
-                                 void* ObjDataPtr, CHILDMGR_CmdFuncPtr_t ObjFuncPtr)
+bool CHILDMGR_RegisterFuncAltCnt(CHILDMGR_Class_t *ChildMgr, uint16 FuncCode, 
+                                 void *ObjDataPtr, CHILDMGR_CmdFuncPtr_t ObjFuncPtr)
 {
 
    bool RetStatus = false;
@@ -362,7 +359,7 @@ bool CHILDMGR_RegisterFuncAltCnt(CHILDMGR_Class_t* ChildMgr, uint16 FuncCode,
 ** Function: CHILDMGR_ResetStatus
 **
 */
-void CHILDMGR_ResetStatus(CHILDMGR_Class_t* ChildMgr)
+void CHILDMGR_ResetStatus(CHILDMGR_Class_t *ChildMgr)
 {
 
    ChildMgr->ValidCmdCnt = 0;
@@ -381,7 +378,7 @@ void CHILDMGR_ResetStatus(CHILDMGR_Class_t* ChildMgr)
 void ChildMgr_TaskMainCallback(void)
 {
 
-   CHILDMGR_Class_t*  ChildMgr = NULL; 
+   CHILDMGR_Class_t * ChildMgr = NULL; 
 
    /*
    ** The child task runs until the parent dies (normal end) or
@@ -416,7 +413,7 @@ void ChildMgr_TaskMainCallback(void)
          else
          {
             ChildMgr->RunStatus = CHILDMGR_RUNTIME_ERR;
-            CFE_EVS_SendEvent(CHILDMGR_RUNTIME_ERR_EID, CFE_EVS_EventType_ERROR, "Child task exiting due to null callback function ointer");
+            CFE_EVS_SendEvent(CHILDMGR_RUNTIME_ERR_EID, CFE_EVS_EventType_ERROR, "Child task exiting due to null callback function pointer");
          }
      
       } /* End task while loop */
@@ -443,7 +440,7 @@ void ChildMgr_TaskMainCallback(void)
 void ChildMgr_TaskMainCmdDispatch(void)
 {
 
-   CHILDMGR_Class_t*  ChildMgr = NULL; 
+   CHILDMGR_Class_t *ChildMgr = NULL; 
 
    /*
    ** The child task runs until the parent dies (normal end) or
@@ -535,7 +532,7 @@ void ChildMgr_TaskMainCmdDispatch(void)
 **   2. Currently ID's are not synched with 
 **   3. TODO - Add memory protection if needed
 */
-static void AppendIdToStr(char* NewStr, const char* BaseStr)
+static void AppendIdToStr(char *NewStr, const char *BaseStr)
 {
    
    char IdStr[5];
@@ -554,7 +551,7 @@ static void AppendIdToStr(char* NewStr, const char* BaseStr)
 ** command dispatcher doesn't need to do the command integrity checks.
 **
 */
-static void DispatchCmdFunc(CHILDMGR_Class_t* ChildMgr)
+static void DispatchCmdFunc(CHILDMGR_Class_t *ChildMgr)
 {
 
    bool  ValidCmd;
@@ -596,10 +593,10 @@ static void DispatchCmdFunc(CHILDMGR_Class_t* ChildMgr)
 /******************************************************************************
 ** Function: GetChildMgrInstance
 */
-static CHILDMGR_Class_t* GetChildMgrInstance(void)
+static CHILDMGR_Class_t *GetChildMgrInstance(void)
 {
 
-   CHILDMGR_Class_t*  Instance = NULL;
+   CHILDMGR_Class_t  *Instance = NULL;
    uint16 i = 0;
 
    uint32 CurrentTaskIdIndex;   
@@ -651,7 +648,7 @@ static CHILDMGR_Class_t* GetChildMgrInstance(void)
 ** Notes: 
 **   1. TODO - Add memory protection
 */
-static bool RegChildMgrInstance(CHILDMGR_Class_t* ChildMgr)
+static bool RegChildMgrInstance(CHILDMGR_Class_t *ChildMgr)
 {
    
    bool RetStatus = false;
@@ -678,7 +675,7 @@ static bool RegChildMgrInstance(CHILDMGR_Class_t* ChildMgr)
 ** Function: UnusedFuncCode
 **
 */
-static bool UnusedFuncCode(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+static bool UnusedFuncCode(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CFE_MSG_FcnCode_t FuncCode;

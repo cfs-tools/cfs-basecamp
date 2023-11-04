@@ -1,0 +1,54 @@
+{
+   "title": "Hello Child",
+   "version": "1.0",
+   "short-descr": "'Hello Object' app plus a child task",
+   "description": [
+      "This app builds upon the 'Hello Object' app by using a child task for the example ",
+      "object's execute function. Basecamp's app framework provides services that simplify ",
+      "some child task use cases."
+   ],
+
+   "dir": [
+      {
+         "path": "",
+         "files": ["CMakeLists.txt", "@template@.json"]
+      },
+      {
+         "path": "fsw/mission_inc",
+         "files": ["@template@_mission_cfg.h"]
+      },
+      {
+         "path": "fsw/platform_inc",
+         "files": ["@template@_platform_cfg.h"]
+      },
+      {
+         "path": "fsw/src",
+         "files": ["@template@_app.c", "@template@_app.h", "app_cfg.h", "exobj.c", "exobj.h"]
+      },
+      {
+         "path": "fsw/tables",
+         "files": ["cpu1_hello_chld_ini.json"]
+      },
+      {
+         "path": "eds",
+         "files": ["@template@.xml"]
+      },
+      {
+         "path": "tutorial",
+         "files": ["tutorial.json"]
+      },
+      {
+         "path": "tutorial/docs",
+         "files": ["hello-child-tutorial.pdf&"]
+      },
+      {
+         "path": "tutorial/lesson/1",
+         "files": ["lesson.json", "@template@_app.c", "exobj.c", "exobj.h"]
+      },
+      {
+         "path": "tutorial/lesson/2",
+         "files": ["lesson.json", "@template@_app.c", "@template@_app.h", "exobj.c", "exobj.h"]
+      }
+   ]
+}
+

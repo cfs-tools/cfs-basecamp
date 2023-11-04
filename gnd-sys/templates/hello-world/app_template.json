@@ -36,7 +36,7 @@
       },
       {
          "path": "fsw/tables",
-         "files": ["cpu1_@template@_ini.json"]
+         "files": ["cpu1_hello_wrld_ini.json"]
       },
       {
          "path": "eds",
@@ -45,6 +45,10 @@
       {
          "path": "tutorial",
          "files": ["tutorial.json"]
+      },
+      {
+         "path": "tutorial/docs",
+         "files": ["hello-world-tutorial.pdf&"]
       },
       {
          "path": "tutorial/lesson/1",
@@ -56,11 +60,7 @@
       },
       {
          "path": "tutorial/lesson/3",
-         "files": ["lesson.json", "app_cfg.h", "@template@_app.c", "cpu1_@template@_ini.json"]
-      },
-      {
-         "path": "tutorial/docs",
-         "files": ["basecamp-hello-world.pdf&"]
+         "files": ["lesson.json", "app_cfg.h", "@template@_app.c", "cpu1_hello_wrld_ini.json"]
       }
    ]
 }
