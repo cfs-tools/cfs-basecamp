@@ -29,7 +29,7 @@
       },
       {
          "path": "fsw/tables",
-         "files": ["cpu1_@template@_ini.json"]
+         "files": ["cpu1_hello_obj_ini.json"]
       },
       {
          "path": "eds",
@@ -49,7 +49,7 @@
       },
       {
          "path": "tutorial/lesson/2",
-         "files": ["lesson.json", "app_cfg.h", "cpu1_@template@_ini.json", "exobj.h", "exobj.c"]
+         "files": ["lesson.json", "app_cfg.h", "cpu1_hello_obj_ini.json", "exobj.h", "exobj.c"]
       },
       {
          "path": "tutorial/lesson/3",

@@ -196,6 +196,12 @@ class Tutorial():
         self.lesson_list = [int(l) for l in os.listdir(self.lesson_path) if l.isnumeric()]
         self.lesson_list.sort()
         logger.debug(f'self.lesson_list = {str(self.lesson_list)}')
+        
+        self.display = True
+        self.reset   = False
+
+
+    def create_lesson_objs(self):
         self.lesson_objs = {}
         for l in self.lesson_list:
             lesson_num_path = os.path.join(self.lesson_path, str(l))
@@ -211,10 +217,7 @@ class Tutorial():
                 self.lesson_objs[l] = Lesson(l, lesson_num_path, lesson_pdf_file)            
             else:
                 logger.debug(f'No PDF found for lesson {l}')
-        
-        self.display = True
-        self.reset   = False
-
+    
     def create_window(self):
         """
         Create the main window. Non-class variables are used so it can be refreshed, PySimpleGui
@@ -239,7 +242,7 @@ class Tutorial():
             logger.debug("Lesson Layout " + lesson.title)
             title          = f'{lesson.number}-{lesson.title}'
             complete_state = 'Yes' if lesson.complete else 'No'
-            radio_state    = True if lesson.number == resume_lesson else False
+            radio_state    = True  if lesson.number == resume_lesson else False
             lesson_layout.append([sg.Radio(title, 'LESSONS', default=radio_state, font=hdr_value_font, size=(30,0), key=f'-LESSON{lesson.number}-'), sg.Text(complete_state, key=f'-COMPLETE{lesson.number}-')])
         
         
@@ -256,6 +259,18 @@ class Tutorial():
         window = sg.Window(self.json.title(), layout, modal=True)
         return window
         
+    def selected_lesson(self):
+        """
+        Return the selected lesson.
+        """
+        lesson_obj = None
+        for lesson in self.lesson_objs:
+            if self.values[f'-LESSON{lesson}-'] == True:
+               lesson_obj = self.lesson_objs[lesson]
+               break
+               
+        return lesson_obj
+
         
     def gui(self):
         """
@@ -265,7 +280,8 @@ class Tutorial():
         """
                 
         while self.display:
-
+          
+            self.create_lesson_objs()
             window = self.create_window()
 
             while True: # Event Loop
@@ -276,11 +292,15 @@ class Tutorial():
                     break
             
                 if self.event == 'Start':
-                    for lesson in self.lesson_objs:
-                        if self.values[f'-LESSON{lesson}-'] == True:
-                            if self.lesson_objs[lesson].execute():
-                                window[f'-COMPLETE{lesson}-'].update('Yes') 
-                
+                    lesson_obj = self.selected_lesson()
+                    if lesson_obj is not None: 
+                        if lesson_obj.execute():
+                            window[f'-COMPLETE{lesson_obj.number}-'].update('Yes') 
+                            # If not last lesson then redisplay lesson window
+                            if lesson_obj.number < len(self.lesson_objs):
+                                self.reset = True
+                            break
+
                 if self.event == 'Reset':
                     for lesson in list(self.lesson_objs.values()):
                        lesson.reset()   

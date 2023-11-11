@@ -124,7 +124,7 @@ class CodeTutorial():
         for lesson in self.lesson_objs.values():
             title          = f'{lesson.number}-{lesson.title}'
             complete_state = 'Yes' if lesson.complete else 'No'
-            radio_state    = True if lesson.number == resume_lesson else False
+            radio_state    = True  if lesson.number == resume_lesson else False
             lesson_layout.append([sg.Radio(title, 'LESSONS', default=radio_state, font=hdr_value_font, size=(30,0), key=f'-LESSON{lesson.number}-'), sg.Text(complete_state, key=f'-COMPLETE{lesson.number}-')])
         
         # Layouts can't be reused/shared so if someone does a tutorial reset it causes issues if layout is a class variable
@@ -160,7 +160,7 @@ class CodeTutorial():
         interface very simple so the algorithm to determine which lesson to resume is simplistic
         and it's up to the user whether they select lessons as completed.
         """
-                
+        self.reset = False        
         while self.display:
 
             self.create_lesson_objs()
@@ -177,8 +177,12 @@ class CodeTutorial():
                     lesson_obj = self.selected_lesson()
                     if lesson_obj is not None: 
                         if lesson_obj.execute():
-                            window[f'-COMPLETE{lesson_obj.number}-'].update('Yes') 
-                            self.reset = True
+                            window[f'-COMPLETE{lesson_obj.number}-'].update('Yes')
+                            # If not last lesson then redisplay lesson window
+                            if lesson_obj.number < len(self.lesson_objs):
+                                self.reset = True
+                            break
+
                             
                 elif self.event == 'Objective':
                     lesson_obj = self.selected_lesson()
@@ -192,14 +196,18 @@ class CodeTutorial():
                 
                 elif self.event == 'Document':
                     pdf_filename = os.path.join(self.path, DOCS_DIR, self.json.document())
-                    print(f'pdf_filename: {pdf_filename}')
                     pdf_viewer = PdfViewer(pdf_filename)
                     pdf_viewer.execute()
 
                 elif self.event == 'Reset':
+                    """
+                    Here's code if reset should only reset a selected lesson:
                     lesson_obj = self.selected_lesson()
                     if lesson_obj is not None: 
                         lesson_obj.reset()
+                    """
+                    for lesson in list(self.lesson_objs.values()):
+                       lesson.reset()   
                     self.reset = True
                     break
         
@@ -219,11 +227,12 @@ class CodeTutorial():
 
 class ManageCodeTutorials():
     """
-    Discover what user app code tutorials exists. Each user app can have about
+    Discover what user app code tutorials exists. Each user app can have a
     tutorial directory. Create a 'database' of information about the tutorials
     based on each tutorial's JSON spec.
     User select tutorials based by title so self.tutorial_lookup provides a
-    method to retrieve a tutorial given its title
+    method to retrieve a tutorial given its title. It also means tutorial
+    titles must be unique.
     """
     def __init__(self, usr_app_path):
 
@@ -309,7 +318,8 @@ class CodeLesson():
         return os.path.join(self.path, self.file['name'])
 
     def user_path_filename(self):
-        return os.path.join(self.path, '../../..', self.file['path'], self.file['name'])
+        path = compress_abs_path(os.path.join(self.path, '../../..', self.file['path']))
+        return os.path.join(path, self.file['name'])
 
     def user_filename(self):
         return os.path.join(self.file['path'], self.file['name'])

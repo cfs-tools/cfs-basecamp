@@ -136,7 +136,7 @@ bool @TEMPLATE@_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
 } /* End @TEMPLATE@_ResetAppCmd() */
 
-//EX1
+
 /******************************************************************************
 ** Function: @TEMPLATE@_SetParamCmd
 **
@@ -161,7 +161,7 @@ bool @TEMPLATE@_SetParamCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
 
 } /* End @TEMPLATE@_SetParamCmd() */
-//EX1
+
 
 
 /******************************************************************************
@@ -281,7 +281,7 @@ static int32 ProcessCommands(void)
    
 } /* End ProcessCommands() */
 
-//EX2
+
 /******************************************************************************
 ** Function: SendStatusTlm
 **
@@ -304,4 +304,4 @@ static void SendStatusTlm(void)
    CFE_SB_TransmitMsg(CFE_MSG_PTR(@Template@.StatusTlm.TelemetryHeader), true);
 
 } /* End SendStatusTlm() */
-//EX2
+

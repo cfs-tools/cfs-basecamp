@@ -193,7 +193,7 @@ static int32 InitApp(void)
       CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_NOOP_CC,  NULL, @TEMPLATE@_NoOpCmd,     0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_RESET_CC, NULL, @TEMPLATE@_ResetAppCmd, 0);
       
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_SET_COUNTER_MODE_CC, EXOBJ_OBJ, EXOBJ_SetModeCmd, sizeof(@TEMPLATE@_CounterMode_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_SET_COUNTER_MODE_CC, EXOBJ_OBJ, EXOBJ_SetModeCmd, sizeof(@TEMPLATE@_SetCounterMode_CmdPayload_t));
       /*
       ** Initialize app messages 
       */

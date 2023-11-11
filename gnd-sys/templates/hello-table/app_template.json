@@ -29,7 +29,7 @@
       },
       {
          "path": "fsw/tables",
-         "files": ["cpu1_@template@_ini.json", "cpu1_@template@_tbl.json"]
+         "files": ["cpu1_hello_tbl_ini.json", "cpu1_hello_tbl.json"]
       },
       {
          "path": "eds",
@@ -45,7 +45,7 @@
       },
       {
          "path": "tutorial/lesson/1",
-         "files": ["lesson.json", "cpu1_@template@_tbl.json", "exobjtbl.h", "exobjtbl.c"]
+         "files": ["lesson.json", "cpu1_hello_tbl.json", "exobjtbl.h", "exobjtbl.c"]
       },
       {
          "path": "tutorial/lesson/2",

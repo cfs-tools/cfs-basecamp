@@ -19,7 +19,7 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["@template@_ini.json", "@template@_tbl.json"]
+      "tables": ["hello_tbl_ini.json", "hello_tbl.json"]
    }
    
 }}

@@ -264,11 +264,10 @@ static int32 ProcessCommands(void)
          } 
          else if (CFE_SB_MsgId_Equal(MsgId, @Template@.ExecuteMid))
          {
-            OS_CountSemGive(@Template@.ChildExecSemaphore);
+            ProcessExObjStack();
          }
          else if (CFE_SB_MsgId_Equal(MsgId, @Template@.SendStatusMid))
          {   
-            ProcessExObjStack();
             SendStatusTlm();
          }
          else

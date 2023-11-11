@@ -19,7 +19,7 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["@template@_ini.json"]
+      "tables": ["hello_obj_ini.json"]
    }
    
 }}

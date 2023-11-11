@@ -86,7 +86,7 @@ bool EXOBJ_SetModeCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
    bool RetStatus = false;
-   const @TEMPLATE@_CounterMode_CmdPayload_t *Cmd = CMDMGR_PAYLOAD_PTR(MsgPtr, @TEMPLATE@_SetCounterMode_t);
+   const @TEMPLATE@_SetCounterMode_CmdPayload_t *Cmd = CMDMGR_PAYLOAD_PTR(MsgPtr, @TEMPLATE@_SetCounterMode_t);
    @TEMPLATE@_CounterMode_Enum_t PrevMode = ExObj->CounterMode;
    
    if ((Cmd->Mode == @TEMPLATE@_CounterMode_Increment) ||
