@@ -1759,9 +1759,9 @@ class App():
                 """
             
             elif self.event == 'cFS Overview':
-                self.view_pdf_doc('cFS-Overview.pdf')
+                self.view_pdf_doc('basecamp-cfs-overview.pdf')
             elif self.event == 'cFE Overview':
-                self.view_pdf_doc('cFE-Overview.pdf')
+                self.view_pdf_doc('basecamp-cfs-framework.pdf')
             elif self.event == 'App Dev Guide':
                 self.view_pdf_doc('basecamp-app-dev.pdf')
             elif self.event == 'Remote Ops Guide':

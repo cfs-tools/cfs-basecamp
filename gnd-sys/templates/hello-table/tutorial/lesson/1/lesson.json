@@ -33,11 +33,11 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the JsonTblObjs[] declaration.\n    Put a comma at the end of the 'TblData.DecrLimit.High' row\n    Copy the '&TblData.LimitRangeMax' row from the lesson file to the source file"
+          "instructions": "1. Locate the JsonTblObjs[] declaration.\n    Put a comma at the end of the 'TblData.DecrLimit.High' row\n    Copy the '&TblData.LimitRangeMax' row from the exercise window to the source file window"
         },
         {
           "id": "EX2",
-          "instructions": "1. Locate sprintf() statement for the decrement object.\n    Change the 'high-limit' end of line from '%d\\n   }\\n}' to '%d\\n   },\\n'\n    Copy the 'limit-range-max' sprintf() and OS_write() lines from the lesson file to the source file"
+          "instructions": "1. Locate sprintf() statement for the decrement object.\n    Change the 'high-limit' end of line from '%d\\n   }\\n}' to '%d\\n   },\\n'\n    Copy the 'limit-range-max' sprintf() and OS_write() lines from the exercise window to the source file window"
         }
       ]
     }

@@ -189,7 +189,7 @@ static bool AcceptNewTable(const EXOBJTBL_Data_t *TblData)
    }
    else
    {
-      RetStatus = true;
+      RetStatus = true;  // Replace with new limit range check
          
    } /* End if valid limits */
 

@@ -13,7 +13,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the EXOBJ_ResetStatus() function. Before the return statement:\n    Add the logic from the lesson file to set the ExObj->CounterValue reset value"
+          "instructions": "1. Locate the EXOBJ_ResetStatus() function. Before the return statement:\n    Add the logic from the exercise window to set the ExObj->CounterValue reset value"
         },
         {
           "id": "EX2",

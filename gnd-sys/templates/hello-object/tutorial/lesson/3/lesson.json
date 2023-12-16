@@ -13,7 +13,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the 'File Global Data' comment block. After the 'DEFINE_ENUM(Config,APP_CONFIG)' line add:\n    The entire 'static CFE_EVS_BinFilter_t  EventFilters[] =' definition and default values shown in the lesson file."
+          "instructions": "1. Locate the 'File Global Data' comment block. After the 'DEFINE_ENUM(Config,APP_CONFIG)' line add:\n    The entire 'static CFE_EVS_BinFilter_t  EventFilters[] =' definition and default values shown in the exercise window"
         },
         {
           "id": "EX2",

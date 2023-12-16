@@ -41,7 +41,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. After the @TEMPLATE@_ResetAppCmd() function add\n    The @TEMPLATE@_SetParamCmd() implementation from the lesson file."
+          "instructions": "1. After the @TEMPLATE@_ResetAppCmd() function add\n    The @TEMPLATE@_SetParamCmd() code from the exercise window"
         },
         {
           "id": "EX2",

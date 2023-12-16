@@ -31,7 +31,7 @@
         },
         {
           "id": "EX3",
-          "instructions": "1. Locate the EXOBJ_StackPop() function:\n    Add 'OS_MutSemTake(ExObj->ChildDataSemaphore);' and 'OS_MutSemGive(ExObj->ChildDataSemaphore);' as shown in the lesson file"
+          "instructions": "1. Locate the EXOBJ_StackPop() function:\n    Add 'OS_MutSemTake(ExObj->ChildDataSemaphore);' and 'OS_MutSemGive(ExObj->ChildDataSemaphore);' as shown in the exercise window"
         },
         {
           "id": "EX4",
@@ -39,7 +39,7 @@
         },
         {
           "id": "EX5",
-          "instructions": "1. Goto to the end of the file:\n    After ManageCounter()After the ProcessCommands() function, copy the StackPush() function body from the lesson file.\n\n Note Basecamp coding convention is to implement static functions alphabetically after the global functions."
+          "instructions": "1. Goto to the end of the file:\n    After ManageCounter()After the ProcessCommands() function, copy the StackPush() function body from the exercise window.\n\n Note Basecamp coding convention is to implement static functions alphabetically after the global functions."
         }
       ]
     },
@@ -53,7 +53,7 @@
         },
         {
           "id": "EX2",
-          "instructions": "1. Locate the ProcessCommands() function body:\n    After the ProcessCommands() function, copy the ProcessExObjStack() function body from the lesson file.\n\n Note Basecamp coding convention is to implement static functions alphabetically after the global functions."
+          "instructions": "1. Locate the ProcessCommands() function body:\n    After the ProcessCommands() function, copy the ProcessExObjStack() function body from the exercise window.\n\n Note Basecamp coding convention is to implement static functions alphabetically after the global functions."
         },
         {
           "id": "EX3",
