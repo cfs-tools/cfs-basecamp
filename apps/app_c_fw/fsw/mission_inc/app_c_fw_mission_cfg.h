@@ -13,16 +13,12 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Define the mission configurations for the application C framework
+**    Define the mission configurations for the Application C Framework
 **
 **  Notes:
 **    1. Resources are statically allocated for each application's
 **       data structures so these configurations must be sized to 
 **       accommodate the 'largest' application.
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
 **
 */
 

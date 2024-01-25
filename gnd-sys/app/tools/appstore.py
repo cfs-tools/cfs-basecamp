@@ -51,14 +51,12 @@ class GitHubAppProject():
     '''
     Manage the interface to cFS apps in github repos  
     '''
-    def __init__(self, git_url, usr_app_rel_path, repo_exclusions):
+    def __init__(self, git_url, usr_app_rel_path):
         """
-        usr_app_rel_path is an relative path to where git repos should be cloned into
-        repo_exclusions is a list of repos that should not be used
+        usr_app_rel_path  - Relative path to where git repos should be cloned into
         """
         self.usr_clone_path = usr_app_rel_path
         self.git_url  = git_url
-        self.repo_exclusions = repo_exclusions
         self.app_repo = None
         self.app_dict = {}
          
@@ -74,11 +72,10 @@ class GitHubAppProject():
         try:
             self.app_repo = requests.get(self.git_url)
             if self.app_repo.status_code == 200:
-                app_repo_list = self.app_repo.json() 
+                app_repo_list = self.app_repo.json()
                 # Create a dictionary with app names as the key
                 for repo in app_repo_list:
-                    if repo['name'] not in self.repo_exclusions:
-                        self.app_dict[repo['name']] = repo
+                    self.app_dict[repo['name']] = repo
                 ret_status = True
         except requests.exceptions.ConnectionError as e:
             pass
@@ -116,6 +113,14 @@ class GitHubAppProject():
         if app_name in self.app_dict:
             descr = self.app_dict[app_name]['description']
         return descr
+
+    def get_topics(self, app_name):
+        """
+        """
+        topics = []
+        if app_name in self.app_dict:
+            topics = self.app_dict[app_name]['topics']
+        return topics
 
 
 ###############################################################################
@@ -282,10 +287,15 @@ class AppStore():
     Manage the user interface for downloading apps from github and cloning
     them into the user's app directory. 
     """
-    def __init__(self, git_url, usr_app_rel_path, repo_exclusions):
-
+    def __init__(self, git_url, usr_app_rel_path, git_topic_include, git_topic_exclude):
+        """
+        git_topic_include - List of github topics identifying repos to be included
+        git_topic_exclude - List of github topics identifying repos to be excluded
+        """
+        self.git_topic_include = git_topic_include
+        self.git_topic_exclude = git_topic_exclude 
         self.usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(), usr_app_rel_path))
-        self.git_app_repo = GitHubAppProject(git_url, usr_app_rel_path, repo_exclusions)
+        self.git_app_repo = GitHubAppProject(git_url, usr_app_rel_path)
         self.window  = None
 
         
@@ -296,8 +306,10 @@ class AppStore():
         hdr_value_font = ('Arial',12)
         app_layout = []
         for app in self.git_app_repo.app_dict.keys():
-            app_layout.append([sg.Checkbox(app.upper(), default=False, font=hdr_label_font, size=(10,0), key=f'-{app}-'),  
-                              sg.Text(self.git_app_repo.get_descr(app), font=hdr_value_font, size=(100,1))])
+            topics = self.git_app_repo.get_topics(app)
+            if any(x in topics for x in self.git_topic_include) and not any(x in topics for x in self.git_topic_exclude):
+                app_layout.append([sg.Checkbox(app.upper(), default=False, font=hdr_label_font, size=(10,0), key=f'-{app}-'),  
+                                  sg.Text(self.git_app_repo.get_descr(app), font=hdr_value_font, size=(100,1))])
                 
         layout = [
                   [sg.Text("Select one or more apps to download then follow the steps in 'Add App'. See 'Add App' tutorial if you are unfamiliar with the steps.\nAn app's JSON spec file has a 'requires' parameter that identifies dependencies that must be installed first.\n", font=hdr_value_font)],

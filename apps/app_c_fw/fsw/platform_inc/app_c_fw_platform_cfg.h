@@ -13,16 +13,12 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Define the platform configurations for the Application C framework
+**    Define the platform configurations for the Application C Framework
 **
 **  Notes:
 **    1. Resources are statically allocated for each application's
 **       data structures so these configurations must be sized to 
 **       accommodate the 'largest' application.
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
 **
 */
 
@@ -34,11 +30,11 @@
 /* 
 ** Mission specific version number
 **
-**  An application version number consists of four parts:
-**  major version number, minor version number, revision
-**  number and mission specific revision number. The mission
-**  specific revision number is defined here and the other
-**  parts are defined in "app_c_fw_ver.h".
+**  An application version number consists of three parts:
+**  major version number, minor version number, and mission
+**  specific revision number. The mission specific revision
+**  number is defined here and the other parts are defined
+**  in "app_c_fw_ver.h".
 **
 */
 #define APP_C_FW_MISSION_REV  (0)

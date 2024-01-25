@@ -114,7 +114,7 @@ class TelecommandGui(TelecommandInterface):
         self.UNDEFINED_CMD_LIST = [self.NULL_CMD_STR]
 
         self.PAYLOAD_ROWS, self.PAYLOAD_COLS, self.PAYLOAD_HEADINGS = 8, 3, ('Parameter Name','Type','Value',)
-        self.PAYLOAD_INPUT_START = 2 # First row of input payloads (see SendCmd() payload_layout comment)
+        self.PAYLOAD_INPUT_START = 3 # First row of input payloads (see SendCmd() payload_layout comment)
         self.PAYLOAD_TEXT_INPUT  = 'text'
         self.PAYLOAD_COMBO_INPUT = 'combo'
         
@@ -856,9 +856,9 @@ class ManageCfs():
             if file_modified:
                 with open(self.targets_cmake_file, 'w') as f:
                     f.write(instantiated_text)
-                popup_text = f"Updated targets_cmake with {app_cmake_files['obj-file']} {table_list_str}"
+                popup_text = f"Updated {targets_cmake} with {app_cmake_files['obj-file']} {table_list_str}"
             else:
-                popup_text = f"Preserved targets_cmake, it already contains {app_cmake_files['obj-file']} {table_list_str}"
+                popup_text = f"Preserved {targets_cmake}, it already contains {app_cmake_files['obj-file']} {table_list_str}"
             #todo: Remove? sg.popup(popup_text, title=f'Update {self.targets_cmake_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         else:
             sg.clipboard_set(app_cmake_files['obj-file'] + ',' + str(app_cmake_files['tables']))
@@ -1646,10 +1646,9 @@ class App():
                 self.create_app.execute()
 
             elif self.event == 'Download App':
-                repo_exclusions = self.config.get('CFS_TARGET','CFS_APPS').split(',')
-                print(repo_exclusions)
-                print(self.config.get('PATHS','USR_APP_PATH'))
-                app_store = AppStore(self.config.get('APP','APP_STORE_URL'), self.config.get('PATHS','USR_APP_PATH'),repo_exclusions)
+                git_topic_include = self.config.get('APP','APP_STORE_INCLUDE').split(',')
+                git_topic_exclude = self.config.get('APP','APP_STORE_EXCLUDE').split(',')
+                app_store = AppStore(self.config.get('APP','APP_STORE_URL'), self.config.get('PATHS','USR_APP_PATH'),git_topic_include, git_topic_exclude)
                 app_store.execute()
  
             elif self.event in ('Add App','Remove App'):
