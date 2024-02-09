@@ -4,17 +4,17 @@
    "short-descr": "Minimal app with command and telemetry interfaces",
    "description": [
       "Minimal app with command and telemetry interfaces. It has two commands that by convention ",
-      "are part of every  app. The 'No Operation(NOOP)' commands sends an event message with the ",
-      "app's version number. The Reset app command resets the app to a known state. Historially ",
-      "this command only reset counters. The Basecamp convention is to reset any status or state ",
-      "that makes sens for the app. The app has one telemetry message that by convention is called ",
-      "the 'Housekeeping' message. This message is sent in response to an onboard scheduling message ",
-      "that is sent by the Scheduler App. It contains status information that includes command ",
-      "valid and invalid counters. This app uses the Basecamp C Application Framework. This framework ",
-      "is object-based and uses design patterns to allow developers to create consistent app designs ",
-      "that are robust and easy to maintain. A common app component is the initialization parameter ",
-      "file. This is a JSON file that is read when an app initializes and contains parameters that ",
-      "can be defined at runtime"
+      "are part of every  app.",
+      "  The 'No Operation(NOOP)' command sends an event message with the app's version number.",
+      "  The Reset App command resets the app to a known state. Historially this command only reset",
+      "  counters. The Basecamp convention is to reset any status or state that makes sense for the app.",
+      "The app outputs one status telemetry message every 4 seconds that is sent in response to an",
+      "onboard scheduling message sent by the Scheduler App(kit_to).",
+      "  Includes command valid and invalid counters.",
+      "This app uses the Basecamp C Application Framework(app_c_fw). This framework is object-based and",
+      "uses design patterns to help developers create consistent app designs that are robust and easy to",
+      "maintain. A common app component is the initialization parameter file. This is a JSON file that",
+      "is read when an app initializes and contains parameters that can be defined at runtime."
    ],
 
    "dir": [

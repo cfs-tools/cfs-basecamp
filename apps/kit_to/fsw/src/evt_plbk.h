@@ -18,11 +18,7 @@
 **
 **  Notes:
 **    1. Initially motivated by a scenario where ground tools for dumping
-**       and displaying the event log were not available. 
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
+**       and displaying the event log were not available.s
 **
 */
 #ifndef _evt_plbk_

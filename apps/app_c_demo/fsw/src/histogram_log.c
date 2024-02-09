@@ -25,10 +25,6 @@
 **       occurs in reverse when a playback is in progress and a command to 
 **       start a message log is received. Neither case is considered an error.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
-**
 */
 
 /*
@@ -96,7 +92,7 @@ void HISTOGRAM_LOG_Constructor(HISTOGRAM_LOG_Class_t *HistogramLogPtr,
 bool HISTOGRAM_LOG_RunChildTaskCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const APP_C_DEMO_RunHistogramLogChildTask_Payload_t *RunChildTask = CMDMGR_PAYLOAD_PTR(MsgPtr, APP_C_DEMO_RunHistogramLogChildTask_t);
+   const APP_C_DEMO_RunHistogramLogChildTask_CmdPayload_t *RunChildTask = CMDMGR_PAYLOAD_PTR(MsgPtr, APP_C_DEMO_RunHistogramLogChildTask_t);
 
 
    CFE_EVS_SendEvent (HISTOGRAM_LOG_RUN_EID, CFE_EVS_EventType_DEBUG,
@@ -154,7 +150,7 @@ bool HISTOGRAM_LOG_StartLogCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr
    bool   RetStatus = false;
    int32  SysStatus;
    os_err_name_t OsErrStr;
-   const APP_C_DEMO_StartHistogramLog_Payload_t *StartLog = CMDMGR_PAYLOAD_PTR(MsgPtr,APP_C_DEMO_StartHistogramLog_t);
+   const APP_C_DEMO_StartHistogramLog_CmdPayload_t *StartLog = CMDMGR_PAYLOAD_PTR(MsgPtr,APP_C_DEMO_StartHistogramLog_t);
       
    if (StartLog->BinNum < HISTOGRAM_MAX_BINS)
    {

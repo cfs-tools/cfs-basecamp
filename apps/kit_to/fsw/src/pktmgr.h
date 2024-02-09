@@ -25,11 +25,7 @@
 **       packet. A packet has a message ID that corresponds to a cFE message
 **       ID. KIT_TO stores its message ID as an integer and the cFE provides
 **       conversion functions that translate from a 'value' to the cFE's SB
-**       message ID repreentation.
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
+**       message ID repreentation.s
 **
 */
 #ifndef _pktmgr_
@@ -156,7 +152,8 @@ typedef struct
    bool                    SuppressSend;
    KIT_TO_TlmSource_Enum_t TlmSource;
    PKTMGR_Stats_t          Stats;
-
+   uint32                  PktForwardCnt;
+   
    /*
    ** Contained Objects
    */ 

@@ -16,11 +16,7 @@
 **    Provide a service to playback cFE_EVS event log file in telemetry.
 **
 **  Notes:
-**    None 
-**
-**  References:
-**    1. cFS Basecamp Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
+**    Nones
 **
 */
 
@@ -173,7 +169,7 @@ void EVT_PLBK_Execute(void)
 bool EVT_PLBK_ConfigCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const KIT_TO_CfgEvtLogPlbk_Payload_t *CfgEvtLogPlbk = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_CfgEvtLogPlbk_t);
+   const KIT_TO_CfgEvtLogPlbk_CmdPayload_t *CfgEvtLogPlbk = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_CfgEvtLogPlbk_t);
    bool  RetStatus = false;
 
    EvtPlbk->HkCyclePeriod = CfgEvtLogPlbk->HkCyclesPerPkt;

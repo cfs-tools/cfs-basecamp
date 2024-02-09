@@ -21,11 +21,7 @@
 **            Added PktUtil 
 **    3.0.0 - New baseline for OSK app repo compatible with cFE Bootes
 **    4.0.0 - New baseline for OSK app repo compatible with cFE Caelum
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
+**    4.2.0 - Table improvements, see issues 32
 */
 
 #ifndef _app_c_fw_ver_h_
@@ -33,7 +29,7 @@
 
 
 #define APP_C_FW_MAJOR_VER    4
-#define APP_C_FW_MINOR_VER    1
+#define APP_C_FW_MINOR_VER    2
 #define APP_C_FW_LOCAL_REV    0
 
       

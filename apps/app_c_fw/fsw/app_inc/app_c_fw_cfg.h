@@ -22,10 +22,6 @@
 **       and for a release. See app_c_fw_platform.h and app_c_fw_mission.h
 **       for parameters that can be configured for a deployment.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _app_c_fw_cfg_

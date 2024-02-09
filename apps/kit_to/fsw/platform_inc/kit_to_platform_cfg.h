@@ -22,10 +22,6 @@
 **       configured when an app is deployed and the JSON initialization
 **       file for parameters that can be defined at runtime.
 **
-**  References:
-**    1. cFS Basecamp Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 #ifndef _kit_to_platform_cfg_
 #define _kit_to_platform_cfg_

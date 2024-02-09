@@ -19,11 +19,7 @@
 **     a UDP socket.
 **
 **  Notes:
-**    None
-**
-**  References:
-**    1. cFS Basecamp Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
+**    Nones
 **
 */
 #ifndef _kit_to_app_

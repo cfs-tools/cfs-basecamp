@@ -25,9 +25,6 @@
 **    3. There are several (uint16) casts that are required to prevent compiler
 **       warnings most are due to the compiler assuming a signed integer result
 **       for integer-based math operations.
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
 **
 */
 

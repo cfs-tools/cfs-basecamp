@@ -23,10 +23,6 @@
 **       the unused bin array entries must still be defined. The bins are
 **       processed sequentially so unused bins are at the end of the array. 
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 /*

@@ -26,10 +26,6 @@
 **       and ('CFG_' - 1) is used to index into IniTbl->JsonParams[] because
 **       CJSON assumes [0] is a valid entry.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
-**
 */
 
 /*

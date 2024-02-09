@@ -20,10 +20,6 @@
 **       is passed to the constructor and saved for all other operations.
 **       This is a table-specific file so it doesn't need to be re-entrant.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
-**
 */
 
 #ifndef _histogram_tbl_

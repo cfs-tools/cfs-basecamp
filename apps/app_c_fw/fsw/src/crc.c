@@ -20,10 +20,6 @@
 **    2. Th efollowing algorithm was suggessted in a comment as potentially more
 **       efficient:  crc = (crc >> 1) ^ (POLY & (0 - (crc & 1)));
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 

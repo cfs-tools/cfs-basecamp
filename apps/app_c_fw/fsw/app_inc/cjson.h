@@ -32,10 +32,6 @@
 **       - JSONNumber
 **       - JSONString
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _cjson_

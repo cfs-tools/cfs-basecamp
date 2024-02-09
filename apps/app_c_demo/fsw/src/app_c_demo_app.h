@@ -20,10 +20,6 @@
 **       as the final app that is developed during the Code-As-You-Go(CAYG)
 **       app development tutorial.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
-**
 */
 
 #ifndef _app_c_demo_app_

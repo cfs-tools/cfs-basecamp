@@ -21,10 +21,6 @@
 **       This is a table-specific file so it doesn't need to be re-entrant.
 **    2. The table file is a JSON text file.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
-**
 */
 #ifndef _pkttbl_
 #define _pkttbl_

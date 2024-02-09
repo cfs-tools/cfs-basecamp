@@ -270,8 +270,8 @@ class CreateApp():
                 if self.selected_app is not None:
                     description = ""
                     for decsription_line in self.selected_app.json.description():
-                        description += decsription_line
-                    sg.popup(description, title=self.selected_app.json.title())
+                        description += decsription_line + '\n'
+                    sg.popup(description, title=self.selected_app.json.title(), font='Courier 12', line_width=sg.MESSAGE_BOX_LINE_WIDTH*2)
                 else:
                     sg.popup("Please select an application template", title="Create Application", modal=False)
                 

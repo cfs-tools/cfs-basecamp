@@ -19,10 +19,6 @@
 **    1. This utility does not dictate a specific table format. It 
 **       only specifies an API for managing an application's table.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _tblmgr_

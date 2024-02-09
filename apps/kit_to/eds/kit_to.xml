@@ -71,7 +71,7 @@
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
 
-      <ContainerDataType name="LoadTbl_Payload" shortDescription="Load an app's JSON table">
+      <ContainerDataType name="LoadTbl_CmdPayload" shortDescription="Load an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"                   shortDescription="Table identifier" />
           <Entry name="Type"     type="APP_C_FW/TblLoadOptions" shortDescription="Replace entire table or perform sparse entry updates" />
@@ -79,7 +79,7 @@
        </EntryList>
       </ContainerDataType>
       
-      <ContainerDataType name="DumpTbl_Payload" shortDescription="Dump an app's JSON table">
+      <ContainerDataType name="DumpTbl_CmdPayload" shortDescription="Dump an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"               shortDescription="Table identifier" />
           <Entry name="Unused"   type="BASE_TYPES/uint8"    shortDescription="Unused" />
@@ -87,13 +87,13 @@
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="EnableOutput_Payload" shortDescription="Enable TLM packet output">
+      <ContainerDataType name="EnableOutput_CmdPayload" shortDescription="Enable TLM packet output">
         <EntryList>
           <Entry name="DestIp" type="char_x_16" shortDescription="IP address to send to" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="AddPkt_Payload" shortDescription="Add a packet to packet table in memory, not the JSON file">
+      <ContainerDataType name="AddPkt_CmdPayload" shortDescription="Add a packet to packet table in memory, not the JSON file">
         <EntryList>
           <Entry name="MsgId"       type="BASE_TYPES/uint16"            shortDescription="Message Id" />
           <Entry name="Qos"         type="CFE_SB/Qos"                   shortDescription="Qos for subscription" />
@@ -103,19 +103,19 @@
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="RemovePkt_Payload" shortDescription="Remove a packet from the packet table in memory, not the JSON file">
+      <ContainerDataType name="RemovePkt_CmdPayload" shortDescription="Remove a packet from the packet table in memory, not the JSON file">
         <EntryList>
           <Entry name="MsgId" type="BASE_TYPES/uint16" shortDescription="Message Id" />
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SendPktTblTlm_Payload" shortDescription="Send the table entry for the specified message ID">
+      <ContainerDataType name="SendPktTblTlm_CmdPayload" shortDescription="Send the table entry for the specified message ID">
         <EntryList>
           <Entry name="MsgId" type="BASE_TYPES/uint16" shortDescription="Message Id" />
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="UpdatePktFilter_Payload" shortDescription="Send the table entry for the specified message ID">
+      <ContainerDataType name="UpdatePktFilter_CmdPayload" shortDescription="Send the table entry for the specified message ID">
         <EntryList>
           <Entry name="MsgId" type="BASE_TYPES/uint16" shortDescription="Message Id" />
           <Entry name="FilterType"  type="APP_C_FW/PktFilterOptions"    shortDescription="" />
@@ -123,27 +123,27 @@
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SetRunLoopDelay_Payload" shortDescription="">
+      <ContainerDataType name="SetRunLoopDelay_CmdPayload" shortDescription="">
         <EntryList>
           <Entry name="RunLoopDelay" type="BASE_TYPES/uint16" shortDescription="" />
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="TestPktFilter_Payload" shortDescription="">
+      <ContainerDataType name="TestPktFilter_CmdPayload" shortDescription="">
         <EntryList>
           <Entry name="FilterType"  type="APP_C_FW/PktFilterOptions"    shortDescription="" />
           <Entry name="FilterParam" type="APP_C_FW/PktUtil_FilterParam" shortDescription="" />
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="CfgEvtLogPlbk_Payload" shortDescription="">
+      <ContainerDataType name="CfgEvtLogPlbk_CmdPayload" shortDescription="">
         <EntryList>
           <Entry name="EventLogFile"   type="BASE_TYPES/PathName" shortDescription="Filename sent in CFE_EVS command to write EVS log to a file" />
           <Entry name="HkCyclesPerPkt" type="BASE_TYPES/uint16"   shortDescription="Number of HK request cycles between event log telemetry packets" />
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SetTlmSource_Payload" shortDescription="">
+      <ContainerDataType name="SetTlmSource_CmdPayload" shortDescription="">
         <EntryList>
           <Entry name="Source"  type="TlmSource"  shortDescription="" />
        </EntryList>
@@ -164,6 +164,7 @@
           <Entry name="PktTblActionStatus"   type="APP_C_FW/TblActionStatus" />
           <Entry name="PktTblJsonObjCnt"     type="BASE_TYPES/uint16" />
           <Entry name="TlmSource"            type="TlmSource" />
+          <Entry name="PktForwardCnt"        type="BASE_TYPES/uint32" />
           <Entry name="StatsValid"           type="APP_C_FW/BooleanUint8"  />
           <Entry name="PktsPerSec"           type="BASE_TYPES/uint16" />
           <Entry name="BytesPerSec"          type="BASE_TYPES/uint32" />
@@ -244,7 +245,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/LOAD_TBL_CC}" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="LoadTbl_Payload" name="Payload" />
+          <Entry type="LoadTbl_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -253,7 +254,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/DUMP_TBL_CC}" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="DumpTbl_Payload" name="Payload" />
+          <Entry type="DumpTbl_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -262,7 +263,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="AddPkt_Payload" name="Payload" />
+          <Entry type="AddPkt_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -271,7 +272,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="EnableOutput_Payload" name="Payload" />
+          <Entry type="EnableOutput_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -286,7 +287,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="RemovePkt_Payload" name="Payload" />
+          <Entry type="RemovePkt_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -295,7 +296,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 4" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SendPktTblTlm_Payload" name="Payload" />
+          <Entry type="SendPktTblTlm_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -304,7 +305,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 5" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="UpdatePktFilter_Payload" name="Payload" />
+          <Entry type="UpdatePktFilter_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -319,7 +320,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 7" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SetRunLoopDelay_Payload" name="Payload" />
+          <Entry type="SetRunLoopDelay_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -328,7 +329,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 8" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="TestPktFilter_Payload" name="Payload" />
+          <Entry type="TestPktFilter_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -337,7 +338,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 9" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="CfgEvtLogPlbk_Payload" name="Payload" />
+          <Entry type="CfgEvtLogPlbk_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -358,7 +359,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 12" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SetTlmSource_Payload" name="Payload" />
+          <Entry type="SetTlmSource_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 

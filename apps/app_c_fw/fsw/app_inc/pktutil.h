@@ -19,10 +19,6 @@
 **    1. PktUtil_IsPacketFiltered originated from cfs_utils and the preserves
 **       'N of X with offset O' algorithm.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _pkt_util_

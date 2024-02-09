@@ -16,11 +16,7 @@
 **    Provides a wrapper for apps to use coreJSON for their tables.
 **
 **  Notes:
-**    None  
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
+**    None
 **
 */
 
@@ -76,13 +72,13 @@ static bool StubLoadJsonDataAlt(size_t JsonFileLen, void* UserDataPtr);
 
 static const char* JsonStatusStr[] = {
   
-  "ValidButPartial",    /* JSONPartial          */
-  "Valid",              /* JSONSuccess          */
-  "Invalid-Malformed",  /* JSONIllegalDocument  */
-  "MaxDepthExceeded",   /* JSONMaxDepthExceeded */
-  "QueryKeyNotFound",   /* JSONNotFound         */
-  "QueryNullPointer",   /* JSONNullParameter    */
-  "QueryKeyInvalid",    /* JSONBadParameter     */
+  "ValidButPartial",                /* JSONPartial          */
+  "Valid",                          /* JSONSuccess          */
+  "Malformed JSON or BufOverflow",  /* JSONIllegalDocument  */
+  "MaxDepthExceeded",               /* JSONMaxDepthExceeded */
+  "QueryKeyNotFound",               /* JSONNotFound         */
+  "QueryNullPointer",               /* JSONNullParameter    */
+  "QueryKeyInvalid",                /* JSONBadParameter     */
   
 };
 
@@ -498,7 +494,7 @@ static bool ProcessFile(const char* Filename, char* JsonBuf, size_t MaxJsonFileC
          {
          
             CFE_EVS_SendEvent(CJSON_PROCESS_FILE_ERR_EID, CFE_EVS_EventType_ERROR, 
-                              "CJSON error validating file %s.  Status = %s.",
+                              "CJSON error validating file %s. Status: %s.",
                               Filename, JsonStatusStr[JsonStatus]);
 
          }

@@ -17,11 +17,7 @@
 **
 **  Notes:
 **    1. The enumeration macro design is based on
-**       https://stackoverflow.com/questions/147267/easy-way-to-use-variables-of-enum-types-as-string-in-c/202511 
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
+**       https://stackoverflow.com/questions/147267/easy-way-to-use-variables-of-enum-types-as-string-in-c/202511
 **
 */
 #ifndef _ini_lib_

@@ -20,11 +20,7 @@
 **   1. This has some of the features of a flight app such as packet
 **      filtering but it would need design/code reviews to transition it to a
 **      flight mission. For starters it uses UDP sockets and it doesn't
-**      regulate output bit rates. 
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
+**      regulate output bit rates.
 **
 */
 
@@ -122,7 +118,7 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr, INITBL_Class_t *IniTbl)
 bool PKTMGR_AddPktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const KIT_TO_AddPkt_Payload_t *AddPkt = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_AddPkt_t);
+   const KIT_TO_AddPkt_CmdPayload_t *AddPkt = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_AddPkt_t);
    bool          RetStatus = true;
    PKTTBL_Pkt_t  NewPkt;
    int32         Status;
@@ -182,7 +178,7 @@ bool PKTMGR_AddPktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool PKTMGR_EnableOutputCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const KIT_TO_EnableOutput_Payload_t *EnableOutput = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_EnableOutput_t);
+   const KIT_TO_EnableOutput_CmdPayload_t *EnableOutput = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_EnableOutput_t);
    bool  RetStatus = true;
    int32 OsStatus;
    
@@ -304,6 +300,7 @@ uint16 PKTMGR_OutputTelemetry(void)
                memcpy(&(PktMgr->PubWrappedTlm.Payload), &SbBufPtr->Msg, MsgLen);
                CFE_SB_TimeStampMsg(CFE_MSG_PTR(PktMgr->PubWrappedTlm.TelemetryHeader));
                CFE_SB_TransmitMsg(CFE_MSG_PTR(PktMgr->PubWrappedTlm.TelemetryHeader), true);
+               PktMgr->PktForwardCnt++;
             } 
             
             if(PktMgr->DownlinkOn)
@@ -449,7 +446,7 @@ bool PKTMGR_RemoveAllPktsCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool PKTMGR_RemovePktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const KIT_TO_RemovePkt_Payload_t *RemovePkt = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_RemovePkt_t);
+   const KIT_TO_RemovePkt_CmdPayload_t *RemovePkt = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_RemovePkt_t);
    bool    RetStatus = true;
    uint16  AppId;
    int32   Status;
@@ -500,6 +497,7 @@ void PKTMGR_ResetStatus(void)
 {
 
    PKTMGR_InitStats(0,INITBL_GetIntConfig(PktMgr->IniTbl, CFG_PKTMGR_STATS_CONFIG_DELAY));
+   PktMgr->PktForwardCnt = 0;
 
 } /* End PKTMGR_ResetStatus() */
 
@@ -511,7 +509,7 @@ void PKTMGR_ResetStatus(void)
 bool PKTMGR_SendPktTblTlmCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const KIT_TO_SendPktTblTlm_Payload_t *SendPktTblTlm = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_SendPktTblTlm_t);
+   const KIT_TO_SendPktTblTlm_CmdPayload_t *SendPktTblTlm = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_SendPktTblTlm_t);
    uint16        AppId;
    PKTTBL_Pkt_t* PktPtr;
    int32         Status;
@@ -545,7 +543,7 @@ bool PKTMGR_SendPktTblTlmCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool PKTMGR_SetTlmSourceCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const KIT_TO_SetTlmSource_Payload_t *SetTlmSource = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_SetTlmSource_t);
+   const KIT_TO_SetTlmSource_CmdPayload_t *SetTlmSource = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_SetTlmSource_t);
    bool RetStatus = false;
 
 
@@ -580,7 +578,7 @@ bool PKTMGR_SetTlmSourceCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool PKTMGR_UpdatePktFilterCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const  KIT_TO_UpdatePktFilter_Payload_t *UpdatePktFilter = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_UpdatePktFilter_t);
+   const  KIT_TO_UpdatePktFilter_CmdPayload_t *UpdatePktFilter = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_UpdatePktFilter_t);
    bool   RetStatus = false;
    uint16 AppId;
 

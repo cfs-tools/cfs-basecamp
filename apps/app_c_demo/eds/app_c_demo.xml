@@ -43,7 +43,7 @@
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
 
-      <ContainerDataType name="LoadTbl_Payload" shortDescription="Load an app's JSON table">
+      <ContainerDataType name="LoadTbl_CmdPayload" shortDescription="Load an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"                   shortDescription="Table identifier" />
           <Entry name="Type"     type="APP_C_FW/TblLoadOptions" shortDescription="Replace entire table or perform sparse entry updates" />
@@ -51,7 +51,7 @@
        </EntryList>
       </ContainerDataType>
       
-      <ContainerDataType name="DumpTbl_Payload" shortDescription="Dump an app's JSON table">
+      <ContainerDataType name="DumpTbl_CmdPayload" shortDescription="Dump an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"               shortDescription="Table identifier" />
           <Entry name="Unused"   type="BASE_TYPES/uint8"    shortDescription="Unused" />
@@ -59,14 +59,14 @@
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="StartHistogramLog_Payload"   shortDescription="Start logging data samples for a specific bin to a text log file">
+      <ContainerDataType name="StartHistogramLog_CmdPayload"   shortDescription="Start logging data samples for a specific bin to a text log file">
         <EntryList>
           <Entry name="BinNum"     type="BASE_TYPES/uint16" shortDescription="Bin number to be logged. Bins are defined by the histogram bin table" />
           <Entry name="MaxEntries" type="BASE_TYPES/uint16" shortDescription="Maximum number of data samples to store in the log file" />
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="RunHistogramLogChildTask_Payload" shortDescription="Internal app command to run the histogram log child task">
+      <ContainerDataType name="RunHistogramLogChildTask_CmdPayload" shortDescription="Internal app command to run the histogram log child task">
         <EntryList>
           <Entry name="BinNum"     type="BASE_TYPES/uint16" shortDescription="Data sample to be logged" />
           <Entry name="DataSample" type="BASE_TYPES/uint16" shortDescription="Data sample to be logged" />
@@ -132,7 +132,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/LOAD_TBL_CC}" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="LoadTbl_Payload" name="Payload" />
+          <Entry type="LoadTbl_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -141,7 +141,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/DUMP_TBL_CC}" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="DumpTbl_Payload" name="Payload" />
+          <Entry type="DumpTbl_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -162,7 +162,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="StartHistogramLog_Payload" name="Payload" />
+          <Entry type="StartHistogramLog_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -189,7 +189,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 6" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="RunHistogramLogChildTask_Payload" name="Payload" />
+          <Entry type="RunHistogramLogChildTask_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 

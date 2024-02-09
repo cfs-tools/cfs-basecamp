@@ -1484,7 +1484,7 @@ class App():
                        ['System', ['Options', 'About', 'Exit']],
                        ['Developer', ['Create App', 'Download App', 'Add App', 'Remove App', '---', 'Run Perf Monitor']], #todo: 'Certify App' 
                        ['Operator', ['Browse Files', 'Run Script', 'Plot Data', '---', 'Control Remote Target', 'Configure Command Destination', 'Configure Telemetry Source']],
-                       ['Documents', ['cFS Overview', 'cFE Overview', 'App Dev Guide', 'Remote Ops Guide']],
+                       ['Documents', ['cFS Overview', 'cFE Overview', 'App Dev Guide', 'Remote Ops Guide', 'App Spec Guide']],
                        ['Tutorials', tutorial_titles]
                    ]
 
@@ -1636,9 +1636,9 @@ class App():
                              'build/runtime tools, and a lightweight GUI that\n'
                              'simplify creating, integrating, testing, and\n'
                              'deploying cFS applications.\n\n'
-                             'Version.......{}'.format(self.APP_VERSION))
+                             f'Version {self.APP_VERSION}')
                 sg.popup(about_msg,
-                         title='About Basecamp', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                         title='About Basecamp', font='Courier 12', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
        
             ### CFS DEVELOPER ###
 
@@ -1765,7 +1765,8 @@ class App():
                 self.view_pdf_doc('basecamp-app-dev.pdf')
             elif self.event == 'Remote Ops Guide':
                 self.view_pdf_doc('basecamp-remote-ops.pdf')
-
+            elif self.event == 'App Spec Guide':
+                self.view_pdf_doc('basecamp-app-spec.pdf')
                 
             ### TUTORIALS ###
                    

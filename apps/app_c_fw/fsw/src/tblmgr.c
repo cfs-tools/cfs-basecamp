@@ -20,10 +20,6 @@
 **       only specifies an API for managing an application's table.
 **    2. This code must be reentrant and no global data can be used. 
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 /*

@@ -18,10 +18,6 @@
 **  Notes:
 **    1. See header notes
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 /*
@@ -225,7 +221,7 @@ static int32 InitApp(void)
       ** The following commands are executed within the context of a child task. See the App Dev Guide for details.
       */
       
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_START_HISTOGRAM_LOG_CC,        CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(APP_C_DEMO_StartHistogramLog_Payload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_START_HISTOGRAM_LOG_CC,        CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(APP_C_DEMO_StartHistogramLog_CmdPayload_t));
       CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_STOP_HISTOGRAM_LOG_CC,         CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, 0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_START_HISTOGRAM_LOG_PLAYBK_CC, CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, 0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_STOP_HISTOGRAM_LOG_PLAYBK_CC,  CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, 0);
@@ -238,7 +234,7 @@ static int32 InitApp(void)
       ** Alternative commands don't increment the main command counters, but they do increment the child command counters.
       ** This "command" is used by the app's main loop to perform periodic processing 
       */
-      CMDMGR_RegisterFuncAltCnt(CMDMGR_OBJ, APP_C_DEMO_RUN_HISTOGRAM_LOG_CHILD_TASK_CC, CHILDMGR_OBJ,      CHILDMGR_InvokeChildCmd, sizeof(APP_C_DEMO_RunHistogramLogChildTask_Payload_t));
+      CMDMGR_RegisterFuncAltCnt(CMDMGR_OBJ, APP_C_DEMO_RUN_HISTOGRAM_LOG_CHILD_TASK_CC, CHILDMGR_OBJ,      CHILDMGR_InvokeChildCmd, sizeof(APP_C_DEMO_RunHistogramLogChildTask_CmdPayload_t));
       CHILDMGR_RegisterFunc(CHILDMGR_OBJ,   APP_C_DEMO_RUN_HISTOGRAM_LOG_CHILD_TASK_CC, HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_RunChildTaskCmd);
 
 
@@ -280,7 +276,7 @@ static int32 ProcessCommands(void)
    int32  SysStatus;
    uint16 BinNum;
    uint16 DataSample;
-   CFE_SB_Buffer_t* SbBufPtr;
+   CFE_SB_Buffer_t *SbBufPtr;
    CFE_SB_MsgId_t   MsgId = CFE_SB_INVALID_MSG_ID;
 
 
@@ -343,7 +339,7 @@ static void SendStatusTlm(void)
 {
 
    /* Good design practice in case app expands to more than one table */
-   const TBLMGR_Tbl_t* LastTbl = TBLMGR_GetLastTblStatus(TBLMGR_OBJ);
+   const TBLMGR_Tbl_t *LastTbl = TBLMGR_GetLastTblStatus(TBLMGR_OBJ);
 
    APP_C_DEMO_StatusTlm_Payload_t *Payload = &AppCDemo.StatusTlm.Payload;
    

@@ -19,10 +19,6 @@
 **    1. This is for demonstration purposes and is part of the OSK
 **       code-as-you-go (CAYG) tutorial.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
-**
 */
 
 #ifndef _device_

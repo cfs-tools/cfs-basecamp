@@ -42,10 +42,6 @@
 **         execution cycle are merged(logically ORed) with the message
 **    8. STATEREP_BIT_ID_MAX must be defined prior to including this header.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef  _staterep_

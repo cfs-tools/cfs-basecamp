@@ -10,8 +10,8 @@ For users who are working on a flight mission, the [cFS Platform List](https://g
 ## Prerequisites
 The system can be developed on any GNU/Linux development host. The following commands install the development packages for
 a Debian/Ubuntu environment. Other Linux distributions should provide a similar set of packages but, the package names and
-installation tool names may vary. If you're running on a Raspberry Pi with a 32-bit Raspbian operating system then refer to
-the [GPIO Demo tutorial](https://github.com/cfs-tools/cfs-basecamp/tree/main/gnd-sys/tutorials/6-pi-gpio-demo) for details on how to configure and build the cFS. 
+installation tool names may vary. If you're running on a Raspberry Pi with a 32-bit Raspbian operating system please refer to
+the [cFS Raspberry Pi LED Control Project](https://openmissionstack.com/projects_read/gpio_demo) for details on how to configure and build the cFS. 
 
     sudo apt-get update -y 
     sudo apt-get install -y build-essential

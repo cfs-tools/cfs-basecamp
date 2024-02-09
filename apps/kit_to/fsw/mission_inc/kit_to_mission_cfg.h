@@ -19,10 +19,6 @@
 **    1. Compile-time configurations that are applied to all platform
 **       deployments of this app for a mission.
 **
-**  References:
-**    1. cFS Basecamp Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 #ifndef _kit_to_mission_cfg_
 #define _kit_to_mission_cfg_
