@@ -16,11 +16,7 @@
 **    Define methods for managing directories
 **
 **  Notes:
-**    1. Command and telemetry packets are defined in EDS file filemgr.xml. 
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
+**    1. Command and telemetry packets are defined in EDS file filemgr.xml.
 **
 */
 
@@ -59,6 +55,18 @@
 /**********************/
 /** Type Definitions **/
 /**********************/
+
+
+/******************************************************************************
+** Command Packets
+** - See EDS command definitions in file_mgr.xml
+*/
+
+
+/******************************************************************************
+** Telemetry Packets
+** - See EDS telemetry definitions in file_mgr.xml
+*/
 
 
 /******************************************************************************

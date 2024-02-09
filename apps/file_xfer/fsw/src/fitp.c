@@ -19,9 +19,6 @@
 **    1. See fitp.h file prologue for protocol overview and functions
 **       below for protocol details.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
 */
 
 
@@ -37,7 +34,7 @@
 /*******************************/
 
 static void DestructorCallback(void);
-static bool StartTransfer(const FILE_XFER_StartFitp_Payload_t *StartTransferCmd);
+static bool StartTransfer(const FILE_XFER_StartFitp_CmdPayload_t *StartTransferCmd);
 
 
 /**********************/
@@ -121,7 +118,7 @@ bool FITP_CancelTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FITP_DataSegmentCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_XFER_FitpDataSegment_Payload_t *DataSegmentCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_FitpDataSegment_t);
+   const FILE_XFER_FitpDataSegment_CmdPayload_t *DataSegmentCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_FitpDataSegment_t);
    bool   RetStatus = false;
    int32  BytesToWrite;
    int32  BytesWritten;
@@ -223,7 +220,7 @@ bool FITP_DataSegmentCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FITP_FinishTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
  
-   const FILE_XFER_FinishFitp_Payload_t *FinishTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_FinishFitp_t);
+   const FILE_XFER_FinishFitp_CmdPayload_t *FinishTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_FinishFitp_t);
    bool    RetStatus = false;
    uint16  ValidityFailures = 0;
 
@@ -312,7 +309,7 @@ void FITP_ResetStatus(void)
 bool FITP_StartBinTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const FILE_XFER_StartFitp_Payload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFitp_t);
+   const FILE_XFER_StartFitp_CmdPayload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFitp_t);
 
    Fitp->BinFile = true;
    return StartTransfer(StartTransferCmd);
@@ -329,7 +326,7 @@ bool FITP_StartBinTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FITP_StartTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_XFER_StartFitp_Payload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFitp_t);
+   const FILE_XFER_StartFitp_CmdPayload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFitp_t);
    
    Fitp->BinFile = false;
    return StartTransfer(StartTransferCmd);
@@ -358,7 +355,7 @@ static void DestructorCallback(void)
 ** Function: StartTransfer
 **
 */
-static bool StartTransfer(const FILE_XFER_StartFitp_Payload_t *StartTransferCmd)
+static bool StartTransfer(const FILE_XFER_StartFitp_CmdPayload_t *StartTransferCmd)
 {
    
    bool RetStatus = false;

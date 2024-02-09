@@ -13,7 +13,7 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Define configurations for the OpenSatKit Scheduler application
+**    Define configurations for the Scheduler application
 **
 **  Notes:
 **    1. These configurations should have an application scope and define
@@ -21,10 +21,6 @@
 **       a change is made to this file or any other app source file during
 **       a deployment then the definition of the KIT_SCH_PLATFORM_REV
 **       macro in kit_sch_platform_cfg.h should be updated.
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
 **
 */
 

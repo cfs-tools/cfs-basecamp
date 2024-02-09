@@ -66,7 +66,7 @@
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
 
-      <ContainerDataType name="LoadTbl_Payload" shortDescription="Load an app's JSON table">
+      <ContainerDataType name="LoadTbl_CmdPayload" shortDescription="Load an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"                   shortDescription="Table identifier" />
           <Entry name="Type"     type="APP_C_FW/TblLoadOptions" shortDescription="Replace entire table or perform sparse entry updates" />
@@ -74,7 +74,7 @@
        </EntryList>
       </ContainerDataType>
       
-      <ContainerDataType name="DumpTbl_Payload" shortDescription="Dump an app's JSON table">
+      <ContainerDataType name="DumpTbl_CmdPayload" shortDescription="Dump an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"               shortDescription="Table identifier" />
           <Entry name="Unused"   type="BASE_TYPES/uint8"    shortDescription="Unused" />
@@ -82,7 +82,7 @@
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="CfgSchTblEntry_Payload" shortDescription="Enable/disable a scheduler table Slot[Activity]">
+      <ContainerDataType name="CfgSchTblEntry_CmdPayload" shortDescription="Enable/disable a scheduler table Slot[Activity]">
         <EntryList>
           <Entry name="Slot"     type="BASE_TYPES/uint8"      shortDescription="Identify slot number, [0..N)" />
           <Entry name="Activity" type="BASE_TYPES/uint8"      shortDescription="Identify activity within the slot, [0..N)" />
@@ -90,7 +90,7 @@
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="LoadSchTblEntry_Payload" shortDescription="Load a complete scheduler table entry Slot[Activity]">
+      <ContainerDataType name="LoadSchTblEntry_CmdPayload" shortDescription="Load a complete scheduler table entry Slot[Activity]">
         <EntryList>
           <Entry name="Slot"      type="BASE_TYPES/uint16"     shortDescription="Identify slot number, [0..N)" />
           <Entry name="Activity"  type="BASE_TYPES/uint16"     shortDescription="Identify activity within the slot, [0..N)" />
@@ -101,27 +101,27 @@
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SendSchTblEntry_Payload" shortDescription="Send a scheduler table entry in an event message">
+      <ContainerDataType name="SendSchTblEntry_CmdPayload" shortDescription="Send a scheduler table entry in an event message">
         <EntryList>
           <Entry name="Slot"     type="BASE_TYPES/uint16"     shortDescription="Identify slot number, [0..N)" />
           <Entry name="Activity" type="BASE_TYPES/uint16"     shortDescription="Identify activity within the slot, [0..N)" />
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="LoadMsgTblEntry_Payload" shortDescription="Load a message table entry. Doesn't accept message parameters">
+      <ContainerDataType name="LoadMsgTblEntry_CmdPayload" shortDescription="Load a message table entry. Doesn't accept message parameters">
         <EntryList>
           <Entry name="Index" type="BASE_TYPES/uint16" shortDescription="" />
           <Entry name="MsgId" type="BASE_TYPES/uint16" shortDescription="First 16-bit word of CCSDS primary header" />
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SendMsgTblEntry_Payload" shortDescription="Send a message table entry in an event message">
+      <ContainerDataType name="SendMsgTblEntry_CmdPayload" shortDescription="Send a message table entry in an event message">
         <EntryList>
           <Entry name="Index" type="BASE_TYPES/uint16" shortDescription="" />
        </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SendDiagTlm_Payload" shortDescription="Send the diagnostic telemetry packet">
+      <ContainerDataType name="SendDiagTlm_CmdPayload" shortDescription="Send the diagnostic telemetry packet">
         <EntryList>
           <Entry name="Slot" type="BASE_TYPES/uint16" shortDescription="Scheduler slot to be sent. All acivities in the slot ar sent." />
        </EntryList>
@@ -206,7 +206,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/LOAD_TBL_CC}" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="LoadTbl_Payload" name="Payload" />
+          <Entry type="LoadTbl_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -215,7 +215,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/DUMP_TBL_CC}" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="DumpTbl_Payload" name="Payload" />
+          <Entry type="DumpTbl_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -224,7 +224,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="LoadMsgTblEntry_Payload" name="Payload" />
+          <Entry type="LoadMsgTblEntry_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -233,7 +233,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SendMsgTblEntry_Payload" name="Payload" />
+          <Entry type="SendMsgTblEntry_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -242,7 +242,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="CfgSchTblEntry_Payload" name="Payload" />
+          <Entry type="CfgSchTblEntry_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -251,7 +251,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="LoadSchTblEntry_Payload" name="Payload" />
+          <Entry type="LoadSchTblEntry_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -260,7 +260,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 4" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SendSchTblEntry_Payload" name="Payload" />
+          <Entry type="SendSchTblEntry_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -269,7 +269,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 5" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SendDiagTlm_Payload" name="Payload" />
+          <Entry type="SendDiagTlm_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 

@@ -25,10 +25,6 @@
 **    3. Nominally only a single file in or out transfer would occur at one time,
 **       but the app is written to allow FITP and FOTP to operate concurrently.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _file_xfer_app_
@@ -60,6 +56,7 @@
 
 /******************************************************************************
 ** Command Packets
+** - See EDS command definitions in file_xfer.xml
 */
 
 

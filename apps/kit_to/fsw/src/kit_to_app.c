@@ -13,7 +13,7 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**     Define the OpenSatKit Telemetry Output application. This app
+**     Define the Telemetry Output application. This app
 **     receives telemetry packets from the software bus and uses its
 **     packet table to determine whether packets should be sent over
 **     a UDP socket.
@@ -359,18 +359,6 @@ static int32 InitApp(void)
 
       EVT_PLBK_Constructor(EVTPLBK_OBJ, INITBL_OBJ);
 
-      Status = CFE_SUCCESS;
-   
-   } /* End if INITBL Constructed */
-
-      
-   /*
-   ** Initialize application managers
-   */
-
-   if (Status == CFE_SUCCESS)
-   {
-
       Status = CFE_SB_CreatePipe(&KitTo.CmdPipe,
                                  INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_DEPTH),
                                  INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_NAME)); 
@@ -381,6 +369,45 @@ static int32 InitApp(void)
          CFE_SB_Subscribe(KitTo.CmdMid,    KitTo.CmdPipe);
          CFE_SB_Subscribe(KitTo.SendHkMid, KitTo.CmdPipe);
 
+         CMDMGR_Constructor(CMDMGR_OBJ);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_NOOP_CC,     NULL,       KIT_TO_NoOpCmd,     0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_RESET_CC,    NULL,       KIT_TO_ResetAppCmd, 0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd,  TBLMGR_LOAD_TBL_CMD_DATA_LEN);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd,  TBLMGR_DUMP_TBL_CMD_DATA_LEN);
+
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_ADD_PKT_CC,           PKTMGR_OBJ, PKTMGR_AddPktCmd,          sizeof(KIT_TO_AddPkt_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_ENABLE_OUTPUT_CC,     PKTMGR_OBJ, PKTMGR_EnableOutputCmd,    sizeof(KIT_TO_EnableOutput_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_REMOVE_ALL_PKTS_CC,   PKTMGR_OBJ, PKTMGR_RemoveAllPktsCmd,   0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_REMOVE_PKT_CC,        PKTMGR_OBJ, PKTMGR_RemovePktCmd,       sizeof(KIT_TO_RemovePkt_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SEND_PKT_TBL_TLM_CC,  PKTMGR_OBJ, PKTMGR_SendPktTblTlmCmd,   sizeof(KIT_TO_SendPktTblTlm_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_UPDATE_PKT_FILTER_CC, PKTMGR_OBJ, PKTMGR_UpdatePktFilterCmd, sizeof(KIT_TO_UpdatePktFilter_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SET_TLM_SOURCE_CC,    PKTMGR_OBJ, PKTMGR_SetTlmSourceCmd,    2); //TODO - cmdmgr expects 2 error: sizeof(KIT_TO_SetTlmSource_Payload_t));
+         
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SEND_DATA_TYPES_TLM_CC, &KitTo, KIT_TO_SendDataTypesTlmCmd, 0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SET_RUN_LOOP_DELAY_CC,  &KitTo, KIT_TO_SetRunLoopDelayCmd,  sizeof(KIT_TO_SetRunLoopDelay_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_TEST_PKT_FILTER_CC,     &KitTo, KIT_TO_TestPktFilterCmd,    sizeof(KIT_TO_TestPktFilter_CmdPayload_t));
+
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_CFG_EVT_LOG_PLBK_CC,   EVTPLBK_OBJ, EVT_PLBK_ConfigCmd, sizeof(KIT_TO_CfgEvtLogPlbk_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_START_EVT_LOG_PLBK_CC, EVTPLBK_OBJ, EVT_PLBK_StartCmd,  0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_STOP_EVT_LOG_PLBK_CC,  EVTPLBK_OBJ, EVT_PLBK_StopCmd,   0);
+
+         CFE_EVS_SendEvent(KIT_TO_INIT_DEBUG_EID, KIT_TO_INIT_EVS_TYPE, "KIT_TO_InitApp() Before TBLMGR calls\n");
+         TBLMGR_Constructor(TBLMGR_OBJ);
+         TBLMGR_RegisterTblWithDef(TBLMGR_OBJ, PKTTBL_LoadCmd, PKTTBL_DumpCmd, INITBL_GetStrConfig(INITBL_OBJ, CFG_PKTTBL_LOAD_FILE));
+
+         CFE_MSG_Init(CFE_MSG_PTR(KitTo.HkTlm.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_KIT_TO_HK_TLM_TOPICID)), 
+                      sizeof(KIT_TO_HkTlm_t));
+                      
+         InitDataTypePkt();
+
+         /*
+         ** Application startup event message
+         */
+
+         CFE_EVS_SendEvent(KIT_TO_APP_INIT_EID, CFE_EVS_EventType_INFORMATION,
+                           "KIT_TO Initialized. Version %d.%d.%d",
+                           KIT_TO_MAJOR_VER, KIT_TO_MINOR_VER, KIT_TO_PLATFORM_REV);
+
       }
       else
       {
@@ -389,48 +416,10 @@ static int32 InitApp(void)
                            "Create SB Command Pipe %s with depth %d failed. SB Status = 0x%04X",
                            INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_NAME), 
                            INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_DEPTH), Status);
-      }
-   
-      CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_NOOP_CC,     NULL,       KIT_TO_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_RESET_CC,    NULL,       KIT_TO_ResetAppCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd,  TBLMGR_LOAD_TBL_CMD_DATA_LEN);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd,  TBLMGR_DUMP_TBL_CMD_DATA_LEN);
+     
+     } /* End if SB pipe created */
 
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_ADD_PKT_CC,           PKTMGR_OBJ, PKTMGR_AddPktCmd,          sizeof(KIT_TO_AddPkt_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_ENABLE_OUTPUT_CC,     PKTMGR_OBJ, PKTMGR_EnableOutputCmd,    sizeof(KIT_TO_EnableOutput_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_REMOVE_ALL_PKTS_CC,   PKTMGR_OBJ, PKTMGR_RemoveAllPktsCmd,   0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_REMOVE_PKT_CC,        PKTMGR_OBJ, PKTMGR_RemovePktCmd,       sizeof(KIT_TO_RemovePkt_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SEND_PKT_TBL_TLM_CC,  PKTMGR_OBJ, PKTMGR_SendPktTblTlmCmd,   sizeof(KIT_TO_SendPktTblTlm_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_UPDATE_PKT_FILTER_CC, PKTMGR_OBJ, PKTMGR_UpdatePktFilterCmd, sizeof(KIT_TO_UpdatePktFilter_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SET_TLM_SOURCE_CC,    PKTMGR_OBJ, PKTMGR_SetTlmSourceCmd,    2); //TODO - cmdmgr expects 2 error: sizeof(KIT_TO_SetTlmSource_Payload_t));
-      
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SEND_DATA_TYPES_TLM_CC, &KitTo, KIT_TO_SendDataTypesTlmCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SET_RUN_LOOP_DELAY_CC,  &KitTo, KIT_TO_SetRunLoopDelayCmd,  sizeof(KIT_TO_SetRunLoopDelay_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_TEST_PKT_FILTER_CC,     &KitTo, KIT_TO_TestPktFilterCmd,    sizeof(KIT_TO_TestPktFilter_CmdPayload_t));
-
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_CFG_EVT_LOG_PLBK_CC,   EVTPLBK_OBJ, EVT_PLBK_ConfigCmd, sizeof(KIT_TO_CfgEvtLogPlbk_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_START_EVT_LOG_PLBK_CC, EVTPLBK_OBJ, EVT_PLBK_StartCmd,  0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_STOP_EVT_LOG_PLBK_CC,  EVTPLBK_OBJ, EVT_PLBK_StopCmd,   0);
-
-      CFE_EVS_SendEvent(KIT_TO_INIT_DEBUG_EID, KIT_TO_INIT_EVS_TYPE, "KIT_TO_InitApp() Before TBLMGR calls\n");
-      TBLMGR_Constructor(TBLMGR_OBJ);
-      TBLMGR_RegisterTblWithDef(TBLMGR_OBJ, PKTTBL_LoadCmd, PKTTBL_DumpCmd, INITBL_GetStrConfig(INITBL_OBJ, CFG_PKTTBL_LOAD_FILE));
-
-      CFE_MSG_Init(CFE_MSG_PTR(KitTo.HkTlm.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_KIT_TO_HK_TLM_TOPICID)), 
-                   sizeof(KIT_TO_HkTlm_t));
-                   
-      InitDataTypePkt();
-
-      /*
-      ** Application startup event message
-      */
-
-      CFE_EVS_SendEvent(KIT_TO_APP_INIT_EID, CFE_EVS_EventType_INFORMATION,
-                        "KIT_TO Initialized. Version %d.%d.%d",
-                        KIT_TO_MAJOR_VER, KIT_TO_MINOR_VER, KIT_TO_PLATFORM_REV);
-
-   } /* End if init success */
+   } /* End if INITBL Constructed */
    
    return(Status);
 

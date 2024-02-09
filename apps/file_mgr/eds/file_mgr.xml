@@ -57,25 +57,25 @@
     
       <!-- FileMgr::Dir -->
 
-      <ContainerDataType name="CreateDir_Payload">
+      <ContainerDataType name="CreateDir_CmdPayload">
         <EntryList>
           <Entry name="DirName" type="BASE_TYPES/PathName" shortDescription="path/filename of directory to be created" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="DeleteDir_Payload">
+      <ContainerDataType name="DeleteDir_CmdPayload">
         <EntryList>
           <Entry name="DirName" type="BASE_TYPES/PathName" shortDescription="path/filename of directory to be deleted" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="DeleteAllDir_Payload">
+      <ContainerDataType name="DeleteAllDir_CmdPayload">
         <EntryList>
           <Entry name="DirName" type="BASE_TYPES/PathName" shortDescription="path/filename of directory to delete all of its files" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SendDirListTlm_Payload">
+      <ContainerDataType name="SendDirListTlm_CmdPayload">
         <EntryList>
           <Entry name="DirName"         type="BASE_TYPES/PathName"    shortDescription="path/filename of directory to delete all of its files" />
           <Entry name="DirListOffset"   type="BASE_TYPES/uint16"      shortDescription="Offset into alphabetical listing" />
@@ -83,14 +83,14 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SendDirTlm_Payload">
+      <ContainerDataType name="SendDirTlm_CmdPayload">
         <EntryList>
           <Entry name="DirName"         type="BASE_TYPES/PathName"    shortDescription="path/filename of directory to delete all of its files" />
           <Entry name="IncludeSizeTime" type="APP_C_FW/BooleanUint16" shortDescription="True: Include file sizes and times" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="WriteDirListFile_Payload">
+      <ContainerDataType name="WriteDirListFile_CmdPayload">
         <EntryList>
           <Entry name="DirName"         type="BASE_TYPES/PathName"    shortDescription="path/filename of directory to delete all of its files" />
           <Entry name="Filename"        type="BASE_TYPES/PathName"    shortDescription="path/filename of file to contain the directory listing" />
@@ -100,7 +100,7 @@
 
       <!-- FileMgr::File -->
 
-      <ContainerDataType name="ConcatenateFile_Payload">
+      <ContainerDataType name="ConcatenateFile_CmdPayload">
         <EntryList>
           <Entry name="Source1Filename" type="BASE_TYPES/PathName" shortDescription="Source1 path/filename" />
           <Entry name="Source2Filename" type="BASE_TYPES/PathName" shortDescription="Source2 path/filename" />
@@ -108,7 +108,7 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="CopyFile_Payload">
+      <ContainerDataType name="CopyFile_CmdPayload">
         <EntryList>
           <Entry name="Overwrite"      type="BASE_TYPES/uint16"   shortDescription="Allow overwrite" />
           <Entry name="SourceFilename" type="BASE_TYPES/PathName" shortDescription="Source path/filename" />
@@ -116,20 +116,20 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="DecompressFile_Payload">
+      <ContainerDataType name="DecompressFile_CmdPayload">
         <EntryList>
           <Entry name="SourceFilename" type="BASE_TYPES/PathName" shortDescription="Source path/filename" />
           <Entry name="TargetFilename" type="BASE_TYPES/PathName" shortDescription="Target path/filename" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="DeleteFile_Payload">
+      <ContainerDataType name="DeleteFile_CmdPayload">
         <EntryList>
           <Entry name="Filename" type="BASE_TYPES/PathName" shortDescription="path/filename of file to be deleted" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="MoveFile_Payload">
+      <ContainerDataType name="MoveFile_CmdPayload">
         <EntryList>
           <Entry name="Overwrite"      type="BASE_TYPES/uint16"   shortDescription="Allow overwrite" />
           <Entry name="SourceFilename" type="BASE_TYPES/PathName" shortDescription="Source path/filename" />
@@ -137,14 +137,14 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="RenameFile_Payload">
+      <ContainerDataType name="RenameFile_CmdPayload">
         <EntryList>
           <Entry name="SourceFilename" type="BASE_TYPES/PathName" shortDescription="Source path/filename" />
           <Entry name="TargetFilename" type="BASE_TYPES/PathName" shortDescription="Target path/filename" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SendFileInfoTlm_Payload">
+      <ContainerDataType name="SendFileInfoTlm_CmdPayload">
         <EntryList>
           <Entry name="Filename"   type="BASE_TYPES/PathName"   shortDescription="path/filename of file to send info for" />
           <Entry name="ComputeCrc" type="APP_C_FW/BooleanUint8" shortDescription="True: Compute CRC, FALSE: Do not compute CRC" />
@@ -152,7 +152,7 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="SetFilePermissions_Payload">
+      <ContainerDataType name="SetFilePermissions_CmdPayload">
         <EntryList>
           <Entry name="Filename" type="BASE_TYPES/PathName" shortDescription="path/filename of file to send info for" />
           <Entry name="Mode"     type="BASE_TYPES/uint32"   shortDescription="Permissions passed directly to OS_chmod()" />
@@ -161,7 +161,7 @@
 
       <!-- FileMgr::FileSys -->
       
-      <ContainerDataType name="SetFileSysTblState_Payload">
+      <ContainerDataType name="SetFileSysTblState_CmdPayload">
         <EntryList>
           <Entry name="TblVolumeIndex"  type="BASE_TYPES/uint16"     shortDescription="Zero-based index into table's file volume array" />
           <Entry name="TblVolumeState"  type="FileSysTblEntryState"  shortDescription="New state" />
@@ -297,7 +297,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="CreateDir_Payload" name="Payload" />
+          <Entry type="CreateDir_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
     
@@ -306,7 +306,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="DeleteDir_Payload" name="Payload" />
+          <Entry type="DeleteDir_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
     
@@ -315,7 +315,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="DeleteAllDir_Payload" name="Payload" />
+          <Entry type="DeleteAllDir_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
     
@@ -324,7 +324,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SendDirListTlm_Payload" name="Payload" />
+          <Entry type="SendDirListTlm_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -333,7 +333,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 4" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SendDirTlm_Payload" name="Payload" />
+          <Entry type="SendDirTlm_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -342,7 +342,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 5" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="WriteDirListFile_Payload" name="Payload" />
+          <Entry type="WriteDirListFile_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -353,7 +353,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 6" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="ConcatenateFile_Payload" name="Payload" />
+          <Entry type="ConcatenateFile_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
     
@@ -362,7 +362,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 7" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="CopyFile_Payload" name="Payload" />
+          <Entry type="CopyFile_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
     
@@ -371,7 +371,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 8" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="DecompressFile_Payload" name="Payload" />
+          <Entry type="DecompressFile_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -380,7 +380,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 9" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="DeleteFile_Payload" name="Payload" />
+          <Entry type="DeleteFile_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -389,7 +389,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 10" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="DeleteFile_Payload" name="Payload" />
+          <Entry type="DeleteFile_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -398,7 +398,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 11" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="MoveFile_Payload" name="Payload" />
+          <Entry type="MoveFile_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -407,7 +407,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 12" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="RenameFile_Payload" name="Payload" />
+          <Entry type="RenameFile_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -416,7 +416,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 13" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SendFileInfoTlm_Payload" name="Payload" />
+          <Entry type="SendFileInfoTlm_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -425,7 +425,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 14" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SetFilePermissions_Payload" name="Payload" />
+          <Entry type="SetFilePermissions_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -448,7 +448,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 17" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SetFileSysTblState_Payload" name="Payload" />
+          <Entry type="SetFileSysTblState_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 

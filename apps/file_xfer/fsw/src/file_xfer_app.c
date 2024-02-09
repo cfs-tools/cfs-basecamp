@@ -26,11 +26,7 @@
 **    8. TODO: Replace FOTP loop with telemetry output flow control
 **    9. TODO: Verify Fotp->NextDataSegmentId managed correctly
 **   10. TODO: The SendFileTransferTlm() function is inconsistent with whether
-**       TODO: the caller loads the telemetry packet prior to calling the function. 
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
+**       TODO: the caller loads the telemetry packet prior to calling the function.
 **
 */
 
@@ -197,13 +193,6 @@ static int32 InitApp(void)
       FITP_Constructor(FITP_OBJ);
       FOTP_Constructor(FOTP_OBJ, INITBL_OBJ);
       
-      Status = CFE_SUCCESS;
-      
-   } /* End if INITBL Constructed */
-  
-   if (Status == CFE_SUCCESS)
-   {
-
       Status = CFE_SB_CreatePipe(&FileXfer.CmdPipe,
                                  INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_DEPTH),
                                  INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_NAME)); 
@@ -244,14 +233,14 @@ static int32 InitApp(void)
          CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_NOOP_CC,   NULL, FILE_XFER_NoOpCmd,     0);
          CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_RESET_CC,  NULL, FILE_XFER_ResetAppCmd, 0);
                                          
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_FITP_CC,        FITP_OBJ, FITP_StartTransferCmd,    sizeof(FILE_XFER_StartFitp_Payload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_BIN_FITP_CC,    FITP_OBJ, FITP_StartBinTransferCmd, sizeof(FILE_XFER_StartFitp_Payload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_FITP_DATA_SEGMENT_CC, FITP_OBJ, FITP_DataSegmentCmd,      sizeof(FILE_XFER_FitpDataSegment_Payload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_FINISH_FITP_CC,       FITP_OBJ, FITP_FinishTransferCmd,   sizeof(FILE_XFER_FinishFitp_Payload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_FITP_CC,        FITP_OBJ, FITP_StartTransferCmd,    sizeof(FILE_XFER_StartFitp_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_BIN_FITP_CC,    FITP_OBJ, FITP_StartBinTransferCmd, sizeof(FILE_XFER_StartFitp_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_FITP_DATA_SEGMENT_CC, FITP_OBJ, FITP_DataSegmentCmd,      sizeof(FILE_XFER_FitpDataSegment_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_FINISH_FITP_CC,       FITP_OBJ, FITP_FinishTransferCmd,   sizeof(FILE_XFER_FinishFitp_CmdPayload_t));
          CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_CANCEL_FITP_CC,       FITP_OBJ, FITP_CancelTransferCmd,   0);
 
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_FOTP_CC,     FOTP_OBJ, FOTP_StartTransferCmd,    sizeof(FILE_XFER_StartFotp_Payload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_BIN_FOTP_CC, FOTP_OBJ, FOTP_StartBinTransferCmd, sizeof(FILE_XFER_StartFotp_Payload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_FOTP_CC,     FOTP_OBJ, FOTP_StartTransferCmd,    sizeof(FILE_XFER_StartFotp_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_BIN_FOTP_CC, FOTP_OBJ, FOTP_StartBinTransferCmd, sizeof(FILE_XFER_StartFotp_CmdPayload_t));
          CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_CANCEL_FOTP_CC,    FOTP_OBJ, FOTP_CancelTransferCmd,   0);
          CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_PAUSE_FOTP_CC,     FOTP_OBJ, FOTP_PauseTransferCmd,    0);
          CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_RESUME_FOTP_CC,    FOTP_OBJ, FOTP_ResumeTransferCmd,   0);
@@ -266,7 +255,7 @@ static int32 InitApp(void)
                                     FILE_XFER_MAJOR_VER, FILE_XFER_MINOR_VER, FILE_XFER_PLATFORM_REV);
       } /* End if CFE_SUCCESS */
       
-   } /* End if init success */
+   } /* End if INITBL Constructed */
 
    return Status;
 

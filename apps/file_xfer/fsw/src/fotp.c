@@ -19,9 +19,6 @@
 **    1. See fotp.h file prologue for protocol overview and functions
 **       below for protocol details.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
 */
 
 
@@ -48,7 +45,7 @@ static void DestructorCallback(void);
 const char* FileTransferStateStr(FOTP_FileTransferState_t  FileTransferState);
 static SendDataSegmentState_t SendDataSegments(void);
 static bool SendFileTransferTlm(FOTP_FileTransferState_t FileTransferState);
-static bool StartTransfer(const FILE_XFER_StartFotp_Payload_t *StartTransferCmd);
+static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferCmd);
 
 
 /**********************/
@@ -286,7 +283,7 @@ bool FOTP_ResumeTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FOTP_StartBinTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_XFER_StartFotp_Payload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFotp_t);   
+   const FILE_XFER_StartFotp_CmdPayload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFotp_t);   
    
    Fotp->BinFile = true;   
    return StartTransfer(StartTransferCmd);
@@ -305,7 +302,7 @@ bool FOTP_StartBinTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FOTP_StartTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const FILE_XFER_StartFotp_Payload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFotp_t);   
+   const FILE_XFER_StartFotp_CmdPayload_t *StartTransferCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_XFER_StartFotp_t);   
    
    Fotp->BinFile = false;
    return StartTransfer(StartTransferCmd);
@@ -570,7 +567,7 @@ static bool SendFileTransferTlm(FOTP_FileTransferState_t FileTransferState)
 **   1. All command parameters are validated prior to updating and FOTP state
 **      data.
 */
-static bool StartTransfer(const FILE_XFER_StartFotp_Payload_t *StartTransferCmd)
+static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferCmd)
 {
    
    FileUtil_FileInfo_t  FileInfo;

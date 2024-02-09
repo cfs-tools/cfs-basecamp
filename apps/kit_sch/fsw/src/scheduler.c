@@ -23,10 +23,6 @@
 **    3. Commands that affect either the message table or scheduler
 **       send an information event since these are critical operations
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
-**
 */
 
 /*
@@ -175,7 +171,7 @@ void SCHEDULER_Constructor(SCHEDULER_Class_t *ObjPtr, const INITBL_Class_t *IniT
 bool SCHEDULER_CfgSchTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const  KIT_SCH_CfgSchTblEntry_Payload_t *CfgSchTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_CfgSchTblEntry_t);
+   const  KIT_SCH_CfgSchTblEntry_CmdPayload_t *CfgSchTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_CfgSchTblEntry_t);
    bool   RetStatus = false;
    uint16 Index;
    
@@ -434,7 +430,7 @@ bool SCHEDULER_Execute(void)
 bool SCHEDULER_LoadMsgTblEntryCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const  KIT_SCH_LoadMsgTblEntry_Payload_t *LoadMsgTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_LoadMsgTblEntry_t);   
+   const  KIT_SCH_LoadMsgTblEntry_CmdPayload_t *LoadMsgTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_LoadMsgTblEntry_t);   
    bool   RetStatus = false;
    uint16 Index;
 
@@ -477,7 +473,7 @@ bool SCHEDULER_LoadMsgTblEntryCmd(void* ObjDataPtr, const CFE_MSG_Message_t *Msg
 bool SCHEDULER_LoadSchTblEntryCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const  KIT_SCH_LoadSchTblEntry_Payload_t *LoadSchTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_LoadSchTblEntry_t);
+   const  KIT_SCH_LoadSchTblEntry_CmdPayload_t *LoadSchTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_LoadSchTblEntry_t);
    bool   RetStatus = false;
    uint16 Index;
    
@@ -550,7 +546,7 @@ void SCHEDULER_ResetStatus()
 bool SCHEDULER_SendDiagTlmCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const  KIT_SCH_SendDiagTlm_Payload_t *SendDiagTlm = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_SendDiagTlm_t);
+   const  KIT_SCH_SendDiagTlm_CmdPayload_t *SendDiagTlm = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_SendDiagTlm_t);
    bool   RetStatus = false;
    uint16 i;
 
@@ -618,7 +614,7 @@ bool SCHEDULER_SendDiagTlmCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 bool SCHEDULER_SendMsgTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const   KIT_SCH_SendMsgTblEntry_Payload_t *SendMsgTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_SendMsgTblEntry_t);
+   const   KIT_SCH_SendMsgTblEntry_CmdPayload_t *SendMsgTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_SendMsgTblEntry_t);
    bool    RetStatus = false;
    uint16  MsgIndex;
    uint16 *DataBuf=NULL;
@@ -734,7 +730,7 @@ bool SCHEDULER_SendMsgTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *Msg
 bool SCHEDULER_SendSchTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const   KIT_SCH_SendSchTblEntry_Payload_t *SendSchTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_SendSchTblEntry_t);
+   const   KIT_SCH_SendSchTblEntry_CmdPayload_t *SendSchTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_SendSchTblEntry_t);
    uint16  Index;
    bool    RetStatus = false;
    

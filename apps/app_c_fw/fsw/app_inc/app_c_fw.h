@@ -13,8 +13,7 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Provide a single include file for applications using the OpenSatKit
-**    object-based appplication framework.
+**    Provide a single include file for applications using the app_c_fw
 **
 **  Notes:
 **    None

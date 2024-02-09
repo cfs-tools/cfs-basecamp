@@ -22,10 +22,6 @@
 **       a deployment then the definition of the FILEMGR_PLATFORM_REV
 **       macro in filemgr_platform_cfg.h should be updated.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _app_cfg_

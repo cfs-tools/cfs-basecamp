@@ -29,10 +29,6 @@
 **       This is a table-specific file so it doesn't need to be re-entrant.
 **    4. Command and telemetry packets are defined in EDS file filemgr.xml.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _filesys_

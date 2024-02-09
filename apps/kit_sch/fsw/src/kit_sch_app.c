@@ -13,7 +13,7 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Implement OpenSat Kit Scheduler application
+**    Implement Scheduler application
 **
 **  Notes:
 **    1. This is non-flight code so an attempt has been made to balance keeping
@@ -30,10 +30,6 @@
 **         SCH_ProcessCommands()
 **         SCH_TblInit()
 **         InitEventFilters()
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
 **
 */
 
@@ -220,12 +216,12 @@ static int32 InitApp(void)
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd,   TBLMGR_LOAD_TBL_CMD_DATA_LEN);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd,   TBLMGR_DUMP_TBL_CMD_DATA_LEN);
 
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_MSG_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_LoadMsgTblEntryCmd, sizeof(KIT_SCH_LoadMsgTblEntry_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_SEND_MSG_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_SendMsgTblEntryCmd, sizeof(KIT_SCH_SendMsgTblEntry_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_CFG_SCH_TBL_ENTRY_CC,  SCHEDULER_OBJ, SCHEDULER_CfgSchTblEntryCmd,  sizeof(KIT_SCH_CfgSchTblEntry_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_SCH_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_LoadSchTblEntryCmd, sizeof(KIT_SCH_LoadSchTblEntry_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_SEND_SCH_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_SendSchTblEntryCmd, sizeof(KIT_SCH_SendSchTblEntry_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_SEND_DIAG_TLM_CC,      SCHEDULER_OBJ, SCHEDULER_SendDiagTlmCmd,     sizeof(KIT_SCH_SendDiagTlm_Payload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_MSG_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_LoadMsgTblEntryCmd, sizeof(KIT_SCH_LoadMsgTblEntry_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_SEND_MSG_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_SendMsgTblEntryCmd, sizeof(KIT_SCH_SendMsgTblEntry_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_CFG_SCH_TBL_ENTRY_CC,  SCHEDULER_OBJ, SCHEDULER_CfgSchTblEntryCmd,  sizeof(KIT_SCH_CfgSchTblEntry_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_SCH_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_LoadSchTblEntryCmd, sizeof(KIT_SCH_LoadSchTblEntry_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_SEND_SCH_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_SendSchTblEntryCmd, sizeof(KIT_SCH_SendSchTblEntry_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_SEND_DIAG_TLM_CC,      SCHEDULER_OBJ, SCHEDULER_SendDiagTlmCmd,     sizeof(KIT_SCH_SendDiagTlm_CmdPayload_t));
     
       CFE_MSG_Init(CFE_MSG_PTR(KitSch.HkTlm.TelemetryHeader),
                    CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_KIT_SCH_HK_TLM_TOPICID)),

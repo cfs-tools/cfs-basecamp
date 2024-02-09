@@ -18,11 +18,7 @@
 **  Notes:
 **    1. TODO: Complete EDS integration. EDS is used for cmd & tlm but not files
 **       so the LoadFileEntry(), used during telemetry and file generation, uses
-**       a dir.h typedef and not an EDS generated typedef  
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
+**       a dir.h typedef and not an EDS generated typedef.
 **
 */
 
@@ -93,7 +89,7 @@ void DIR_Constructor(DIR_Class_t*  DirPtr, const INITBL_Class_t* IniTbl)
 bool DIR_CreateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_CreateDir_Payload_t *CreateCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_CreateDir_t);
+   const FILE_MGR_CreateDir_CmdPayload_t *CreateCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_CreateDir_t);
    bool                RetStatus = false;
    int32               SysStatus;
    os_err_name_t       OsErrStr;   
@@ -140,7 +136,7 @@ bool DIR_CreateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool DIR_DeleteAllCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_DeleteAllDir_Payload_t *DeleteAllCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_DeleteAllDir_t);
+   const FILE_MGR_DeleteAllDir_CmdPayload_t *DeleteAllCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_DeleteAllDir_t);
    bool                RetStatus = false;
    int32               SysStatus;
    os_err_name_t       OsErrStr;   
@@ -297,7 +293,7 @@ bool DIR_DeleteAllCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool DIR_DeleteCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_DeleteDir_Payload_t *DeleteCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_DeleteDir_t);
+   const FILE_MGR_DeleteDir_CmdPayload_t *DeleteCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_DeleteDir_t);
    bool                RetStatus = false;
    int32               SysStatus;
    bool                RemoveDir = true;
@@ -403,7 +399,7 @@ void DIR_ResetStatus()
 bool DIR_SendDirListTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   const FILE_MGR_SendDirListTlm_Payload_t *SendDirListTlmCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SendDirListTlm_t);      
+   const FILE_MGR_SendDirListTlm_CmdPayload_t *SendDirListTlmCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SendDirListTlm_t);      
    bool  RetStatus;
 
    RetStatus = SendDirListTlm(SendDirListTlmCmd->DirName, SendDirListTlmCmd->DirListOffset, 
@@ -425,7 +421,7 @@ bool DIR_SendDirListTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool DIR_SendDirTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_SendDirTlm_Payload_t *SendDirTlmCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SendDirTlm_t);
+   const FILE_MGR_SendDirTlm_CmdPayload_t *SendDirTlmCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SendDirTlm_t);
    
    bool  RetStatus;
 
@@ -447,7 +443,7 @@ bool DIR_SendDirTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool DIR_WriteListFileCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_WriteDirListFile_Payload_t *WriteDirListFileCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_WriteDirListFile_t);
+   const FILE_MGR_WriteDirListFile_CmdPayload_t *WriteDirListFileCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_WriteDirListFile_t);
    bool RetStatus = false;
       
    int32         SysStatus;

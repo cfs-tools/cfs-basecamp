@@ -53,9 +53,6 @@
 **    6. There are no timers associated with the protocol
 **    7. A cancel file transfer command can be sent at any time 
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
 */
 
 #ifndef _fotp_

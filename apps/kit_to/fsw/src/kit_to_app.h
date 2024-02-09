@@ -13,7 +13,7 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**     Define the OpenSatKit Telemetry Output application. This app
+**     Define the Telemetry Output application. This app
 **     receives telemetry packets from the software bus and uses its
 **     packet table to determine whether packets should be sent over
 **     a UDP socket.
@@ -62,13 +62,13 @@
 
 /******************************************************************************
 ** Command Packets
-** - See EDS command definitions in app_c_demo.xml
+** - See EDS command definitions in kit_to.xml
 */
 
 
 /******************************************************************************
 ** Telmetery Packets
-** - See EDS command definitions in app_c_demo.xml
+** - See EDS telemetry definitions in kit_to.xml
 */
 
 

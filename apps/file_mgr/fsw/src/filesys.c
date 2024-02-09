@@ -18,10 +18,6 @@
 **  Notes:
 **    1. Refactored from NASA's FM FreeSpace table.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 /*
@@ -256,7 +252,7 @@ bool FILESYS_SendTblTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FILESYS_SetTblStateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_SetFileSysTblState_Payload_t *SetFileSysTblStateCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SetFileSysTblState_t);   
+   const FILE_MGR_SetFileSysTblState_CmdPayload_t *SetFileSysTblStateCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SetFileSysTblState_t);   
    bool   RetStatus = false;
    uint16 CmdVolumeIndex = SetFileSysTblStateCmd->TblVolumeIndex;
    uint16 CmdVolumeState = SetFileSysTblStateCmd->TblVolumeState;

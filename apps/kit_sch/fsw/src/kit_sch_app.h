@@ -13,15 +13,11 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Define the OpenSat Kit scheduler application
+**    Define the Scheduler application
 **
 **  Notes:
 **    1. The scheduler object owns the message and scheduler tables
-**       so it provides the table load/dump command functions. 
-**
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
+**       so it provides the table load/dump command functions.
 **
 */
 

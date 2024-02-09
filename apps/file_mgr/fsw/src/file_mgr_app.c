@@ -18,10 +18,6 @@
 **  Notes:
 **    1. See header notes
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 /*
@@ -202,12 +198,12 @@ static int32 InitApp(void)
       CMDMGR_RegisterFunc(CMDMGR_OBJ, CMDMGR_NOOP_CMD_FC,   NULL, FILE_MGR_NoOpCmd,     0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, CMDMGR_RESET_CMD_FC,  NULL, FILE_MGR_ResetAppCmd, 0);
 
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_CREATE_DIR_CC,          CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_CreateDir_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_DELETE_DIR_CC,          CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_DeleteDir_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_DELETE_ALL_DIR_CC,      CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_DeleteAllDir_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SEND_DIR_LIST_TLM_CC,   CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_SendDirListTlm_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SEND_DIR_TLM_CC,        CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_SendDirTlm_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_WRITE_DIR_LIST_FILE_CC, CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_WriteDirListFile_Payload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_CREATE_DIR_CC,          CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_CreateDir_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_DELETE_DIR_CC,          CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_DeleteDir_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_DELETE_ALL_DIR_CC,      CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_DeleteAllDir_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SEND_DIR_LIST_TLM_CC,   CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_SendDirListTlm_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SEND_DIR_TLM_CC,        CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_SendDirTlm_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_WRITE_DIR_LIST_FILE_CC, CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_WriteDirListFile_CmdPayload_t));
       CHILDMGR_RegisterFunc(CHILDMGR_OBJ, FILE_MGR_CREATE_DIR_CC,          DIR_OBJ, DIR_CreateCmd);
       CHILDMGR_RegisterFunc(CHILDMGR_OBJ, FILE_MGR_DELETE_DIR_CC,          DIR_OBJ, DIR_DeleteCmd);
       CHILDMGR_RegisterFunc(CHILDMGR_OBJ, FILE_MGR_DELETE_ALL_DIR_CC,      DIR_OBJ, DIR_DeleteAllCmd);
@@ -215,14 +211,14 @@ static int32 InitApp(void)
       CHILDMGR_RegisterFunc(CHILDMGR_OBJ, FILE_MGR_SEND_DIR_TLM_CC,        DIR_OBJ, DIR_SendDirTlmCmd);
       CHILDMGR_RegisterFunc(CHILDMGR_OBJ, FILE_MGR_WRITE_DIR_LIST_FILE_CC, DIR_OBJ, DIR_WriteListFileCmd);
 
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_CONCATENATE_FILE_CC,     CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_ConcatenateFile_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_COPY_FILE_CC,            CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_CopyFile_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_DECOMPRESS_FILE_CC,      CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_DecompressFile_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_DELETE_FILE_CC,          CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_DeleteFile_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_MOVE_FILE_CC,            CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_MoveFile_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_RENAME_FILE_CC,          CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_RenameFile_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SEND_FILE_INFO_TLM_CC,   CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_SendFileInfoTlm_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SET_FILE_PERMISSIONS_CC, CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_SetFilePermissions_Payload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_CONCATENATE_FILE_CC,     CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_ConcatenateFile_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_COPY_FILE_CC,            CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_CopyFile_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_DECOMPRESS_FILE_CC,      CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_DecompressFile_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_DELETE_FILE_CC,          CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_DeleteFile_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_MOVE_FILE_CC,            CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_MoveFile_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_RENAME_FILE_CC,          CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_RenameFile_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SEND_FILE_INFO_TLM_CC,   CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_SendFileInfoTlm_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SET_FILE_PERMISSIONS_CC, CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_SetFilePermissions_CmdPayload_t));
       CHILDMGR_RegisterFunc(CHILDMGR_OBJ, FILE_MGR_CONCATENATE_FILE_CC,     FILE_OBJ, FILE_ConcatenateCmd);
       CHILDMGR_RegisterFunc(CHILDMGR_OBJ, FILE_MGR_COPY_FILE_CC,            FILE_OBJ, FILE_CopyCmd);
       CHILDMGR_RegisterFunc(CHILDMGR_OBJ, FILE_MGR_DECOMPRESS_FILE_CC,      FILE_OBJ, FILE_DecompressCmd);
@@ -236,12 +232,12 @@ static int32 InitApp(void)
       ** Alternative commands don't increment the main command counters. They do increment the child command counters which mimics
       ** the original FM app behavior, but I'm not sure that's desirable since the child counters are also used by ground ops.
       */
-      CMDMGR_RegisterFuncAltCnt(CMDMGR_OBJ, FILE_MGR_DELETE_FILE_ALT_CC, CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_DeleteFile_Payload_t));
+      CMDMGR_RegisterFuncAltCnt(CMDMGR_OBJ, FILE_MGR_DELETE_FILE_ALT_CC, CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(FILE_MGR_DeleteFile_CmdPayload_t));
       CHILDMGR_RegisterFunc(CHILDMGR_OBJ, FILE_MGR_DELETE_FILE_ALT_CC, FILE_OBJ, FILE_DeleteCmd);
  
       CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SEND_OPEN_FILE_TLM_CC,     FILESYS_OBJ, FILESYS_SendOpenFileTlmCmd, CMDMGR_NO_PARAM_CMD_DATA_LEN);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SEND_FILE_SYS_TBL_TLM_CC,  FILESYS_OBJ, FILESYS_SendTblTlmCmd,      CMDMGR_NO_PARAM_CMD_DATA_LEN);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SET_FILE_SYS_TBL_STATE_CC, FILESYS_OBJ, FILESYS_SetTblStateCmd,     sizeof(FILE_MGR_SetFileSysTblState_Payload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_MGR_SET_FILE_SYS_TBL_STATE_CC, FILESYS_OBJ, FILESYS_SetTblStateCmd,     sizeof(FILE_MGR_SetFileSysTblState_CmdPayload_t));
 
       CFE_MSG_Init(CFE_MSG_PTR(FileMgr.HkPkt.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_FILE_MGR_HK_TLM_TOPICID)), sizeof(FILE_MGR_HkTlm_t));
 

@@ -68,13 +68,13 @@
 
       <!-- FileXfer::Fitp -->
 
-      <ContainerDataType name="StartFitp_Payload">
+      <ContainerDataType name="StartFitp_CmdPayload">
         <EntryList>
           <Entry name="DestFilename" type="BASE_TYPES/PathName" shortDescription="path/filename of file to be received" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="FitpDataSegment_Payload">
+      <ContainerDataType name="FitpDataSegment_CmdPayload">
         <EntryList>
           <Entry name="Id"    type="BASE_TYPES/uint16"  shortDescription="Integer identifier that increments for each sequential segement" />
           <Entry name="Len"   type="BASE_TYPES/uint16"  shortDescription="Number of data bytes in the data block" />
@@ -82,7 +82,7 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="FinishFitp_Payload">
+      <ContainerDataType name="FinishFitp_CmdPayload">
         <EntryList>
           <Entry name="FileLen"           type="BASE_TYPES/uint32" shortDescription="Total file length in bytes" />
           <Entry name="FileCrc"           type="BASE_TYPES/uint32" shortDescription="File CRC" />
@@ -94,7 +94,7 @@
       <!-- FileXfer::Fotp -->
 
 
-      <ContainerDataType name="StartFotp_Payload">
+      <ContainerDataType name="StartFotp_CmdPayload">
         <EntryList>
           <Entry name="DataSegLen"     type="BASE_TYPES/uint32"   shortDescription="Length of data segment telmeetry packets. Must be less than FILE_XFER/FOTP_DATA_SEG_MAX_LEN" />
           <Entry name="DataSegOffset"  type="BASE_TYPES/uint16"   shortDescription="Starting segment number. Typically 0 unless resuming an incomplete transfer" />
@@ -214,7 +214,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="StartFitp_Payload" name="Payload" />
+          <Entry type="StartFitp_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -223,7 +223,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="StartFitp_Payload" name="Payload" />
+          <Entry type="StartFitp_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -232,7 +232,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="FitpDataSegment_Payload" name="Payload" />
+          <Entry type="FitpDataSegment_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
       
@@ -241,7 +241,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="FinishFitp_Payload" name="Payload" />
+          <Entry type="FinishFitp_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -258,7 +258,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 5" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="StartFotp_Payload" name="Payload" />
+          <Entry type="StartFotp_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
@@ -267,7 +267,7 @@
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 6" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="StartFotp_Payload" name="Payload" />
+          <Entry type="StartFotp_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 

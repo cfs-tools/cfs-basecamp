@@ -23,10 +23,6 @@
 **       exists it does not verify the directroy path is valid so an operation
 **       could still get an error when it tries to use the target path/file.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 /*
@@ -83,7 +79,7 @@ void FILE_Constructor(FILE_Class_t *FilePtr, const INITBL_Class_t *IniTbl)
 bool FILE_ConcatenateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_ConcatenateFile_Payload_t *ConcatenateCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_ConcatenateFile_t);
+   const FILE_MGR_ConcatenateFile_CmdPayload_t *ConcatenateCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_ConcatenateFile_t);
    FileUtil_FileInfo_t FileInfo;
    char  EventErrStr[256] = "\0";
    
@@ -168,7 +164,7 @@ bool FILE_ConcatenateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FILE_CopyCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_CopyFile_Payload_t *CopyCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_CopyFile_t);
+   const FILE_MGR_CopyFile_CmdPayload_t *CopyCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_CopyFile_t);
    FileUtil_FileInfo_t FileInfo;
    int32  SysStatus;   
    bool   PerformCopy = false;
@@ -278,7 +274,7 @@ bool FILE_DecompressCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
    /* Can't uses const because CFE_PSP_Decompress() */
-   const FILE_MGR_DecompressFile_Payload_t *DecompressCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_DecompressFile_t);
+   const FILE_MGR_DecompressFile_CmdPayload_t *DecompressCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_DecompressFile_t);
    bool   RetStatus = false;
 
    int32  CfeStatus;
@@ -350,7 +346,7 @@ bool FILE_DecompressCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FILE_DeleteCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_DeleteFile_Payload_t *DeleteCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_DeleteFile_t);
+   const FILE_MGR_DeleteFile_CmdPayload_t *DeleteCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_DeleteFile_t);
    FileUtil_FileInfo_t FileInfo;
    int32  SysStatus;
    bool   RetStatus = false;
@@ -403,7 +399,7 @@ bool FILE_DeleteCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FILE_MoveCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_MoveFile_Payload_t *MoveCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_MoveFile_t);
+   const FILE_MGR_MoveFile_CmdPayload_t *MoveCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_MoveFile_t);
    FileUtil_FileInfo_t FileInfo;
    int32  SysStatus;   
    bool   PerformMove = false;
@@ -513,7 +509,7 @@ bool FILE_MoveCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FILE_RenameCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_RenameFile_Payload_t *RenameCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_RenameFile_t);
+   const FILE_MGR_RenameFile_CmdPayload_t *RenameCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_RenameFile_t);
    FileUtil_FileInfo_t FileInfo;
    int32  SysStatus;   
    bool   RetStatus = false;
@@ -598,7 +594,7 @@ void FILE_ResetStatus()
 bool FILE_SendInfoTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_SendFileInfoTlm_Payload_t *SendInfoTlmCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SendFileInfoTlm_t);
+   const FILE_MGR_SendFileInfoTlm_CmdPayload_t *SendInfoTlmCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SendFileInfoTlm_t);
    FileUtil_FileInfo_t FileInfo;
    uint32  Crc;
    bool    RetStatus = false;
@@ -689,7 +685,7 @@ bool FILE_SendInfoTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FILE_SetPermissionsCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_SetFilePermissions_Payload_t *SetPermissionsCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SetFilePermissions_t);
+   const FILE_MGR_SetFilePermissions_CmdPayload_t *SetPermissionsCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SetFilePermissions_t);
    FileUtil_FileInfo_t FileInfo;
    int32  SysStatus;   
    bool   RetStatus = false;

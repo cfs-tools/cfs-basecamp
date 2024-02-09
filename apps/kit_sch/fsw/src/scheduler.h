@@ -20,10 +20,6 @@
 **       application specific processing such as command callback 
 **       functions and file processing.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide
-**    2. cFS Application Developer's Guide
-**
 */
 
 #ifndef _scheduler_

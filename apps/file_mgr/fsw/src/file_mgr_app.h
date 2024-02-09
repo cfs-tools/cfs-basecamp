@@ -22,10 +22,6 @@
 **       should be compile time and which should be runtime.
 **    2. Command and telemetry packets are defined in EDS file file_mgr.xml.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _file_mgr_app_
@@ -62,32 +58,15 @@
 
 /******************************************************************************
 ** Command Packets
+** - See EDS command definitions in file_mgr.xml
 */
 
 
 /******************************************************************************
 ** Telemetry Packets
+** - See EDS telemetry definitions in file_mgr.xml
 */
 
-
-//EDS typedef struct
-//EDS {
-//EDS 
-//EDS    CFE_MSG_TelemetryHeader_t TlmHeader;
-//EDS 
-//EDS    uint8   CommandCounter;
-//EDS    uint8   CommandErrCounter;
-//EDS    uint8   Spare;                          
-//EDS    uint8   NumOpenFiles;                   /* Number of open files in the system */
-//EDS    uint8   ChildCmdCounter;                /* Child task command counter */
-//EDS    uint8   ChildCmdErrCounter;             /* Child task command error counter */
-//EDS    uint8   ChildCmdWarnCounter;            /* Child task command warning counter */
-//EDS    uint8   ChildQueueCount;                /* Number of pending commands in queue */
-//EDS    uint8   ChildCurrentCC;                 /* Command code currently executing */
-//EDS    uint8   ChildPreviousCC;                /* Command code previously executed */
-//EDS 
-//EDS } FILE_MGR_HkPkt_t;
-//EDS #define FILE_MGR_TLM_HK_LEN sizeof (FILE_MGR_HkPkt_t)
 
 
 /******************************************************************************

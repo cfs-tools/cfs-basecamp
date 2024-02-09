@@ -23,10 +23,6 @@
 **       configured when an app is deployed and the JSON initialization
 **       file for parameters that can be defined at runtime.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _file_mgr_platform_cfg_

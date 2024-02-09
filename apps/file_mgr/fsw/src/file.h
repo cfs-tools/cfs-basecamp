@@ -18,10 +18,6 @@
 **  Notes:
 **    1. Command and telemetry packets are defined in EDS file filemgr.xml.
 **
-**  References:
-**    1. OpenSatKit Object-based Application Developer's Guide.
-**    2. cFS Application Developer's Guide.
-**
 */
 
 #ifndef _file_
@@ -68,29 +64,15 @@
 
 
 /******************************************************************************
-** Telmetery Packets
+** Command Packets
+** - See EDS command definitions in file_mgr.xml
 */
 
-/* 
-** Packet sent in response to FILE_SendInfoPktCmd that contains information
-** for a single file
+
+/******************************************************************************
+** Telemetry Packets
+** - See EDS telemetry definitions in file_mgr.xml
 */
-
-typedef struct
-{
-
-   CFE_MSG_TelemetryHeader_t TlmHeader;
-   
-   uint8   State;                 /* See FileUtil_FileState definitions */
-   uint8   CrcComputed;           /* Flag indicating whether a CRC was computed */
-   uint8   Spare[2];              /* Double word alignment padding */
-   uint32  Crc;                   /* CRC value if computed */
-   uint32  Size;                  /* File Size in bytes */
-   uint32  Time;                  /* Time of last file modification */
-   uint32  Mode;                  /* Permissions as received by call to TODO */    
-   char    Filename[OS_MAX_PATH_LEN];
-
-} FILE_InfoPkt_t;
 
 
 /******************************************************************************
