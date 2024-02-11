@@ -66,7 +66,7 @@ typedef struct
 /** Local File Function Prototypes **/
 /************************************/
 
-static void ConstructJsonMessage(JsonMessage_t* JsonMessage, uint16 MsgArrayIdx);
+static void ConstructJsonMessage(JsonMessage_t *JsonMessage, uint16 MsgArrayIdx);
 static bool LoadJsonData(size_t JsonFileLen);
 static char *SplitStr(char *Str, const char *Delim);
 
@@ -74,7 +74,7 @@ static char *SplitStr(char *Str, const char *Delim);
 /** Global File Data **/
 /**********************/
 
-static MSGTBL_Class_t* MsgTbl = NULL;
+static MSGTBL_Class_t  *MsgTbl = NULL;
 static MSGTBL_Data_t   TblData;        /* Working buffer for loads */
 
 
@@ -85,15 +85,12 @@ static MSGTBL_Data_t   TblData;        /* Working buffer for loads */
 **    1. This must be called prior to any other functions
 **
 */
-void MSGTBL_Constructor(MSGTBL_Class_t*  ObjPtr, const char* AppName)
+void MSGTBL_Constructor(MSGTBL_Class_t *ObjPtr)
 {
    
    MsgTbl = ObjPtr;
 
    CFE_PSP_MemSet(MsgTbl, 0, sizeof(MSGTBL_Class_t));
-
-   MsgTbl->AppName        = AppName;
-   MsgTbl->LastLoadStatus = TBLMGR_STATUS_UNDEF;
 
    CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
                     "MSGTBL_MAX_MSG_WORDS: %d, sizeof(CFE_MSG_CommandHeader_t): %d, sizeof(MSGTBL_Cmd_t): %d",
@@ -118,156 +115,118 @@ void MSGTBL_Constructor(MSGTBL_Class_t*  ObjPtr, const char* AppName)
 **
 ** Notes:
 **  1. Function signature must match TBLMGR_DumpTblFuncPtr.
-**  2. Can assume valid table file name because this is a callback from 
-**     the app framework table manager that has verified the file. If the
-**     filename exists it will be overwritten.
-**  3. File is formatted so it can be used as a load file. 
-**  4. DumpType is unused.
+**  2. File is formatted so it can be used as a load file. 
 */
 
-bool MSGTBL_DumpCmd(TBLMGR_Tbl_t* Tbl, uint8 DumpType, const char* Filename)
+bool MSGTBL_DumpCmd(osal_id_t FileHandle)
 {
 
-   bool        RetStatus = false;
-   int32       OsStatus;
-   osal_id_t   FileHandle;
-   int32       i, d;
-   char        DumpRecord[256];
-   char        SysTimeStr[64];
-   uint16      DataWords;
-   os_err_name_t      OsErrStr;
-   CFE_MSG_Size_t     MsgBytes;
+   int32   i, d;
+   char    DumpRecord[256];
+   uint16  DataWords;
+   CFE_MSG_Size_t      MsgBytes;
    const MSGTBL_Data_t *MsgTblPtr = &MsgTbl->Data;
    
-   OsStatus = OS_OpenCreate(&FileHandle, Filename, OS_FILE_FLAG_CREATE | OS_FILE_FLAG_TRUNCATE, OS_READ_WRITE);
 
-   if (OsStatus == OS_SUCCESS)
+   /* 
+   ** Message Array 
+   **
+   ** - Not all fields in ground table are saved in FSW so they are not
+   **   populated in the dump file. However, the dump file can still
+   **   be loaded.
+   **
+   **   "name":  Not loaded,
+   **   "descr": Not Loaded,
+   **   "id": 101,
+   **   "topic-id": 65303,
+   **   "seq-seg": 192,
+   **   "length": 1792,
+   **   "data-words": "0,1,2,3,4,5"
+   */
+   
+   sprintf(DumpRecord,"\"message-array\": [\n");
+   OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+
+   for (i=0; i < MSGTBL_MAX_ENTRIES; i++)
    {
-
-      sprintf(DumpRecord,"{\n   \"app-name\": \"%s\",\n   \"tbl-name\": \"Message\",\n",MsgTbl->AppName);
+      
+      if (i > 0)  /* Complete previous entry */
+      { 
+         sprintf(DumpRecord,",\n");
+         OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+      }
+       
+      sprintf(DumpRecord,"   {\"message\": {\n");
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-      CFE_TIME_Print(SysTimeStr, CFE_TIME_GetTime());
-      sprintf(DumpRecord,"   \"description\": \"Table dumped at %s\",\n",SysTimeStr);
+      
+      sprintf(DumpRecord,"      \"id\": %d,\n      \"topic-id\": %d,\n      \"seq-seg\": %d,\n      \"length\": %d",
+              i,
+              CFE_MAKE_BIG16(MsgTblPtr->Entry[i].Buffer[0]),
+              CFE_MAKE_BIG16(MsgTblPtr->Entry[i].Buffer[1]),
+              CFE_MAKE_BIG16(MsgTblPtr->Entry[i].Buffer[2]));
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-      /* 
-      ** Message Array 
-      **
-      ** - Not all fields in ground table are saved in FSW so they are not
-      **   populated in the dump file. However, the dump file can still
-      **   be loaded.
-      **
-      **   "name":  Not loaded,
-      **   "descr": Not Loaded,
-      **   "id": 101,
-      **   "topic-id": 65303,
-      **   "seq-seg": 192,
-      **   "length": 1792,
-      **   "data-words": "0,1,2,3,4,5"
+      
+      /*
+      ** DataWords is everything past the primary header so they include
+      ** the secondary header and don't distinguish between cmd or tlm
+      ** packets. 
       */
       
-      sprintf(DumpRecord,"\"message-array\": [\n");
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+      // TODO - cFE7.0 Rethink table itself. Either only allow commands or use message type to get header length and data words will truly just be payload
+      
+      CFE_MSG_GetSize((const CFE_MSG_Message_t *)MsgTblPtr->Entry[i].Buffer, &MsgBytes);
 
-      for (i=0; i < MSGTBL_MAX_ENTRIES; i++)
+      DataWords = (MsgBytes-PKTUTIL_CMD_HDR_BYTES)/2;
+      if (DataWords > (uint8)(MSGTBL_MAX_MSG_WORDS))
       {
          
-         if (i > 0)  /* Complete previous entry */
-         { 
-            sprintf(DumpRecord,",\n");
-            OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-         }
-          
-         sprintf(DumpRecord,"   {\"message\": {\n");
-         OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-         
-         sprintf(DumpRecord,"      \"id\": %d,\n      \"topic-id\": %d,\n      \"seq-seg\": %d,\n      \"length\": %d",
-                 i,
-                 CFE_MAKE_BIG16(MsgTblPtr->Entry[i].Buffer[0]),
-                 CFE_MAKE_BIG16(MsgTblPtr->Entry[i].Buffer[1]),
-                 CFE_MAKE_BIG16(MsgTblPtr->Entry[i].Buffer[2]));
-         OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-         
-         /*
-         ** DataWords is everything past the primary header so they include
-         ** the secondary header and don't distinguish between cmd or tlm
-         ** packets. 
-         */
-         
-         // TODO - cFE7.0 Rethink table itself. Either only allow commands or use message type to get header length and data words will truly just be payload
-         
-         CFE_MSG_GetSize((const CFE_MSG_Message_t *)MsgTblPtr->Entry[i].Buffer, &MsgBytes);
+         CFE_EVS_SendEvent(MSGTBL_DUMP_ERR_EID, CFE_EVS_EventType_ERROR,
+                           "Error creating dump file message entry %d. Message word length %d is greater than max data buffer %d",
+                           i, DataWords, (unsigned int)PKTUTIL_CMD_HDR_WORDS);         
+      }
+      else
+      {
 
-         DataWords = (MsgBytes-PKTUTIL_CMD_HDR_BYTES)/2;
-         if (DataWords > (uint8)(MSGTBL_MAX_MSG_WORDS))
+         /* 
+         ** Omit "data-words" property if no data
+         ** - Properly terminate 'length' line 
+         */
+         if (DataWords > 0)
          {
-            
-            CFE_EVS_SendEvent(MSGTBL_DUMP_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "Error creating dump file message entry %d. Message word length %d is greater than max data buffer %d",
-                              i, DataWords, (unsigned int)PKTUTIL_CMD_HDR_WORDS);         
-         }
+      
+            sprintf(DumpRecord,",\n      \"data-words\": \"");         
+            OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+               
+            for (d=0; d < DataWords; d++)
+            {
+               
+               if (d == (DataWords-1))
+               {
+                  sprintf(DumpRecord,"%d\"\n   }}",MsgTbl->Data.Entry[i].Buffer[PKTUTIL_CMD_HDR_WORDS+d]);
+               }
+               else
+               {
+                  sprintf(DumpRecord,"%d,",MsgTbl->Data.Entry[i].Buffer[PKTUTIL_CMD_HDR_WORDS+d]);
+               }
+               OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+
+            } /* End DataWord loop */
+                        
+         } /* End if non-zero data words */
          else
          {
+            sprintf(DumpRecord,"\n   }}");         
+            OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+         }
+      } /* End if DataWords within range */
 
-            /* 
-            ** Omit "data-words" property if no data
-            ** - Properly terminate 'length' line 
-            */
-            if (DataWords > 0)
-            {
-         
-               sprintf(DumpRecord,",\n      \"data-words\": \"");         
-               OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-                  
-               for (d=0; d < DataWords; d++)
-               {
-                  
-                  if (d == (DataWords-1))
-                  {
-                     sprintf(DumpRecord,"%d\"\n   }}",MsgTbl->Data.Entry[i].Buffer[PKTUTIL_CMD_HDR_WORDS+d]);
-                  }
-                  else
-                  {
-                     sprintf(DumpRecord,"%d,",MsgTbl->Data.Entry[i].Buffer[PKTUTIL_CMD_HDR_WORDS+d]);
-                  }
-                  OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+   } /* End message loop */
 
-               } /* End DataWord loop */
-                           
-            } /* End if non-zero data words */
-            else
-            {
-               sprintf(DumpRecord,"\n   }}");         
-               OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-            }
-         } /* End if DataWords within range */
+   /* Close message-array and top-level object */      
+   sprintf(DumpRecord,"\n]");
+   OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
 
-      } /* End message loop */
-
-      /* Close message-array and top-level object */      
-      sprintf(DumpRecord,"\n]}\n");
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-      RetStatus = true;
-
-      OS_close(FileHandle);
-
-      CFE_EVS_SendEvent(MSGTBL_DUMP_EID, CFE_EVS_EventType_INFORMATION,
-                        "Successfully dumped message table to %s", Filename);
-
-   } /* End if file create */
-   else
-   {
-      OS_GetErrorName(OsStatus, &OsErrStr);
-      CFE_EVS_SendEvent(MSGTBL_DUMP_ERR_EID, CFE_EVS_EventType_ERROR,
-                        "Error creating dump file %s. Status = %s",
-                        Filename, OsErrStr);
-   
-   } /* End if file create error */
-
-   
-   return RetStatus;
+   return true;
    
 } /* End of MSGTBL_DumpCmd() */
 
@@ -280,7 +239,7 @@ bool MSGTBL_DumpCmd(TBLMGR_Tbl_t* Tbl, uint8 DumpType, const char* Filename)
 **  2. Can assume valid table file name because this is a callback from 
 **     the app framework table manager that has verified the file.
 */
-bool MSGTBL_LoadCmd(TBLMGR_Tbl_t* Tbl, uint8 LoadType, const char* Filename)
+bool MSGTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filename)
 {
 
    bool  RetStatus = false;
@@ -288,12 +247,7 @@ bool MSGTBL_LoadCmd(TBLMGR_Tbl_t* Tbl, uint8 LoadType, const char* Filename)
    if (CJSON_ProcessFile(Filename, MsgTbl->JsonBuf, MSGTBL_JSON_FILE_MAX_CHAR, LoadJsonData))
    {
       MsgTbl->Loaded = true;
-      MsgTbl->LastLoadStatus = TBLMGR_STATUS_VALID;
       RetStatus = true;
-   }
-   else
-   {
-      MsgTbl->LastLoadStatus = TBLMGR_STATUS_INVALID;
    }
 
    return RetStatus;
@@ -308,7 +262,6 @@ bool MSGTBL_LoadCmd(TBLMGR_Tbl_t* Tbl, uint8 LoadType, const char* Filename)
 void MSGTBL_ResetStatus(void)
 {
    
-   MsgTbl->LastLoadStatus = TBLMGR_STATUS_UNDEF;
    MsgTbl->LastLoadCnt = 0;
     
 } /* End MSGTBL_ResetStatus() */
@@ -467,6 +420,7 @@ static bool LoadJsonData(size_t JsonFileLen)
          } /* End if valid ID */
          else
          {
+            RetStatus = false;
             CFE_EVS_SendEvent(MSGTBL_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
                               "Message[%d] has an invalid ID value of %d. Valid ID range is 0 to %d",
                               MsgArrayIdx, JsonMessage.Id.Value, (MSGTBL_MAX_ENTRIES-1));
@@ -484,6 +438,7 @@ static bool LoadJsonData(size_t JsonFileLen)
    
    if (MsgArrayIdx == 0)
    {
+      RetStatus = false;
       CFE_EVS_SendEvent(MSGTBL_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
                         "JSON table file has no message entries");
    }

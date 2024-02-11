@@ -33,10 +33,10 @@
       <Define name="MSGTBL_MAX_MSG_WORDS"       value="8"  />
       <Define name="SCHTBL_ACTIVITIES_PER_SLOT" value="15" />
 
-      <EnumeratedDataType name="TblId" shortDescription="Identifies app tables" >
-        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+      <EnumeratedDataType name="TblId" shortDescription="Table Identifiers. See app_c_fw.xml guidelines" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
-          <Enumeration label="MESSAGE"  value="0" shortDescription="Identifies messages (Topic IDs) thatcan be scheduled" />
+          <Enumeration label="MESSAGE"  value="0" shortDescription="Identifies messages (Topic IDs) that can be scheduled" />
           <Enumeration label="SCHEDULE" value="1" shortDescription="Defines and configures a schedule for sending messages" />
         </EnumerationList>
       </EnumeratedDataType>
@@ -77,7 +77,6 @@
       <ContainerDataType name="DumpTbl_CmdPayload" shortDescription="Dump an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"               shortDescription="Table identifier" />
-          <Entry name="Unused"   type="BASE_TYPES/uint8"    shortDescription="Unused" />
           <Entry name="Filename" type="BASE_TYPES/PathName" shortDescription="Full path and file name of table to be dumped" />
        </EntryList>
       </ContainerDataType>
@@ -135,10 +134,9 @@
         <EntryList>
           <Entry name="ValidCmdCnt"                  type="BASE_TYPES/uint16" />
           <Entry name="InvalidCmdCnt"                type="BASE_TYPES/uint16" />
-          <Entry name="MsgTblLoadStatus"             type="APP_C_FW/TblActionStatus" />
-          <Entry name="MsgTblJsonObjCnt"             type="BASE_TYPES/uint16" />
-          <Entry name="SchTblLoadStatus"             type="APP_C_FW/TblActionStatus" />
-          <Entry name="SchTblJsonObjCnt"             type="BASE_TYPES/uint16" />
+          <Entry name="LastTblId"                    type="TblId"             />          
+          <Entry name="LastTblAction"                type="APP_C_FW/TblActions" />
+          <Entry name="LastTblActionStatus"          type="APP_C_FW/TblActionStatus" />
           <Entry name="SlotsProcessedCount"          type="BASE_TYPES/uint32" />
           <Entry name="ScheduleActivitySuccessCount" type="BASE_TYPES/uint32" />
           <Entry name="ScheduleActivityFailureCount" type="BASE_TYPES/uint32" />

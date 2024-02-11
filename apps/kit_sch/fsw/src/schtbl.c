@@ -68,8 +68,8 @@ typedef struct
 /*******************************/
 
 
-static void ConstructJsonActivity(JsonActivity_t* JsonActivity, uint16 ActivityArrayIdx, uint16 SlotArrayIdx);
-static void ConstructJsonSlot(JsonSlot_t* JsonSlot, uint16 SlotArrayIdx);
+static void ConstructJsonActivity(JsonActivity_t *JsonActivity, uint16 ActivityArrayIdx, uint16 SlotArrayIdx);
+static void ConstructJsonSlot(JsonSlot_t *JsonSlot, uint16 SlotArrayIdx);
 static bool LoadJsonData(size_t JsonFileLen);
 
 
@@ -77,7 +77,7 @@ static bool LoadJsonData(size_t JsonFileLen);
 /** File Global Data **/
 /**********************/
 
-static SCHTBL_Class_t* SchTbl = NULL;
+static SCHTBL_Class_t  *SchTbl = NULL;
 static SCHTBL_Data_t   TblData;        /* Working buffer for loads */
 
 
@@ -88,59 +88,14 @@ static SCHTBL_Data_t   TblData;        /* Working buffer for loads */
 **    1. This must be called prior to any other functions
 **
 */
-void SCHTBL_Constructor(SCHTBL_Class_t* ObjPtr, const char* AppName)
+void SCHTBL_Constructor(SCHTBL_Class_t *ObjPtr)
 {
    
    SchTbl = ObjPtr;
 
    CFE_PSP_MemSet(SchTbl, 0, sizeof(SCHTBL_Class_t));
 
-   SchTbl->AppName        = AppName;
-   SchTbl->LastLoadStatus = TBLMGR_STATUS_UNDEF;
-
 } /* End SCHTBL_Constructor() */
-
-
-/******************************************************************************
-** Function: SCHTBL_ResetStatus
-**
-*/
-void SCHTBL_ResetStatus(void)
-{
-
-   SchTbl->LastLoadCnt     = 0;
-   SchTbl->LastLoadStatus  = TBLMGR_STATUS_UNDEF;
-   
-} /* End SCHTBL_ResetStatus() */
-
-
-/******************************************************************************
-** Function: SCHTBL_LoadCmd
-**
-** Notes:
-**  1. Function signature must match TBLMGR_LoadTblFuncPtr_t.
-**  2. Can assume valid table file name because this is a callback from 
-**     the app framework table manager that has verified the file.
-*/
-bool SCHTBL_LoadCmd(TBLMGR_Tbl_t* Tbl, uint8 LoadType, const char* Filename)
-{
-
-   bool  RetStatus = false;
-
-   if (CJSON_ProcessFile(Filename, SchTbl->JsonBuf, SCHTBL_JSON_FILE_MAX_CHAR, LoadJsonData))
-   {
-      SchTbl->Loaded = true;
-      SchTbl->LastLoadStatus = TBLMGR_STATUS_VALID;
-      RetStatus = true;
-   }
-   else
-   {
-      SchTbl->LastLoadStatus = TBLMGR_STATUS_INVALID;
-   }
-
-   return RetStatus;
-
-} /* End of SchTBL_LoadCmd() */
 
 
 /******************************************************************************
@@ -154,155 +109,92 @@ bool SCHTBL_LoadCmd(TBLMGR_Tbl_t* Tbl, uint8 LoadType, const char* Filename)
 **  3. File is formatted so it can be used as a load file. However all of the
 **     entries are dumped so you will get errors on the load for unused entries
 **     because unused entries have invalid  message indices.
-**  4. DumpType is unused.
 */
 
-bool SCHTBL_DumpCmd(TBLMGR_Tbl_t* Tbl, uint8 DumpType, const char* Filename)
+bool SCHTBL_DumpCmd(osal_id_t FileHandle)
 {
 
-   bool      RetStatus = false;
-   osal_id_t FileHandle;
-   int32     OsStatus;
    uint16    EntryIdx, Slot, Activity;
    char      DumpRecord[256];
-   char      SysTimeStr[64];
-   os_err_name_t OsErrStr;
    
-   OsStatus = OS_OpenCreate(&FileHandle, Filename, OS_FILE_FLAG_CREATE | OS_FILE_FLAG_TRUNCATE, OS_READ_WRITE);
+
+   /* 
+   ** - Not all fields in ground table are saved in FSW so they are not
+   **   populated in the dump file. However, the dump file can still
+   **   be loaded.
+   ** - The slot and activity 'index' field is used to indicate whether
+   **   an activity has been loaded.      
+   ** 
+   **   "slot-array": [
+   **
+   **      {"slot": {
+   **         "index": 4
+   **         "activity-array" : [
+   **   
+   **            {"activity": {
+   **            "name":   "cFE ES Housekeeping",  # Not saved
+   **            "descr":  "",                     # Not saved
+   **            "index":   0,
+   **            "enabled": "true",
+   **            "period":  4,
+   **            "offset":  0,
+   **            "msg-idx": 0
+   **         }},
+   **         ...
+   **      ...
+   */
    
-   if (OsStatus == OS_SUCCESS)
+   sprintf(DumpRecord,"\"slot-array\": [\n");
+   OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+
+   for (Slot=0; Slot < SCHTBL_SLOTS; Slot++)
    {
-
-      sprintf(DumpRecord,"\n{\n\"name\": \"Kit Scheduler (KIT_SCH) Scheduler Activity Table\",\n");
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-      CFE_TIME_Print(SysTimeStr, CFE_TIME_GetTime());
       
-      sprintf(DumpRecord,"\"description\": \"KIT_SCH table dumped at %s\",\n",SysTimeStr);
+      if (Slot > 0)
+      {
+         sprintf(DumpRecord,",\n");            
+         OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+      }
+         
+      sprintf(DumpRecord,"   {\"slot\": {\n      \"index\": %d,\n      \"activity-array\" : [\n",Slot);         
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-
-      /* 
-      ** - Not all fields in ground table are saved in FSW so they are not
-      **   populated in the dump file. However, the dump file can still
-      **   be loaded.
-      ** - The slot and activity 'index' field is used to indicate whether
-      **   an activity has been loaded.      
-      ** 
-      **   "slot-array": [
-      **
-      **      {"slot": {
-      **         "index": 4
-      **         "activity-array" : [
-      **   
-      **            {"activity": {
-      **            "name":   "cFE ES Housekeeping",  # Not saved
-      **            "descr":  "",                     # Not saved
-      **            "index":   0,
-      **            "enabled": "true",
-      **            "period":  4,
-      **            "offset":  0,
-      **            "msg-idx": 0
-      **         }},
-      **         ...
-      **      ...
-      */
       
-      sprintf(DumpRecord,"\"slot-array\": [\n");
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-      for (Slot=0; Slot < SCHTBL_SLOTS; Slot++)
+      for (Activity=0; Activity < SCHTBL_ACTIVITIES_PER_SLOT; Activity++)
       {
          
-         if (Slot > 0)
+         EntryIdx = SCHTBL_INDEX(Slot,Activity);
+
+         if (Activity > 0)
          {
-            sprintf(DumpRecord,",\n");            
+            sprintf(DumpRecord,",\n");
             OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
          }
-            
-         sprintf(DumpRecord,"   {\"slot\": {\n      \"index\": %d,\n      \"activity-array\" : [\n",Slot);         
+         
+         sprintf(DumpRecord,"         {\"activity\": {\n");
          OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
          
-         for (Activity=0; Activity < SCHTBL_ACTIVITIES_PER_SLOT; Activity++)
-         {
-            
-            EntryIdx = SCHTBL_INDEX(Slot,Activity);
-
-            if (Activity > 0)
-            {
-               sprintf(DumpRecord,",\n");
-               OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-            }
-            
-            sprintf(DumpRecord,"         {\"activity\": {\n");
-            OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-            
-            sprintf(DumpRecord,"         \"index\": %d,\n         \"enabled\": \"%s\",\n         \"period\": %d,\n         \"offset\": %d,\n         \"msg-idx\": %d\n      }}",
-                 Activity,
-                 CMDMGR_BoolStr(SchTbl->Data.Entry[EntryIdx].Enabled),
-                 SchTbl->Data.Entry[EntryIdx].Period,
-                 SchTbl->Data.Entry[EntryIdx].Offset,
-                 SchTbl->Data.Entry[EntryIdx].MsgTblIndex); 
-            OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-         
-         } /* End activity loop */             
-      
-         sprintf(DumpRecord,"\n      ]\n   }}");
+         sprintf(DumpRecord,"         \"index\": %d,\n         \"enabled\": \"%s\",\n         \"period\": %d,\n         \"offset\": %d,\n         \"msg-idx\": %d\n      }}",
+              Activity,
+              CJSON_BoolStr(SchTbl->Data.Entry[EntryIdx].Enabled),
+              SchTbl->Data.Entry[EntryIdx].Period,
+              SchTbl->Data.Entry[EntryIdx].Offset,
+              SchTbl->Data.Entry[EntryIdx].MsgTblIndex); 
          OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
       
-      } /* End slot loop */
- 
-      /* Close slot-array and top-level object */
-      sprintf(DumpRecord,"\n   ]\n}\n");
+      } /* End activity loop */             
+   
+      sprintf(DumpRecord,"\n      ]\n   }}");
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-      RetStatus = true;
-
-      OS_close(FileHandle);
-
-   } /* End if file create */
-   else
-   {
-      OS_GetErrorName(OsStatus, &OsErrStr);
-      CFE_EVS_SendEvent(SCHTBL_DUMP_ERR_EID, CFE_EVS_EventType_ERROR,
-                        "Error creating dump file %s. Status = %s",
-                        Filename, OsErrStr);
    
-   } /* End if file create error */
+   } /* End slot loop */
 
-   if (RetStatus)
-   {
-      
-      CFE_EVS_SendEvent(SCHTBL_DUMP_EID, CFE_EVS_EventType_INFORMATION,
-                        "Successfully dumped scheduler table to %s", Filename);
-   }
-   
-   return RetStatus;
+   /* Close slot-array and top-level object */
+   sprintf(DumpRecord,"\n   ]\n");
+   OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+
+   return true;
    
 } /* End of SCHTBL_DumpCmd() */
-
-
-/******************************************************************************
-** Function: SCHTBL_GetEntryPtr
-**
-*/
-bool SCHTBL_GetEntryPtr(uint16  EntryId, SCHTBL_Entry_t **EntryPtr)
-{
-
-   bool RetStatus = false;
-
-   if (EntryId < SCHTBL_MAX_ENTRIES)
-   {
-
-      *EntryPtr = &SchTbl->Data.Entry[EntryId];
-      RetStatus = true;
- 
-   } /* End if valid EntryId */
-
-   return RetStatus;
-
-} /* End SCHTBL_GetEntryPtr() */
-
 
 
 /******************************************************************************
@@ -348,6 +240,64 @@ bool SCHTBL_GetEntryIndex(const char* EventStr, uint16 SlotIndex,
    return RetStatus;
    
 } /* End SCHTBL_GetEntryIndex() */
+
+
+/******************************************************************************
+** Function: SCHTBL_GetEntryPtr
+**
+*/
+bool SCHTBL_GetEntryPtr(uint16  EntryId, SCHTBL_Entry_t **EntryPtr)
+{
+
+   bool RetStatus = false;
+
+   if (EntryId < SCHTBL_MAX_ENTRIES)
+   {
+
+      *EntryPtr = &SchTbl->Data.Entry[EntryId];
+      RetStatus = true;
+ 
+   } /* End if valid EntryId */
+
+   return RetStatus;
+
+} /* End SCHTBL_GetEntryPtr() */
+
+
+/******************************************************************************
+** Function: SCHTBL_LoadCmd
+**
+** Notes:
+**  1. Function signature must match TBLMGR_LoadTblFuncPtr_t.
+**  2. Can assume valid table file name because this is a callback from 
+**     the app framework table manager that has verified the file.
+*/
+bool SCHTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filename)
+{
+
+   bool  RetStatus = false;
+
+   if (CJSON_ProcessFile(Filename, SchTbl->JsonBuf, SCHTBL_JSON_FILE_MAX_CHAR, LoadJsonData))
+   {
+      SchTbl->Loaded = true;
+      RetStatus = true;
+   }
+
+   return RetStatus;
+
+} /* End of SchTBL_LoadCmd() */
+
+
+/******************************************************************************
+** Function: SCHTBL_ResetStatus
+**
+*/
+void SCHTBL_ResetStatus(void)
+{
+
+   SchTbl->LastLoadCnt = 0;
+   
+} /* End SCHTBL_ResetStatus() */
 
 
 /******************************************************************************

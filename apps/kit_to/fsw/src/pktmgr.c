@@ -70,7 +70,9 @@ static uint16 SocketBufferLen = sizeof(SocketBuffer);
 ** Function: PKTMGR_Constructor
 **
 */
-void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr, INITBL_Class_t *IniTbl)
+void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr,
+                        INITBL_Class_t *IniTbl,
+                        TBLMGR_Class_t *TblMgr)
 {
    
    PktMgr = PktMgrPtr;
@@ -102,7 +104,10 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr, INITBL_Class_t *IniTbl)
    
    OS_TaskInstallDeleteHandler(&DestructorCallback); /* Called when application terminates */
 
-   PKTTBL_Constructor(&PktMgr->PktTbl, INITBL_GetStrConfig(IniTbl, CFG_APP_CFE_NAME), LoadPktTbl);
+   PKTTBL_Constructor(&PktMgr->PktTbl, LoadPktTbl);
+   TBLMGR_RegisterTblWithDef(TblMgr, PKTTBL_NAME,
+                             PKTTBL_LoadCmd, PKTTBL_DumpCmd,
+                             INITBL_GetStrConfig(IniTbl, CFG_PKTTBL_LOAD_FILE));
 
 } /* End PKTMGR_Constructor() */
 

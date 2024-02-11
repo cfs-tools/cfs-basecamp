@@ -48,7 +48,7 @@
 /************************************/
 
 static bool LoadJsonData(size_t JsonFileLen);
-
+static bool ValidTblData(void);
 
 /**********************/
 /** Global File Data **/
@@ -84,16 +84,14 @@ static CJSON_Obj_t JsonTblObjs[] = {
 **
 */
 void HISTOGRAM_TBL_Constructor(HISTOGRAM_TBL_Class_t *HistogramTblPtr, 
-                               HISTOGRAM_TBL_LoadFunc_t LoadFunc,
-                               const char *AppName)
+                               HISTOGRAM_TBL_LoadFunc_t LoadFunc)
 {
 
    HistogramTbl = HistogramTblPtr;
 
    CFE_PSP_MemSet(HistogramTbl, 0, sizeof(HISTOGRAM_TBL_Class_t));
  
-   HistogramTbl->LoadFunc = LoadFunc;
-   HistogramTbl->AppName  = AppName;
+   HistogramTbl->LoadFunc   = LoadFunc;
    HistogramTbl->JsonObjCnt = (sizeof(JsonTblObjs)/sizeof(CJSON_Obj_t));
          
 } /* End HISTOGRAM_TBL_Constructor() */
@@ -104,77 +102,40 @@ void HISTOGRAM_TBL_Constructor(HISTOGRAM_TBL_Class_t *HistogramTblPtr,
 **
 ** Notes:
 **  1. Function signature must match TBLMGR_DumpTblFuncPtr_t.
-**  2. Can assume valid table filename because this is a callback from 
-**     the app framework table manager that has verified the file.
-**  3. DumpType is unused.
-**  4. File is formatted so it can be used as a load file. It does not follow
-**     the cFE table file format. 
-**  5. Creates a new dump file, overwriting anything that may have existed
-**     previously
+**  2. TBLMGR opens the JSON dump file and writes standard JSON header objects.
+**     This only writes table-specific JSON objects excluding the final closing
+**     bracket } for the table's main JSON object. 
+**  3. File is formatted so it can be used as a load file.
 */
-bool HISTOGRAM_TBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filename)
+bool HISTOGRAM_TBL_DumpCmd(osal_id_t FileHandle)
 {
 
-   bool       RetStatus = false;
-   int32      SysStatus;
-   uint16     i;
-   osal_id_t  FileHandle;
-   os_err_name_t OsErrStr;
-   char DumpRecord[256];
-   char SysTimeStr[128];
-
+   uint16  i;
+   char    DumpRecord[256];
    
-   SysStatus = OS_OpenCreate(&FileHandle, Filename, OS_FILE_FLAG_CREATE, OS_READ_WRITE);
+   
+   sprintf(DumpRecord,"   \"bin-cnt\": %d,\n", HistogramTbl->Data.BinCnt);
+   OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
 
-   if (SysStatus == OS_SUCCESS)
+   sprintf(DumpRecord,"   \"bin\": [\n");
+   OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
+   
+   for (i=0; i < HistogramTbl->Data.BinCnt; i++)
    {
- 
-      sprintf(DumpRecord,"{\n   \"app-name\": \"%s\",\n   \"tbl-name\": \"Histogram\",\n", HistogramTbl->AppName);
-      OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
-
-      CFE_TIME_Print(SysTimeStr, CFE_TIME_GetTime());
-      sprintf(DumpRecord,"   \"description\": \"Table dumped at %s\",\n",SysTimeStr);
-      OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
-
-      sprintf(DumpRecord,"   \"bin-cnt\": %d,\n", HistogramTbl->Data.BinCnt);
-      OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
-
-      sprintf(DumpRecord,"   \"bin\": [\n");
-      OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
-      
-      for (i=0; i < HistogramTbl->Data.BinCnt; i++)
+      if (i > 0)
       {
-         if (i > 0)
-         {
-            sprintf(DumpRecord,",\n");
-            OS_write(FileHandle, DumpRecord, strlen(DumpRecord));      
-         }
-         sprintf(DumpRecord,"   {\n         \"lo-lim\": \"%d\",\n         \"hi-lim\": %d\n      }",
-                 HistogramTbl->Data.Bin[i].LoLim, HistogramTbl->Data.Bin[i].HiLim);
-         OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
+         sprintf(DumpRecord,",\n");
+         OS_write(FileHandle, DumpRecord, strlen(DumpRecord));      
       }
-       
-      sprintf(DumpRecord,"   ]\n}\n");
+      sprintf(DumpRecord,"   {\n         \"lo-lim\": %d,\n         \"hi-lim\": %d\n      }",
+              HistogramTbl->Data.Bin[i].LoLim, HistogramTbl->Data.Bin[i].HiLim);
       OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
+   }
+    
+   sprintf(DumpRecord,"   ]\n");
+   OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
 
-      OS_close(FileHandle);
-
-      CFE_EVS_SendEvent(HISTOGRAM_TBL_DUMP_EID, CFE_EVS_EventType_DEBUG,
-                        "Successfully created dump file %s", Filename);
-
-      RetStatus = true;
-
-   } /* End if file create */
-   else
-   {
-      OS_GetErrorName(SysStatus, &OsErrStr);
-      CFE_EVS_SendEvent(HISTOGRAM_TBL_DUMP_EID, CFE_EVS_EventType_ERROR,
-                        "Error creating dump file '%s', status=%s",
-                        Filename, OsErrStr);
-   
-   } /* End if file create error */
-
-   return RetStatus;
+   return true;
    
 } /* End of HISTOGRAM_TBL_DumpCmd() */
 
@@ -186,8 +147,9 @@ bool HISTOGRAM_TBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filena
 **  1. Function signature must match TBLMGR_LoadTblFuncPtr_t.
 **  2. This could migrate into table manager but I think I'll keep it here so
 **     user's can add table processing code if needed.
+**  3. The table load status is part of the TBLMGR_Tbl_t data.
 */
-bool HISTOGRAM_TBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filename)
+bool HISTOGRAM_TBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filename)
 {
 
    bool  RetStatus = false;
@@ -195,13 +157,8 @@ bool HISTOGRAM_TBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filena
    if (CJSON_ProcessFile(Filename, HistogramTbl->JsonBuf, HISTOGRAM_TBL_JSON_FILE_MAX_CHAR, LoadJsonData))
    {
       HistogramTbl->Loaded = true;
-      HistogramTbl->LastLoadStatus = TBLMGR_STATUS_VALID;
       if (HistogramTbl->LoadFunc != NULL) (HistogramTbl->LoadFunc)();
       RetStatus = true;   
-   }
-   else
-   {
-      HistogramTbl->LastLoadStatus = TBLMGR_STATUS_INVALID;
    }
 
    return RetStatus;
@@ -216,7 +173,6 @@ bool HISTOGRAM_TBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filena
 void HISTOGRAM_TBL_ResetStatus(void)
 {
 
-   HistogramTbl->LastLoadStatus = TBLMGR_STATUS_UNDEF;
    HistogramTbl->LastLoadCnt = 0;
  
 } /* End HISTOGRAM_TBL_ResetStatus() */
@@ -258,17 +214,57 @@ static bool LoadJsonData(size_t JsonFileLen)
    }
    else
    {
-   
-      memcpy(&HistogramTbl->Data,&TblData, sizeof(HISTOGRAM_TBL_Data_t));
-      HistogramTbl->LastLoadCnt = ObjLoadCnt;
-      CFE_EVS_SendEvent(HISTOGRAM_TBL_LOAD_EID, CFE_EVS_EventType_DEBUG, 
-                        "Successfully loaded %d JSON objects",
-                        (unsigned int)ObjLoadCnt);
-      RetStatus = true;
+
+      if (ValidTblData())
+      {
+         memcpy(&HistogramTbl->Data,&TblData, sizeof(HISTOGRAM_TBL_Data_t));
+         HistogramTbl->LastLoadCnt = ObjLoadCnt;
+         CFE_EVS_SendEvent(HISTOGRAM_TBL_LOAD_EID, CFE_EVS_EventType_DEBUG, 
+                           "Successfully loaded %d JSON objects",
+                           (unsigned int)ObjLoadCnt);
+         RetStatus = true;
+      }
       
-   }
+   } /* End if valid JOSN obj count */
    
    return RetStatus;
    
 } /* End LoadJsonData() */
 
+
+/******************************************************************************
+** Function: ValidTblData
+**
+** Notes:
+**  1. Validates new table data before it is accepted.
+**  2. Sends an event for first detected error.
+*/
+static bool ValidTblData(void)
+{
+   bool  RetStatus = true;
+   
+   if (TblData.BinCnt <= HISTOGRAM_MAX_BINS)
+   {
+      for (uint8 i=0; i < TblData.BinCnt; i++)
+      {
+         if (TblData.Bin[i].HiLim <= TblData.Bin[i].LoLim)
+         {
+            RetStatus = false;
+            CFE_EVS_SendEvent(HISTOGRAM_TBL_VALID_EID, CFE_EVS_EventType_ERROR,
+                              "Histogram table rejected, invalid bin %d limits. HiLim %i <= LoLim %d",
+                              i, TblData.Bin[i].HiLim, TblData.Bin[i].LoLim);
+            break;
+         }
+      }
+   }
+   else
+   {
+      RetStatus = false;
+      CFE_EVS_SendEvent(HISTOGRAM_TBL_VALID_EID, CFE_EVS_EventType_ERROR,
+                        "Histogram table rejected, bin count %d exceeds maximum count %d",
+                        TblData.BinCnt, HISTOGRAM_MAX_BINS);
+   }
+   
+   return RetStatus;
+   
+} /* End ValidTblData() */

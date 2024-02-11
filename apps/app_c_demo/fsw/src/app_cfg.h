@@ -185,5 +185,6 @@ DECLARE_ENUM(Config,APP_CONFIG)
 
 #define HISTOGRAM_TBL_JSON_MAX_OBJ          10
 #define HISTOGRAM_TBL_JSON_FILE_MAX_CHAR  4090 
+#define HISTOGRAM_TBL_NAME                "Histogram" 
 
 #endif /* _app_cfg_ */

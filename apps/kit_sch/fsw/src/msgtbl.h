@@ -109,9 +109,7 @@ typedef struct
    ** Standard CJSON table data
    */
    
-   const char*  AppName;
    bool         Loaded;   /* Has entire table been loaded? */
-   uint8        LastLoadStatus;
    uint16       LastLoadCnt;
    
    size_t       JsonObjCnt;
@@ -135,7 +133,7 @@ typedef struct
 **   2. The local table data is not populated. This is done when the table is 
 **      registered with the app framework table manager.
 */
-void MSGTBL_Constructor(MSGTBL_Class_t* ObjPtr, const char* AppName);
+void MSGTBL_Constructor(MSGTBL_Class_t *ObjPtr);
 
 
 /******************************************************************************
@@ -145,11 +143,9 @@ void MSGTBL_Constructor(MSGTBL_Class_t* ObjPtr, const char* AppName);
 **
 ** Notes:
 **  1. Function signature must match TBLMGR_DumpTblFuncPtr_t.
-**  2. Can assume valid table file name because this is a callback from 
-**     the app framework table manager.
 **
 */
-bool MSGTBL_DumpCmd(TBLMGR_Tbl_t* Tbl, uint8 DumpType, const char* Filename);
+bool MSGTBL_DumpCmd(osal_id_t FileHandle);
 
 
 /******************************************************************************
@@ -160,10 +156,10 @@ bool MSGTBL_DumpCmd(TBLMGR_Tbl_t* Tbl, uint8 DumpType, const char* Filename);
 ** Notes:
 **  1. Function signature must match TBLMGR_LoadTblFuncPtr_t.
 **  2. Can assume valid table file name because this is a callback from 
-**     the app framework table manager.
+**     the app framework table manager that has verified the file exists.
 **
 */
-bool MSGTBL_LoadCmd(TBLMGR_Tbl_t* Tbl, uint8 LoadType, const char* Filename);
+bool MSGTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filename);
 
 
 /******************************************************************************

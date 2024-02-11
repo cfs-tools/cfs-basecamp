@@ -67,7 +67,7 @@
 /** Type Definitions **/
 /**********************/
 
-typedef bool (*CMDMGR_CmdFuncPtr_t) (void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+typedef bool (*CMDMGR_CmdFuncPtr_t) (void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /*
@@ -136,7 +136,7 @@ typedef struct
 **    1. This function must be called prior to any other functions being
 **       called using the same cmdmgr instance.
 */
-void CMDMGR_Constructor(CMDMGR_Class_t* CmdMgr);
+void CMDMGR_Constructor(CMDMGR_Class_t *CmdMgr);
 
 
 /******************************************************************************
@@ -147,21 +147,21 @@ void CMDMGR_Constructor(CMDMGR_Class_t* CmdMgr);
 ** Notes:
 **   None
 */
-const char* CMDMGR_BoolStr(bool BoolArg);
+const char *CMDMGR_BoolStr(bool BoolArg);
 
 
 /******************************************************************************
 ** Function: CMDMGR_DispatchFunc
 **
 */
-bool CMDMGR_DispatchFunc(CMDMGR_Class_t* CmdMgr,  const CFE_MSG_Message_t *MsgPtr);
+bool CMDMGR_DispatchFunc(CMDMGR_Class_t *CmdMgr,  const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
 ** Function: CMDMGR_RegisterFunc
 **
 */
-bool CMDMGR_RegisterFunc(CMDMGR_Class_t* CmdMgr, uint16 FuncCode, void* ObjDataPtr, 
+bool CMDMGR_RegisterFunc(CMDMGR_Class_t *CmdMgr, uint16 FuncCode, void *ObjDataPtr, 
                          CMDMGR_CmdFuncPtr_t ObjFuncPtr, uint16 UserDataLen);
 
 
@@ -171,7 +171,7 @@ bool CMDMGR_RegisterFunc(CMDMGR_Class_t* CmdMgr, uint16 FuncCode, void* ObjDataP
 ** Register a command function that will increment its own private alternate
 ** command counters.
 */
-bool CMDMGR_RegisterFuncAltCnt(CMDMGR_Class_t* CmdMgr, uint16 FuncCode, void* ObjDataPtr, 
+bool CMDMGR_RegisterFuncAltCnt(CMDMGR_Class_t *CmdMgr, uint16 FuncCode, void *ObjDataPtr, 
                                CMDMGR_CmdFuncPtr_t ObjFuncPtr, uint16 UserDataLen);
 
 
@@ -179,7 +179,7 @@ bool CMDMGR_RegisterFuncAltCnt(CMDMGR_Class_t* CmdMgr, uint16 FuncCode, void* Ob
 ** Function: CMDMGR_ResetStatus
 **
 */
-void CMDMGR_ResetStatus(CMDMGR_Class_t* CmdMgr);
+void CMDMGR_ResetStatus(CMDMGR_Class_t *CmdMgr);
 
 
 /******************************************************************************

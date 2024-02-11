@@ -179,7 +179,7 @@ bool KIT_SCH_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 static int32 InitApp(void)
 {
    
-   int32 Status = APP_C_FW_CFS_ERROR;
+   int32 RetStatus = APP_C_FW_CFS_ERROR;
    
    /*
    ** Initialize objects
@@ -193,19 +193,12 @@ static int32 InitApp(void)
       
       KitSch.StartupSyncTimeout = INITBL_GetIntConfig(INITBL_OBJ, CFG_STARTUP_SYNC_TIMEOUT);
       
-      SCHEDULER_Constructor(SCHEDULER_OBJ,INITBL_OBJ);
-   
-      Status = CFE_SUCCESS;
-         
-   } /* End if INITBL Constructed */
-   
-   /*
-   ** Initialize application managers
-   */
+      CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,"KIT_SCH_InitApp() Before TBLMGR calls");
 
-   if (Status == CFE_SUCCESS)
-   {
-   
+      /* TBLMGR must be constructed before SCHEDULER that contains tables */
+      TBLMGR_Constructor(TBLMGR_OBJ, INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME));
+      SCHEDULER_Constructor(SCHEDULER_OBJ, INITBL_OBJ, TBLMGR_OBJ);
+      
       CFE_SB_CreatePipe(&KitSch.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_CMD_PIPE_NAME));
       CFE_SB_Subscribe(KitSch.CmdMid,    KitSch.CmdPipe);
       CFE_SB_Subscribe(KitSch.SendHkMid, KitSch.CmdPipe);
@@ -213,8 +206,8 @@ static int32 InitApp(void)
       CMDMGR_Constructor(CMDMGR_OBJ);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_NOOP_CC,     NULL,       KIT_SCH_NoOpCmd,     0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_RESET_CC,    NULL,       KIT_SCH_ResetAppCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd,   TBLMGR_LOAD_TBL_CMD_DATA_LEN);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd,   TBLMGR_DUMP_TBL_CMD_DATA_LEN);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd,   sizeof(KIT_SCH_LoadTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd,   sizeof(KIT_SCH_DumpTbl_CmdPayload_t));
 
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_MSG_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_LoadMsgTblEntryCmd, sizeof(KIT_SCH_LoadMsgTblEntry_CmdPayload_t));
       CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_SEND_MSG_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_SendMsgTblEntryCmd, sizeof(KIT_SCH_SendMsgTblEntry_CmdPayload_t));
@@ -227,24 +220,20 @@ static int32 InitApp(void)
                    CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_KIT_SCH_HK_TLM_TOPICID)),
                    sizeof(KIT_SCH_HkTlm_t));
 
-      CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,"KIT_SCH_InitApp() Before TBLMGR calls");
-      /* The order of table registration must match the EDS table ID definitions */
-      TBLMGR_Constructor(TBLMGR_OBJ);
-      TBLMGR_RegisterTblWithDef(TBLMGR_OBJ, MSGTBL_LoadCmd, MSGTBL_DumpCmd, INITBL_GetStrConfig(INITBL_OBJ, CFG_MSG_TBL_LOAD_FILE));
-      TBLMGR_RegisterTblWithDef(TBLMGR_OBJ, SCHTBL_LoadCmd, SCHTBL_DumpCmd, INITBL_GetStrConfig(INITBL_OBJ, CFG_SCH_TBL_LOAD_FILE));
-
       /*
       ** Application startup event message
       */
-      Status = CFE_EVS_SendEvent(KIT_SCH_APP_INIT_EID, CFE_EVS_EventType_INFORMATION,
-                               "KIT_SCH Initialized. Version %d.%d.%d",
-                               KIT_SCH_MAJOR_VER, KIT_SCH_MINOR_VER, KIT_SCH_PLATFORM_REV);
-
-      } /* End if init success */
+      CFE_EVS_SendEvent(KIT_SCH_APP_INIT_EID, CFE_EVS_EventType_INFORMATION,
+                        "KIT_SCH Initialized. Version %d.%d.%d",
+                        KIT_SCH_MAJOR_VER, KIT_SCH_MINOR_VER, KIT_SCH_PLATFORM_REV);
       
-      return(Status);
+      RetStatus = CFE_SUCCESS;
 
-} /* End of InitApp() */
+   } /* End if init success */
+      
+   return RetStatus;
+
+} /* End InitApp() */
 
 
 /******************************************************************************
@@ -303,7 +292,8 @@ static int32 ProcessCommands(void)
 */
 static void SendHousekeepingTlm(void)
 {
-
+   
+   const TBLMGR_Tbl_t      *LastTbl = TBLMGR_GetLastTblStatus(TBLMGR_OBJ);
    KIT_SCH_HkTlm_Payload_t *Payload = &KitSch.HkTlm.Payload;
 
    /*
@@ -316,12 +306,10 @@ static void SendHousekeepingTlm(void)
    /*
    ** TBLMGR Data
    */
-
-   Payload->MsgTblLoadStatus = KitSch.Scheduler.MsgTbl.LastLoadStatus;
-   Payload->MsgTblJsonObjCnt = KitSch.Scheduler.MsgTbl.LastLoadCnt;
    
-   Payload->SchTblLoadStatus = KitSch.Scheduler.SchTbl.LastLoadStatus;
-   Payload->SchTblJsonObjCnt = KitSch.Scheduler.SchTbl.LastLoadCnt;
+   Payload->LastTblId           = LastTbl->Id;
+   Payload->LastTblAction       = LastTbl->LastAction;
+   Payload->LastTblActionStatus = LastTbl->LastActionStatus;
 
    /*
    ** Scheduler Data

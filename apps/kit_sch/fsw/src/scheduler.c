@@ -60,7 +60,9 @@ static SCHEDULER_Class_t*  Scheduler = NULL;
 ** Function: SCHEDULER_Constructor
 **
 */
-void SCHEDULER_Constructor(SCHEDULER_Class_t *ObjPtr, const INITBL_Class_t *IniTbl)
+void SCHEDULER_Constructor(SCHEDULER_Class_t *ObjPtr, 
+                           const INITBL_Class_t *IniTbl,
+                           TBLMGR_Class_t *TblMgr)
 {
 
    int32 Status = CFE_SUCCESS;
@@ -158,8 +160,15 @@ void SCHEDULER_Constructor(SCHEDULER_Class_t *ObjPtr, const INITBL_Class_t *IniT
                 CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_SCH_DIAG_TLM_TOPICID)),
                 sizeof(KIT_SCH_DiagTlm_t));
 
-   MSGTBL_Constructor(&Scheduler->MsgTbl, INITBL_GetStrConfig(IniTbl, CFG_APP_CFE_NAME));
-   SCHTBL_Constructor(&Scheduler->SchTbl, INITBL_GetStrConfig(IniTbl, CFG_APP_CFE_NAME));
+   MSGTBL_Constructor(&Scheduler->MsgTbl);
+   SCHTBL_Constructor(&Scheduler->SchTbl);
+
+   /* The order of table registration must match the EDS table ID definitions */
+   TBLMGR_RegisterTblWithDef(TblMgr, MSGTBL_NAME, MSGTBL_LoadCmd, MSGTBL_DumpCmd,
+                             INITBL_GetStrConfig(IniTbl, CFG_MSG_TBL_LOAD_FILE));
+   TBLMGR_RegisterTblWithDef(TblMgr, SCHTBL_NAME, SCHTBL_LoadCmd, SCHTBL_DumpCmd,
+                             INITBL_GetStrConfig(IniTbl, CFG_SCH_TBL_LOAD_FILE));
+
  
 } /* End SCHEDULER_Constructor() */
 

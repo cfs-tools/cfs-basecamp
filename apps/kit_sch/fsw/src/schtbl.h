@@ -107,9 +107,7 @@ typedef struct
    ** Standard CJSON table data
    */
    
-   const char*  AppName;
    bool         Loaded;   /* Has entire table been loaded? */
-   uint8        LastLoadStatus;
    uint16       LastLoadCnt;
    
    size_t       JsonObjCnt;
@@ -135,7 +133,55 @@ typedef struct
 **      because a reference is stored by schtbl.c.
 **
 */
-void SCHTBL_Constructor(SCHTBL_Class_t* ObjPtr, const char* AppName);
+void SCHTBL_Constructor(SCHTBL_Class_t*ObjPtr);
+
+
+/******************************************************************************
+** Function: SCHTBL_DumpCmd
+**
+** Command to dump the table.
+**
+** Notes:
+**  1. Function signature must match TBLMGR_DumpTblFuncPtr_t.
+**
+*/
+bool SCHTBL_DumpCmd(osal_id_t FileHandle);
+
+
+/******************************************************************************
+** SCHTBL_GetEntryIndex
+**
+** Compute and load EntryIndex if the SlotIndex and ActivityIndex are valid.
+** Event message text assumes commands are being validated 
+*/
+bool SCHTBL_GetEntryIndex(const char *EventStr, uint16 SlotIndex, 
+                             uint16 ActivityIndex, uint16 *EntryIndex);
+
+
+/******************************************************************************
+** Function: SCHTBL_LoadCmd
+**
+** Command to load the table.
+**
+** Notes:
+**  1. Function signature must match TBLMGR_LoadTblFuncPtr_t.
+**  2. Can assume valid table file name because this is a callback from 
+**     the app framework table manager that has verified the file exists.
+**
+*/
+bool SCHTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filename);
+
+
+/******************************************************************************
+** Function: SCHTBL_ProcessTable
+**
+** Process the scheduler table performing activities.
+**
+** Notes:
+**   None
+**
+*/
+bool SCHTBL_ProcessTable(void);
 
 
 /******************************************************************************
@@ -153,18 +199,6 @@ void SCHTBL_ResetStatus(void);
 
 
 /******************************************************************************
-** Function: SCHTBL_ProcessTable
-**
-** Process the scheduler table performing activities.
-**
-** Notes:
-**   None
-**
-*/
-bool SCHTBL_ProcessTable(void);
-
-
-/******************************************************************************
 ** Function: SCHTBL_StartTimers
 **
 ** Notes:
@@ -172,44 +206,6 @@ bool SCHTBL_ProcessTable(void);
 **
 */
 int32 SCHTBL_StartTimers(void);
-
-
-/******************************************************************************
-** Function: SCHTBL_LoadCmd
-**
-** Command to load the table.
-**
-** Notes:
-**  1. Function signature must match TBLMGR_LoadTblFuncPtr_t.
-**  2. Can assume valid table file name because this is a callback from 
-**     the app framework table manager.
-**
-*/
-bool SCHTBL_LoadCmd(TBLMGR_Tbl_t* Tbl, uint8 LoadType, const char* Filename);
-
-
-/******************************************************************************
-** Function: SCHTBL_DumpCmd
-**
-** Command to dump the table.
-**
-** Notes:
-**  1. Function signature must match TBLMGR_DumpTblFuncPtr_t.
-**  2. Can assume valid table file name because this is a callback from 
-**     the app framework table manager.
-**
-*/
-bool SCHTBL_DumpCmd(TBLMGR_Tbl_t* Tbl, uint8 DumpType, const char* Filename);
-
-
-/******************************************************************************
-** SCHTBL_GetEntryIndex
-**
-** Compute and load EntryIndex if the SlotIndex and ActivityIndex are valid.
-** Event message text assumes commands are being validated 
-*/
-bool SCHTBL_GetEntryIndex(const char* EventStr, uint16 SlotIndex, 
-                             uint16 ActivityIndex, uint16* EntryIndex);
 
 
 /******************************************************************************
@@ -222,7 +218,7 @@ bool SCHTBL_GetEntryIndex(const char* EventStr, uint16 SlotIndex,
 ** The event string should identify the calling context such as whcih ground
 ** command.
 */
-bool SCHTBL_ValidEntry(const char* EventStr, uint16 Enabled, uint16 Period, 
+bool SCHTBL_ValidEntry(const char *EventStr, uint16 Enabled, uint16 Period, 
                        uint16 Offset, uint16 MsgTblIndex);
                           
 #endif /* _schtbl_ */

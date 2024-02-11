@@ -72,13 +72,13 @@
 
 /******************************************************************************
 ** Command Packets
-** - See EDS command definitions in app_c_demo.xml
+** - See EDS command definitions in kit_to.xml
 */
 
 
 /******************************************************************************
 ** Telmetery Packets
-** - See EDS command definitions in app_c_demo.xml
+** - See EDS command definitions in kit_to.xml
 */
 
 
@@ -178,7 +178,9 @@ typedef struct
 **      management during startup.
 **
 */
-void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr, INITBL_Class_t *IniTbl);
+void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr,
+                        INITBL_Class_t *IniTbl,
+                        TBLMGR_Class_t *TblMgr);
 
 
 /******************************************************************************

@@ -190,7 +190,7 @@ static int32 InitApp(void)
    {
 
       /* Must constructor table manager prior to any app objects that contain tables */
-      TBLMGR_Constructor(TBLMGR_OBJ);
+      TBLMGR_Constructor(TBLMGR_OBJ, INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME));
 
       /*
       ** Constuct app's contained objects
@@ -211,8 +211,8 @@ static int32 InitApp(void)
       CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_NOOP_CC,  NULL, APP_C_DEMO_NoOpCmd,     0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_RESET_CC, NULL, APP_C_DEMO_ResetAppCmd, 0);
       
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd, TBLMGR_LOAD_TBL_CMD_DATA_LEN);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd, TBLMGR_DUMP_TBL_CMD_DATA_LEN);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd, sizeof(APP_C_DEMO_LoadTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd, sizeof(APP_C_DEMO_DumpTbl_CmdPayload_t));
 
       CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_START_HISTOGRAM_CC, HISTOGRAM_OBJ, HISTOGRAM_StartCmd, 0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_STOP_HISTOGRAM_CC,  HISTOGRAM_OBJ, HISTOGRAM_StopCmd,  0);

@@ -124,4 +124,12 @@ DECLARE_ENUM(Config,APP_CONFIG)
 //#define KIT_SCH_INIT_EVS_TYPE CFE_EVS_EventType_INFORMATION
 
 
+/******************************************************************************
+** Table Macros
+*/
+
+#define MSGTBL_NAME   "Message" 
+#define SCHTBL_NAME   "Schedule" 
+
+
 #endif /* _app_cfg_ */

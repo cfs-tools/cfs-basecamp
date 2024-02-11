@@ -38,8 +38,8 @@
       <StringDataType name="char_x_10" length="10" />
       <StringDataType name="char_x_16" length="16" />
 
-      <EnumeratedDataType name="TblId" shortDescription="Identifies different app tables" >
-        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+      <EnumeratedDataType name="TblId" shortDescription="Table Identifiers. See app_c_fw.xml guidelines" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
           <Enumeration label="PACKET_FILTER" value="0" shortDescription="Define packets/filters for output " />
         </EnumerationList>
@@ -82,7 +82,6 @@
       <ContainerDataType name="DumpTbl_CmdPayload" shortDescription="Dump an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"               shortDescription="Table identifier" />
-          <Entry name="Unused"   type="BASE_TYPES/uint8"    shortDescription="Unused" />
           <Entry name="Filename" type="BASE_TYPES/PathName" shortDescription="Full path and file name of table to be dumped" />
        </EntryList>
       </ContainerDataType>

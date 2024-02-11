@@ -64,7 +64,7 @@ static HISTOGRAM_LOG_Class_t  *HistogramLog = NULL;
 **
 */
 void HISTOGRAM_LOG_Constructor(HISTOGRAM_LOG_Class_t *HistogramLogPtr, 
-                               INITBL_Class_t *IniTbl)
+                               const INITBL_Class_t *IniTbl)
 {
  
    HistogramLog = HistogramLogPtr;

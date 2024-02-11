@@ -79,7 +79,7 @@ typedef struct
 
 
 /* Callback function for table owner to perform the load */
-typedef bool (*PKTTBL_LoadNewTbl_t)(PKTTBL_Data_t* NewTbl);
+typedef bool (*PKTTBL_LoadNewTbl_t)(PKTTBL_Data_t *NewTbl);
 
 
 typedef struct
@@ -97,9 +97,7 @@ typedef struct
    ** Standard CJSON table data
    */
    
-   const char  *AppName;
-   bool        Loaded;   /* Has entire table been loaded? */
-   uint8       LastLoadStatus;
+   bool        Loaded;      /* Has entire table been loaded? */
    uint16      LastLoadCnt;
    
    size_t      JsonObjCnt;
@@ -123,8 +121,7 @@ typedef struct
 **   1. The table values are not populated. This is done when the table is 
 **      registered with the table manager.
 */
-void PKTTBL_Constructor(PKTTBL_Class_t *ObjPtr, const char *AppName,
-                        PKTTBL_LoadNewTbl_t LoadNewTbl);
+void PKTTBL_Constructor(PKTTBL_Class_t *ObjPtr, PKTTBL_LoadNewTbl_t LoadNewTbl);
 
 
 /******************************************************************************
@@ -138,7 +135,7 @@ void PKTTBL_Constructor(PKTTBL_Class_t *ObjPtr, const char *AppName,
 **     the app framework table manager.
 **
 */
-bool PKTTBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filename);
+bool PKTTBL_DumpCmd(osal_id_t FileHandle);
 
 
 /******************************************************************************
@@ -152,7 +149,7 @@ bool PKTTBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filename);
 **     the app framework table manager.
 **
 */
-bool PKTTBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filename);
+bool PKTTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filename);
 
 
 /******************************************************************************

@@ -232,7 +232,9 @@ typedef struct
 **      because a reference is stored by schtbl.c.
 **
 */
-void SCHEDULER_Constructor(SCHEDULER_Class_t* ObjPtr, const INITBL_Class_t* IniTbl);
+void SCHEDULER_Constructor(SCHEDULER_Class_t *ObjPtr,
+                           const INITBL_Class_t *IniTbl,
+                           TBLMGR_Class_t *TblMgr);
 
 
 /******************************************************************************
@@ -242,7 +244,7 @@ void SCHEDULER_Constructor(SCHEDULER_Class_t* ObjPtr, const INITBL_Class_t* IniT
 **   1. Function signature must match the CMDMGR_CmdFuncPtr_t definition
 **
 */
-bool SCHEDULER_CfgSchTblEntryCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool SCHEDULER_CfgSchTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************

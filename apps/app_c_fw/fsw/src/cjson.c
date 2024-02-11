@@ -97,6 +97,37 @@ static const char* JsonTypeStr[] = {
   
 };
 
+static const char* BoolStr[] = {
+   "false",
+   "true",
+   "UNDEF"
+};
+
+
+/******************************************************************************
+** Function: CJSON_BoolStr
+**
+** Purpose: Return a pointer to a boolean string
+**
+** Notes:
+**   Assumes false=0 and true=1
+*/
+const char *CJSON_BoolStr(bool BoolArg)
+{
+   
+   uint8 i = 2;
+   
+   if ( BoolArg == true || BoolArg == false)
+   {
+   
+      i = BoolArg;
+   
+   }
+        
+   return BoolStr[i];
+
+} /* End CJSON_BoolStr() */
+
 
 /******************************************************************************
 ** Function: CJSON_FltObjConstructor
@@ -115,40 +146,6 @@ void CJSON_FltObjConstructor(CJSON_Obj_t *Obj, const char *QueryKey,
    Obj->TypeFlt = true;
          
 } /* End CJSON_FltObjConstructor() */
-
-
-/******************************************************************************
-** Function: CJSON_ObjConstructor
-**
-** Notes:
-**    1. This is used to construct individual CJSON_Obj_t structures. This 
-**       constructor is not needed if the user creates a static CJSON_Obj_t
-**       array with default values.
-*/
-void CJSON_ObjConstructor(CJSON_Obj_t *Obj, const char *QueryKey, 
-                          JSONTypes_t JsonType, void *TblData, size_t TblDataLen)
-{
-
-   Obj->Updated    = false;
-   Obj->TblData    = TblData;
-   Obj->TblDataLen = TblDataLen;   
-   Obj->Type       = JsonType;
-   Obj->TypeFlt    = false;
-   
-   if (strlen(QueryKey) <= CJSON_MAX_KEY_LEN)
-   {
-      
-      strncpy (Obj->Query.Key, QueryKey, CJSON_MAX_KEY_LEN);
-      Obj->Query.KeyLen = strlen(Obj->Query.Key);
-   }
-   else
-   {
-      CFE_EVS_SendEvent(CJSON_OBJ_CONSTRUCT_ERR_EID, CFE_EVS_EventType_ERROR,
-                        "Error constructing table. Query key %s exceeds maximum key length %d.",
-                        QueryKey, CJSON_MAX_KEY_LEN);
-   }
-      
-} /* End CJSON_ObjConstructor() */
 
 
 /******************************************************************************
@@ -204,6 +201,40 @@ bool CJSON_LoadObjOptional(CJSON_Obj_t *Obj, const char *Buf, size_t BufLen)
    return LoadObj(Obj, Buf, BufLen, OBJ_OPTIONAL);
    
 } /* End CJSON_LoadObjOptional() */
+
+
+/******************************************************************************
+** Function: CJSON_ObjConstructor
+**
+** Notes:
+**    1. This is used to construct individual CJSON_Obj_t structures. This 
+**       constructor is not needed if the user creates a static CJSON_Obj_t
+**       array with default values.
+*/
+void CJSON_ObjConstructor(CJSON_Obj_t *Obj, const char *QueryKey, 
+                          JSONTypes_t JsonType, void *TblData, size_t TblDataLen)
+{
+
+   Obj->Updated    = false;
+   Obj->TblData    = TblData;
+   Obj->TblDataLen = TblDataLen;   
+   Obj->Type       = JsonType;
+   Obj->TypeFlt    = false;
+   
+   if (strlen(QueryKey) <= CJSON_MAX_KEY_LEN)
+   {
+      
+      strncpy (Obj->Query.Key, QueryKey, CJSON_MAX_KEY_LEN);
+      Obj->Query.KeyLen = strlen(Obj->Query.Key);
+   }
+   else
+   {
+      CFE_EVS_SendEvent(CJSON_OBJ_CONSTRUCT_ERR_EID, CFE_EVS_EventType_ERROR,
+                        "Error constructing table. Query key %s exceeds maximum key length %d.",
+                        QueryKey, CJSON_MAX_KEY_LEN);
+   }
+      
+} /* End CJSON_ObjConstructor() */
 
 
 /******************************************************************************

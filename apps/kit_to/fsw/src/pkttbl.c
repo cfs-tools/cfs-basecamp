@@ -88,18 +88,15 @@ static bool WriteJsonPkt(int32 FileHandle, const PKTTBL_Pkt_t* Pkt, bool FirstPk
 **    1. This must be called prior to any other functions
 **
 */
-void PKTTBL_Constructor(PKTTBL_Class_t *ObjPtr, const char *AppName,
-                        PKTTBL_LoadNewTbl_t LoadNewTbl)
+void PKTTBL_Constructor(PKTTBL_Class_t *ObjPtr, PKTTBL_LoadNewTbl_t LoadNewTbl)
 {
    
    PktTbl = ObjPtr;
 
    CFE_PSP_MemSet(PktTbl, 0, sizeof(PKTTBL_Class_t));
+   
    PKTTBL_SetTblToUnused(&(PktTbl->Data));
-
-   PktTbl->AppName        = AppName;
-   PktTbl->LoadNewTbl     = LoadNewTbl;
-   PktTbl->LastLoadStatus = TBLMGR_STATUS_UNDEF;
+   PktTbl->LoadNewTbl = LoadNewTbl;
    
 } /* End PKTTBL_Constructor() */
 
@@ -118,68 +115,36 @@ void PKTTBL_Constructor(PKTTBL_Class_t *ObjPtr, const char *AppName,
 **     previously
 */
 
-bool PKTTBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filename)
+bool PKTTBL_DumpCmd(osal_id_t FileHandle)
 {
 
-   bool          RetStatus = false;
-   osal_id_t     FileHandle;
-   int32         OsStatus;
    bool          FirstPktWritten = false;
    uint16        AppId;
    char          DumpRecord[512];
-   char          SysTimeStr[256];
-   os_err_name_t OsErrStr;
 
-   OsStatus = OS_OpenCreate(&FileHandle, Filename, OS_FILE_FLAG_CREATE | OS_FILE_FLAG_TRUNCATE, OS_READ_WRITE);
+
+   /* 
+   ** Packet Array 
+   **
+   ** - Not all fields in ground table are saved in FSW so they are not
+   **   populated in the dump file. However, the dump file can still
+   **   be loaded.
+   */
    
-   if (OsStatus == OS_SUCCESS)
-   {
-
-      sprintf(DumpRecord,"\n{\n\"name\": \"Kit Telemetry Output (KIT_TO) Packet Table\",\n");
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-      CFE_TIME_Print(SysTimeStr, CFE_TIME_GetTime());
-      
-      sprintf(DumpRecord,"\"description\": \"KIT_TO dumped at %s\",\n",SysTimeStr);
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-
-      /* 
-      ** Packet Array 
-      **
-      ** - Not all fields in ground table are saved in FSW so they are not
-      **   populated in the dump file. However, the dump file can still
-      **   be loaded.
-      */
-      
-      sprintf(DumpRecord,"\"packet-array\": [\n");
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-      
-      for (AppId=0; AppId < PKTUTIL_MAX_APP_ID; AppId++)
-      {
-               
-         if (WriteJsonPkt(FileHandle, &(PktTbl->Data.Pkt[AppId]), FirstPktWritten)) FirstPktWritten = true;
-              
-      } /* End packet loop */
-
-      sprintf(DumpRecord,"\n]}\n");
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-      RetStatus = true;
-
-      OS_close(FileHandle);
-
-   } /* End if file create */
-   else
-   {
-      OS_GetErrorName(OsStatus, &OsErrStr);
-      CFE_EVS_SendEvent(PKTTBL_CREATE_FILE_ERR_EID, CFE_EVS_EventType_ERROR,
-                        "Error creating dump file '%s', Status = %s", 
-                        Filename, OsErrStr);
+   sprintf(DumpRecord,"\"packet-array\": [\n");
+   OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
    
-   } /* End if file create error */
+   for (AppId=0; AppId < PKTUTIL_MAX_APP_ID; AppId++)
+   {
+            
+      if (WriteJsonPkt(FileHandle, &(PktTbl->Data.Pkt[AppId]), FirstPktWritten)) FirstPktWritten = true;
+           
+   } /* End packet loop */
 
-   return RetStatus;
+   sprintf(DumpRecord,"\n]\n");
+   OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+
+   return true;
    
 } /* End of PKTTBL_DumpCmd() */
 
@@ -192,7 +157,7 @@ bool PKTTBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filename)
 **  2. Can assume valid table file name because this is a callback from 
 **     the app framework table manager that has verified the file.
 */
-bool PKTTBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filename)
+bool PKTTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filename)
 {
 
    bool  RetStatus = false;
@@ -200,12 +165,7 @@ bool PKTTBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filename)
    if (CJSON_ProcessFile(Filename, PktTbl->JsonBuf, PKTTBL_JSON_FILE_MAX_CHAR, LoadJsonData))
    {
       PktTbl->Loaded = true;
-      PktTbl->LastLoadStatus = TBLMGR_STATUS_VALID;
       RetStatus = true;
-   }
-   else
-   {
-      PktTbl->LastLoadStatus = TBLMGR_STATUS_INVALID;
    }
 
    return RetStatus;
@@ -220,7 +180,6 @@ bool PKTTBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filename)
 void PKTTBL_ResetStatus(void)
 {
    
-   PktTbl->LastLoadStatus = TBLMGR_STATUS_UNDEF;
    PktTbl->LastLoadCnt = 0;
     
 } /* End PKTTBL_ResetStatus() */
@@ -464,14 +423,14 @@ static bool WriteJsonPkt(int32 FileHandle, const PKTTBL_Pkt_t* Pkt, bool FirstPk
          OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
       }
       
-      sprintf(DumpRecord,"\"packet\": {\n");
+      sprintf(DumpRecord,"{\"packet\": {\n");
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
 
       sprintf(DumpRecord,"   \"topic-id\": %d,\n   \"forward\": %d,\n   \"priority\": %d,\n   \"reliability\": %d,\n   \"buf-limit\": %d,\n",
               Pkt->MsgId, Pkt->Forward, Pkt->Qos.Priority, Pkt->Qos.Reliability, Pkt->BufLim);
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
       
-      sprintf(DumpRecord,"   \"filter\": { \"type\": %d, \"X\": %d, \"N\": %d, \"O\": %d}\n}",
+      sprintf(DumpRecord,"   \"filter\": { \"type\": %d, \"X\": %d, \"N\": %d, \"O\": %d}\n}}",
               Pkt->Filter.Type, Pkt->Filter.Param.X, Pkt->Filter.Param.N, Pkt->Filter.Param.O);
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
    

@@ -61,7 +61,7 @@ static HISTOGRAM_Class_t*  Histogram = NULL;
 **      TBLMGR_RegisterTblWithDef() because its table load function is called
 */
 void HISTOGRAM_Constructor(HISTOGRAM_Class_t *HistogramPtr, 
-                           INITBL_Class_t *IniTbl,
+                           const INITBL_Class_t *IniTbl,
                            TBLMGR_Class_t *TblMgr)
 {
  
@@ -74,11 +74,10 @@ void HISTOGRAM_Constructor(HISTOGRAM_Class_t *HistogramPtr,
    
    HISTOGRAM_LOG_Constructor(LOG_OBJ, IniTbl);
    
-   HISTOGRAM_TBL_Constructor(&Histogram->Tbl, AcceptNewTbl,
-                             INITBL_GetStrConfig(IniTbl, CFG_APP_CFE_NAME));
+   HISTOGRAM_TBL_Constructor(&Histogram->Tbl, AcceptNewTbl);
 
-   TBLMGR_RegisterTblWithDef(TblMgr, HISTOGRAM_TBL_LoadCmd, 
-                             HISTOGRAM_TBL_DumpCmd,  
+   TBLMGR_RegisterTblWithDef(TblMgr, HISTOGRAM_TBL_NAME,
+                             HISTOGRAM_TBL_LoadCmd, HISTOGRAM_TBL_DumpCmd,  
                              INITBL_GetStrConfig(IniTbl, CFG_HIST_TBL_LOAD_FILE));
                              
 } /* End HISTOGRAM_Constructor */
@@ -212,6 +211,9 @@ bool HISTOGRAM_StopCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 ** Notes:
 **   1. This is a HISTOGRAM_TBL table load callback function and must match the
 **      HISTOGRAM_TBL_LoadFunc_t definition.
+**   2. This serves as an example use case design when the table owner needs to
+**      perform some processing after a new table has been accepted. The logic
+**      in this function has to do with managing the table.
 */
 static void AcceptNewTbl(void)
 {
@@ -219,7 +221,7 @@ static void AcceptNewTbl(void)
    if (Histogram->Ena)
    {
       CFE_EVS_SendEvent (HISTOGRAM_ACCEPT_NEW_TBL_EID, CFE_EVS_EventType_INFORMATION, 
-                         "Histogram disabled after new table loaded. %d data samples processed.",
+                         "Histogram disabled after new table loaded. %d data samples processed before table load.",
                           Histogram->SampleCnt);
       Histogram->Ena = false;
    }

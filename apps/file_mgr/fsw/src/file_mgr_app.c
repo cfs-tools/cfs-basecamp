@@ -241,7 +241,7 @@ static int32 InitApp(void)
 
       CFE_MSG_Init(CFE_MSG_PTR(FileMgr.HkPkt.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_FILE_MGR_HK_TLM_TOPICID)), sizeof(FILE_MGR_HkTlm_t));
 
-      TBLMGR_Constructor(TBLMGR_OBJ);
+      TBLMGR_Constructor(TBLMGR_OBJ, INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME));
    
       /*
       ** Application startup event message

@@ -39,9 +39,9 @@
 ** Event Message IDs
 */
 
-#define HISTOGRAM_TBL_DUMP_EID  (HISTOGRAM_TBL_BASE_EID + 0)
-#define HISTOGRAM_TBL_LOAD_EID  (HISTOGRAM_TBL_BASE_EID + 1)
-
+#define HISTOGRAM_TBL_DUMP_EID   (HISTOGRAM_TBL_BASE_EID + 0)
+#define HISTOGRAM_TBL_LOAD_EID   (HISTOGRAM_TBL_BASE_EID + 1)
+#define HISTOGRAM_TBL_VALID_EID  (HISTOGRAM_TBL_BASE_EID + 2)
 
 /**********************/
 /** Type Definitions **/
@@ -94,9 +94,7 @@ typedef struct
    ** Standard CJSON table data
    */
    
-   const char*  AppName;
    bool         Loaded;   /* Has entire table been loaded? */
-   uint8        LastLoadStatus;
    uint16       LastLoadCnt;
    
    size_t       JsonObjCnt;
@@ -122,8 +120,7 @@ typedef struct
 **
 */
 void HISTOGRAM_TBL_Constructor(HISTOGRAM_TBL_Class_t *TblObj, 
-                               HISTOGRAM_TBL_LoadFunc_t LoadFunc,
-                               const char *AppName);
+                               HISTOGRAM_TBL_LoadFunc_t LoadFunc);
 
 
 /******************************************************************************
@@ -133,11 +130,9 @@ void HISTOGRAM_TBL_Constructor(HISTOGRAM_TBL_Class_t *TblObj,
 **
 ** Notes:
 **  1. Function signature must match TBLMGR_DumpTblFuncPtr_t.
-**  2. Can assume valid table file name because this is a callback from 
-**     the app framework table manager.
 **
 */
-bool HISTOGRAM_TBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filename);
+bool HISTOGRAM_TBL_DumpCmd(osal_id_t FileHandle);
 
 
 /******************************************************************************
@@ -148,10 +143,10 @@ bool HISTOGRAM_TBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filena
 ** Notes:
 **  1. Function signature must match TBLMGR_LoadTblFuncPtr_t.
 **  2. Can assume valid table file name because this is a callback from 
-**     the app framework table manager.
+**     the app framework table manager that has validated the file exists.
 **
 */
-bool HISTOGRAM_TBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filename);
+bool HISTOGRAM_TBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filename);
 
 
 /******************************************************************************

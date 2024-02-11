@@ -33,7 +33,7 @@
 
 #include "cfe.h"
 #include "app_c_fw_platform_cfg.h"
-
+#include "app_c_fw_eds_typedefs.h"
 
 /******************************************************************************
 ** Command Manager (CMDMGR)

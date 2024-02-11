@@ -4,7 +4,7 @@
 ** Notes:
 **   1. This is a refactor of NASA's File Manager (FM) app. The refactor includes
 **      adaptation to the app C framework and prootyping the usage of an app 
-**      init JSON file. The idea is to rethink whcih configuration paarameters
+**      init JSON file. The idea is to rethink which configuration paarameters
 **      should be compile time and which should be runtime. 
 **
 */

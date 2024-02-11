@@ -160,5 +160,11 @@ DECLARE_ENUM(Config,APP_CONFIG)
 
 #define EVT_PLBK_EVENTS_PER_TLM_MSG   4  
 
+/******************************************************************************
+** Packwt Table Macros
+*/
+
+#define PKTTBL_NAME   "Packet Filter" 
+
 
 #endif /* _app_cfg_ */

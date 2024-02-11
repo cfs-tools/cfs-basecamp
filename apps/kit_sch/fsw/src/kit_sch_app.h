@@ -54,13 +54,13 @@
 
 /******************************************************************************
 ** Command Packets
-** - See EDS command definitions in app_c_demo.xml
+** - See EDS command definitions in kit_sch.xml
 */
 
 
 /******************************************************************************
 ** Telmetery Packets
-** - See EDS command definitions in app_c_demo.xml
+** - See EDS command definitions in kit_sch.xml
 */
 
 

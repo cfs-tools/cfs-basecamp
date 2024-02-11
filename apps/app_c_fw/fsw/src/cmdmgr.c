@@ -85,12 +85,13 @@ void CMDMGR_Constructor(CMDMGR_Class_t* CmdMgr)
 ** Notes:
 **   Assumes false=0 and true=1
 */
-const char* CMDMGR_BoolStr(bool BoolArg)
+const char *CMDMGR_BoolStr(bool BoolArg)
 {
    
    uint8 i = 2;
    
-   if ( BoolArg == true || BoolArg == false) {
+   if ( BoolArg == true || BoolArg == false)
+   {
    
       i = BoolArg;
    
@@ -110,7 +111,7 @@ const char* CMDMGR_BoolStr(bool BoolArg)
 **      if an app wants a message response then it should publish the format. 
 **
 */
-bool CMDMGR_DispatchFunc(CMDMGR_Class_t* CmdMgr, const CFE_MSG_Message_t *MsgPtr)
+bool CMDMGR_DispatchFunc(CMDMGR_Class_t *CmdMgr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    bool   ValidCmd = false;
@@ -191,7 +192,7 @@ bool CMDMGR_DispatchFunc(CMDMGR_Class_t* CmdMgr, const CFE_MSG_Message_t *MsgPtr
 ** Function: CMDMGR_RegisterFunc
 **
 */
-bool CMDMGR_RegisterFunc(CMDMGR_Class_t* CmdMgr, uint16 FuncCode, void* ObjDataPtr, 
+bool CMDMGR_RegisterFunc(CMDMGR_Class_t *CmdMgr, uint16 FuncCode, void *ObjDataPtr, 
                          CMDMGR_CmdFuncPtr_t ObjFuncPtr, uint16 UserDataLen)
 {
 
@@ -229,7 +230,7 @@ bool CMDMGR_RegisterFunc(CMDMGR_Class_t* CmdMgr, uint16 FuncCode, void* ObjDataP
 ** Function: CMDMGR_RegisterFuncAltCnt
 **
 */
-bool CMDMGR_RegisterFuncAltCnt(CMDMGR_Class_t* CmdMgr, uint16 FuncCode, void* ObjDataPtr, 
+bool CMDMGR_RegisterFuncAltCnt(CMDMGR_Class_t *CmdMgr, uint16 FuncCode, void *ObjDataPtr, 
                                CMDMGR_CmdFuncPtr_t ObjFuncPtr, uint16 UserDataLen)
 {
 
@@ -256,7 +257,7 @@ bool CMDMGR_RegisterFuncAltCnt(CMDMGR_Class_t* CmdMgr, uint16 FuncCode, void* Ob
 ** they're enabled. 
 **
 */
-void CMDMGR_ResetStatus(CMDMGR_Class_t* CmdMgr)
+void CMDMGR_ResetStatus(CMDMGR_Class_t *CmdMgr)
 {
 
    int i;
@@ -292,7 +293,7 @@ bool CMDMGR_ValidBoolArg(uint16 BoolArg)
 **
 ** Print message header on title line followed by payload data rows
 */
-static void LogMsgBytes(uint8* MsgPtr, size_t PayloadLen, CFE_MSG_FcnCode_t FuncCode)
+static void LogMsgBytes(uint8 *MsgPtr, size_t PayloadLen, CFE_MSG_FcnCode_t FuncCode)
 {
 
    int    i, row_byte;
@@ -346,7 +347,7 @@ static void LogMsgBytes(uint8* MsgPtr, size_t PayloadLen, CFE_MSG_FcnCode_t Func
 ** Function: UnusedFuncCode
 **
 */
-static bool UnusedFuncCode(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+static bool UnusedFuncCode(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CFE_MSG_FcnCode_t FuncCode;

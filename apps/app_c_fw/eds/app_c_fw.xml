@@ -120,7 +120,7 @@
       <!-- APP_C_FW::TblMgr -->
 
       <EnumeratedDataType name="TblLoadOptions" shortDescription="Defines options for a table load command" >
-        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
           <Enumeration label="REPLACE" value="0" shortDescription="Replace the entire table" />
           <Enumeration label="UPDATE"  value="1" shortDescription="Update only the entries provided. Sparse update functionality is app-specific" />
@@ -145,6 +145,71 @@
           <Enumeration label="INVALID"   value="2" shortDescription="Table action was valid and succeeded" />
         </EnumerationList>
       </EnumeratedDataType>
+
+      <EnumeratedDataType name="TblId" shortDescription="Identifies different app tables. Used as an indice so start at definitions at zero." >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="TABLE_1" value="0" shortDescription="Generic table name" />
+          <Enumeration label="TABLE_2" value="1" shortDescription="Generic table name" />
+        </EnumerationList>
+      </EnumeratedDataType>
+    
+      <!--***************************************-->
+      <!--**** DataTypeSet: Command Payloads ****-->
+      <!--***************************************-->
+
+      <!-- Apps can redefine these command payloads and use their own 16-bit enumerated types for TblId --> 
+      <ContainerDataType name="LoadTbl_CmdPayload" shortDescription="Load an app's JSON table">
+        <EntryList>
+          <Entry name="Id"       type="TblId"                shortDescription="Table identifier" />
+          <Entry name="Type"     type="TblLoadOptions"       shortDescription="Replace entire table or perform sparse entry updates" />
+          <Entry name="Filename" type="BASE_TYPES/PathName"  shortDescription="Full path and file name of table to be loaded" />
+       </EntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="DumpTbl_CmdPayload" shortDescription="Dump an app's JSON table">
+        <EntryList>
+          <Entry name="Id"       type="TblId"               shortDescription="Table identifier" />
+          <Entry name="Filename" type="BASE_TYPES/PathName" shortDescription="Full path and file name of table to be dumped" />
+       </EntryList>
+      </ContainerDataType>
+
+      <!--**************************************-->
+      <!--**** DataTypeSet: Command Packets ****-->
+      <!--**************************************-->
+
+      <ContainerDataType name="CommandBase" baseType="CFE_HDR/CommandHeader">
+      </ContainerDataType>
+
+      <ContainerDataType name="Noop" baseType="CommandBase" shortDescription="Generate an info event message with app version">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${NOOP_CC}" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="Reset" baseType="CommandBase" shortDescription="Reset app to a known state">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${RESET_CC}" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="LoadTbl" baseType="CommandBase">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${LOAD_TBL_CC}" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="LoadTbl_CmdPayload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="DumpTbl" baseType="CommandBase">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${DUMP_TBL_CC}" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="DumpTbl_CmdPayload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
     
     </DataTypeSet>    
   </Package>

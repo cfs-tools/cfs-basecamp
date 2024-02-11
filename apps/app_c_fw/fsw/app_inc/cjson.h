@@ -64,7 +64,17 @@
 /** Type Definitions **/
 /**********************/
 
-/* TODO - Consider refactor into 2 structures so one can be passed as a const */
+/* 
+** TODO - Consider refactor into 2 structures so one can be passed as a const 
+** TODO - Every table manager object defines the following data. A CJSON struct
+** TODO   with a pointer to app's buffer coudl be creared. Think about user
+** TODO   read/write with the structure.
+** TODO       bool         Loaded;   
+** TODO       uint16       LastLoadCnt;
+** TODO       size_t       JsonObjCnt;
+** TODO       char         JsonBuf[HISTOGRAM_TBL_JSON_FILE_MAX_CHAR];   
+** TODO       size_t       JsonFileLen;
+*/
 
 typedef struct
 {
@@ -116,6 +126,16 @@ typedef bool (*CJSON_LoadJsonDataAlt_t)(size_t JsonFileLen, void* UserDataPtr);
 /** Exported Functions **/
 /************************/
 
+/******************************************************************************
+** Function: CJSON_BoolStr
+**
+** Purpose: Return a pointer to a boolean string
+**
+** Notes:
+**   Assumes false=0 and true=1
+*/
+const char *CJSON_BoolStr(bool BoolArg);
+
 
 /******************************************************************************
 ** Function: CJSON_FltObjConstructor
@@ -127,19 +147,6 @@ typedef bool (*CJSON_LoadJsonDataAlt_t)(size_t JsonFileLen, void* UserDataPtr);
 */
 void CJSON_FltObjConstructor(CJSON_Obj_t *Obj, const char *QueryKey, 
                              JSONTypes_t JsonType, void *TblData, size_t TblDataLen);
-
-
-/******************************************************************************
-** Function: CJSON_ObjConstructor
-**
-** Initialize a JSON table object
-**
-** Notes:
-**   1. See file prologue for supported JSON types.
-**
-*/
-void CJSON_ObjConstructor(CJSON_Obj_t *Obj, const char *QueryKey, 
-                          JSONTypes_t JsonType, void *TblData, size_t TblDataLen);
 
 
 /******************************************************************************
@@ -174,6 +181,19 @@ size_t CJSON_LoadObjArray(CJSON_Obj_t *Obj, size_t ObjCnt, const char* Buf, size
 **
 */
 bool CJSON_LoadObjOptional(CJSON_Obj_t *Obj, const char *Buf, size_t BufLen);
+
+
+/******************************************************************************
+** Function: CJSON_ObjConstructor
+**
+** Initialize a JSON table object
+**
+** Notes:
+**   1. See file prologue for supported JSON types.
+**
+*/
+void CJSON_ObjConstructor(CJSON_Obj_t *Obj, const char *QueryKey, 
+                          JSONTypes_t JsonType, void *TblData, size_t TblDataLen);
 
 
 /******************************************************************************

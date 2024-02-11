@@ -84,39 +84,8 @@
 
 /******************************************************************************
 ** Command Packets
+** - See EDS command definitions in app_c_fw.xml
 */
-
-/*
-** Load/Dump Table Commands
-**
-** Identifer is assigned at the time of table registration
-*/
-
-
-typedef struct
-{
-
-   uint8   Id;                         /* Table identifier                                    */
-   uint8   Type;                       /* 0=Replace, 1=Update table records, Unused for dumps */
-   char    Filename[OS_MAX_PATH_LEN];  /* ASCII text string of full path and filename         */
-
-} TBLMGR_TblCmdMsg_Payload_t;
-
-typedef struct
-{
-   CFE_MSG_CommandHeader_t    CmdHeader;
-   TBLMGR_TblCmdMsg_Payload_t Payload;
-
-} TBLMGR_LoadTblCmdMsg_t;
-#define TBLMGR_LOAD_TBL_CMD_DATA_LEN  (sizeof(TBLMGR_LoadTblCmdMsg_t) - sizeof(CFE_MSG_CommandHeader_t))
-
-typedef struct
-{
-   CFE_MSG_CommandHeader_t    CmdHeader;
-   TBLMGR_TblCmdMsg_Payload_t Payload;
-
-} TBLMGR_DumpTblCmdMsg_t;
-#define TBLMGR_DUMP_TBL_CMD_DATA_LEN  (sizeof(TBLMGR_DumpTblCmdMsg_t) - sizeof(CFE_MSG_CommandHeader_t))
 
 
 /* 
@@ -127,18 +96,19 @@ typedef struct
 
 typedef struct TBLMGR_Tbl TBLMGR_Tbl_t;
 
-typedef bool (*TBLMGR_LoadTblFuncPtr_t) (TBLMGR_Tbl_t* Tbl, uint8 LoadType, const char* Filename);
-typedef bool (*TBLMGR_DumpTblFuncPtr_t) (TBLMGR_Tbl_t* Tbl, uint8 DumpType, const char* Filename);
+typedef bool (*TBLMGR_LoadTblFuncPtr_t) (APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filename);
+typedef bool (*TBLMGR_DumpTblFuncPtr_t) (osal_id_t FileHandle);
 
 struct TBLMGR_Tbl
 {
   
    uint8   Id; 
-   uint8   LastAction;
-   bool    LastActionStatus;
+   char    Name[OS_MAX_API_NAME];
    bool    Loaded;
+   uint8   LastAction;
+   uint8   LastActionStatus;
    char    Filename[OS_MAX_PATH_LEN];
-   
+      
    TBLMGR_LoadTblFuncPtr_t  LoadFuncPtr;
    TBLMGR_DumpTblFuncPtr_t  DumpFuncPtr;
 
@@ -150,7 +120,7 @@ struct TBLMGR_Tbl
 
 typedef struct
 {
-
+   const char    *AppName;
    uint8         NextAvailableId;
    uint8         LastActionTblId;
    TBLMGR_Tbl_t  Tbl[TBLMGR_MAX_TBL_PER_APP];
@@ -169,7 +139,21 @@ typedef struct
 **    1. This function must be called prior to any other functions being
 **       called using the same tblmgr instance.
 */
-void TBLMGR_Constructor(TBLMGR_Class_t *TblMgr);
+void TBLMGR_Constructor(TBLMGR_Class_t *TblMgr, const char *AppName);
+
+
+/******************************************************************************
+** Function: TBLMGR_DumpTblCmd
+**
+** Note:
+**  1. This function must comply with the CMDMGR_CmdFuncPtr_t definition
+**  2. Creates a new dump file, overwriting anything that may have existed
+**     previously
+**  3. It calls the TBLMGR_DumpTblFuncPtr function that the user provided
+**     during registration to load table-specific JSON objects.
+** 
+*/
+bool TBLMGR_DumpTblCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -189,33 +173,6 @@ const TBLMGR_Tbl_t *TBLMGR_GetLastTblStatus(TBLMGR_Class_t *TblMgr);
 ** is invalid.
 */
 const TBLMGR_Tbl_t *TBLMGR_GetTblStatus(TBLMGR_Class_t *TblMgr, uint8 TblId);
-
-
-/******************************************************************************
-** Function: TBLMGR_RegisterTbl
-**
-** Register a table without loading a default table.
-** Returns table ID assigned to new table or TBLMGR_MAX_TBL_PER_APP if no IDs left.
-*/
-uint8 TBLMGR_RegisterTbl(TBLMGR_Class_t *TblMgr, TBLMGR_LoadTblFuncPtr_t LoadFuncPtr, 
-                         TBLMGR_DumpTblFuncPtr_t DumpFuncPtr); 
-
-
-/******************************************************************************
-** Function: TBLMGR_RegisterTblWithDef
-**
-** Register a table and load a default table
-** Returns table ID assigned to new table or TBLMGR_MAX_TBL_PER_APP if no IDs left.
-*/
-uint8 TBLMGR_RegisterTblWithDef(TBLMGR_Class_t *TblMgr, TBLMGR_LoadTblFuncPtr_t LoadFuncPtr, 
-                                TBLMGR_DumpTblFuncPtr_t DumpFuncPtr, const char *TblFilename); 
-
-
-/******************************************************************************
-** Function: TBLMGR_ResetStatus
-**
-*/
-void TBLMGR_ResetStatus(TBLMGR_Class_t *TblMgr);
 
 
 /******************************************************************************
@@ -241,15 +198,33 @@ const char *TBLMGR_LoadTypeStr(int8 LoadType);
 
 
 /******************************************************************************
-** Function: TBLMGR_DumpTblCmd
+** Function: TBLMGR_RegisterTbl
 **
-** Note:
-**  1. This function must comply with the CMDMGR_CmdFuncPtr_t definition
-**  2. It calls the TBLMGR_DumpTblFuncPtr function that the user provided
-**     during registration 
-** 
+** Register a table without loading a default table.
+** Returns table ID assigned to new table or TBLMGR_MAX_TBL_PER_APP if no IDs left.
 */
-bool TBLMGR_DumpTblCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+uint8 TBLMGR_RegisterTbl(TBLMGR_Class_t *TblMgr, const char *TblName,
+                         TBLMGR_LoadTblFuncPtr_t LoadFuncPtr, 
+                         TBLMGR_DumpTblFuncPtr_t DumpFuncPtr); 
+
+
+/******************************************************************************
+** Function: TBLMGR_RegisterTblWithDef
+**
+** Register a table and load a default table
+** Returns table ID assigned to new table or TBLMGR_MAX_TBL_PER_APP if no IDs left.
+*/
+uint8 TBLMGR_RegisterTblWithDef(TBLMGR_Class_t *TblMgr, const char *TblName,
+                                TBLMGR_LoadTblFuncPtr_t LoadFuncPtr, 
+                                TBLMGR_DumpTblFuncPtr_t DumpFuncPtr,
+                                const char *TblFilename); 
+
+
+/******************************************************************************
+** Function: TBLMGR_ResetStatus
+**
+*/
+void TBLMGR_ResetStatus(TBLMGR_Class_t *TblMgr);
 
 
 #endif /* _tblmgr_ */
