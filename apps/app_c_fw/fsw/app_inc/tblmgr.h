@@ -48,36 +48,9 @@
 #define TBLMGR_LOAD_SUCCESS_EID      (TBLMGR_BASE_EID + 5)
 #define TBLMGR_DUMP_SUCCESS_EID      (TBLMGR_BASE_EID + 6)
 
-/*
-** Table status
-*/
 
-#define TBLMGR_STATUS_UNDEF    (0)  /* Code assumes 0=UNDEF */
-#define TBLMGR_STATUS_VALID    (1)
-#define TBLMGR_STATUS_INVALID  (2)
-
-/*
-** Table actions
-*/
-
-#define TBLMGR_ACTION_UNDEF    (0)  /* Code assumes 0=UNDEF */
-#define TBLMGR_ACTION_REGISTER (1)
-#define TBLMGR_ACTION_LOAD     (2)
-#define TBLMGR_ACTION_DUMP     (3)
-
-#define TBLMGR_UNDEF_STR       "Undefined"
+#define TBLMGR_UNDEF_STR  "Undefined"
  
-/*
-** Load Type options
-**
-** - If the user table format allows sparse definitions then it is up to the user 
-**   to define how the replace table option behaves when all of the table elements 
-**   are not defined.
-*/
-
-#define TBLMGR_LOAD_TBL_REPLACE    0   /* Replace the entire table. */
-#define TBLMGR_LOAD_TBL_UPDATE     1   /* Update individual entries */
-
 /**********************/
 /** Type Definitions **/
 /**********************/
@@ -106,7 +79,7 @@ struct TBLMGR_Tbl
    char    Name[OS_MAX_API_NAME];
    bool    Loaded;
    uint8   LastAction;
-   uint8   LastActionStatus;
+   APP_C_FW_TblActionStatus_Enum_t   LastActionStatus;
    char    Filename[OS_MAX_PATH_LEN];
       
    TBLMGR_LoadTblFuncPtr_t  LoadFuncPtr;

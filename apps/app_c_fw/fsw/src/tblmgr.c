@@ -92,7 +92,7 @@ bool TBLMGR_DumpTblCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
       
    if (DumpTblCmd->Id < TblMgr->NextAvailableId)
    {
-      TblMgr->Tbl[DumpTblCmd->Id].LastAction = TBLMGR_ACTION_DUMP;
+      TblMgr->Tbl[DumpTblCmd->Id].LastAction = APP_C_FW_TblActions_DUMP;
       TblMgr->LastActionTblId = DumpTblCmd->Id;
       if (FileUtil_VerifyDirForWrite(DumpTblCmd->Filename))
       {
@@ -117,7 +117,7 @@ bool TBLMGR_DumpTblCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
             OS_close(FileHandle);
 
-            TblMgr->Tbl[DumpTblCmd->Id].LastActionStatus = TBLMGR_STATUS_VALID;
+            TblMgr->Tbl[DumpTblCmd->Id].LastActionStatus = APP_C_FW_TblActionStatus_VALID;
             CFE_EVS_SendEvent(TBLMGR_DUMP_SUCCESS_EID, CFE_EVS_EventType_INFORMATION, 
                               "Successfully dumped table %d to file %s",
                               DumpTblCmd->Id, DumpTblCmd->Filename);
@@ -134,7 +134,7 @@ bool TBLMGR_DumpTblCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
       } /* End file verify */
 
-      TblMgr->Tbl[DumpTblCmd->Id].LastActionStatus = RetStatus? TBLMGR_STATUS_VALID : TBLMGR_STATUS_INVALID;
+      TblMgr->Tbl[DumpTblCmd->Id].LastActionStatus = RetStatus? APP_C_FW_TblActionStatus_VALID : APP_C_FW_TblActionStatus_INVALID;
 
    } /* End if valid ID */
    else
@@ -212,7 +212,7 @@ bool TBLMGR_LoadTblCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    if (LoadTblCmd->Id < TblMgr->NextAvailableId)
    {
 
-      TblMgr->Tbl[LoadTblCmd->Id].LastAction = TBLMGR_ACTION_LOAD;
+      TblMgr->Tbl[LoadTblCmd->Id].LastAction = APP_C_FW_TblActions_LOAD;
       TblMgr->LastActionTblId = LoadTblCmd->Id;
       /* Errors reported by utility so no need for else clause */
       if (FileUtil_VerifyFileForRead(LoadTblCmd->Filename))
@@ -223,7 +223,7 @@ bool TBLMGR_LoadTblCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
          RetStatus = (Tbl->LoadFuncPtr) (LoadTblCmd->Type, LoadTblCmd->Filename);
          if (RetStatus)
          {
-            TblMgr->Tbl[LoadTblCmd->Id].LastActionStatus = TBLMGR_STATUS_VALID;
+            TblMgr->Tbl[LoadTblCmd->Id].LastActionStatus = APP_C_FW_TblActionStatus_VALID;
             CFE_EVS_SendEvent(TBLMGR_LOAD_SUCCESS_EID, CFE_EVS_EventType_INFORMATION, 
                               "Successfully %sd table %d using file %s",
                               TBLMGR_LoadTypeStr(LoadTblCmd->Type),
@@ -231,7 +231,7 @@ bool TBLMGR_LoadTblCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
          }
       }
    
-     TblMgr->Tbl[LoadTblCmd->Id].LastActionStatus = RetStatus ? TBLMGR_STATUS_VALID : TBLMGR_STATUS_INVALID;
+     TblMgr->Tbl[LoadTblCmd->Id].LastActionStatus = RetStatus ? APP_C_FW_TblActionStatus_VALID : APP_C_FW_TblActionStatus_INVALID;
    
    } /* End if valid ID */
    else {
@@ -262,8 +262,8 @@ const char *TBLMGR_LoadTypeStr(int8 LoadType)
 
    uint8 i = 2;
    
-   if ( LoadType == TBLMGR_LOAD_TBL_REPLACE ||
-        LoadType == TBLMGR_LOAD_TBL_UPDATE)
+   if ( LoadType == APP_C_FW_TblLoadOptions_REPLACE ||
+        LoadType == APP_C_FW_TblLoadOptions_UPDATE)
    {
    
       i = LoadType;
@@ -297,8 +297,8 @@ uint8 TBLMGR_RegisterTbl(TBLMGR_Class_t *TblMgr, const char *TblName,
       NewTbl->Id = TblMgr->NextAvailableId;
       strncpy(NewTbl->Name, TblName, OS_MAX_API_NAME);
       NewTbl->Loaded           = false;
-      NewTbl->LastAction       = TBLMGR_ACTION_REGISTER;
-      NewTbl->LastActionStatus = TBLMGR_STATUS_VALID;
+      NewTbl->LastAction       = APP_C_FW_TblActions_REGISTER;
+      NewTbl->LastActionStatus = APP_C_FW_TblActionStatus_VALID;
       strcpy(NewTbl->Filename,TBLMGR_UNDEF_STR);
        
       /* Should never have null ptr but just in case leave stub function in place */
@@ -347,7 +347,7 @@ uint8 TBLMGR_RegisterTblWithDef(TBLMGR_Class_t *TblMgr, const char *TblName,
       
       /* Use load table command function */
       LoadTblCmd.Payload.Id = TblId;
-      LoadTblCmd.Payload.Type = TBLMGR_LOAD_TBL_REPLACE;
+      LoadTblCmd.Payload.Type = APP_C_FW_TblLoadOptions_REPLACE;
       strncpy (LoadTblCmd.Payload.Filename,TblFilename,OS_MAX_PATH_LEN);
       TBLMGR_LoadTblCmd(TblMgr, (CFE_MSG_Message_t *)&LoadTblCmd);
       

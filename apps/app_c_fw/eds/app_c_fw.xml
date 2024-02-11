@@ -119,6 +119,9 @@
 
       <!-- APP_C_FW::TblMgr -->
 
+      <!--  Each app determines how table load options are implemented. Typically 'replace' means all  -->
+      <!--  table values must be present. If supported, 'Update' typically allows sparse table entries -->
+      <!--  to be loaded after an initial complete table has been loaded.                              -->
       <EnumeratedDataType name="TblLoadOptions" shortDescription="Defines options for a table load command" >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
