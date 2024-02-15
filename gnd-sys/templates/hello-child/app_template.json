@@ -2,8 +2,9 @@
    "title": "Hello Child",
    "version": "1.0",
    "short-descr": "'Hello Object' app plus a child task",
+   "default-app-name": "hi_child",
    "description": [
-      "This app builds upon the Hello Object app by using a child task for the example ",
+      "This app builds upon the 'Hello Object' app by using a child task for the example ",
       "object's execute function. Basecamp's app framework provides services that simplify ",
       "some child task use cases."
    ],
@@ -27,7 +28,7 @@
       },
       {
          "path": "fsw/tables",
-         "files": ["cpu1_hello_chld_ini.json"]
+         "files": ["cpu1_hi_child_ini.json"]
       },
       {
          "path": "eds",

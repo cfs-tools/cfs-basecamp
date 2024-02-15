@@ -66,7 +66,8 @@ void EXOBJ_Constructor(EXOBJ_Class_t *ExObjPtr,
 
    EXOBJTBL_Constructor(&ExObj->Tbl, IniTbl, AcceptNewTable);
 
-   TBLMGR_RegisterTblWithDef(TblMgr, EXOBJTBL_LoadCmd, EXOBJTBL_DumpCmd, 
+   TBLMGR_RegisterTblWithDef(TblMgr, EXOBJTBL_NAME,
+                             EXOBJTBL_LoadCmd, EXOBJTBL_DumpCmd, 
                              INITBL_GetStrConfig(IniTbl, CFG_TBL_LOAD_FILE));
    
 } /* End EXOBJ_Constructor */

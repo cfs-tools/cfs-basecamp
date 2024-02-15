@@ -1,5 +1,5 @@
 {
-  "time-stamp": "08/26/2023-14:00:20",
+  "time-stamp": "",
   "title": "Add Command",
   "objective": [
     "Learn how to define commands using Electronic Data Sheets, how to define a command handler function, and register it with the command dispatcher."

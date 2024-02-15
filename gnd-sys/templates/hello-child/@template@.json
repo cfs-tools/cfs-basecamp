@@ -19,7 +19,7 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["hello_chld_ini.json"]
+      "tables": ["hi_child_ini.json"]
    }
    
 }}

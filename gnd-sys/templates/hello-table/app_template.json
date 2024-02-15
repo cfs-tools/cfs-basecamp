@@ -2,11 +2,12 @@
    "title": "Hello Table",
    "version": "1.0",
    "short-descr": "'Hello Object' app plus a JSON parameter table",
+   "default-app-name": "hi_table",
    "description": [
       "This app builds upon the 'Hello Object' app by adding a table that is owned by the ",
       "example object. Basecamp apps use JSON files for their tables unlike the NASA cFS ",
       "apps that use binary files. Basecamp's app framework provides JSON table services to ",
-      "simplify table management. The FreeRTOS JSON parser is used whch is very suitable for ",
+      "simplify table management. The FreeRTOS JSON parser is used that is very suitable for ",
       "realtime embedded software."
    ],
 
@@ -29,7 +30,7 @@
       },
       {
          "path": "fsw/tables",
-         "files": ["cpu1_hello_tbl_ini.json", "cpu1_hello_tbl.json"]
+         "files": ["cpu1_hi_table_ini.json", "cpu1_hi_table.json"]
       },
       {
          "path": "eds",
@@ -45,7 +46,7 @@
       },
       {
          "path": "tutorial/lesson/1",
-         "files": ["lesson.json", "cpu1_hello_tbl.json", "exobjtbl.h", "exobjtbl.c"]
+         "files": ["lesson.json", "cpu1_hi_table.json", "exobjtbl.h", "exobjtbl.c"]
       },
       {
          "path": "tutorial/lesson/2",

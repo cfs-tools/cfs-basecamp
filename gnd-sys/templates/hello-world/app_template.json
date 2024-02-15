@@ -2,6 +2,7 @@
    "title": "Hello World",
    "version": "1.0",
    "short-descr": "Minimal app with command and telemetry interfaces",
+   "default-app-name": "hi_world",
    "description": [
       "Minimal app with command and telemetry interfaces. It has two commands that by convention ",
       "are part of every  app.",
@@ -36,7 +37,7 @@
       },
       {
          "path": "fsw/tables",
-         "files": ["cpu1_hello_wrld_ini.json"]
+         "files": ["cpu1_hi_world_ini.json"]
       },
       {
          "path": "eds",
@@ -60,7 +61,7 @@
       },
       {
          "path": "tutorial/lesson/3",
-         "files": ["lesson.json", "app_cfg.h", "@template@_app.c", "cpu1_hello_wrld_ini.json"]
+         "files": ["lesson.json", "app_cfg.h", "@template@_app.c", "cpu1_hi_world_ini.json"]
       }
    ]
 }

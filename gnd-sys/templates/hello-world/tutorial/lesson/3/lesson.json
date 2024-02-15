@@ -9,7 +9,7 @@
   "file": [
     {
       "path": "../../../cfe-eds-framework/basecamp_defs",
-      "name": "cpu1_hello_wrld_ini.json",
+      "name": "cpu1_hi_world_ini.json",
       "exercise": [
         {
           "id": "~FILE~",

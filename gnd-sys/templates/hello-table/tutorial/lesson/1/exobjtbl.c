@@ -183,7 +183,7 @@ bool EXOBJTBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filename)
               ExObjTbl->Data.DecrLimit.Low, ExObjTbl->Data.DecrLimit.High);
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
    
-      sprintf(DumpRecord,"   \"limit-range-max\": %d\n}", ExObjTbl->Data.LimitRangeMax);
+      sprintf(DumpRecord,"   \"limit-range-max\": %d", ExObjTbl->Data.LimitRangeMax);
       OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
 
       OS_close(FileHandle);

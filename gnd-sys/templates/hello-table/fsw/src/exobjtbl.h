@@ -90,9 +90,7 @@ typedef struct
    ** Standard CJSON table data
    */
    
-   const char   *AppName;
-   bool         Loaded;   /* Has entire table been loaded? */
-   uint8        LastLoadStatus;
+   bool         Loaded;       /* Has entire table been loaded? */
    uint16       LastLoadCnt;
    
    size_t       JsonObjCnt;
@@ -122,14 +120,15 @@ void EXOBJTBL_Constructor(EXOBJTBL_Class_t *ExObjTblPtr, const INITBL_Class_t *I
 
 
 /******************************************************************************
-** Function: EXOBJTBL_ResetStatus
+** Function: EXOBJTBL_DumpCmd
 **
-** Reset counters and status flags to a known reset state.  The behavior of
-** the table manager should not be impacted. The intent is to clear counters
-** and flags to a known default state for telemetry.
+** Command to dump the table.
+**
+** Notes:
+**  1. Function signature must match TBLMGR_DumpTblFuncPtr_t.
 **
 */
-void EXOBJTBL_ResetStatus(void);
+bool EXOBJTBL_DumpCmd(osal_id_t FileHandle);
 
 
 /******************************************************************************
@@ -143,21 +142,18 @@ void EXOBJTBL_ResetStatus(void);
 **     the app framework table manager.
 **
 */
-bool EXOBJTBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filename);
+bool EXOBJTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filename);
 
 
 /******************************************************************************
-** Function: EXOBJTBL_DumpCmd
+** Function: EXOBJTBL_ResetStatus
 **
-** Command to dump the table.
-**
-** Notes:
-**  1. Function signature must match TBLMGR_DumpTblFuncPtr_t.
-**  2. Can assume valid table file name because this is a callback from 
-**     the app framework table manager.
+** Reset counters and status flags to a known reset state.  The behavior of
+** the table manager should not be impacted. The intent is to clear counters
+** and flags to a known default state for telemetry.
 **
 */
-bool EXOBJTBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filename);
+void EXOBJTBL_ResetStatus(void);
 
 
 #endif /* _exobjtbl_ */

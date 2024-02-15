@@ -2,10 +2,11 @@
    "title": "Hello Object",
    "version": "1.0",
    "short-descr": "'Hello World' app plus an example object",
+   "default-app-name": "hi_object",
    "description": [
-      "This app builds upon the Hello World app by adding an example object that is owned by ",
+      "This app builds upon the 'Hello World' app by adding an example object that is owned by ",
       "the main app. This object is very simple. It implements a counter that can either ",
-      "increment or decrement between a high and low limit. The counter mode can be changed ",
+      "increment or decrement between a low and high limit. The counter mode can be changed ",
       "by a command. The counter's execution is triggered by a 1Hz message received from the ",
       "scheduler app. The counter mode and counter value are part of the app's status telemetry."
    ],
@@ -29,7 +30,7 @@
       },
       {
          "path": "fsw/tables",
-         "files": ["cpu1_hello_obj_ini.json"]
+         "files": ["cpu1_hi_object_ini.json"]
       },
       {
          "path": "eds",
@@ -49,7 +50,7 @@
       },
       {
          "path": "tutorial/lesson/2",
-         "files": ["lesson.json", "app_cfg.h", "cpu1_hello_obj_ini.json", "exobj.h", "exobj.c"]
+         "files": ["lesson.json", "app_cfg.h", "cpu1_hi_object_ini.json", "exobj.h", "exobj.c"]
       },
       {
          "path": "tutorial/lesson/3",

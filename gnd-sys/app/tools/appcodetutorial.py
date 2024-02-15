@@ -258,6 +258,7 @@ class CodeLessonJson(JsonFile):
     Manage a lesson JSON file that has an array of files and each file has an
     array of exercises to complete the lesson.
     """
+    
     def __init__(self, json_file):
         super().__init__(json_file)
         self.file_array = self.json['file']
@@ -292,6 +293,13 @@ class CodeLesson():
     restarted and override the JSON. The new lesson state is recorded in the
     JSON when the lesson is exited.
     """
+
+    # Special IDs indicating the entire file is the excercise
+    
+    JSON_EX_IS_FILE_ID = '~FILE~'  # JSON exercise ID  
+    GUI_EX_IS_FILE_ID  = '-EX1-'   # Exercise displayed in teh GUI
+    
+
     def __init__(self, tutorial, number, path):
         self.tutorial = tutorial
         self.number   = number
@@ -309,7 +317,10 @@ class CodeLesson():
         self.exercise_cnt = len(self.file["exercise"])
          
     def exercise_id(self):
-        return self.exercise['id']
+        id_str = self.exercise['id']
+        if id_str == self.JSON_EX_IS_FILE_ID:
+            id_str = self.GUI_EX_IS_FILE_ID
+        return id_str
 
     def exercise_instructions(self):
         return self.exercise['instructions']
@@ -430,8 +441,7 @@ class HelpText():
 
 class CodeLessonEditor():
     """
-    Provide a user interface for managing ground and flight directories and
-    files. It also supports transferring files between the flight and ground.
+
     """
     
     NEW_FILE_STR = '-- New File --'
@@ -481,7 +491,7 @@ class CodeLessonEditor():
     def write_lesson_window(self, window):
         window_text = ''
         exercise_id = self.code_lesson.exercise_id()
-        if exercise_id == '~FILE~':
+        if exercise_id == self.code_lesson.GUI_EX_IS_FILE_ID:
             in_ex_block = True
         else:
             in_ex_block = False
@@ -530,7 +540,7 @@ class CodeLessonEditor():
         """
         Create the main window. Non-class variables are used so it can be refreshed, PySimpleGui
         layouts can't be shared.
-        This editor is intentionally very simple. I orginally had the guidance as a second window
+        This editor is intentionally very simple. I orginally had tutorial gudance as a second window
         pane but this wastes screen space and is annoying when you don't need the guidance.
         """
         window_width = 100
@@ -546,10 +556,12 @@ class CodeLessonEditor():
         window_layout = [
             [sg.Menu(menu_layout)],
             [
-              sg.Text('App File:', font=self.config.get('font')),
+              sg.Text('Source File:', font=self.config.get('font')),
               sg.Text(self.NEW_FILE_STR, font=self.config.get('font'), size=(column_width,1), relief=sg.RELIEF_RAISED, border_width=1, justification='center', key='-USER_FILE-'),
               sg.Button('◄', font='arrow_font 11', border_width=0, pad=(2,0), key='-FILE_LEFT-'),
               sg.Button('►', font='arrow_font 11', border_width=0, pad=(2,0), key='-FILE_RIGHT-'),
+              sg.InputText(str(self.code_lesson.file_idx+1), size=(4,1), key='-FILE_NUM-', justification='center'),
+              sg.Text(f'of {self.code_lesson.file_cnt}'),
               sg.Button('Lesson Completed', enable_events=True, key='-COMPLETED-', pad=(2,0), size=(15,0), tooltip='Select after you complete all lesson files and exercises ')
             ],
             [self.user_text],
@@ -558,6 +570,8 @@ class CodeLessonEditor():
               sg.Text(self.code_lesson.exercise_id(), font=self.config.get('font'), size=(5,1), relief=sg.RELIEF_RAISED, border_width=1, justification='center', key='-EXERCISE-'),
               sg.Button('▼', font='arrow_font 11', border_width=0, pad=(2,0), key='-CODE_DOWN-'),
               sg.Button('▲', font='arrow_font 11', border_width=0, pad=(2,0), key='-CODE_UP-'),
+              sg.InputText(str(self.code_lesson.exercise_idx+1), size=(4,1), key='-EXERCISE_NUM-', justification='center'),
+              sg.Text(f'of {self.code_lesson.exercise_cnt}'),
               sg.Button('Instructions', enable_events=True, key='-INSTRUCTIONS-', pad=(2,0), size=(10,0), tooltip='Exercise instructions')
             ],
             [self.lesson_text]
@@ -642,18 +656,22 @@ class CodeLessonEditor():
 
             elif encoded_event in ("b'-FILE_LEFT-'",):
                 self.code_lesson.decrement_file()
+                window['-FILE_NUM-'].update(str(self.code_lesson.file_idx+1))
                 self.update_file_displays(window)
                 
             elif encoded_event in ("b'-FILE_RIGHT-'",):
                 self.code_lesson.increment_file()
+                window['-FILE_NUM-'].update(str(self.code_lesson.file_idx+1))
                 self.update_file_displays(window)
                 
             elif encoded_event in ("b'-CODE_DOWN-'",):
                 self.code_lesson.increment_exercise()
+                window['-EXERCISE_NUM-'].update(str(self.code_lesson.exercise_idx+1))
                 self.write_lesson_window(window)
                 
             elif encoded_event in ("b'-CODE_UP-'",):
                 self.code_lesson.decrement_exercise()
+                window['-EXERCISE_NUM-'].update(str(self.code_lesson.exercise_idx+1))
                 self.write_lesson_window(window)
                 
             elif encoded_event in ("b'-INSTRUCTIONS-'",):
@@ -685,8 +703,8 @@ if __name__ == '__main__':
         #with open('/home/osk/sandbox/cayg/temp.txt','w') as f:
         #    f.write(tutorial_dir)
     else:
+        tutorial_dir = compress_abs_path(os.path.join(os.getcwd(),'../../../usr/apps/hello_object/tutorial'))
         tutorial_dir = compress_abs_path(os.path.join(os.getcwd(),'../../templates/hello-world/tutorial'))
-        tutorial_dir = compress_abs_path(os.path.join(os.getcwd(),'../../../usr/apps/hello_obj/tutorial'))
     print ("Main: tutorial_dir = " + tutorial_dir)
             
     tutorial = CodeTutorial(tutorial_dir)

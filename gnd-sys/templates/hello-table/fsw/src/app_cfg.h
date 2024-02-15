@@ -144,6 +144,6 @@ DECLARE_ENUM(Config,APP_CONFIG)
 
 #define EXOBJTBL_JSON_MAX_OBJ          10
 #define EXOBJTBL_JSON_FILE_MAX_CHAR  2000 
-
+#define EXOBJTBL_NAME                "Limits"
 
 #endif /* _app_cfg_ */

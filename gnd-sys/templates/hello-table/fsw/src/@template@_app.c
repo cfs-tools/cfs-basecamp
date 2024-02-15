@@ -176,7 +176,7 @@ static int32 InitApp(void)
       @Template@.SendStatusMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_SEND_STATUS_TOPICID));
       
       /* Must constructor table manager prior to any app objects that contained tables */
-      TBLMGR_Constructor(TBLMGR_OBJ);
+      TBLMGR_Constructor(TBLMGR_OBJ, INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME));
       
       /*
       ** Constuct app's contained objects
@@ -197,8 +197,8 @@ static int32 InitApp(void)
       CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_NOOP_CC,  NULL, @TEMPLATE@_NoOpCmd,     0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_RESET_CC, NULL, @TEMPLATE@_ResetAppCmd, 0);
       
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd, TBLMGR_LOAD_TBL_CMD_DATA_LEN);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd, TBLMGR_DUMP_TBL_CMD_DATA_LEN);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd, sizeof(@TEMPLATE@_LoadTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd, sizeof(@TEMPLATE@_DumpTbl_CmdPayload_t));
 
       CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_SET_COUNTER_MODE_CC, EXOBJ_OBJ, EXOBJ_SetModeCmd, sizeof(@TEMPLATE@_SetCounterMode_CmdPayload_t));
       /*

@@ -63,6 +63,9 @@ class AppTemplateJson(JsonFile):
     def reset_child(self):
         pass
         
+    def app_name(self):
+        return self.json['default-app-name']
+        
     def directories(self):
         return self.json['dir']
 
@@ -234,13 +237,15 @@ class CreateApp():
         app_template_layout = []
         for app_title, app_meta_data in self.app_template_lookup.items():
             logger.debug(f'self.app_template_lookup[{app_title}] => {str(app_meta_data)}')
-            app_template_layout.append([sg.Radio(app_title, "APP_TEMPLATES", default=False, font=hdr_value_font, size=(12,0), key=app_title),
+            app_template_layout.append([sg.Radio(app_title, "APP_TEMPLATES", default=False, font=hdr_value_font, size=(12,0), key=app_title, enable_events=True),
                                         sg.Text(app_meta_data.json.short_description(), font=hdr_value_font, size=(75,1))])
         
         layout = [
                   [sg.Text('Select Application Template: ', font=hdr_label_font)],
                   app_template_layout, 
-                  [sg.Text('', font=hdr_label_font)],
+                  [sg.Text('', font=hdr_value_font)],
+                  [sg.T('Application Name: ', font=hdr_label_font), sg.In(key='-APP_NAME-', font=hdr_value_font)],
+                  [sg.Text('', font=hdr_value_font)],
                   [sg.Button('Create App', button_color=('SpringGreen4'), pad=(2,0)), sg.Button('Description', pad=(2,0)), sg.Button('Cancel', pad=(2,0))]
                  ]
         
@@ -269,36 +274,27 @@ class CreateApp():
             if self.event == 'Description':
                 if self.selected_app is not None:
                     description = ""
-                    for decsription_line in self.selected_app.json.description():
-                        description += decsription_line + '\n'
+                    for description_line in self.selected_app.json.description():
+                        description += description_line + '\n'
                     sg.popup(description, title=self.selected_app.json.title(), font='Courier 12', line_width=sg.MESSAGE_BOX_LINE_WIDTH*2)
                 else:
                     sg.popup("Please select an application template", title="Create Application", modal=False)
                 
-            if self.event == 'Create App':
+            if self.event in self.app_template_titles:
                 if self.selected_app is not None:
-                    app_name = None
-                    layout = [[sg.T('Application Name')],
-                              [sg.In(key='-INPUT-')],
-                              [sg.OK(button_color=('SpringGreen4')), sg.Button('Cancel')]]
-                    window = sg.Window('Create Application', layout, modal=False)
-                    event, values = window.read()
-                    if event == 'OK':
-                        if values['-INPUT-'] is not None:
-                            app_name = values['-INPUT-']
-                            if len(app_name) > 0:
-                                try:
-                                    app_created, new_app_dir = self.selected_app.create_app(app_name, os.path.join(os.getcwd(),self.usr_app_path))
-                                    if app_created:
-                                        sg.popup("Successfully created %s in %s" % (app_name, new_app_dir), title="Create Application", modal=False)
-                                except:
-                                    pass
-                                     
-                    window.close()
-                    break
-                else:
-                    sg.popup("Please select an application template", title="Create Application", modal=False)
+                    self.window["-APP_NAME-"].update(self.selected_app.json.app_name())
                 
+            if self.event == 'Create App':
+                app_name = self.values['-APP_NAME-']
+                if len(app_name) > 0:
+                    try:
+                        app_created, new_app_dir = self.selected_app.create_app(app_name, os.path.join(os.getcwd(),self.usr_app_path))
+                        if app_created:
+                            sg.popup(f'Successfully created {app_name} in {new_app_dir}', title="Create Application", modal=False)
+                            break
+                    except:
+                        sg.popup(f'Failed to create {app_name} in {new_app_dir}', title="Create Application", modal=False)
+                            
         self.window.close()
 
 

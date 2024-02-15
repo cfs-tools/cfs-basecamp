@@ -91,6 +91,7 @@ CFS_DEFS_FOLDER = 'basecamp_defs'
 
 INSERT_KEYWORD = '!BASECAMP-INSERT!'
 
+TUTORIAL_JSON_FILE = 'tutorial.json' #TODO - Remove duplicate definitions
 
 ###############################################################################
 
@@ -239,10 +240,13 @@ class TelecommandGui(TelecommandInterface):
                     
                 else:
                     row = enum_row
-                    enum_row += 1                
-                    payload_enum_list = self.payload_gui_entries[payload_gui_name]['gui_value']
-                    self.window[f'-PAYLOAD_{row}_VALUE-'].update(visible=True,value=payload_enum_list[0], values=payload_enum_list)
-                
+                    enum_row += 1
+                    if enum_row < self.PAYLOAD_INPUT_START:
+                        payload_enum_list = self.payload_gui_entries[payload_gui_name]['gui_value']
+                        self.window[f'-PAYLOAD_{row}_VALUE-'].update(visible=True,value=payload_enum_list[0], values=payload_enum_list)
+                    else:
+                        sg.popup(f"The number of command enumerations exceeds the self.PAYLOAD_INPUT_START max definition of {self.PAYLOAD_INPUT_START}. Increase the value of self.PAYLOAD_INPUT_START to meet the command's number of enumerations.", title='Command GUI Error', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                  
                 self.payload_gui_entries[payload_gui_name]['gui_value_key'] = f'-PAYLOAD_{row}_VALUE-'
                 self.window[f'-PAYLOAD_{row}_NAME-'].update(visible=True,value=payload_gui_name)
                 self.window[f'-PAYLOAD_{row}_TYPE-'].update(visible=True,value=self.payload_gui_entries[payload_gui_name]['gui_type'])
@@ -253,7 +257,7 @@ class TelecommandGui(TelecommandInterface):
 
     def load_payload_entry_value(self, payload_name, payload_eds_entry, payload_type, payload_list):
         """
-        Virtual function used by base Telesommand class set_payload_values() to retrieve values
+        Virtual function used by base Teleommand class set_payload_values() to retrieve values
         from a derived class source: GUI or command line
         """
         logger.debug('load_payload_entry_value() - Entry')
@@ -423,8 +427,8 @@ class TelecommandGui(TelecommandInterface):
                                 cmd_status = f'Sent {topic_name}/{cmd_name} command'
                     
                 else:
-                    popup_text = f'Error retrieving command {cmd_name} using topic ID {topic_id}' 
-                    sg.popup(popup_text, title='Send Command Error', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)            
+                    popup_text = f'Error retrieving command {cmd_name} using topic ID {topic_id}'
+                    sg.popup(popup_text, title='Send Command Error', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
 
 
                 # Keep GUI active if a command error occurs to allow user to fix and resend or cancel
@@ -526,35 +530,6 @@ class ManageCfs():
         self.t_font  = ('Arial', 12)
         self.step_font  = ('Arial bold', 14)
 
-    def select_usr_app_gui(self, app_name_list, action_text):
-        """
-        Select an app to be integrated. The action text should be lower case.
-        """
-        self.selected_app = None
-        
-        layout = [
-                  [sg.Text(f'Select app to {action_text} from the dropdown iist and click <Submit>\n', font=self.b_font)],
-                  [sg.Combo(app_name_list, pad=self.b_pad, font=self.b_font, enable_events=True, key="-USR_APP-", default_value=app_name_list[0]),
-                   sg.Button('Submit', button_color=('SpringGreen4'), pad=self.b_pad, key='-SUBMIT-'),
-                   sg.Button('Cancel', button_color=('gray'), pad=self.b_pad, key='-CANCEL-')]
-                 ]      
-
-        window = sg.Window('Select User App', layout, resizable=True, modal=True)
-        
-        while True:
-        
-            event, values = window.read(timeout=200)
-        
-            if event in (sg.WIN_CLOSED, '-CANCEL-') or event is None:
-                break
-                
-            elif event == '-SUBMIT-':
-                self.selected_app = values['-USR_APP-']
-                break
-        
-        window.close()       
-              
-    
     def add_usr_app_gui(self, usr_app_list):
         """
         Provide steps for the user to integrate an app. Allow the user to add
@@ -719,23 +694,26 @@ class ManageCfs():
         if restart_main_window:
             self.main_window['-RESTART-'].click()
 
-    def remove_usr_app_gui(self):
+    def remove_usr_app_gui(self, app_name_list):
 
         no_yes = ['No', 'Yes']
         layout = [
-                  [sg.Text(f'This will remove {self.usr_app_spec.app_name.upper()} from the cFS target', font=self.t_font)],
+                  [sg.Text(f'Select app to remove: ', font=self.t_font), 
+                   sg.Combo(app_name_list, pad=self.b_pad, font=self.b_font, enable_events=True, key="-USR_APP-", default_value=app_name_list[0])],
                   [sg.Text('Do you want to remove the source files from usr/apps? ', font=self.t_font),
-                  sg.Combo(no_yes, enable_events=True, key='-DELETE_FILES-', default_value=no_yes[0], pad=((0,5),(5,5)))], 
+                   sg.Combo(no_yes, font=self.b_font, enable_events=True, key='-DELETE_FILES-', default_value=no_yes[0], pad=((0,5),(5,5)))], 
                   [sg.Text('', font=self.t_font)],
                   [sg.Button('Remove App', button_color=('SpringGreen4')), sg.Cancel(button_color=('gray'))]
                  ]
         
-        window = sg.Window(f'Remove {self.usr_app_spec.app_name.upper()}', layout, resizable=True, finalize=True)
+        window = sg.Window(f'Remove App', layout, resizable=True, finalize=True)
         while True: # Event Loop
             self.event, self.values = window.read()
             if self.event in (sg.WIN_CLOSED, 'Cancel') or self.event is None:       
                 break
             if self.event == 'Remove App':
+                self.selected_app = self.values['-USR_APP-']
+                self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
                 self.remove_app_tables()
                 self.restore_targets_cmake()
                 self.restore_startup_scr()
@@ -749,12 +727,6 @@ class ManageCfs():
         window.close()
         
     def execute(self, action):
-        """
-        This design has evolved and may need refactoring. Originally select_usr_app_gui()
-        was used for both add and remove because only one add could be managed at a time.
-        Add app now allows multiple apps to be selected before adding them. Remove only
-        operates on a single app.        
-        """
         self.manage_usr_apps = ManageUsrApps(self.usr_app_path)
         self.cfs_app_specs = self.manage_usr_apps.get_app_specs()
         if len(self.cfs_app_specs) > 0:
@@ -762,10 +734,7 @@ class ManageCfs():
             if action == 'Add':
                 self.add_usr_app_gui(usr_app_list)
             elif action == 'Remove':
-                self.select_usr_app_gui(usr_app_list, action.lower())
-                if self.selected_app is not None:
-                    self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
-                    self.remove_usr_app_gui()
+                self.remove_usr_app_gui(usr_app_list)
         else:
             sg.popup('Your usr/apps directory is empty', title=f'{action} App', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
@@ -856,9 +825,9 @@ class ManageCfs():
             if file_modified:
                 with open(self.targets_cmake_file, 'w') as f:
                     f.write(instantiated_text)
-                popup_text = f"Updated {targets_cmake} with {app_cmake_files['obj-file']} {table_list_str}"
+                popup_text = f"Updated {self.targets_cmake_file} with {app_cmake_files['obj-file']} {table_list_str}"
             else:
-                popup_text = f"Preserved {targets_cmake}, it already contains {app_cmake_files['obj-file']} {table_list_str}"
+                popup_text = f"Preserved {self.targets_cmake_file}, it already contains {app_cmake_files['obj-file']} {table_list_str}"
             #todo: Remove? sg.popup(popup_text, title=f'Update {self.targets_cmake_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         else:
             sg.clipboard_set(app_cmake_files['obj-file'] + ',' + str(app_cmake_files['tables']))
@@ -1354,8 +1323,24 @@ class App():
     def view_pdf_doc(self, doc_filename):
         pdf_filename = f'{self.docs_path}{doc_filename}'
         print(f'path_filename: {pdf_filename}')
-        self.pdf_viewer = sg.execute_py_file("pdfviewer.py", parms=pdf_filename, cwd=self.tools_path)
-                                     
+        if os.path.isfile(pdf_filename):
+            self.pdf_viewer = sg.execute_py_file("pdfviewer.py", parms=pdf_filename, cwd=self.tools_path)
+        else:
+            sg.popup(f'Failed to open {pdf_filename}, file does not exist.', title='Documents', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+        
+    def view_tutorial_doc(self, pdf_viewer_app, tutorial_path):
+        """
+        tutorial_path is the relative path from gnd-sys/app to TUTORIAL_JSON_FILE
+        """
+        print(f'tutorial_path = {tutorial_path}')
+        pdf_filename = f'{compress_abs_path(os.path.join(self.path,tutorial_path))}{TUTORIAL_JSON_FILE}'
+        print(f'pdf_filename = {pdf_filename}')
+        if os.path.isfile(pdf_filename):
+            self.pdf_viewer = sg.execute_py_file(pdf_viewer_app, parms=tutorial_path, cwd=self.tools_path)
+        else:
+            sg.popup(f'Failed to open {pdf_filename}, file does not exist.', title='Tutorials', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+        #self.pdf_viewer = sg.execute_py_file(pdf_viewer_app, parms=tutorial_path, cwd=self.tools_path)
+
     def launch_tlmplot(self):
                 
         # 1. Get user app selection & create telemetry topic dictionary 
@@ -1769,16 +1754,22 @@ class App():
                 self.view_pdf_doc('basecamp-app-spec.pdf')
                 
             ### TUTORIALS ###
-                   
             elif self.event in self.manage_tutorials.tutorial_titles:
+                """
                 tutorial_dir = self.manage_tutorials.tutorial_lookup[self.event].path
+                print (f'tutorial_dir = {tutorial_dir}')
                 self.tutorial = sg.execute_py_file("tutorial.py", parms=tutorial_dir, cwd=self.tools_path)
+                """
+                self.view_tutorial_doc("tutorial.py", self.manage_tutorials.tutorial_lookup[self.event].path)
                 
             elif self.event in self.manage_code_tutorials.tutorial_titles:
+                """
                 tutorial_dir = self.manage_code_tutorials.tutorial_lookup[self.event].path
                 print (f'tutorial_dir = {tutorial_dir}')
                 self.tutorial = sg.execute_py_file("appcodetutorial.py", parms=tutorial_dir, cwd=self.tools_path)
-
+                """
+                self.view_tutorial_doc("appcodetutorial.py", self.manage_code_tutorials.tutorial_lookup[self.event].path)
+            
             #################################
             ##### TOP ROW BUTTON EVENTS #####
             #################################

@@ -41,8 +41,8 @@
         </EnumerationList>
       </EnumeratedDataType>
 
-      <EnumeratedDataType name="TblId" shortDescription="Define table IDs used by the app" >
-        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+      <EnumeratedDataType name="TblId" shortDescription="Table Identifiers. See app_c_fw.xml guidelines" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
           <Enumeration label="Limits" value="0" shortDescription="Define counter limits" />
         </EnumerationList>
@@ -63,9 +63,8 @@
       <ContainerDataType name="DumpTbl_CmdPayload" shortDescription="Dump an app's JSON table">
         <EntryList>
           <Entry name="Id"       type="TblId"               shortDescription="Table identifier" />
-          <Entry name="Unused"   type="BASE_TYPES/uint8"    shortDescription="Unused" />
           <Entry name="Filename" type="BASE_TYPES/PathName" shortDescription="Full path and file name of table to be dumped" />
-       </EntryList>
+        </EntryList>
       </ContainerDataType>
       
       <ContainerDataType name="SetCounterMode_CmdPayload" shortDescription="Set Counter Mode payload">

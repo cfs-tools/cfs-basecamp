@@ -149,7 +149,14 @@
         </EnumerationList>
       </EnumeratedDataType>
 
-      <EnumeratedDataType name="TblId" shortDescription="Identifies different app tables. Used as an indice so start at definitions at zero." >
+      <!-- This is an example TblId definition. Apps define their own TblId and they must also define -->
+      <!-- LoadTbl_CmdPayload and DumpTbl_CmdPayload. Use app_c_demo.xmlas an example. EDS does not   -->
+      <!-- support parameterization, te,plates, etc. so cut 'n paste is the best we got.              -->
+      <!-- TBLMGR's API has the following constraints:                                                -->
+      <!--   1. TblId is used as an indice so the values must start at zero.                          -->
+      <!--   2. The enumeration order must match the TBLMGR_RegisterTblWithDef() call order           -->
+
+      <EnumeratedDataType name="TblId" shortDescription="Identifies different app tables." >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
           <Enumeration label="TABLE_1" value="0" shortDescription="Generic table name" />
