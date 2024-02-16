@@ -895,13 +895,16 @@ class ManageCfs():
             with open(self.startup_scr_file) as f:
                 for line in f:
                     if check_for_entry:
-                        if self.selected_app in line.split(','):
+                        line_array = [field.strip() for field in line.split(',')]
+                        if self.selected_app in line_array:
                             check_for_entry = False
                             original_entry = line
                         if INSERT_KEYWORD in line:
-                            line = startup_script_entry+'\n'+line
+                            # If check_for_entry still true then entry hasn't been found
+                            if check_for_entry:
+                                line = startup_script_entry+'\n'+line
+                                file_modified = True
                             check_for_entry = False
-                            file_modified = True
                     instantiated_text += line               
             if file_modified:
                 with open(self.startup_scr_file, 'w') as f:

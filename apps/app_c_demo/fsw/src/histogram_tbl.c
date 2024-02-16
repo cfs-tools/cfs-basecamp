@@ -127,12 +127,12 @@ bool HISTOGRAM_TBL_DumpCmd(osal_id_t FileHandle)
          sprintf(DumpRecord,",\n");
          OS_write(FileHandle, DumpRecord, strlen(DumpRecord));      
       }
-      sprintf(DumpRecord,"   {\n         \"lo-lim\": %d,\n         \"hi-lim\": %d\n      }",
+      sprintf(DumpRecord,"   {\n      \"lo-lim\": %d,\n      \"hi-lim\": %d\n   }",
               HistogramTbl->Data.Bin[i].LoLim, HistogramTbl->Data.Bin[i].HiLim);
       OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
    }
     
-   sprintf(DumpRecord,"   ]\n");
+   sprintf(DumpRecord,"]\n");
    OS_write(FileHandle, DumpRecord, strlen(DumpRecord));
 
    return true;
