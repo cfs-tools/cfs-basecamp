@@ -23,6 +23,9 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+# PySimpleGUI_License must be defined prior to import PySimpleGUI
+from tools import PySimpleGUI_License
+
 from .cfeconstants  import Cfe
 from .edsmission    import EdsMission, CfeEdsTarget
 from .telecommand   import TelecommandInterface, TelecommandScript

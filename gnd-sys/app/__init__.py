@@ -16,8 +16,11 @@
         Module initialization file
 
 """
-
 import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+# Use for pip
+from .basecamp import run_app
+def main():
+    run_app()
