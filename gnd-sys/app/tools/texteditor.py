@@ -21,6 +21,7 @@
           
 """
 import sys
+sys.path.append("..")
 import time
 import os
 from datetime import datetime
@@ -28,6 +29,7 @@ from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
+from tools import PySimpleGUI_License
 import PySimpleGUI as sg
 
 

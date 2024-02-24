@@ -21,6 +21,7 @@
 """
 
 import sys
+sys.path.append("..")
 import time
 import os
 import errno
@@ -31,6 +32,7 @@ from datetime import datetime
 
 import logging
 logger = logging.getLogger(__name__)
+
 if __name__ == '__main__':
     from jsonfile import JsonFile
     from utils    import compress_abs_path
@@ -38,6 +40,7 @@ else:
     from .jsonfile import JsonFile
     from .utils    import compress_abs_path
 
+from tools import PySimpleGUI_License
 import PySimpleGUI as sg
 
 TEMPLATE_JSON_FILE = 'app_template.json'

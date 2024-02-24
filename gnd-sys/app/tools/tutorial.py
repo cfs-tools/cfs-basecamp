@@ -27,6 +27,7 @@
 """
 
 import sys
+sys.path.append("..")
 import time
 import os
 import json
@@ -44,6 +45,7 @@ else:
     from .jsonfile import JsonFile
     from .utils    import compress_abs_path
 
+from tools import PySimpleGUI_License
 import PySimpleGUI as sg
 
 

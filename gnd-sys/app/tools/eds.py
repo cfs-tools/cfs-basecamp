@@ -18,11 +18,15 @@
 """
 
 import sys
+sys.path.append("..")
 import os
 import time
 import configparser
 import xml.dom.minidom
 from datetime import datetime
+
+import logging
+logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     from utils  import compress_abs_path

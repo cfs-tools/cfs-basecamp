@@ -29,9 +29,6 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 
-import paho.mqtt.client as mqtt
-import PySimpleGUI as sg
-
 if __name__ == '__main__':
     sys.path.append('..')
     from cfeconstants  import Cfe
@@ -42,8 +39,10 @@ else:
     from .cmdtlmprocess import CmdProcess
     from .cmdtlmrouter  import RouterCmd
 from remoteops import mqttconst as mc
-from tools import get_ip_addr
+from tools import get_ip_addr, PySimpleGUI_License
 
+import PySimpleGUI as sg
+import paho.mqtt.client as mqtt
 
 ###############################################################################
 

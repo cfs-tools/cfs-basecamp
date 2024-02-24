@@ -43,7 +43,7 @@ else:
     from .telecommand   import TelecommandScript
     from .telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
     from .cmdtlmprocess import CmdTlmProcess
-from tools import crc_32c, compress_abs_path, bin_hex_decode, bin_hex_encode, TextEditor
+from tools import crc_32c, compress_abs_path, bin_hex_decode, bin_hex_encode, TextEditor, PySimpleGUI_License
 
 import PySimpleGUI as sg
     

@@ -44,6 +44,7 @@ else:
     from .pdfviewer     import PdfViewer
     from .utils         import compress_abs_path
 
+from tools import PySimpleGUI_License
 import PySimpleGUI as sg
 
 TUTORIAL_JSON_FILE = 'tutorial.json'

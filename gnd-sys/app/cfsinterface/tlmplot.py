@@ -29,7 +29,6 @@ import configparser
 import io
 import math
 from contextlib import redirect_stdout
-import PySimpleGUI as sg
 import numpy as np
 
 if __name__ == '__main__':
@@ -43,7 +42,8 @@ else:
     from .telecommand   import TelecommandScript
     from .telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
     from .cmdtlmprocess import CmdTlmProcess
-from tools import crc_32c, compress_abs_path, TextEditor
+from tools import crc_32c, compress_abs_path, TextEditor, PySimpleGUI_License
+import PySimpleGUI as sg
 
 CCSDS   = 0
 TIME    = 1
