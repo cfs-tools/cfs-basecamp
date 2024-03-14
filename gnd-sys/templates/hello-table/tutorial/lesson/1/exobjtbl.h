@@ -71,7 +71,7 @@ typedef struct
 //EX1
 
 /*
-** Accpet Table Load callback function
+** Accept Table Load callback function
 */
 typedef bool (*EXOBJTBL_AcceptLoadFunc_t)(const EXOBJTBL_Data_t *TblData);
 

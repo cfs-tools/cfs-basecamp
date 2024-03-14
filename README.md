@@ -7,7 +7,7 @@ For users who are working on a flight mission, the [cFS Platform List](https://g
 
 # Getting Started
 
-## Prerequisites
+## Operating System Prerequisites
 The system can be developed on any GNU/Linux development host. The following commands install the development packages for
 a Debian/Ubuntu environment. Other Linux distributions should provide a similar set of packages but, the package names and
 installation tool names may vary. If you're running on a Raspberry Pi with a 32-bit Raspbian operating system please refer to
@@ -32,9 +32,23 @@ Package Notes:
 - You can skip installing pip and replace the 'pip3 install' below with 'python3 -m pip install'
 - The Java Runtime Environment (JRE) is required to run the cFS performance monitor
 
-The python appplication uses [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/), [Requests](https://docs.python-requests.org/en/latest/), [paho-mqtt](https://pypi.org/project/paho-mqtt/), and [NumPy](https://numpy.org/) that can be installed with the following command:
+
+## Python Prerequisites
+The Python Preferred Installer Program (PIP) is used to install [PyPI](https://pypi.org/) packages. Traditionally these packages have been installed from the OS command line. [Python Enhancement Proposal (PEP) 668](https://peps.python.org/pep-0668/) is requiring pip installations to occur within Python virtual environments. This [Python on Raspberry Pi](https://www.raspberrypi.com/documentation/computers/os.html#python-on-raspberry-pi) article provides more information. 
+
+Perform the following steps to create a Python virtual environment and activate a Python virtual environment:
+
+    mkdir my_project
+    cd my_project
+    python -m venv env
+
+    source env/bin/activate
+    
+Your command line prompt should now begin with (env) to indicate you are running in the virtual environment. Next, use PIP to install the packages required by Basecamp.
 
     pip3 install PySimpleGUI requests paho-mqtt numpy pymupdf
+    
+**The remaining steps are performed within the Python virtual environment**
 
 ## Clone Basecamp Repository
     git clone https://github.com/cfs-tools/cfs-basecamp.git
@@ -42,7 +56,7 @@ The python appplication uses [PySimpleGUI](https://pysimplegui.readthedocs.io/en
 # Using Basecamp
 
 ## Build the core Flight System Target
-This must be done prior to running the python ground system because it creates python libraries that define the cFS app interfaces.
+This must be done prior to running the Python ground system because it creates Python libraries that define the cFS app interfaces.
 
     cd cfs-basecamp/cfe-eds-framework
     make SIMULATION=native prep
@@ -53,6 +67,12 @@ This must be done prior to running the python ground system because it creates p
     cd ../gnd-sys/app
     . ./setvars.sh
     python3 basecamp.py
+
+## Operating Python Virtual Environments  
+To stop/exit a virtual environment issue the *deactivate* directive and your command line prompt should nolonger start with (env). Each time you need to start your virtual environment perform the following commands:
+
+    cd my_project
+    source env/bin/activate
 
 ## Next Steps
 

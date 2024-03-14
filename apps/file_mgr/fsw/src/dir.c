@@ -585,10 +585,10 @@ static void LoadFileEntry(const char *PathFilename, DIR_FileEntry_t *FileEntry,
       if (SysStatus == OS_SUCCESS)
       {
          
-         FileEntry->Size = FileStatus.FileSize;
-         FileEntry->Mode = FileStatus.FileModeBits;
-         FileEntry->Time = OS_GetLocalTime(&FileStatus.FileTime);
-        
+         FileEntry->Size = OS_FILESTAT_SIZE(FileStatus);
+         FileEntry->Mode = OS_FILESTAT_MODE(FileStatus);
+         FileEntry->Time = OS_FILESTAT_TIME(FileStatus);
+         
       }
       else
       {

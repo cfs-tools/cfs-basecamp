@@ -144,66 +144,29 @@ bool EXOBJTBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filename)
 **
 ** Notes:
 **  1. Function signature must match TBLMGR_DumpTblFuncPtr_t.
-**  2. Can assume valid table filename because this is a callback from 
-**     the app framework table manager that has verified the file.
-**  3. DumpType is unused.
-**  4. File is formatted so it can be used as a load file.
-**  5. Creates a new dump file, overwriting anything that may have existed
-**     previously
+**  2. File is formatted so it can be used as a load file.
 */
+//EX2
 bool EXOBJTBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filename)
 {
 
-   bool       RetStatus = false;
-   int32      SysStatus;
-   osal_id_t  FileHandle;
-   os_err_name_t OsErrStr;
-   char DumpRecord[256];
-   char SysTimeStr[128];
+   char    DumpRecord[256];
 
-   
-   SysStatus = OS_OpenCreate(&FileHandle, Filename, OS_FILE_FLAG_CREATE, OS_READ_WRITE);
-   
-   //EX2
-   if (SysStatus == OS_SUCCESS)
-   {
- 
-      sprintf(DumpRecord,"{\n   \"app-name\": \"%s\",\n   \"tbl-name\": \"Limits\",\n",ExObjTbl->AppName);
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+   sprintf(DumpRecord,"   \"increment\":\n   {\n      \"low-limit\": %d,\n      \"high-limit\": %d\n   },\n",
+           ExObjTbl->Data.IncrLimit.Low, ExObjTbl->Data.IncrLimit.High);
+   OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
 
-      CFE_TIME_Print(SysTimeStr, CFE_TIME_GetTime());
-      sprintf(DumpRecord,"   \"description\": \"Table dumped at %s\",\n",SysTimeStr);
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-      
-      sprintf(DumpRecord,"   \"increment\":\n   {\n      \"low-limit\": %d,\n      \"high-limit\": %d\n   },\n",
-              ExObjTbl->Data.IncrLimit.Low, ExObjTbl->Data.IncrLimit.High);
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+   sprintf(DumpRecord,"   \"decrement\":\n   {\n      \"low-limit\": %d,\n      \"high-limit\": %d\n   },\n",
+           ExObjTbl->Data.DecrLimit.Low, ExObjTbl->Data.DecrLimit.High);
+   OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
 
-      sprintf(DumpRecord,"   \"decrement\":\n   {\n      \"low-limit\": %d,\n      \"high-limit\": %d\n   },\n",
-              ExObjTbl->Data.DecrLimit.Low, ExObjTbl->Data.DecrLimit.High);
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-   
-      sprintf(DumpRecord,"   \"limit-range-max\": %d", ExObjTbl->Data.LimitRangeMax);
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+   sprintf(DumpRecord,"   \"limit-range-max\": %d", ExObjTbl->Data.LimitRangeMax);
+   OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
 
-      OS_close(FileHandle);
-
-      RetStatus = true;
-
-   } /* End if file create */
-   //EX2
-   else
-   {
-      OS_GetErrorName(SysStatus, &OsErrStr);
-      CFE_EVS_SendEvent(EXOBJTBL_DUMP_EID, CFE_EVS_EventType_ERROR,
-                        "Error creating dump file '%s', status=%s",
-                        Filename, OsErrStr);
-   
-   } /* End if file create error */
-
-   return RetStatus;
+   return true;
    
 } /* End of EXOBJTBL_DumpCmd() */
+//EX2
 
 
 /******************************************************************************

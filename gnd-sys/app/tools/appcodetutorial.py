@@ -485,6 +485,8 @@ class CodeLessonEditor():
         """
         self.check_n_save_user_file(window)
         window['-USER_FILE-'].update(value=self.code_lesson.user_filename())
+        window['-EXERCISE_NUM-'].update(str(self.code_lesson.exercise_idx+1))
+        window['-EXERCISE_CNT-'].update(str(self.code_lesson.exercise_cnt))
         self.read_lesson_file()
         self.write_lesson_window(window)
         self.open_user_file(window)
@@ -541,7 +543,7 @@ class CodeLessonEditor():
         """
         Create the main window. Non-class variables are used so it can be refreshed, PySimpleGui
         layouts can't be shared.
-        This editor is intentionally very simple. I orginally had tutorial gudance as a second window
+        This editor is intentionally very simple. I orginally had tutorial guidance as a second window
         pane but this wastes screen space and is annoying when you don't need the guidance.
         """
         window_width = 100
@@ -572,7 +574,8 @@ class CodeLessonEditor():
               sg.Button('▼', font='arrow_font 11', border_width=0, pad=(2,0), key='-CODE_DOWN-'),
               sg.Button('▲', font='arrow_font 11', border_width=0, pad=(2,0), key='-CODE_UP-'),
               sg.InputText(str(self.code_lesson.exercise_idx+1), size=(4,1), key='-EXERCISE_NUM-', justification='center'),
-              sg.Text(f'of {self.code_lesson.exercise_cnt}'),
+              sg.Text('of '),
+              sg.InputText(str(self.code_lesson.exercise_cnt), size=(4,1), key='-EXERCISE_CNT-', justification='center'),
               sg.Button('Instructions', enable_events=True, key='-INSTRUCTIONS-', pad=(2,0), size=(10,0), tooltip='Exercise instructions')
             ],
             [self.lesson_text]

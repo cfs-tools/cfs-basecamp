@@ -195,7 +195,7 @@ static PyObject *EdsLib_Python_PackedObjectType_new(PyTypeObject *objtype, PyObj
                     contentdata_src,
                     contentdata_size);
             contentdata_dst[contentdata_size] = 0;
-            result->ob_shash = -1;
+            //bc result->ob_shash = -1;
         }
     }
 

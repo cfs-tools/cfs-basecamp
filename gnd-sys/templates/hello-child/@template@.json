@@ -2,7 +2,7 @@
    
    "title": "@TEMPLATE@",
    "version": "1.0.0",
-   "owner": "bitValence",
+   "supplier": "bitValence",
    "url": "",
 
    "description": [
@@ -20,7 +20,9 @@
       "exception-action": 0,
       "app-framework": "osk",
       "tables": ["hi_child_ini.json"]
-   }
+   },
+
+   "requires": ["app_c_fw"]
    
 }}
 

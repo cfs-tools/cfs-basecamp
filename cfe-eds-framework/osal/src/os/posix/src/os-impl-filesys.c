@@ -83,11 +83,25 @@ int32 OS_Posix_FileSysAPI_Impl_Init(void)
  *           See prototype for argument/return detail
  *
  *-----------------------------------------------------------------*/
+ //bc: 3/6/24 - Replaced function with latest cFS version because of snprintf() issue 
+ //bc:          described in comment block below
+ static inline size_t OS_strnlen(const char *s, size_t maxlen)
+ {
+    const char *end = (const char *)memchr(s, 0, maxlen);
+    if (end != NULL)
+    {
+        /* actual length of string is difference */
+        maxlen = end - s;
+    }
+    return maxlen;
+}
 int32 OS_FileSysStartVolume_Impl(const OS_object_token_t *token)
 {
     OS_filesys_internal_record_t *local;
     struct stat                   stat_buf;
     const char *                  tmpdir;
+    size_t                        mplen;
+    size_t                        vollen;
     uint32                        i;
     enum
     {
@@ -172,12 +186,30 @@ int32 OS_FileSysStartVolume_Impl(const OS_object_token_t *token)
             return OS_FS_ERR_DRIVE_NOT_CREATED;
         }
 
-        snprintf(local->system_mountpt, sizeof(local->system_mountpt), "%s/osal:%s", tmpdir, local->volume_name);
+        /*
+         * Note - performing the concatenation in a single snprintf() call seems
+         * to trigger a (false) pointer overlap warning, because volume_name should
+         * always be null terminated.  To get around this, calculate the
+         * string size and check that it is within the expected size, and do the
+         * append of volume_name explicitly.
+         */
+        mplen = snprintf(local->system_mountpt, sizeof(local->system_mountpt), "%s/osal:", tmpdir);
+        if (mplen < sizeof(local->system_mountpt))
+        {
+            vollen = OS_strnlen(local->volume_name, sizeof(local->volume_name));
+            if ((vollen + mplen) >= sizeof(local->system_mountpt))
+            {
+                vollen = sizeof(local->system_mountpt) - mplen - 1;
+            }
+            memcpy(&local->system_mountpt[mplen], local->volume_name, vollen);
+            local->system_mountpt[mplen + vollen] = 0;
+        }
     }
 
     return OS_SUCCESS;
 
 } /* end OS_FileSysStartVolume_Impl */
+
 
 /*----------------------------------------------------------------
  *

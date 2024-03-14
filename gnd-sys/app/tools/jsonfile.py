@@ -182,7 +182,7 @@ class JsonTblTopicMap():
         if len(remove_topics) == 0:
            return False
            
-        print(remove_topics)
+        print(f'remove_topics: {remove_topics}')
         removed_list = False
         instantiated_text = ""
         with open(self.file) as f:
@@ -195,7 +195,7 @@ class JsonTblTopicMap():
                             remove_idx = remove_topics.index(keyword_str)
                             print(f'Keyword: {keyword_str} at remove_list index {remove_idx}')
                             spare_id = re.search(r'\d+', keyword[1]).group()
-                            print(spare_id)
+                            print(f'spare_id: {spare_id}')
                             spare_key = f'SPARE_{spare_id}_TOPICID'
                             line = f'      "{spare_key}":{keyword[1]}'
                             print('newline: ', line)

@@ -68,7 +68,6 @@ typedef struct
 
 static void ConstructJsonMessage(JsonMessage_t *JsonMessage, uint16 MsgArrayIdx);
 static bool LoadJsonData(size_t JsonFileLen);
-static char *SplitStr(char *Str, const char *Delim);
 
 /**********************/
 /** Global File Data **/
@@ -385,14 +384,14 @@ static bool LoadJsonData(size_t JsonFileLen)
                   {
                      i = 3;
                      /* No protection against malformed data array */
-                     DataStrPtr = SplitStr(JsonMessage.DataWords.Value,",");
+                     DataStrPtr = strtok(JsonMessage.DataWords.Value,",");
                      if (DataStrPtr != NULL)
                      {
                         MsgEntry.Buffer[i++] = atoi(DataStrPtr);
                         CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
                                           "MSGTBL::LoadJsonData data[%d] = 0x%4X, DataStrPtr=%s\n",
                                           i-1,MsgEntry.Buffer[i-1],DataStrPtr);         
-                        while ((DataStrPtr = SplitStr(NULL,",")) != NULL)
+                        while ((DataStrPtr = strtok(NULL,",")) != NULL)
                         {
                            MsgEntry.Buffer[i++] = atoi(DataStrPtr);
                            CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
@@ -456,83 +455,3 @@ static bool LoadJsonData(size_t JsonFileLen)
    return RetStatus;
    
 } /* End LoadJsonData() */
-
-
-/******************************************************************************
-** Function: SplitStr
-**
-** Split a string based on a delimiter. 
-**
-** Example Usage
-**    char str[] = "A,B,,,C";
-**    printf("1 %s\n",zstring_strtok(s,","));
-**    printf("2 %s\n",zstring_strtok(NULL,","));
-**    printf("3 %s\n",zstring_strtok(NULL,","));
-**    printf("4 %s\n",zstring_strtok(NULL,","));
-**    printf("5 %s\n",zstring_strtok(NULL,","));
-**    printf("6 %s\n",zstring_strtok(NULL,","));
-** Example Output
-**    1 A
-**    2 B
-**    3 ,
-**    4 ,
-**    5 C
-**    6 (null)
-**
-** Notes:
-**   1. Plus: No extra memory required
-**   2. Minus: Use of static variable is not rentrant so can't use in app_fw
-**   3. Minus: Modifies caller's string
-*/
-static char *SplitStr(char *Str, const char *Delim) {
-   
-   static char *StaticStr=NULL;      /* Store last address */
-   int i=0, StrLength=0;
-   bool DelimFound = false;                  
-
-   /* Valid Delim and have characters left */
-   if (Delim == NULL || (Str == NULL && StaticStr == NULL))
-      return NULL;
-
-   if (Str == NULL)
-      Str = StaticStr;
-
-   StrLength = strlen(&Str[StrLength]);
-
-   /* find the first occurance of delim */
-   for (i=0; i < StrLength; i++)
-   {
-      if (Str[i] == Delim[0])
-      {
-         DelimFound = true;
-         break;
-      }
-   }
-   
-   if (!DelimFound) {
-      StaticStr = NULL;
-      return Str;
-   }
-
-   /* Check for consecutive delimiters */
-   if (Str[0] == Delim[0])
-   {
-      StaticStr = (Str + 1);
-      return (char *)Delim;
-   }
-
-   /* terminate the string
-    * this assignment requires char[], so str has to
-    * be char[] rather than *char
-    */
-   Str[i] = '\0';
-
-   /* save the rest of the string */
-   if ((Str + i + 1) != 0)
-      StaticStr = (Str + i + 1);
-   else
-      StaticStr = NULL;
-
-   return Str;
-
-} /* End SplitStr() */

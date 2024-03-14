@@ -93,7 +93,7 @@ void EXOBJTBL_Constructor(EXOBJTBL_Class_t *ExObjTblPtr, const INITBL_Class_t *I
 **
 ** Notes:
 **  1. Function signature must match TBLMGR_DumpTblFuncPtr_t.
-**  2 File is formatted so it can be used as a load file.
+**  2. File is formatted so it can be used as a load file.
 */
 bool EXOBJTBL_DumpCmd(osal_id_t FileHandle)
 {

@@ -254,7 +254,7 @@ class AppEds():
                 initial_value = initial_value.split('/')[1].replace('}','')
                 interface_to_topic_id[var_ref_to_interface[name]] = initial_value
         
-        print(str(interface_to_topic_id))
+        #print(f'interface_to_topic_id: {str(interface_to_topic_id)}')
         return interface_to_topic_id
 
 ###############################################################################

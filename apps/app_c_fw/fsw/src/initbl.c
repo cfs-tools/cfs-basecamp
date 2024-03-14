@@ -170,7 +170,7 @@ const char* INITBL_GetStrConfig(const INITBL_Class_t *IniTbl, uint16 Param)
 **      CJSON_Obj_t that can be used to process the JSON ini file.
 **
 */
-static bool BuildJsonTblObjArray (INITBL_Class_t *IniTbl)
+static bool BuildJsonTblObjArray(INITBL_Class_t *IniTbl)
 {
 
    bool RetStatus = true;
@@ -208,7 +208,7 @@ static bool BuildJsonTblObjArray (INITBL_Class_t *IniTbl)
             JsonParam->Type         = JSONNumber;
             JsonParam->TypeFlt      = false;
             strncpy(JsonParam->Query.Key, INITBL_JSON_CONFIG_OBJ_PREFIX, CJSON_MAX_KEY_LEN);
-            strncat(JsonParam->Query.Key, CfgStrPtr, CJSON_MAX_KEY_LEN);
+            strncat(JsonParam->Query.Key, CfgStrPtr, CJSON_MAX_KEY_LEN-1);
             JsonParam->Query.KeyLen = strlen(JsonParam->Query.Key);
          
          } /* End if integer */
@@ -220,7 +220,7 @@ static bool BuildJsonTblObjArray (INITBL_Class_t *IniTbl)
             JsonParam->Type         = JSONNumber;
             JsonParam->TypeFlt      = true;
             strncpy(JsonParam->Query.Key, INITBL_JSON_CONFIG_OBJ_PREFIX, CJSON_MAX_KEY_LEN);
-            strncat(JsonParam->Query.Key, CfgStrPtr, CJSON_MAX_KEY_LEN);
+            strncat(JsonParam->Query.Key, CfgStrPtr, CJSON_MAX_KEY_LEN-1);
             JsonParam->Query.KeyLen = strlen(JsonParam->Query.Key);
          } /* End if float */
          else if (strcmp(CfgTypePtr, INILIB_TYPE_STR) == 0)
@@ -231,7 +231,7 @@ static bool BuildJsonTblObjArray (INITBL_Class_t *IniTbl)
             JsonParam->Type         = JSONString;
             JsonParam->TypeFlt      = false;
             strncpy(JsonParam->Query.Key, INITBL_JSON_CONFIG_OBJ_PREFIX, CJSON_MAX_KEY_LEN);
-            strncat(JsonParam->Query.Key, CfgStrPtr, CJSON_MAX_KEY_LEN);
+            strncat(JsonParam->Query.Key, CfgStrPtr, CJSON_MAX_KEY_LEN-1);
             JsonParam->Query.KeyLen = strlen(JsonParam->Query.Key);
 
          }  /* End if string */

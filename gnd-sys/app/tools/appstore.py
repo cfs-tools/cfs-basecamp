@@ -145,8 +145,9 @@ class AppSpec():
         self.has_topics = False
         self.eds  = None                
         self.json = None
+        self.app  = None
         self.cfs  = None
-        
+
         # is_valid and has_topics are False and will be set to True as needed
         if self.read_json_file():
             if self.cfs['cfe-type'] == 'CFE_APP':
@@ -174,9 +175,14 @@ class AppSpec():
             return False
         
         try:
-            self.cfs = self.json['app']['cfs']
+            self.app = self.json['app']
+            try:
+                self.cfs = self.app['cfs']
+            except:
+                sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'cfs' object", title='AppStore Error', grab_anywhere=True, modal=False)
+                return False
         except:
-            sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'cfs' object", title='AppStore Error', grab_anywhere=True, modal=False)
+            sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'app' object", title='AppStore Error', grab_anywhere=True, modal=False)
             return False
         
         return True
@@ -198,6 +204,16 @@ class AppSpec():
                 pass
         return True        
        
+    def get_app_info(self):
+        info = {}
+        info['title']       = self.app['title']
+        info['version']     = self.app['version']
+        info['supplier']    = self.app['supplier']
+        info['url']         = self.app['url']
+        info['description'] = self.app['description']
+        info['requires']    = self.app['requires']
+        return info
+
     def get_cmd_topics(self):
         return self.eds.cmd_topics()
     
@@ -215,7 +231,6 @@ class AppSpec():
         files['obj-file'] = self.cfs['obj-file']
         files['tables']   = self.cfs['tables']
         return files
-
 
     def get_startup_scr_entry(self):
         '''
@@ -297,6 +312,7 @@ class AppStore():
         self.git_topic_exclude = git_topic_exclude 
         self.usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(), usr_app_rel_path))
         self.git_app_repo = GitHubAppProject(git_url, usr_app_rel_path)
+        self.git_app_repo_keys = [] # keys of app repos that pass the include/exclude filters 
         self.window  = None
 
         
@@ -309,6 +325,7 @@ class AppStore():
         for app in self.git_app_repo.app_dict.keys():
             topics = self.git_app_repo.get_topics(app)
             if any(x in topics for x in self.git_topic_include) and not any(x in topics for x in self.git_topic_exclude):
+                self.git_app_repo_keys.append(app)
                 app_layout.append([sg.Checkbox(app.upper(), default=False, font=hdr_label_font, size=(10,0), key=f'-{app}-'),  
                                   sg.Text(self.git_app_repo.get_descr(app), font=hdr_value_font, size=(100,1))])
                 
@@ -335,8 +352,9 @@ class AppStore():
                 break
             
             if self.event == 'Download':
-                for app in self.git_app_repo.app_dict.keys():
-                    if self.values["-%s-"%app] == True:
+                print(f'self.git_app_repo_keys={self.git_app_repo_keys}')
+                for app in self.git_app_repo_keys:
+                    if self.values[f'-{app}-'] == True:
                         self.git_app_repo.clone(app) # Clone reports status to user via popups
                 break
                 

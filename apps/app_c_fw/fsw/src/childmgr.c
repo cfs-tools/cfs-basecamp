@@ -67,7 +67,7 @@ static CHILDMGR_Class_t *GetChildMgrInstance(void);
 /** Global Data **/
 /*****************/
 
-static uint16 NameStrId = 0;
+static uint8 NameStrId = 0;
 static ChildTask_t ChildTask = { 0, {NULL, NULL, NULL, NULL, NULL} };
 
 
@@ -535,7 +535,7 @@ void ChildMgr_TaskMainCmdDispatch(void)
 static void AppendIdToStr(char *NewStr, const char *BaseStr)
 {
    
-   char IdStr[5];
+   char IdStr[8];
    
    strncpy(NewStr,BaseStr,OS_MAX_API_NAME-3);
    sprintf(IdStr,"%d",NameStrId++);
