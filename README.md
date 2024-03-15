@@ -80,11 +80,7 @@ To stop/exit a virtual environment issue the *deactivate* directive and your com
 ![](https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/next-steps.png)
 
 ## Watch [Open STEMware's YouTube Videos](https://www.youtube.com/@OpenSTEMware?)
-[![cFS Basecamp Introduction Video]
-(https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/Basecamp-Logo.png)]
-(https://www.youtube.com/watch?v=jwV3_9W8dcY)
+[![cFS Basecamp Introduction Video](http://img.youtube.com/vi/jwV3_9W8dcY/0.jpg)](https://www.youtube.com/watch?v=jwV3_9W8dcY)
 
-## Create with Basecamp Projects at [Open Mission Stack](https://openmissionstack.com/projects)
-[![cFS Basecamp Projects]
-(https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/OpenMissionStack.png)]
-(https://openmissionstack.com/projects)
+## Create with Basecamp Projects at [Open Mission Stack](https://openmissionstack.com/)
+[![cFS Basecamp Projects](https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/OpenMissionStack.png)](https://openmissionstack.com/projects)
