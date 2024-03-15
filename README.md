@@ -32,6 +32,8 @@ Package Notes:
 - You can skip installing pip and replace the 'pip3 install' below with 'python3 -m pip install'
 - The Java Runtime Environment (JRE) is required to run the cFS performance monitor
 
+## Clone Basecamp Repository
+    git clone https://github.com/cfs-tools/cfs-basecamp.git
 
 ## Python Prerequisites
 The Python Preferred Installer Program (PIP) is used to install [PyPI](https://pypi.org/) packages. Traditionally these packages have been installed from the OS command line. [Python Enhancement Proposal (PEP) 668](https://peps.python.org/pep-0668/) is requiring pip installations to occur within Python virtual environments. This [Python on Raspberry Pi](https://www.raspberrypi.com/documentation/computers/os.html#python-on-raspberry-pi) article provides more information. 
@@ -40,7 +42,7 @@ Perform the following steps to create a Python virtual environment and activate 
 
     mkdir my_project
     cd my_project
-    python -m venv env
+    python3 -m venv env
 
     source env/bin/activate
     
@@ -49,9 +51,6 @@ Your command line prompt should now begin with (env) to indicate you are running
     pip3 install PySimpleGUI requests paho-mqtt numpy pymupdf
     
 **The remaining steps are performed within the Python virtual environment**
-
-## Clone Basecamp Repository
-    git clone https://github.com/cfs-tools/cfs-basecamp.git
 
 # Using Basecamp
 
