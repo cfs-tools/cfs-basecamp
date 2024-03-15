@@ -78,4 +78,7 @@ To stop/exit a virtual environment issue the *deactivate* directive and your com
 
 ![](https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/next-steps.png)
 
-{% include youtube.html id="jwV3_9W8dcY" %}
+
+[![cFS Basecamp Introduction]
+(https://img.youtube.com/vi/jwV3_9W8dcY/maxresdefault.jpg)]
+(https://www.youtube.com/watch?v=jwV3_9W8dcY)
