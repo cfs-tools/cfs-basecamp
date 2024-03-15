@@ -74,11 +74,17 @@ To stop/exit a virtual environment issue the *deactivate* directive and your com
     cd your_project
     source env/bin/activate
 
-## Next Steps
+# Next Steps
 
+## Use Basecamp's Built-in Resources
 ![](https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/next-steps.png)
 
-
-[![cFS Basecamp Introduction]
-(https://img.youtube.com/vi/jwV3_9W8dcY/maxresdefault.jpg)]
+## Watch [Open STEMware's YouTube Videos](https://www.youtube.com/@OpenSTEMware?)
+[![cFS Basecamp Introduction Video]
+(https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/Basecamp-Logo.png)]
 (https://www.youtube.com/watch?v=jwV3_9W8dcY)
+
+## Create with Basecamp Projects at [Open Mission Stack](https://openmissionstack.com/projects)
+[![cFS Basecamp Projects]
+(https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/OpenMissionStack.png)]
+(https://openmissionstack.com/projects)
