@@ -55,7 +55,7 @@ class MqttClient():
     def connect(self):
         connect = False
         try:
-            self.client = mqtt.Client(self.client_name)
+            self.client = mqtt.Client(mqtt.CallbackAPIVersion.API_VERSION2, self.client_name)
             self.client.on_connect = self.on_connect   # Callback function for successful connection
             self.client.on_message = self.process_cmd  # Callback function for receipt of a message
             self.client.connect(self.broker_addr)
@@ -158,11 +158,14 @@ class RemoteOps(MqttClient):
         print (f'IP Adress: {addr}')
         return addr
 
-    def on_connect(self, client, userdata, flags, rc):
+    def on_connect(self, client, userdata, flags, reason_code, properties):
         """
         """
-        logging.info(f'Remote Ops connected with result code {rc}')
-        self.client.subscribe(self.cmd_topic)
+        if reason_code == 0:
+            logging.info(f'Remote Ops connected with reason_code {reason_code}')
+            self.client.subscribe(self.cmd_topic)
+        if reason_code > 0:
+            logging.error(f'Remote Ops connection error with reason_code {reason_code}')
  
  
     def send_tlm(self):

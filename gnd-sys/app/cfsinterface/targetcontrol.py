@@ -146,23 +146,28 @@ class TargetControl(CmdProcess):
 
         self.window = None
         
-    def client_on_connect(self, client, userdata, flags, rc):
+    def client_on_connect(self, client, userdata, flags, reason_code, properties):
         """
         """
-        print(f'Connected with result code {rc}') 
-        print(f'Subscribing to {self.tlm_topic}')
-        self.client.subscribe(self.tlm_topic)
-        self.client_connected = True 
- 
-    def client_on_disconnect(self, client, userdata, flags):
+        if reason_code == 0:
+            logging.info(f'Target Control connected with reason_code {reason_code}')
+            self.client.subscribe(self.tlm_topic)
+            self.client_connected = True 
+        if reason_code > 0:
+            logging.error(f'Target Control connection error with reason_code {reason_code}')
+        
+    def client_on_disconnect(self, client, userdata, flags, reason_code, properties):
         """
         """
-        self.client_disconnect()
-
-
+        if reason_code == 0:
+            logging.info(f'Target Control disconnected with reason_code {reason_code}')
+            self.client_disconnect()
+        if reason_code > 0:
+            logging.error(f'Target Control disconnection error with reason_code {reason_code}')
+        
     def client_connect(self):
         try:
-            self.client = mqtt.Client(self.client_name)
+            self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, self.client_name)
             self.client.on_connect    = self.client_on_connect     # Callback function for successful connection
             self.client.on_disconnect = self.client_on_disconnect  # Callback function for successful disconnect
             self.client.on_message    = self.process_tlm           # Callback function for receipt of a message

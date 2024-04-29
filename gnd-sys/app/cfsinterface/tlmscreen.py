@@ -235,9 +235,9 @@ if __name__ == '__main__':
         tlm_topic   = 'MQTT_GW/Application/HK_TLM'
         tlm_topic   = 'MQTT_GW/Application/DISCRETE_TLM'
 
-    cfs_ip_addr  = config.get('NETWORK', 'CFS_IP_ADDR')
+    gnd_ip_addr  = config.get('NETWORK', 'GND_IP_ADDR')
     mission_name = config.get('CFS_TARGET','MISSION_EDS_NAME')
 
-    tlm_screen = TlmScreen(mission_name, cfs_ip_addr, router_ctrl_port, tlm_port, 2.0) #TODO - Parameterize timeout
+    tlm_screen = TlmScreen(mission_name, gnd_ip_addr, router_ctrl_port, tlm_port, 2.0) #TODO - Parameterize timeout
     tlm_screen.execute(app_name, tlm_topic) 
     

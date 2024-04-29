@@ -57,6 +57,7 @@ else:
     from .edsmission   import CfeEdsTarget
     from .cmdtlmrouter import RouterCmd
 from tools import hex_string
+import PySimpleGUI as sg
     
 ###############################################################################
 
@@ -402,22 +403,29 @@ class TelemetrySocketServer(TelemetryServer):
     
     
     def execute(self):
-
-        logger.info("Starting telemetry server for " + str(self.server_tlm_socket_addr))
-        self.server_tlm_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.server_tlm_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server_tlm_socket.bind(self.server_tlm_socket_addr)
-        self.server_tlm_socket.setblocking(False)
-        self.server_tlm_socket.settimeout(self.server_tlm_timeout)
+        logger.info(f'Starting telemetry server for {self.server_tlm_socket_addr}')
+        try:
+            self.server_tlm_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.server_tlm_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.server_tlm_socket.bind(self.server_tlm_socket_addr)
+            self.server_tlm_socket.setblocking(False)
+            self.server_tlm_socket.settimeout(self.server_tlm_timeout)
         
-        self._recv_tlm_thread = threading.Thread(target=self._recv_tlm_handler)
+            self._recv_tlm_thread = threading.Thread(target=self._recv_tlm_handler)
         
-        self._recv_tlm_thread.kill  = False
-        self._recv_tlm_threaddaemon = True
+            self._recv_tlm_thread.kill  = False
+            self._recv_tlm_threaddaemon = True
         
-        self._recv_tlm_thread.start()
-
-
+            self._recv_tlm_thread.start()
+        except Exception as e:
+            err_str = f'Error creating telemetry server for {self.server_tlm_socket_addr}'
+            logger.error(err_str)
+            help_str = 'Verify your ground IP address in basecamp.ini is correct'
+            str_len = len(err_str)
+            if len(help_str) > str_len:
+                str_len = len(help_str)
+            sg.Popup(f'{err_str}\n\n{help_str}', title='Telemetry Server Creation Error', line_width=str_len+1, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+            
     def shutdown(self):
         logger.info('TelemetrySocketServer shutdown started')
         datagram = f'{RouterCmd.CLOSE_PORT}:{self.server_tlm_port}'.encode('utf-8')  # TODO - Parameterize
@@ -595,14 +603,14 @@ def main():
     config.read('../basecamp.ini')
     MISSION     = config.get('CFS_TARGET', 'MISSION_EDS_NAME')
     CFS_TARGET  = config.get('CFS_TARGET', 'CPU_EDS_NAME')
-    CFS_IP_ADDR = config.get('NETWORK','CFS_IP_ADDR')
+    GND_IP_ADDR = config.get('NETWORK','GND_IP_ADDR')
     ROUTER_CTRL_PORT   = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     SERVER_TLM_PORT    = config.getint('NETWORK','GND_TLM_PORT')
     SERVER_TLM_TIMEOUT = config.getint('NETWORK','GND_TLM_TIMEOUT')
     
-    system_string = f'Mission: {MISSION}, Target: {CFS_TARGET}, cFS IP Addr: {CFS_IP_ADDR}, Gnd Tlm Port {GND_TLM_PORT}'
+    system_string = f'Mission: {MISSION}, Target: {CFS_TARGET}, cFS IP Addr: {GND_IP_ADDR}, Gnd Tlm Port {GND_TLM_PORT}'
     try:
-        telemetry_server = TelemetrySocketServer(MISSION, CFS_TARGET, CFS_IP_ADDR, ROUTER_CTRL_PORT, SERVER_TLM_PORT, SERVER_TLM_TIMEOUT)
+        telemetry_server = TelemetrySocketServer(MISSION, CFS_TARGET, GND_IP_ADDR, ROUTER_CTRL_PORT, SERVER_TLM_PORT, SERVER_TLM_TIMEOUT)
         telemetry_cmd_line_client = TelemetryCmdLineClient(telemetry_server, True)
         print (f'Telemetry objects created for {system_string}')
         

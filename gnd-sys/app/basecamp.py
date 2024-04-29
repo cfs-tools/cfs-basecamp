@@ -69,7 +69,7 @@ from tools import PySimpleGUI_License
 from tools import CreateApp, ManageTutorials, crc_32c, datagram_to_str, compress_abs_path, TextEditor
 from tools import AppStore, ManageCodeTutorials
 from tools import AppTargetStatus, AppTopicIdStatus, Cfs, CfsStdout, ManageCfs
-from cfsinterface import CmdTlmRouter, TargetControl
+from cfsinterface import CmdTlmRouter
 from cfsinterface import Cfe, EdsMission
 from cfsinterface import TelecommandInterface, TelecommandScript
 from cfsinterface import TelemetryMessage, TelemetryObserver, TelemetryQueueServer
@@ -965,7 +965,13 @@ class App():
             self.cfs_cmd_input_queue  = self.cmd_tlm_router.get_cfs_cmd_source_queue()
 
         except Exception as e:
-            logger.error(f'Error creating command-telemetry router\n{str(e)}')
+            err_str = f'Error creating command-telemetry router: {e}.'
+            logger.error(err_str)
+            help_str = 'Verify your ground and cFS IP addresses in bascamp.ini are correct.'
+            str_len = len(err_str)
+            if len(help_str) > str_len:
+                str_len = len(help_str)
+            sg.popup(f'{err_str}\n\n{help_str}', title='Cmd-Tlm Router Creation Error', line_width=str_len+1, keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=False)
             sys.exit(2)
             
         try:
