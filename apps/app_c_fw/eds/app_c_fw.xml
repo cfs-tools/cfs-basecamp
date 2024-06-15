@@ -24,18 +24,36 @@
       
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
-  <Package name="APP_C_FW" shortDescription="OpenSatKit application framework for C language">
+  <Package name="APP_C_FW" shortDescription="Application framework for C language apps">
+    <DataTypeSet>   
 
-     <!-- APP_C_FW::CmdMgr -->
-     
-    <Define name="NOOP_CC"      value="0" />
-    <Define name="RESET_CC"     value="1" />
-    <Define name="LOAD_TBL_CC"  value="2" />
-    <Define name="DUMP_TBL_CC"  value="3" />
-    <Define name="APP_BASE_CC"  value="10" />
+      <!-- APP_C_FW::CmdMgr -->
+      
+      <Define name="NOOP_CC"      value="0" />
+      <Define name="RESET_CC"     value="1" />
+      <Define name="LOAD_TBL_CC"  value="2" />
+      <Define name="DUMP_TBL_CC"  value="3" />
+      <Define name="APP_BASE_CC"  value="10" />
 
-    <DataTypeSet>
- 
+      <!-- Event Messsage IDs -->
+      <!-- Define the base event message IDs for each framewokr component -->
+      <!-- APP_BASE_EID is a base EID value for apps. Each app_cfg.h file -->
+      <!-- or EDS defines the app's component EID values. There are no    -->
+      <!-- automated checks to ensure an EIDs don't overlap.              -->
+      <!-- TODO: A scalable scheme for multiple libraries is required.    --> 
+
+      <Define name="INIT_INFO_EID"     value="0" />
+      <Define name="INITBL_BASE_EID"   value="1" />            1 
+      <Define name="CMDMGR_BASE_EID"   value="10" />
+      <Define name="TBLMGR_BASE_EID"   value="20" />
+      <Define name="CJSON_BASE_EID"    value="30" />
+      <Define name="CHILDMGR_BASE_EID" value="50" />
+      <Define name="STATEREP_BASE_EID" value="60" />
+      <Define name="UTILS_BASE_EID"    value="80" />
+      <Define name="APP_BASE_EID"      value="100"  shortDescription="Starting ID for Apps using the framework"/>
+      <Define name="LIB_BASE_EID"      value="1000" shortDescription="Starting ID for Libs using the framework"/>
+
+      
       <!--***********************************-->
       <!--**** DataTypeSet:  Entry Types ****-->
       <!--***********************************-->

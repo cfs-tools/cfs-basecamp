@@ -21,6 +21,7 @@
 **       framework releases but may need to can during framework development
 **       and for a release. See app_c_fw_platform.h and app_c_fw_mission.h
 **       for parameters that can be configured for a deployment.
+**    TODO:  Decide which macros should be moved to EDS
 **
 */
 
@@ -34,6 +35,7 @@
 #include "cfe.h"
 #include "app_c_fw_platform_cfg.h"
 #include "app_c_fw_eds_typedefs.h"
+#include "app_c_fw_eds_defines.h"
 
 /******************************************************************************
 ** Command Manager (CMDMGR)
@@ -67,26 +69,6 @@
 */
 #define CMDMGR_DISABLE_CHECKSUM_VALIDATION
 
-
-/******************************************************************************
-** Event Macros
-** 
-** Define the base event message IDs used by each object/component used by the
-** application. There are no automated checks to ensure an ID range is not
-** exceeded so it is the developer's responsibility to verify the ranges. 
-*/
-
-#define APP_C_FW_INIT_INFO_EID     0
-#define INITBL_BASE_EID            1 
-#define CMDMGR_BASE_EID           10 
-#define TBLMGR_BASE_EID           20
-#define JSON_BASE_EID             30
-#define CHILDMGR_BASE_EID         50
-#define STATEREP_BASE_EID         70
-#define CJSON_BASE_EID            80
-#define APP_C_FW_UTILS_BASE_EID   90
-#define APP_C_FW_APP_BASE_EID    100 /* Starting ID for the App using the framework */
-#define APP_C_FW_LIB_BASE_EID    900 /* Starting ID for a library using the framework */
 
 /******************************************************************************
 ** Debug macros

@@ -54,11 +54,11 @@
 ** Event Message IDs
 */
 
-#define CJSON_OBJ_CONSTRUCT_ERR_EID  (CJSON_BASE_EID + 0)
-#define CJSON_PROCESS_FILE_ERR_EID   (CJSON_BASE_EID + 1)
-#define CJSON_LOAD_OBJ_EID           (CJSON_BASE_EID + 2)
-#define CJSON_LOAD_OBJ_ERR_EID       (CJSON_BASE_EID + 3)
-#define CJSON_INTERNAL_ERR_EID       (CJSON_BASE_EID + 4)
+#define CJSON_OBJ_CONSTRUCT_ERR_EID  (APP_C_FW_CJSON_BASE_EID + 0)
+#define CJSON_PROCESS_FILE_ERR_EID   (APP_C_FW_CJSON_BASE_EID + 1)
+#define CJSON_LOAD_OBJ_EID           (APP_C_FW_CJSON_BASE_EID + 2)
+#define CJSON_LOAD_OBJ_ERR_EID       (APP_C_FW_CJSON_BASE_EID + 3)
+#define CJSON_INTERNAL_ERR_EID       (APP_C_FW_CJSON_BASE_EID + 4)
 
 /**********************/
 /** Type Definitions **/
