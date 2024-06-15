@@ -488,18 +488,22 @@ class CfsMqttCmdClient():
         self.cmd_topic    = cfs_cmd_topic
         self.send_event   = send_event
         
+        self.client    = None
         self.connected = False
-        self.client = None
         
     def connect(self):
         self.connected = False
         try:
-            self.client = mqtt.Client(self.client_name)
+            self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, self.client_name)
             self.client.on_connect = self.on_connect   # Callback function for successful connection
+            self.client.on_message = self.process_cmd  # Callback function for receipt of a message
             self.client.connect(self.broker_addr)
+            self.client.loop_start()  # Start networking daemon    
             self.connected = True
+            self.send_event(f'Created cFS MQTT command client connection on {self.broker_addr}')
         except Exception as e:
-            self.send_event(f'cFS MQTT command client connection error for {self.broker_addr}:{self.broker_port}')
+            self.send_event(f'cFS MQTT command client connection error on {self.broker_addr}')
+            self.send_event(f'Exception: {e}')
             self.client = None
         return self.connected
     
@@ -509,12 +513,17 @@ class CfsMqttCmdClient():
            self.client = None
         self.connected = False
 
-    def on_connect(self, client, userdata, flags, rc):
+    def on_connect(self, client, userdata, flags, reason_code, properties):
         """
         """
-        print('@@TODO: GOT HERE not happening@@')
-        self.send_event(f'cFS MQTT command client {self.client_name} connected with result code {rc}')
-        self.client.subscribe(self.cmd_topic)
+        if reason_code == 0:
+            self.send_event(f'cFS MQTT command client {self.client_name} connected with reason code {reason_code}')
+            self.client.subscribe(self.cmd_topic)
+        if reason_code > 0:
+            logging.error(f'cFS MQTT command client connection error with reason_code {reason_code}')
+
+    def process_cmd(self, client, userdata, msg):
+        self.send_event(f'cFS MQTT command client received unexpected MQTT message: {msg}')
         
     def send_cmd(self, cmd_text):
         """

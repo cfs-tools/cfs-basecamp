@@ -52,7 +52,7 @@ class MqttClient():
     def connect(self):
         connect = False
         try:
-            self.client = mqtt.Client(self.client_name)
+            self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, self.client_name)
             self.client.on_connect = self.on_connect        # Callback function for successful connection
             self.client.on_message = self.process_cmd_stub  # Callback function for receipt of a message
             self.client.connect(self.broker_addr)
@@ -75,7 +75,7 @@ class MqttClient():
         if queue_event:
             self.event_queue.put_nowait(msg_str)
         print(msg_str)
-    
+
     def process_cmd_stub(self, client, userdata, msg):
         """
         No input messages are expected so simply log what is received
@@ -108,11 +108,16 @@ class HelloWorld(MqttClient):
         self.sim_cycle_axis_lim = 5.0  # 5 seconds 
         self.sim_axis_rate_rad  = 90.0 / self.sim_cycle_axis_lim * 0.0174533
         self.sim_rate           = [ 0.0, 0.0, 0.0]
-        
-    def on_connect(self, client, userdata, flags, rc):
+
+
+    def on_connect(self, client, userdata, flags, reason_code, properties):
         """
         """
-        logging.info(f'Hello World connected with result code {rc}')
+        if reason_code == 0:
+            logging.info(f'Hello World successfuly connected on {self.broker_addr}')
+        if reason_code > 0:
+            logging.error(f'Hello World connection error with reason_code {reason_code}')
+
 
     def execute(self):
         """

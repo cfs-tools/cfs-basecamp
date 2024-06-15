@@ -45,7 +45,7 @@ class RouterCmd():
 
 class CmdSource():
     """
-    Provide a socket to receive command and queue commands.
+    Provide a socket to receive and queue commands.
     """
     def __init__(self, ip_addr, port, timeout):
         

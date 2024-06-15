@@ -59,7 +59,7 @@ class RemoteProcess():
     def connect(self):
         connect = False
         try:
-            self.client = mqtt.Client(self.client_name)
+            self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, self.client_name)
             self.client.on_connect = self.on_connect        # Callback function for successful connection
             self.client.on_message = self.process_cmd_stub  # Callback function for receipt of a message
             self.client.connect(self.broker_addr)

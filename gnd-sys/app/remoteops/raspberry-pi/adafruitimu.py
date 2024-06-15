@@ -51,11 +51,16 @@ class AdaFruitImu(RemoteProcess):
 
         self.log_info_event(f'AdaFruit IMU defaults {self.broker_addr}:{self.broker_port}//{self.imu_rate_topic}',queue_event=False)
 
-    def on_connect(self, client, userdata, flags, rc):
-        """
-        """
-        logging.info(f'AdaFruit IMU connected with result code {rc}')
 
+    def on_connect(self, client, userdata, flags, reason_code, properties):
+        """
+        """
+        if reason_code == 0:
+            logging.info(f'AdaFruit IMU successfuly connected on {self.broker_addr}')
+        if reason_code > 0:
+            logging.error(f'AdaFruit IMU connection error with reason_code {reason_code}')
+            
+            
     def execute(self):
         """
         Initialize I2C here as opposed to the constructor so a user can reconnect to hardware
