@@ -223,12 +223,13 @@ class AppEds():
     def get_req_interface(self, interface_type):
         req_interface_list = []
         req_interface = self.doc.getElementsByTagName(EDS_TAG_REQ_INTERFACE)
-        req_interfaces = req_interface[0].getElementsByTagName(EDS_TAG_INTERFACE)
-        for req_interface in req_interfaces:
-            req_interface_name = req_interface.getAttribute(EDS_ATTR_INTERFACE_NAME)
-            req_interface_type = req_interface.getAttribute(EDS_ATTR_INTERFACE_TYPE)
-            if interface_type in req_interface_type:
-                req_interface_list.append(req_interface_name)
+        if len(req_interface) > 0:
+            req_interfaces = req_interface[0].getElementsByTagName(EDS_TAG_INTERFACE)
+            for req_interface in req_interfaces:
+                req_interface_name = req_interface.getAttribute(EDS_ATTR_INTERFACE_NAME)
+                req_interface_type = req_interface.getAttribute(EDS_ATTR_INTERFACE_TYPE)
+                if interface_type in req_interface_type:
+                    req_interface_list.append(req_interface_name)
         return req_interface_list
         
     def get_interface_to_topic_id(self):
@@ -236,23 +237,24 @@ class AppEds():
         interface_to_topic_id = {}
         implementation = self.doc.getElementsByTagName(EDS_TAG_IMPLEMENTATION)
         
-        param_map_set = implementation[0].getElementsByTagName(EDS_TAG_PARAM_MAP_SET)
-        param_map = param_map_set[0].getElementsByTagName(EDS_TAG_PARAM_MAP)
-        for param in param_map:
-            interface = param.getAttribute(EDS_ATTR_PARAM_MAP_INTERFACE)
-            parameter = param.getAttribute(EDS_ATTR_PARAM_MAP_PARAM)
-            var_ref   = param.getAttribute(EDS_ATTR_PARAM_MAP_VAR_REF)
-            if EDS_ATTR_PARAM_MAP_TOPIC_ID in parameter:
-                var_ref_to_interface[var_ref] = interface
+        if len(implementation) > 0:
+            param_map_set = implementation[0].getElementsByTagName(EDS_TAG_PARAM_MAP_SET)
+            param_map = param_map_set[0].getElementsByTagName(EDS_TAG_PARAM_MAP)
+            for param in param_map:
+                interface = param.getAttribute(EDS_ATTR_PARAM_MAP_INTERFACE)
+                parameter = param.getAttribute(EDS_ATTR_PARAM_MAP_PARAM)
+                var_ref   = param.getAttribute(EDS_ATTR_PARAM_MAP_VAR_REF)
+                if EDS_ATTR_PARAM_MAP_TOPIC_ID in parameter:
+                    var_ref_to_interface[var_ref] = interface
 
-        variable_set = implementation[0].getElementsByTagName(EDS_TAG_VARIABLE_SET)
-        variables = variable_set[0].getElementsByTagName(EDS_TAG_VARIABLE)
-        for variable in variables:
-            name = variable.getAttribute(EDS_ATTR_VARIABLE_NAME)
-            if name in var_ref_to_interface:
-                initial_value = variable.getAttribute(EDS_ATTR_VARIABLE_INIT_VAL)
-                initial_value = initial_value.split('/')[1].replace('}','')
-                interface_to_topic_id[var_ref_to_interface[name]] = initial_value
+            variable_set = implementation[0].getElementsByTagName(EDS_TAG_VARIABLE_SET)
+            variables = variable_set[0].getElementsByTagName(EDS_TAG_VARIABLE)
+            for variable in variables:
+                name = variable.getAttribute(EDS_ATTR_VARIABLE_NAME)
+                if name in var_ref_to_interface:
+                    initial_value = variable.getAttribute(EDS_ATTR_VARIABLE_INIT_VAL)
+                    initial_value = initial_value.split('/')[1].replace('}','')
+                    interface_to_topic_id[var_ref_to_interface[name]] = initial_value
         
         #print(f'interface_to_topic_id: {str(interface_to_topic_id)}')
         return interface_to_topic_id
@@ -269,11 +271,28 @@ if __name__ == '__main__':
     eds_defs_path = compress_abs_path(os.path.join(os.getcwd(),'..', basecamp_defs_path, 'eds')) 
     cfe_topic_ids_path_file = os.path.join(eds_defs_path, CFE_TOPICIDS_FILE) 
     print ("cfe_topic_ids_path_file: ", cfe_topic_ids_path_file)
+
+    ## JMSG_LIB
+    usr_apps_path = config.get('PATHS','USR_APP_PATH')
+    jmsg_lib_eds_path = compress_abs_path(os.path.join(os.getcwd(),'..', usr_apps_path, 'jmsg_lib', 'eds')) 
+    jmsg_lib_eds_path_file = os.path.join(jmsg_lib_eds_path, 'jmsg_test.xml') 
+    print ("jmsg_lib EDS spec: ", jmsg_lib_eds_path_file,'\n')
+    jmsg_lib_eds  = AppEds(jmsg_lib_eds_path_file)
+   
+    print('Command topics:')
+    for cmd in jmsg_lib_eds.cmd_topics():
+        print(cmd)
+        
+    print('Telemetry topics:')
+    for tlm in jmsg_lib_eds.tlm_topics():
+        print(tlm)
+
+    exit()    
+    ## FILE_MGR
     basecamp_apps_path = config.get('PATHS','BASECAMP_APPS_PATH')
     file_mgr_eds_path = compress_abs_path(os.path.join(os.getcwd(),'..', basecamp_apps_path, 'file_mgr', 'eds')) 
     file_mgr_eds_path_file = os.path.join(file_mgr_eds_path, 'file_mgr.xml') 
     print ("file_mgr EDS spec: ", file_mgr_eds_path_file,'\n')
-
     cfe_topic_ids = CfeTopicIds(cfe_topic_ids_path_file)
     file_mgr_eds  = AppEds(file_mgr_eds_path_file)
    

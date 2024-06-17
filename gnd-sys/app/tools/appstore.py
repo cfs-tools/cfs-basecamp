@@ -130,35 +130,62 @@ class AppSpec():
     """
     The access methods are defined according to the activities a developer
     needs to do to integrate an app.
-    
-    Libraries can have an EDS spec, but they don't define command and telemetry
-    topic IDs.
+    This design supports topic IDs being defined in multiple EDS files per
+    lib/app.
+    Only one JSON spec per lib/app is allowed and using the <app name>.json
+    naming convention.    
     """
     def __init__(self, app_path, app_name):
 
         self.app_path   = app_path
         self.app_name   = app_name
         self.eds_path   = os.path.join(app_path, 'eds')
-        self.eds_file   = os.path.join(self.eds_path, app_name+'.xml')
         self.json_file  = os.path.join(app_path, app_name+'.json')
+        self.eds_specs  = []
+        self.cmd_topics = []
+        self.tlm_topics = []
         self.is_valid   = False
         self.has_topics = False
-        self.eds  = None                
         self.json = None
         self.app  = None
         self.cfs  = None
 
-        # is_valid and has_topics are False and will be set to True as needed
+        # 'is_valid' and 'has_topics' are False and will be set to True as needed
+        # EDS files are required for apps and optional for libraries to be valid
         if self.read_json_file():
+            self.read_eds_files()
+
+    def read_eds_files(self):
+        """
+        JSON spec must be loaded prior to calling this function 
+        """
+        # Libraries don't require an EDS spec
+        if self.cfs['cfe-type'] == 'CFE_LIB':
+            self.is_valid = True
+
+        if os.path.exists(self.eds_path):
+            eds_dir   = os.listdir(self.eds_path)
+            eds_files = [filename for filename in eds_dir if '.xml' in filename]
+            print(f'*** eds_files: {eds_files}')
+            for eds_filename in eds_files:
+                eds_file = os.path.join(self.eds_path, eds_filename)
+                eds_spec = self.read_eds_file(eds_file)
+                if eds_spec is not None:
+                    self.eds_specs.append(eds_spec)
+            if len(self.eds_specs) > 0:
+                for eds_spec in self.eds_specs:
+                    self.cmd_topics += eds_spec.cmd_topics()
+                    self.tlm_topics += eds_spec.tlm_topics()
+                print(f'*** self.cmd_topics: {self.cmd_topics}')
+                print(f'*** self.tlm_topics: {self.tlm_topics}')
+                if (len(self.cmd_topics) > 0 or len(self.tlm_topics) > 0):
+                    self.has_topics = True
+                    if self.cfs['cfe-type'] == 'CFE_APP':
+                        self.is_valid = True
+        else:
             if self.cfs['cfe-type'] == 'CFE_APP':
-                if os.path.exists(self.eds_path):
-                    if self.read_eds_file():
-                        self.is_valid   = True
-                        self.has_topics = True
-                else:
-                    sg.popup(f'App is missing an EDS spec. Expected {self.eds_path} to exist', title='AppStore Error', grab_anywhere=True, modal=False)
-            elif self.cfs['cfe-type'] == 'CFE_LIB':
-                self.is_valid = True
+                sg.popup(f'App is missing an EDS spec. Expected {self.eds_path} to exist', title='AppStore Error', grab_anywhere=True, modal=False)
+        
             
     def read_json_file(self):
     
@@ -190,19 +217,18 @@ class AppSpec():
     def has_topic_ids(self):
         return self.has_topics
         
-    def read_eds_file(self):        
+    def read_eds_file(self, eds_filename):        
+        eds_obj = None
         try:
-            self.eds = AppEds(self.eds_file)
+            eds_obj = AppEds(eds_filename)
         except Exception as e: 
             if (self.cfs['cfe-type'] == 'CFE_APP'):
-                sg.popup(f'Exception {repr(e)} raised when attempting to read app EDS file {self.eds_file}', title='AppStore Error', grab_anywhere=True, modal=False)
-                return False
+                sg.popup(f'Exception {repr(e)} raised when attempting to read app EDS file {eds_filename}', title='AppStore Error', grab_anywhere=True, modal=False)
             elif (self.cfs['cfe-type'] == 'CFE_LIB'):
-                sg.popup(f'Exception {repr(e)} raised when attempting to read library EDS file {self.eds_file}', title='AppStore Error', grab_anywhere=True, modal=False)
-                return False
+                sg.popup(f'Exception {repr(e)} raised when attempting to read library EDS file {eds_filename}', title='AppStore Error', grab_anywhere=True, modal=False)
             else:
                 pass
-        return True        
+        return eds_obj        
        
     def get_app_info(self):
         info = {}
@@ -215,10 +241,10 @@ class AppSpec():
         return info
 
     def get_cmd_topics(self):
-        return self.eds.cmd_topics()
+        return self.cmd_topics
     
     def get_tlm_topics(self):
-        return self.eds.tlm_topics()
+        return self.tlm_topics
     
     def get_targets_cmake_files(self):
         """
