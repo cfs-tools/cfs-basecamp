@@ -49,20 +49,21 @@
 /*
 ** Event Message IDs
 */
-#define PKTMGR_SOCKET_SEND_ERR_EID      (PKTMGR_BASE_EID +  0)
-#define PKTMGR_LOAD_TBL_EID             (PKTMGR_BASE_EID +  1)
-#define PKTMGR_LOAD_TBL_ENTRY_EID       (PKTMGR_BASE_EID +  2)
-#define PKTMGR_TLM_ENA_OUTPUT_EID       (PKTMGR_BASE_EID +  3)
-#define PKTMGR_ADD_PKT_EID              (PKTMGR_BASE_EID +  4)
-#define PKTMGR_REMOVE_PKT_EID           (PKTMGR_BASE_EID +  5)
-#define PKTMGR_REMOVE_ALL_PKTS_EID      (PKTMGR_BASE_EID +  6)
-#define PKTMGR_DESTRUCTOR_INFO_EID      (PKTMGR_BASE_EID +  7)
-#define PKTMGR_UPDATE_FILTER_CMD_EID    (PKTMGR_BASE_EID +  8)
-#define PKTMGR_SET_TLM_SOURCE_CMD_EID   (PKTMGR_BASE_EID +  9)
-#define PKTMGR_SUBSCRIBE_EID            (PKTMGR_BASE_EID + 10)
-#define PKTMGR_FORWARD_EID              (PKTMGR_BASE_EID + 11)
-#define PKTMGR_UNWRAP_EID               (PKTMGR_BASE_EID + 12)
-#define PKTMGR_DEBUG_EID                (PKTMGR_BASE_EID + 13)
+#define PKTMGR_CONSTRUCTOR_EID          (PKTMGR_BASE_EID +  0)
+#define PKTMGR_SOCKET_SEND_ERR_EID      (PKTMGR_BASE_EID +  1)
+#define PKTMGR_LOAD_TBL_EID             (PKTMGR_BASE_EID +  2)
+#define PKTMGR_LOAD_TBL_ENTRY_EID       (PKTMGR_BASE_EID +  3)
+#define PKTMGR_TLM_ENA_OUTPUT_EID       (PKTMGR_BASE_EID +  4)
+#define PKTMGR_ADD_PKT_EID              (PKTMGR_BASE_EID +  5)
+#define PKTMGR_REMOVE_PKT_EID           (PKTMGR_BASE_EID +  6)
+#define PKTMGR_REMOVE_ALL_PKTS_EID      (PKTMGR_BASE_EID +  7)
+#define PKTMGR_DESTRUCTOR_INFO_EID      (PKTMGR_BASE_EID +  8)
+#define PKTMGR_UPDATE_FILTER_CMD_EID    (PKTMGR_BASE_EID +  9)
+#define PKTMGR_SET_TLM_SOURCE_CMD_EID   (PKTMGR_BASE_EID + 10)
+#define PKTMGR_SUBSCRIBE_EID            (PKTMGR_BASE_EID + 11)
+#define PKTMGR_FORWARD_EID              (PKTMGR_BASE_EID + 12)
+#define PKTMGR_UNWRAP_EID               (PKTMGR_BASE_EID + 13)
+#define PKTMGR_DEBUG_EID                (PKTMGR_BASE_EID + 14)
 
 
 /**********************/
@@ -141,9 +142,11 @@ typedef struct
    ** PktMgr Data
    */
 
+   int32            TlmPipeStatus;
    CFE_SB_PipeId_t  TlmPipe;
    uint32           TlmUdpPort;
    osal_id_t        TlmSockId;
+   OS_SockAddr_t    TlmSocketAddr;
    char             TlmDestIp[PKTMGR_IP_STR_LEN];
    CFE_SB_MsgId_t   PubWrappedTlmMid;
    CFE_SB_MsgId_t   SubWrappedTlmMid;

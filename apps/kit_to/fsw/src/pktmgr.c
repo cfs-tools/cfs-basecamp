@@ -74,7 +74,7 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr,
                         INITBL_Class_t *IniTbl,
                         TBLMGR_Class_t *TblMgr)
 {
-   
+
    PktMgr = PktMgrPtr;
 
    PktMgr->IniTbl       = IniTbl;
@@ -92,10 +92,6 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr,
 
    PKTTBL_SetTblToUnused(&(PktMgr->PktTbl.Data));
 
-   CFE_SB_CreatePipe(&(PktMgr->TlmPipe),
-                     INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_PIPE_DEPTH),
-                     INITBL_GetStrConfig(IniTbl, CFG_PKTMGR_PIPE_NAME));
-      
    CFE_MSG_Init(CFE_MSG_PTR(PktMgr->PktTblTlm), 
                 CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_PKT_TBL_TLM_TOPICID)), 
                 sizeof(KIT_TO_PktTblTlm_t));
@@ -104,11 +100,25 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr,
    
    OS_TaskInstallDeleteHandler(&DestructorCallback); /* Called when application terminates */
 
-   PKTTBL_Constructor(&PktMgr->PktTbl, LoadPktTbl);
-   TBLMGR_RegisterTblWithDef(TblMgr, PKTTBL_NAME,
-                             PKTTBL_LoadCmd, PKTTBL_DumpCmd,
-                             INITBL_GetStrConfig(IniTbl, CFG_PKTTBL_LOAD_FILE));
+   PktMgr->TlmPipeStatus = CFE_SB_CreatePipe(&(PktMgr->TlmPipe),
+                                             INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_PIPE_DEPTH),
+                                             INITBL_GetStrConfig(IniTbl, CFG_PKTMGR_PIPE_NAME));
 
+   if (PktMgr->TlmPipeStatus == CFE_SUCCESS)
+   {
+      PKTTBL_Constructor(&PktMgr->PktTbl, LoadPktTbl);
+      TBLMGR_RegisterTblWithDef(TblMgr, PKTTBL_NAME,
+                                PKTTBL_LoadCmd, PKTTBL_DumpCmd,
+                                INITBL_GetStrConfig(IniTbl, CFG_PKTTBL_LOAD_FILE));
+   }
+   else
+   {
+      // Don't isolate the error. Pipe depth error is most likely cause. 
+      CFE_EVS_SendEvent(PKTMGR_CONSTRUCTOR_EID, CFE_EVS_EventType_ERROR,
+                        "Error creating telemetry pipe, status=%d. Verify pipe depth %d is within cFE configuration limit.",
+                        PktMgr->TlmPipeStatus, INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_PIPE_DEPTH));
+   }
+   
 } /* End PKTMGR_Constructor() */
 
 
@@ -184,39 +194,51 @@ bool PKTMGR_EnableOutputCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    const KIT_TO_EnableOutput_CmdPayload_t *EnableOutput = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_EnableOutput_t);
-   bool  RetStatus = true;
+   bool  RetStatus = false;
    int32 OsStatus;
    
-   strncpy(PktMgr->TlmDestIp, EnableOutput->DestIp, PKTMGR_IP_STR_LEN);
 
-   PktMgr->SuppressSend = false;
-   CFE_EVS_SendEvent(PKTMGR_TLM_ENA_OUTPUT_EID, CFE_EVS_EventType_INFORMATION,
-                     "Telemetry output enabled for IP %s", PktMgr->TlmDestIp);
-
-   /*
-   ** If disabled then create the socket and turn it on. If already
-   ** enabled then destination address is changed in the existing socket
-   */
-   if(PktMgr->DownlinkOn == false)
+   if (PktMgr->TlmPipeStatus == CFE_SUCCESS)
    {
+      
+      /*
+      ** Always update the socket address regardless of the downlink state.
+      */
 
-      OsStatus = OS_SocketOpen(&PktMgr->TlmSockId, OS_SocketDomain_INET, OS_SocketType_DATAGRAM);
+      strncpy(PktMgr->TlmDestIp, EnableOutput->DestIp, PKTMGR_IP_STR_LEN);
+      OS_SocketAddrInit(&PktMgr->TlmSocketAddr, OS_SocketDomain_INET);
+      OS_SocketAddrFromString(&PktMgr->TlmSocketAddr, PktMgr->TlmDestIp);
+      OS_SocketAddrSetPort(&PktMgr->TlmSocketAddr, PktMgr->TlmUdpPort);
 
+      OsStatus = OS_SUCCESS;
+      if(PktMgr->DownlinkOn == false)
+      {
+         OsStatus = OS_SocketOpen(&PktMgr->TlmSockId, OS_SocketDomain_INET, OS_SocketType_DATAGRAM);
+      }
+      
       if (OsStatus == OS_SUCCESS)
       {
+         RetStatus = true;
          PKTMGR_InitStats(INITBL_GetIntConfig(PktMgr->IniTbl, CFG_APP_RUN_LOOP_DELAY),
                           INITBL_GetIntConfig(PktMgr->IniTbl, CFG_PKTMGR_STATS_CONFIG_DELAY));
-         PktMgr->DownlinkOn = true;
+         PktMgr->DownlinkOn   = true;
+         PktMgr->SuppressSend = false;
+         CFE_EVS_SendEvent(PKTMGR_TLM_ENA_OUTPUT_EID, CFE_EVS_EventType_INFORMATION,
+                           "Telemetry output enabled for IP %s", PktMgr->TlmDestIp);         
       }
       else
       {
-         RetStatus = false;
          CFE_EVS_SendEvent(PKTMGR_TLM_ENA_OUTPUT_EID, CFE_EVS_EventType_ERROR,
                            "Telemetry output socket open error. Status = %d", OsStatus);
       }
-
-   } /* End if downlink disabled */
-
+   
+   } /* End if pipe created */
+   else
+   {
+      CFE_EVS_SendEvent(PKTMGR_TLM_ENA_OUTPUT_EID, CFE_EVS_EventType_ERROR,
+                        "Enable telemetry output command rejected. Telemetry pipe not created"); 
+   }
+   
    return RetStatus;
 
 } /* End PKTMGR_EnableOutputCmd() */
@@ -267,14 +289,11 @@ uint16 PKTMGR_OutputTelemetry(void)
    CFE_SB_MsgId_t   MsgId;
    CFE_MSG_ApId_t   MsgAppId;
    CFE_MSG_Size_t   MsgLen;
-   OS_SockAddr_t    SocketAddr;
    CFE_SB_Buffer_t  *SbBufPtr;
    PKTTBL_Pkt_t     *PktTblEntry;
    const CFE_MSG_Message_t *MsgPtr;
 
-   OS_SocketAddrInit(&SocketAddr, OS_SocketDomain_INET);
-   OS_SocketAddrFromString(&SocketAddr, PktMgr->TlmDestIp);
-   OS_SocketAddrSetPort(&SocketAddr, PktMgr->TlmUdpPort);
+   if (PktMgr->TlmPipeStatus != CFE_SUCCESS) return 0; // If tlm pipe not created
     
    /*
    ** CFE_SB_RcvMsg returns CFE_SUCCESS when it gets a packet, otherwise
@@ -344,7 +363,7 @@ uint16 PKTMGR_OutputTelemetry(void)
                      SbStatus = PackEdsOutputMessage(SocketBuffer, MsgPtr, SocketBufferLen, &EdsDataSize);     
                      if (SbStatus == CFE_SUCCESS)
                      {
-                        SocketStatus = OS_SocketSendTo(PktMgr->TlmSockId, SocketBuffer, EdsDataSize, &SocketAddr);
+                        SocketStatus = OS_SocketSendTo(PktMgr->TlmSockId, SocketBuffer, EdsDataSize, &PktMgr->TlmSocketAddr);
                         ++NumPktsOutput;
                         NumBytesOutput += MsgLen;
                      }
@@ -762,7 +781,7 @@ static void FlushTlmPipe(void)
 **      copied into the working table data structure. However there could still
 **      be subscription errors because of invalid table data so in a sense  
 */
-static bool LoadPktTbl(PKTTBL_Data_t* NewTbl)
+static bool LoadPktTbl(PKTTBL_Data_t *NewTbl)
 {
 
    uint16  AppId;
