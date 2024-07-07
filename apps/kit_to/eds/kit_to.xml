@@ -35,8 +35,7 @@
       <!--**** DataTypeSet:  Entry Types ****-->
       <!--***********************************-->
 
-      <StringDataType name="char_x_10" length="10" />
-      <StringDataType name="char_x_16" length="16" />
+      <StringDataType name="char_x_10" length="10" shortDescription="String used in DataTypdesTlm"/>
 
       <EnumeratedDataType name="TblId" shortDescription="Table Identifiers. See app_c_fw.xml guidelines" >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
@@ -88,7 +87,7 @@
 
       <ContainerDataType name="EnableOutput_CmdPayload" shortDescription="Enable TLM packet output">
         <EntryList>
-          <Entry name="DestIp" type="char_x_16" shortDescription="IP address to send to" />
+          <Entry name="DestIp" type="APP_C_FW/IPv4Address" shortDescription="IP address to send to" />
         </EntryList>
       </ContainerDataType>
 
@@ -168,7 +167,7 @@
           <Entry name="PktsPerSec"           type="BASE_TYPES/uint16" />
           <Entry name="BytesPerSec"          type="BASE_TYPES/uint32" />
           <Entry name="TlmSockId"            type="BASE_TYPES/uint16" />
-          <Entry name="TlmDestIp"            type="char_x_16"/>
+          <Entry name="TlmDestIp"            type="APP_C_FW/IPv4Address"/>
           <Entry name="EvtPlbkEna"           type="APP_C_FW/BooleanUint8" />
           <Entry name="EvtPlbkHkPeriod"      type="BASE_TYPES/uint8" />
         </EntryList>
