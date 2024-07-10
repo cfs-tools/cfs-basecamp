@@ -307,7 +307,7 @@ class ManageCfs():
                 update was performed, because the update may not be required.
                 """ 
                 self.selected_app = self.values['-USR_APP-']
-                req_libs_installed, missing_req_libs = self.verify_app_libraries_installed(self.selected_app)
+                req_libs_installed, missing_req_libs = self.verify_dependencies_installed(self.selected_app)
                 if req_libs_installed:
                     self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
                     auto_popup_text = f"{self.selected_app.upper()} was successfully added to Basecamp's cFS target:\n\n"
@@ -331,7 +331,7 @@ class ManageCfs():
                     if display_auto_popup:
                         sg.popup(auto_popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
                 else:
-                    auto_popup_text = f'{self.selected_app.upper()} requires the following libraries to be installed:\n  {missing_req_libs}\n\nAfter the libraries ae installed Basecamp must be restarted before installing the app.'
+                    auto_popup_text = f'{self.selected_app.upper()} requires the following libraries to be installed:\n  {missing_req_libs}\n\nAfter the libraries are installed Basecamp must be restarted before installing the app.'
                     sg.popup(auto_popup_text, title=f'Missing {self.selected_app.upper()} Libraries', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
                                 
             elif self.event == '-1A_MAN-':
@@ -830,14 +830,12 @@ class ManageCfs():
                             item_in_list = self.TRI_STATE.FALSE
         return item_in_list
 
-    def verify_app_libraries_installed(self, app):
+    def verify_dependencies_installed(self, app):
         """
-        Verify an app's library dependencies are installed. Librairies must be 
-        loaded prior to an app that depends on it so this is strictly enforced.
-        App's can depend on other apps, but installation order isn't important.
-        app interdependencies can be checked after a user thinks they have 
-        configured the cFS target.
-        TODO: Remove the reliance on library names containing a 'lib' substring.
+        Verify an app's dependencies defined by JSON 'requires' are installed.
+        Dependencies include libraries and other apps. App dependencies may
+        have timing relationships that are not satisfied simply by the app
+        loading order so this check does not guarantee proper operation. 
         """
         self.usr_app_spec = self.manage_usr_apps.get_app_spec(app)
         app_info = self.usr_app_spec.get_app_info()
@@ -846,9 +844,7 @@ class ManageCfs():
         missing_req_libs = []
         for req_lib in app_info['requires']:
             print(f'req_lib: {req_lib}')
-            # TODO: Replace substring check with app/lib JSON 'cfe-type' check
-            # This check skips 'app_c_fw' which is okay because it's always installed
-            if 'lib' in req_lib:
+            if 'app_c_fw' not in req_lib:
                 app_target_status = self.verify_app_installed_in_target(req_lib)
                 app_target_status.print()
                 if not app_target_status.all_true():

@@ -358,6 +358,7 @@ class AppStore():
         layout = [
                   [sg.Text("Select one or more apps to download then follow the steps in 'Add App'. See 'Add App' tutorial if you are unfamiliar with the steps.\nAn app's JSON spec file has a 'requires' parameter that identifies dependencies that must be installed first.\n", font=hdr_value_font)],
                   app_layout, 
+                  [sg.Text("")],
                   [sg.Button('Download', font=hdr_label_font, button_color=('SpringGreen4')), sg.Button('Cancel', font=hdr_label_font)]
                  ]
 

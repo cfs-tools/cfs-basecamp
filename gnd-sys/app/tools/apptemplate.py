@@ -77,7 +77,8 @@ class AppTemplateJson(JsonFile):
 
     def subdir_files(self, dir_list):
         return dir_list['files']
-        
+          
+
 ###############################################################################
 
 class AppTemplate():
@@ -92,7 +93,8 @@ class AppTemplate():
         self.appname = {}
         self.app_name_map = {}
         self.new_app_dir = None
-
+        self.has_tutorial = False
+        
     def create_app(self, app_name, cfs_app_dir):
 
         app_created = False
@@ -129,7 +131,10 @@ class AppTemplate():
                 subdir_files = self.json.subdir_files(dir)
                 logger.debug("path = " + subdir_path)
                 logger.debug("files = " + str(subdir_files))
-            
+                
+                if subdir_path == "tutorial":
+                    self.has_tutorial = True
+                
                 if len(subdir_path) > 0:
                     template_file_path = os.path.join(self.path, subdir_path)
                     new_app_file_path  = os.path.join(self.new_app_dir, subdir_path)
@@ -293,7 +298,11 @@ class CreateApp():
                     try:
                         app_created, new_app_dir = self.selected_app.create_app(app_name, os.path.join(os.getcwd(),self.usr_app_path))
                         if app_created:
-                            sg.popup(f'Successfully created {app_name} in {new_app_dir}', title="Create Application", modal=False)
+                            tutorial_text = ''
+                            if self.selected_app.has_tutorial:
+                                tutorial_text = "A coding tutorial will be added to the 'Tutorials' dropdown menu when Basecanp is restarted.\n"
+                            popup_text = f'Successfully created {app_name} in {new_app_dir}.\n\n{tutorial_text}'
+                            sg.popup(popup_text, line_width=85, title="Create Application", modal=False)
                             break
                     except:
                         sg.popup(f'Failed to create {app_name} in {new_app_dir}', title="Create Application", modal=False)
