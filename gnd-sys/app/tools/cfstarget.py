@@ -331,7 +331,7 @@ class ManageCfs():
                     if display_auto_popup:
                         sg.popup(auto_popup_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
                 else:
-                    auto_popup_text = f'{self.selected_app.upper()} requires the following libraries to be installed:\n  {missing_req_libs}\n\nAfter the libraries are installed Basecamp must be restarted before installing the app.'
+                    auto_popup_text = f'{self.selected_app.upper()} requires the following libraries to be installed:\n  {missing_req_libs}\n'
                     sg.popup(auto_popup_text, title=f'Missing {self.selected_app.upper()} Libraries', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
                                 
             elif self.event == '-1A_MAN-':

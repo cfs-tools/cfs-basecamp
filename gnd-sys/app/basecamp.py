@@ -77,8 +77,114 @@ from cfsinterface import TelemetryMessage, TelemetryObserver, TelemetryQueueServ
 import paho.mqtt.client as mqtt
 import PySimpleGUI as sg
 
+BASECAMP_INI_FILE  = 'basecamp.ini'
 TUTORIAL_JSON_FILE = 'tutorial.json' #TODO - Remove duplicate definitions
 
+
+###############################################################################
+
+class IniConfig():
+    """
+    Manage the ini configuration parameters. The modifiable dictionary contains
+    parameters that can be modified by the user during runtime.
+    """
+    def __init__(self,ini_file):
+        self.ini_file = ini_file
+        
+        filename, file_ext = os.path.splitext(ini_file)
+        self.usr_ini_file = f'{filename}~{file_ext}'
+        
+        self.config = configparser.ConfigParser()
+        if os.path.exists(self.usr_ini_file):
+            self.config.read(self.usr_ini_file)
+            self.ini_file_in_use = self.usr_ini_file
+        else:
+            self.config.read(self.ini_file)
+            self.ini_file_in_use = self.ini_file
+
+        self.modifiable = {
+            'SUDO_START_CFS':    'CFS_TARGET',
+            'PASSWORD':          'APP',
+            'APP_STORE_URL':     'APP',
+            'APP_STORE_INCLUDE': 'APP',
+            'APP_STORE_EXCLUDE': 'APP',
+            }
+
+    def get(self, section, param):
+        return self.config.get(section,param)
+
+    def getboolean(self, section, param):
+        return self.config.getboolean(section,param)
+
+    def getint(self, section, param):
+        return self.config.getint(section,param)
+
+    def create_window(self):
+        """
+        """
+        hdr_label_font = ('Arial bold',12)
+        hdr_value_font = ('Arial',12)
+        col1_size = (20,1)
+        col2_size = (50,1)
+        butt_pad  = ((5,1),(5,1))
+        rows = [[sg.Text('Parameter', font=hdr_label_font, size=col1_size), 
+                 sg.Text('    Value', font=hdr_label_font, size=col2_size)]]
+        for param in self.modifiable:
+            rows.append([sg.Checkbox(param, default=False, font=hdr_label_font, size=col1_size, key=f'-PARAM_{param}-'),
+                         sg.Input(self.config.get(self.modifiable[param],param), size=col2_size, key=f'-VALUE_{param}-')])
+        layout = [
+                  [sg.Text('\nSelect and enter new values for the parameters you want to update:\n',font=hdr_value_font)],
+                  rows, 
+                  [sg.Text(f'\n"Update" updates the selected parameters for the current session', font=hdr_value_font)],
+                  [sg.Text(f'"Save"     updates the selected parameters and creates {self.usr_ini_file} for future sessions\n', font=hdr_value_font)],
+                  [sg.Button('Update', font=hdr_label_font, pad=butt_pad, button_color=('SpringGreen4')), 
+                   sg.Button('Save',   font=hdr_label_font, pad=butt_pad, button_color=('SpringGreen4')),
+                   sg.Button('Cancel', font=hdr_label_font, pad=butt_pad)]
+                 ]
+
+        window = sg.Window(f'Update Configuration Parameters - {self.ini_file_in_use}', layout, modal=False)
+        return window
+
+    def gui(self):
+    
+        update_str = None
+        window = self.create_window()
+        while True:
+            event, values = window.read()
+            if event in [sg.WIN_CLOSED, 'Cancel']:
+                break
+            if event == 'Update':
+                update_str = self.modify_params('Updated', values)
+                break
+            if event == 'Save':
+                update_str = self.modify_params('Saved', values)
+                with open(self.usr_ini_file, 'w') as configfile:
+                    self.config.write(configfile)
+                break
+        window.close()
+        
+        return update_str
+
+
+    def modify_params(self, modify_type, values):
+    
+        update_str = None
+        param_str  = ''
+        prefix_str = ' '
+        for param in self.modifiable:
+            if values[f'-PARAM_{param}-'] == True:
+                old_value = self.config.get(self.modifiable[param],param)
+                new_value = str(values[f'-VALUE_{param}-'])
+                self.config.set(self.modifiable[param], param, new_value)
+                param_str += f'{prefix_str}{param}: {old_value}=>{new_value}'
+                prefix_str = ', '
+        
+        if len(param_str) > 0:
+            update_str = f'{modify_type} config parameters: {param_str}'
+            
+        return update_str
+        
+        
 ###############################################################################
 
 class TelecommandGui(TelecommandInterface):
@@ -548,37 +654,36 @@ class App():
 
         self.path = os.getcwd()
         self.cfs_interface_dir = os.path.join(self.path, "cfsinterface")
-        self.config = configparser.ConfigParser()
-        self.config.read(ini_file)
+        self.ini_config = IniConfig(ini_file)
 
-        self.APP_VERSION = self.config.get('APP','VERSION')
+        self.APP_VERSION = self.ini_config.get('APP','VERSION')
 
-        self.EDS_MISSION_NAME    = self.config.get('CFS_TARGET','MISSION_EDS_NAME')
-        self.EDS_CFS_TARGET_NAME = self.config.get('CFS_TARGET','CPU_EDS_NAME')
-        self.SUDO_START_CFS      = self.config.getboolean('CFS_TARGET','SUDO_START_CFS')
+        self.EDS_MISSION_NAME    = self.ini_config.get('CFS_TARGET','MISSION_EDS_NAME')
+        self.EDS_CFS_TARGET_NAME = self.ini_config.get('CFS_TARGET','CPU_EDS_NAME')
+        self.SUDO_START_CFS      = self.ini_config.getboolean('CFS_TARGET','SUDO_START_CFS')
 
-        self.CFS_IP_ADDR     = self.config.get('NETWORK','CFS_IP_ADDR')
-        self.CFS_CMD_PORT    = self.config.getint('NETWORK','CFS_CMD_PORT')
+        self.CFS_IP_ADDR     = self.ini_config.get('NETWORK','CFS_IP_ADDR')
+        self.CFS_CMD_PORT    = self.ini_config.getint('NETWORK','CFS_CMD_PORT')
         self.CFS_IP_DEST_STR = f'{self.CFS_IP_ADDR}:{self.CFS_CMD_PORT}'
         
-        self.CFS_MQTT_BROKER_ADDR = self.config.get('NETWORK','MQTT_BROKER_ADDR')
-        self.CFS_MQTT_BROKER_PORT = self.config.get('NETWORK','MQTT_BROKER_PORT')
-        self.CFS_MQTT_CMD_TOPIC   = self.config.get('NETWORK','MQTT_CFS_CMD_TOPIC')
+        self.CFS_MQTT_BROKER_ADDR = self.ini_config.get('NETWORK','MQTT_BROKER_ADDR')
+        self.CFS_MQTT_BROKER_PORT = self.ini_config.get('NETWORK','MQTT_BROKER_PORT')
+        self.CFS_MQTT_CMD_TOPIC   = self.ini_config.get('NETWORK','MQTT_CFS_CMD_TOPIC')
         self.CFS_MQTT_DEST_STR    = f'{self.CFS_MQTT_BROKER_ADDR}:{self.CFS_MQTT_BROKER_PORT}/{self.CFS_MQTT_CMD_TOPIC}'
         
-        self.GND_IP_ADDR      = self.config.get('NETWORK','GND_IP_ADDR')
-        self.GND_TLM_PORT     = self.config.getint('NETWORK','GND_TLM_PORT')
-        self.GND_TLM_TIMEOUT  = float(self.config.getint('NETWORK','GND_TLM_TIMEOUT'))/1000.0
-        self.ROUTER_CTRL_PORT = self.config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
+        self.GND_IP_ADDR      = self.ini_config.get('NETWORK','GND_IP_ADDR')
+        self.GND_TLM_PORT     = self.ini_config.getint('NETWORK','GND_TLM_PORT')
+        self.GND_TLM_TIMEOUT  = float(self.ini_config.getint('NETWORK','GND_TLM_TIMEOUT'))/1000.0
+        self.ROUTER_CTRL_PORT = self.ini_config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
         
-        self.GUI_CMD_PAYLOAD_TABLE_ROWS = self.config.getint('GUI','CMD_PAYLOAD_TABLE_ROWS')
+        self.GUI_CMD_PAYLOAD_TABLE_ROWS = self.ini_config.getint('GUI','CMD_PAYLOAD_TABLE_ROWS')
 
         self.docs_path  = compress_abs_path(os.path.join(self.path, "../../docs"))
         self.tools_path = os.path.join(self.path, "tools")
         
         self.cfs_exe_rel_path   = 'build/exe/' + self.EDS_CFS_TARGET_NAME.lower()
         self.cfs_exe_file       = 'core-' + self.EDS_CFS_TARGET_NAME.lower()
-        self.cfs_abs_base_path  = compress_abs_path(os.path.join(self.path, self.config.get('CFS_TARGET','BASE_PATH')))
+        self.cfs_abs_base_path  = compress_abs_path(os.path.join(self.path, self.ini_config.get('CFS_TARGET','BASE_PATH')))
         self.cfs_subprocess     = None
         self.cfs_subprocess_log = ""
         self.cfs_stdout         = None
@@ -597,11 +702,11 @@ class App():
         self.usr_app_list = [self.GUI_APP_TITLE_STR]  # Non-cFE apps
         self.all_app_list = []  # Combined user and cFE app list
 
-        self.manage_tutorials = ManageTutorials(self.config.get('PATHS', 'TUTORIALS_PATH'))
-        self.create_app       = CreateApp(self.config.get('PATHS', 'APP_TEMPLATES_PATH'),
-                                          self.config.get('PATHS', 'USR_APP_PATH'))
-        self.manage_code_tutorials = ManageCodeTutorials(self.config.get('PATHS', 'USR_APP_PATH'))
-        self.cfs_mqtt_cmd_client = CfsMqttCmdClient(self.CFS_MQTT_BROKER_ADDR, self.config.get('NETWORK','MQTT_CLIENT_NAME'),
+        self.manage_tutorials = ManageTutorials(self.ini_config.get('PATHS', 'TUTORIALS_PATH'))
+        self.create_app       = CreateApp(self.ini_config.get('PATHS', 'APP_TEMPLATES_PATH'),
+                                          self.ini_config.get('PATHS', 'USR_APP_PATH'))
+        self.manage_code_tutorials = ManageCodeTutorials(self.ini_config.get('PATHS', 'USR_APP_PATH'))
+        self.cfs_mqtt_cmd_client = CfsMqttCmdClient(self.CFS_MQTT_BROKER_ADDR, self.ini_config.get('NETWORK','MQTT_CLIENT_NAME'),
                                                     self.CFS_MQTT_CMD_TOPIC, self.display_event)
         
         self.file_browser   = None
@@ -617,7 +722,7 @@ class App():
         # screen is open with a new port number. This strategy assumes 
         # basecamp is run for short periods of time with only a few telemetry
         # screens.
-        self.tlm_screen_port = self.config.getint('NETWORK', 'TLM_SCREEN_TLM_PORT')
+        self.tlm_screen_port = self.ini_config.getint('NETWORK', 'TLM_SCREEN_TLM_PORT')
 
     def update_event_history_str(self, new_event_text):
         time = datetime.now().strftime("%H:%M:%S")
@@ -704,7 +809,7 @@ class App():
     def cmd_topic_list(self):
         cmd_topics = [EdsMission.TOPIC_CMD_TITLE_KEY]
         cmd_topic_list = list(self.telecommand_gui.get_topics().keys())
-        all_cmd_topics = self.config.getboolean('GUI','CMD_TOPICS_ALL')
+        all_cmd_topics = self.ini_config.getboolean('GUI','CMD_TOPICS_ALL')
         for topic in cmd_topic_list:
             if EdsMission.APP_CMD_TOPIC_SUFFIX in topic:
                 cmd_topics.append(topic)
@@ -864,7 +969,7 @@ class App():
 
         #todo: Add check if tlm_plots been run before or is there logic in router?
         if (len(tlm_plot_cmd_parms)>0):
-            self.cmd_tlm_router.add_gnd_tlm_dest(self.config.getint('NETWORK','TLM_PLOT_TLM_PORT'))                
+            self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','TLM_PLOT_TLM_PORT'))                
             self.tlm_plot = sg.execute_py_file("tlmplot.py", parms=tlm_plot_cmd_parms, cwd=self.cfs_interface_dir)
 
     def create_window(self, sys_target_str, sys_comm_str):
@@ -976,7 +1081,7 @@ class App():
         except Exception as e:
             err_str = f'Error creating command-telemetry router: {e}.'
             logger.error(err_str)
-            help_str = 'Verify your ground and cFS IP addresses in bascamp.ini are correct.'
+            help_str = f'Verify your ground and cFS IP addresses in {BASECAMP_INI_FILE} are correct.'
             str_len = len(err_str)
             if len(help_str) > str_len:
                 str_len = len(help_str)
@@ -1036,7 +1141,9 @@ class App():
             ### SYSTEM ###
 
             if self.event == 'Options':
-                self.ComingSoonPopup("Configure Basecamp system options")
+                update_str = self.ini_config.gui()
+                if update_str is not None:
+                    self.display_event(update_str)
             
             elif self.event == 'About':
                 about_msg = ('Basecamp provides a cFS application framework,\n'
@@ -1053,13 +1160,13 @@ class App():
                 self.create_app.execute()
 
             elif self.event == 'Download App':
-                git_topic_include = self.config.get('APP','APP_STORE_INCLUDE').split(',')
-                git_topic_exclude = self.config.get('APP','APP_STORE_EXCLUDE').split(',')
-                app_store = AppStore(self.config.get('APP','APP_STORE_URL'), self.config.get('PATHS','USR_APP_PATH'),git_topic_include, git_topic_exclude)
+                git_topic_include = self.ini_config.get('APP','APP_STORE_INCLUDE').split(',')
+                git_topic_exclude = self.ini_config.get('APP','APP_STORE_EXCLUDE').split(',')
+                app_store = AppStore(self.ini_config.get('APP','APP_STORE_URL'), self.ini_config.get('PATHS','USR_APP_PATH'),git_topic_include, git_topic_exclude)
                 app_store.execute()
  
             elif self.event in ('Add App','Remove App', 'Report App Status'):
-                manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.config.get('PATHS', 'USR_APP_PATH'), self.window, self.EDS_CFS_TARGET_NAME)
+                manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.ini_config.get('PATHS', 'USR_APP_PATH'), self.window, self.EDS_CFS_TARGET_NAME)
                 manage_cfs.execute(self.event.split(' ')[0])
 
             if self.event == 'Certify App':
@@ -1075,28 +1182,28 @@ class App():
                 self.enable_telemetry()
 
             elif self.event == 'Run Script':
-                self.cmd_tlm_router.add_cfs_cmd_source(self.config.getint('NETWORK','SCRIPT_RUNNER_CMD_PORT'))
-                self.cmd_tlm_router.add_gnd_tlm_dest(self.config.getint('NETWORK','SCRIPT_RUNNER_TLM_PORT'))
+                self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_CMD_PORT'))
+                self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_TLM_PORT'))
                 self.script_runner = sg.execute_py_file("scriptrunner.py", cwd=self.cfs_interface_dir)
 
             elif self.event == 'Browse Files' or self.event == '-FILE_BROWSER-':
-                self.cmd_tlm_router.add_cfs_cmd_source(self.config.getint('NETWORK','FILE_BROWSER_CMD_PORT'))
-                self.cmd_tlm_router.add_gnd_tlm_dest(self.config.getint('NETWORK','FILE_BROWSER_TLM_PORT'))
+                self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','FILE_BROWSER_CMD_PORT'))
+                self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','FILE_BROWSER_TLM_PORT'))
                 self.file_browser = sg.execute_py_file("filebrowser.py", cwd=self.cfs_interface_dir)
 
             elif self.event == 'Plot Data':
                 self.launch_tlmplot()
                 
             elif self.event == 'Control Remote Target':
-                self.cmd_tlm_router.add_cfs_cmd_source(self.config.getint('NETWORK','TARGET_CONTROL_CMD_PORT'))
+                self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','TARGET_CONTROL_CMD_PORT'))
                 tools_dir = os.path.join(self.path, "cfsinterface")
                 self.target_control = sg.execute_py_file("targetcontrol.py", cwd=tools_dir)
 
             elif self.event == 'Configure Command Destination':
                 pop_win = sg.Window('Configure Command Destination',
                                     [[sg.Text("")],
-                                     [sg.Text("UDP:",  size=(6,1)), sg.Text("Send commands to cFS IP address/port defined in basecamp.ini")],
-                                     [sg.Text("MQTT:", size=(6,1)), sg.Text("Send commands to MQTT broker/topic defined in basecamp.ini")],
+                                     [sg.Text("UDP:",  size=(6,1)), sg.Text(f'Send commands to cFS IP address/port defined in {BASECAMP_INI_FILE}')],
+                                     [sg.Text("MQTT:", size=(6,1)), sg.Text(f'Send commands to MQTT broker/topic defined in {BASECAMP_INI_FILE}')],
                                      [sg.Text("")],
                                      [sg.Button('UDP',  button_color=('SpringGreen4'), enable_events=True, key='-UDP-',  pad=(10,1)),
                                       sg.Button('MQTT', button_color=('SpringGreen4'), enable_events=True, key='-MQTT-', pad=(10,1)), 
@@ -1227,7 +1334,7 @@ class App():
                 cfs_abs_exe_path = os.path.join(self.cfs_abs_base_path, self.cfs_exe_rel_path) 
                 if self.SUDO_START_CFS:
                    start_sh  = os.path.join(self.path, Cfs.SH_SUDO_START_CFS)
-                   password  = self.config.get('APP','PASSWORD')
+                   password  = self.ini_config.get('APP','PASSWORD')
                    popen_str = f'{start_sh} {cfs_abs_exe_path} {self.cfs_exe_file} {password}'
                 else:
                    start_sh  = os.path.join(self.path, Cfs.SH_START_CFS)
@@ -1546,7 +1653,7 @@ def run_app():
     #todo - Try to get reload EDS to work
     execute = True
     while execute:
-        app = App('basecamp.ini')
+        app = App(BASECAMP_INI_FILE)
         execute = app.execute()
         break
     logger.info('Exiting app')

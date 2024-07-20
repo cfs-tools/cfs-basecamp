@@ -81,6 +81,7 @@ class JsonFile():
 
 class JsonTblTopicMap():
     """
+    TODO: Generalize from hard coded KIT_TO JSON packet-array structure 
     KTI_SCH and KIT_TO use a Topic ID mapping scheme in their JSON tables
     that allow their table parsing code to use a generic table field
     name like "topic-id" that is mapped to a specifc Topic ID in it's
@@ -114,8 +115,10 @@ class JsonTblTopicMap():
     JSON_TOPIC_ID_MAP     = 'topic-id-map'
     JSON_TOPIC_ID_MAP_END = 'end'
     JSON_TOPIC_ID_PREFIX  = 'topic-id-'
+    JSON_TOPIC_NAME       = 'name'
     
     JSON_SPARE_TOPIC_PREFIX  = 'SPARE_'
+    JSON_SPARE_TOPIC_NAME    = 'SPARE_TOPICID'
     JSON_SPARE_TOPIC_KEYWORD = 'topic-id-'
     
     def __init__(self, json_file):
@@ -135,30 +138,42 @@ class JsonTblTopicMap():
     def replace_spare_topics(self, new_topics):
         """
         The JSON dictionary doesn't maintain positional order when dictionary entries
-        are replaced so the JSON file is directly changed.
+        are replaced so the JSON file is directly changed for the topic-id-map
+        updates. After the topic-id-map is updated the file contents are read into a
+        JSON dictionary to replace the spare topic names in the message array.
         
         File is written only if the entire new_topic list is replaced
-        Assumes spare topic IDs are at the end of the topic map object
+        Assumes
+        - Spare topic IDs are at the end of the topic map object
+        - Topic map object is before the array object using the mapped topic IDs
+        - JSON file uses the JSON constants defined at the app level 
+        - JSON_TOPIC_NAME object is followed by JSON_TOPIC_ID_PREFIX object 
         """
         spare_topics = self.spare_topics()
         if len(new_topics) == 0 or len(new_topics) > len(spare_topics):
            return False
-           
+        
+        replaced_tids = {}  # Topic IDs replaced, created as each TID replaced 
         replaced_list = False
         instantiated_text = ""
+        last_name_val = ""
         with open(self.file) as f:
             for line in f:
                 if not replaced_list:
                     if ':' in line:
-                        keyword = line.split(':')
-                        keyword_str = keyword[0].strip().strip('"')                    
+                        keyword     = line.split(':')
+                        keyword_str = keyword[0].strip().strip('\"')
+                        keyword_val = keyword[1].strip().strip('\",\n')
+                        # Skip topics already in JSON file                        
                         if keyword_str in new_topics:
-                            print('found existing keyword: ',keyword_str)
+                            print('Found existing keyword: ',keyword_str)
                             del new_topics[new_topics.index(keyword_str)]
                             if len(new_topics) == 0:
                                replaced_list = True
-                        elif JsonTblTopicMap.JSON_SPARE_TOPIC_PREFIX in keyword_str:
-                            line = f'      "{new_topics[0]}": {keyword[1]}'
+                        elif  keyword_str.startswith(JsonTblTopicMap.JSON_SPARE_TOPIC_PREFIX):
+                            # Logic has a hole in it if new_topic[0] occurs later in the JSON file
+                            line = f'      "{new_topics[0]}": "{keyword_val}",\n'
+                            replaced_tids[keyword_val] = new_topics[0]   # Save topic names for later substitution
                             del new_topics[0]
                             if len(new_topics) == 0:
                                replaced_list = True
@@ -166,9 +181,20 @@ class JsonTblTopicMap():
                 instantiated_text += line
         
         if replaced_list:
+            replaced_tid = False
+            json_text = json.loads(instantiated_text)
+            for obj in json_text["packet-array"]:
+                for tid in replaced_tids:
+                    if tid in obj["packet"]:
+                        obj["packet"][JsonTblTopicMap.JSON_TOPIC_NAME] = replaced_tids[tid]
+                        replaced_tid = True
+                        
+            if replaced_tid:
+                instantiated_text = json.dumps(json_text,indent=3)
+            
             with open(self.file, 'w') as f:
                 f.write(instantiated_text)
-       
+            
         self.load_json(self.file)
         return True
         
@@ -181,16 +207,18 @@ class JsonTblTopicMap():
         """
         if len(remove_topics) == 0:
            return False
-           
-        print(f'remove_topics: {remove_topics}')
+        
+        # Copy used for removing topic names in array
+        remove_topic_names = remove_topics.copy() 
+
         removed_list = False
         instantiated_text = ""
         with open(self.file) as f:
             for line in f:
                 if not removed_list:
                     if ':' in line:
-                        keyword = line.split(':')
-                        keyword_str = keyword[0].strip().strip('"')
+                        keyword     = line.split(':')
+                        keyword_str = keyword[0].strip().strip('"')           
                         if keyword_str in remove_topics:
                             remove_idx = remove_topics.index(keyword_str)
                             print(f'Keyword: {keyword_str} at remove_list index {remove_idx}')
@@ -202,7 +230,18 @@ class JsonTblTopicMap():
                             del remove_topics[remove_idx]
                             if len(remove_topics) == 0:
                                removed_list = True
-
+                else:
+                    if ':' in line:
+                        keyword = line.split(':')
+                        keyword_str = keyword[0].strip().strip('\"')
+                        keyword_val = keyword[1].strip().strip('\",\n')                
+                        if JsonTblTopicMap.JSON_TOPIC_NAME in keyword_str:
+                           for topic_name in remove_topic_names:
+                               if topic_name in keyword_val:
+                                   print('orgline: ', line)
+                                   line = f'           "{keyword_str}":"{JsonTblTopicMap.JSON_SPARE_TOPIC_NAME}",\n'
+                                   print('newline: ', line)
+                
                 instantiated_text += line
         
         if removed_list:
@@ -218,7 +257,7 @@ class JsonTblTopicMap():
 if __name__ == '__main__':
 
     json_topic_map = JsonTblTopicMap('../../../cfe-eds-framework/basecamp_defs/cpu1_kit_to_pkt_tbl.json')
-    json_topic_map.replace_spare_topics(['## REPLACE 1 ##', '## REPLACE 2 ##'])
-    json_topic_map.restore_spare_topics(['## REPLACE 1 ##', '## REPLACE 2 ##'])
+    json_topic_map.replace_spare_topics(['replace-1', 'replace-2'])
+    json_topic_map.restore_spare_topics(['replace-1', 'replace-2'])
     
     

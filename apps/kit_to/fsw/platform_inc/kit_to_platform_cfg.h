@@ -44,7 +44,7 @@
 ** Packet Table Configurations
 */
 
-#define PKTTBL_JSON_FILE_MAX_CHAR  32768
+#define PKTTBL_JSON_FILE_MAX_CHAR  50000
 
 
 #endif /* _kit_to_platform_cfg_ */
