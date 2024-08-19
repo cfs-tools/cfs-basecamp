@@ -62,6 +62,15 @@ static void SendStatusTlm(void);
 DEFINE_ENUM(Config,APP_CONFIG)  
 
 
+static CFE_EVS_BinFilter_t  EventFilters[] =
+{
+
+   /* Event ID                Mask                  */
+   {DEVICE_RANDOM_DATA_EID,   CFE_EVS_FIRST_8_STOP}
+   
+};
+
+
 /*****************/
 /** Global Data **/
 /*****************/
@@ -78,7 +87,8 @@ void APP_C_DEMO_AppMain(void)
 
    uint32 RunStatus = CFE_ES_RunStatus_APP_ERROR;
    
-   CFE_EVS_Register(NULL, 0, CFE_EVS_NO_FILTER);
+   CFE_EVS_Register(EventFilters,sizeof(EventFilters)/sizeof(CFE_EVS_BinFilter_t),
+                    CFE_EVS_EventFilter_BINARY);
 
    if (InitApp() == CFE_SUCCESS)      /* Performs initial CFE_ES_PerfLogEntry() call */
    {
@@ -116,9 +126,16 @@ void APP_C_DEMO_AppMain(void)
 bool APP_C_DEMO_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
+   uint32 PipeIndex;
+
    CFE_EVS_SendEvent (APP_C_DEMO_NOOP_EID, CFE_EVS_EventType_INFORMATION,
                       "No operation command received for APP_C_DEMO App version %d.%d.%d",
                       APP_C_DEMO_MAJOR_VER, APP_C_DEMO_MINOR_VER, APP_C_DEMO_PLATFORM_REV);
+
+
+   CFE_SB_PipeId_ToIndex(AppCDemo.CmdPipe, &PipeIndex);
+   CFE_EVS_SendEvent (APP_C_DEMO_NOOP_EID, CFE_EVS_EventType_DEBUG,
+                      "AppCDemo.CmdPipe = %d",PipeIndex);
 
    return true;
 

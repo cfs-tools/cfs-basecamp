@@ -57,15 +57,17 @@ static int32 InitApp(void);
 static int32 ProcessCommands(void);
 static void SendHousekeepingPkt(void);
 
+
+/**********************/
+/** File Global Data **/
+/**********************/
+
 /* 
 ** Must match DECLARE ENUM() declaration in app_cfg.h
 ** Defines "static INILIB_CfgEnum_t IniCfgEnum"
 */
 DEFINE_ENUM(Config,APP_CONFIG)
 
-/**********************/
-/** File Global Data **/
-/**********************/
 
 static CFE_EVS_BinFilter_t  EventFilters[] =
 {

@@ -192,7 +192,7 @@ class TelecommandGui(TelecommandInterface):
     GUI to manage a user selecting and sending a single telecommand 
     """
     
-    def __init__(self, mission, target, cmd_router_queue):
+    def __init__(self, mission, target, cmd_router_queue, gui_cmd_payload_row_count, gui_cmd_payload_row_input):
         super().__init__(mission, target, cmd_router_queue)
 
         """
@@ -206,8 +206,9 @@ class TelecommandGui(TelecommandInterface):
        
         self.UNDEFINED_CMD_LIST = [self.NULL_CMD_STR]
 
-        self.PAYLOAD_ROWS, self.PAYLOAD_COLS, self.PAYLOAD_HEADINGS = 8, 3, ('Parameter Name','Type','Value',)
-        self.PAYLOAD_INPUT_START = 3 # First row of input payloads (see SendCmd() payload_layout comment)
+        self.PAYLOAD_COL_COUNT, self.PAYLOAD_HEADINGS = 3, ('Parameter Name','Type','Value',)
+        self.PAYLOAD_ROW_COUNT = gui_cmd_payload_row_count
+        self.PAYLOAD_ROW_INPUT = gui_cmd_payload_row_input # First row of input payloads (see execute()'s payload_layout comment)
         self.PAYLOAD_TEXT_INPUT  = 'text'
         self.PAYLOAD_COMBO_INPUT = 'combo'
         
@@ -310,16 +311,16 @@ class TelecommandGui(TelecommandInterface):
 
     def display_payload_gui_entries(self):
         """
-        See SendCmd() payload_layout definition comment for initial payload display
+        See execute()'s payload_layout definition comment for initial payload display
         When there are no payload parameters (zero length) hide all rows except the first parameter.
         """
-        for row in range(self.PAYLOAD_ROWS):
+        for row in range(self.PAYLOAD_ROW_COUNT):
             self.window[f'-PAYLOAD_{row}_NAME-'].update(visible=False)
             self.window[f'-PAYLOAD_{row}_TYPE-'].update(visible=False)
             self.window[f'-PAYLOAD_{row}_VALUE-'].update(visible=False, value=self.UNDEFINED_CMD_LIST[0])
 
         enum_row  = 0
-        entry_row = self.PAYLOAD_INPUT_START
+        entry_row = self.PAYLOAD_ROW_INPUT
         row = 0
 
         if len(self.payload_gui_entries) > 0:
@@ -333,11 +334,11 @@ class TelecommandGui(TelecommandInterface):
                 else:
                     row = enum_row
                     enum_row += 1
-                    if enum_row < self.PAYLOAD_INPUT_START:
+                    if enum_row < self.PAYLOAD_ROW_INPUT:
                         payload_enum_list = self.payload_gui_entries[payload_gui_name]['gui_value']
                         self.window[f'-PAYLOAD_{row}_VALUE-'].update(visible=True,value=payload_enum_list[0], values=payload_enum_list)
                     else:
-                        sg.popup(f"The number of command enumerations exceeds the self.PAYLOAD_INPUT_START max definition of {self.PAYLOAD_INPUT_START}. Increase the value of self.PAYLOAD_INPUT_START to meet the command's number of enumerations.", title='Command GUI Error', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                        sg.popup(f"The number of command enumerations exceeds the self.PAYLOAD_ROW_INPUT max definition of {self.PAYLOAD_ROW_INPUT}. Increase the value of self.PAYLOAD_ROW_INPUT to meet the command's number of enumerations.", title='Command GUI Error', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
                   
                 self.payload_gui_entries[payload_gui_name]['gui_value_key'] = f'-PAYLOAD_{row}_VALUE-'
                 self.window[f'-PAYLOAD_{row}_NAME-'].update(visible=True,value=payload_gui_name)
@@ -385,7 +386,7 @@ class TelecommandGui(TelecommandInterface):
             sg.Popup('This is a topic-only command do not select a command/payload', title=topic_name, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
         
         # Create a layout with more than enough input and combo boxes. Then hide what's not needed for a particular command 
-        # The top rows below self.PAYLOAD_INPUT_START are used for enumerated types with combo boxes and the remaining rows
+        # The top rows below self.PAYLOAD_ROW_INPUT are used for enumerated types with combo boxes and the remaining rows
         # are input boxes
         #todo: Had some GUI alignment issues with hiding. See https://github.com/PySimpleGUI/PySimpleGUI/issues/1154
         #todo: Other payload ideas: Create a new send command window. Search command list and tailor max input/combo to specific topic
@@ -394,8 +395,8 @@ class TelecommandGui(TelecommandInterface):
         row_label_size = (20,1)
         row_input_size = (20,1)
         self.payload_layout = [[sg.Text(heading, font=row_title_font, size=row_label_size) for i, heading in enumerate(self.PAYLOAD_HEADINGS)]]
-        for row in range(self.PAYLOAD_ROWS):
-            if row < self.PAYLOAD_INPUT_START:
+        for row in range(self.PAYLOAD_ROW_COUNT):
+            if row < self.PAYLOAD_ROW_INPUT:
                 self.payload_layout += [[sg.pin(sg.Text('Name', font=row_font, size=row_label_size, key="-PAYLOAD_%d_NAME-"%row, visible=False))] + [sg.pin(sg.Text('Type', font=row_font, size=row_label_size, key="-PAYLOAD_%d_TYPE-"%row, visible=False))] + [sg.pin(sg.Combo((self.UNDEFINED_CMD_LIST), font=row_font, size=row_input_size, enable_events=True, key="-PAYLOAD_%d_VALUE-"%row, default_value=self.UNDEFINED_CMD_LIST[0], visible=False))]]
             else:
                 self.payload_layout += [[sg.pin(sg.Text('Name', font=row_font, size=row_label_size, key="-PAYLOAD_%d_NAME-"%row, visible=False))] + [sg.pin(sg.Text('Type', font=row_font, size=row_label_size, key="-PAYLOAD_%d_TYPE-"%row, visible=False))] + [sg.pin(sg.Input(self.UNDEFINED_CMD_LIST[0], font=row_font, size=row_input_size, enable_events=True, key="-PAYLOAD_%d_VALUE-"%row, visible=False))]]
@@ -662,6 +663,9 @@ class App():
         self.EDS_CFS_TARGET_NAME = self.ini_config.get('CFS_TARGET','CPU_EDS_NAME')
         self.SUDO_START_CFS      = self.ini_config.getboolean('CFS_TARGET','SUDO_START_CFS')
 
+        self.CMD_GUI_PAYLOAD_ROW_COUNT = self.ini_config.getint('GUI','CMD_PAYLOAD_ROW_COUNT')
+        self.CMD_GUI_PAYLOAD_ROW_INPUT = self.ini_config.getint('GUI','CMD_PAYLOAD_ROW_INPUT')
+
         self.CFS_IP_ADDR     = self.ini_config.get('NETWORK','CFS_IP_ADDR')
         self.CFS_CMD_PORT    = self.ini_config.getint('NETWORK','CFS_CMD_PORT')
         self.CFS_IP_DEST_STR = f'{self.CFS_IP_ADDR}:{self.CFS_CMD_PORT}'
@@ -675,11 +679,10 @@ class App():
         self.GND_TLM_PORT     = self.ini_config.getint('NETWORK','GND_TLM_PORT')
         self.GND_TLM_TIMEOUT  = float(self.ini_config.getint('NETWORK','GND_TLM_TIMEOUT'))/1000.0
         self.ROUTER_CTRL_PORT = self.ini_config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
-        
-        self.GUI_CMD_PAYLOAD_TABLE_ROWS = self.ini_config.getint('GUI','CMD_PAYLOAD_TABLE_ROWS')
 
-        self.docs_path  = compress_abs_path(os.path.join(self.path, "../../docs"))
-        self.tools_path = os.path.join(self.path, "tools")
+        self.default_doc = self.ini_config.get('APP','DEFAULT_DOC')
+        self.docs_path   = compress_abs_path(os.path.join(self.path, self.ini_config.get('PATHS','APP_DOC_PATH')))
+        self.tools_path  = os.path.join(self.path, "tools")
         
         self.cfs_exe_rel_path   = 'build/exe/' + self.EDS_CFS_TARGET_NAME.lower()
         self.cfs_exe_file       = 'core-' + self.EDS_CFS_TARGET_NAME.lower()
@@ -841,13 +844,34 @@ class App():
             if app_name not in self.cfe_app_list and app_name not in self.app_tlm_list:
                 self.app_tlm_list.append(app_name)
 
-    def view_pdf_doc(self, doc_filename):
-        pdf_filename = f'{self.docs_path}{doc_filename}'
-        print(f'path_filename: {pdf_filename}')
-        if os.path.isfile(pdf_filename):
-            self.pdf_viewer = sg.execute_py_file("pdfviewer.py", parms=pdf_filename, cwd=self.tools_path)
-        else:
-            sg.popup(f'Failed to open {pdf_filename}, file does not exist.', title='Documents', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+    def view_pdf_doc(self, pdf_filename):
+        pdf_path     = self.docs_path
+        pdf_pathfile = f'{pdf_path}{pdf_filename}'
+        print(f'path_filename: {pdf_pathfile}')
+        layout = [[sg.T('')], 
+                  [sg.Text('Dir:   '), sg.Text(pdf_path,key='-DIR_TEXT-')],
+                  [sg.Text('File: '), sg.Input(pdf_filename,size=(30,1),enable_events=True,key="-INP_FILE-", pad=(5,1)), sg.FileBrowse(initial_folder=self.docs_path, file_types=[("PDF Files","*.pdf")])],
+                  [sg.Button('Open',button_color=('SpringGreen4'),enable_events=True,key='-OPEN-', pad=(5,1)),sg.Cancel(button_color=('gray'))]
+                 ]
+        doc_window = sg.Window('Basecamp Documents', layout, size=(500,100))
+        while True:
+            doc_event, doc_values = doc_window.read()
+            if doc_event in (sg.WIN_CLOSED, 'Exit', 'Cancel'):
+                break
+            # FileBrowse Open generates Input event 
+            elif doc_event == '-INP_FILE-':
+                pdf_pathfile = doc_values['-INP_FILE-']
+                (pdf_path, pdf_filename) = os.path.split(os.path.abspath(pdf_pathfile))
+                doc_window['-DIR_TEXT-'].update(pdf_path)
+                doc_window['-INP_FILE-'].update(pdf_filename)
+            elif doc_event == '-OPEN-':
+                print(f'path_filename: {pdf_filename}')
+                if os.path.isfile(pdf_pathfile):
+                    self.pdf_viewer = sg.execute_py_file("pdfviewer.py", parms=pdf_pathfile, cwd=self.tools_path)
+                else:
+                    sg.popup(f'Failed to open {pdf_pathfile}, file does not exist.', title='Document Open Error', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                break
+        doc_window.close()
         
     def view_tutorial_doc(self, pdf_viewer_app, tutorial_path):
         """
@@ -980,18 +1004,17 @@ class App():
         sg.theme('LightGreen')
         sg.set_options(element_padding=(0, 0))
     
-        tutorial_titles = []
+        learn_menu = ['Documents...'] + ['---']
         if len(self.manage_code_tutorials.tutorial_titles) > 0:
-            tutorial_titles += self.manage_tutorials.tutorial_titles + ['---'] + self.manage_code_tutorials.tutorial_titles
+            learn_menu += self.manage_tutorials.tutorial_titles + ['---'] + self.manage_code_tutorials.tutorial_titles
         else:
-            tutorial_titles += self.manage_tutorials.tutorial_titles
+            learn_menu += self.manage_tutorials.tutorial_titles
         
         menu_def = [
                        ['System', ['Options', 'About', 'Exit']],
                        ['Developer', ['Create App', 'Download App', 'Add App', 'Remove App', 'Report App Status', '---', 'Run Perf Monitor']], #todo: 'Certify App' 
                        ['Operator', ['Browse Files', 'Run Script', 'Plot Data', '---', 'Control Remote Target', 'Configure Command Destination', 'Configure Telemetry Source']],
-                       ['Documents', ['cFS Overview', 'cFE Overview', 'App Dev Guide', 'Remote Ops Guide', 'App Spec Guide']],
-                       ['Tutorials', tutorial_titles]
+                       ['Learn', learn_menu]
                    ]
 
         self.common_cmds = ['-- Common Commands--', 'Enable Telemetry', 'Reset Time', 'Noop/Reset App', 'Restart App', 'Configure Event Types', 'Reset Event Filter', 'Ena/Dis Flywheel', 'Set Tlm Source', 'cFE Version']
@@ -1091,7 +1114,8 @@ class App():
         try:
             # Command Objects    
              
-            self.telecommand_gui    = TelecommandGui(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cfs_cmd_output_queue)
+            self.telecommand_gui    = TelecommandGui(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cfs_cmd_output_queue,
+                                                     self.CMD_GUI_PAYLOAD_ROW_COUNT, self.CMD_GUI_PAYLOAD_ROW_INPUT)
             self.telecommand_script = TelecommandScript(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cfs_cmd_output_queue)
              
             # Telemetry Objects
@@ -1271,18 +1295,10 @@ class App():
                     sg.clipboard_set(text)
                 """
             
-            elif self.event == 'cFS Overview':
-                self.view_pdf_doc('basecamp-cfs-overview.pdf')
-            elif self.event == 'cFE Overview':
-                self.view_pdf_doc('basecamp-cfs-framework.pdf')
-            elif self.event == 'App Dev Guide':
-                self.view_pdf_doc('basecamp-app-dev.pdf')
-            elif self.event == 'Remote Ops Guide':
-                self.view_pdf_doc('basecamp-remote-ops.pdf')
-            elif self.event == 'App Spec Guide':
-                self.view_pdf_doc('basecamp-app-spec.pdf')
-                
-            ### TUTORIALS ###
+            ### LEARN ###
+            elif self.event == 'Documents...':
+                self.view_pdf_doc(self.default_doc)
+
             elif self.event in self.manage_tutorials.tutorial_titles:
                 """
                 tutorial_dir = self.manage_tutorials.tutorial_lookup[self.event].path

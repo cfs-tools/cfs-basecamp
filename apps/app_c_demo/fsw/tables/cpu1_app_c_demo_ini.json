@@ -7,7 +7,7 @@
       "APP_CFE_NAME": "APP_C_DEMO",
       "APP_PERF_ID":  127,
      
-      "APP_CMD_PIPE_DEPTH": 5,
+      "APP_CMD_PIPE_DEPTH": 7,
       "APP_CMD_PIPE_NAME":  "APP_C_DEMO_CMD",
 
       "APP_C_DEMO_CMD_TOPICID": 6236,
