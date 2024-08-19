@@ -100,7 +100,7 @@ class TelecommandGui(TelecommandInterface):
        
         self.UNDEFINED_CMD_LIST = [self.NULL_CMD_STR]
 
-        self.PAYLOAD_ROWS, self.PAYLOAD_COLS, self.PAYLOAD_HEADINGS = 8, 3, ('Parameter Name','Type','Value',)
+        self.PAYLOAD_ROWS, self.PAYLOAD_COLS, self.PAYLOAD_HEADINGS = 63, 3, ('Parameter Name','Type','Value',)  # originally self.PAYLOAD_ROWS = 8. When having too many payloads, using CFS/KIT_TO/add_package command will cause a crash. I set this to 63 to cover most of the occations.
         self.PAYLOAD_INPUT_START = 3 # First row of input payloads (see SendCmd() payload_layout comment)
         self.PAYLOAD_TEXT_INPUT  = 'text'
         self.PAYLOAD_COMBO_INPUT = 'combo'
