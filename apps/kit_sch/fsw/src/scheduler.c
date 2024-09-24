@@ -436,7 +436,7 @@ bool SCHEDULER_Execute(void)
 **   1. Function signature must match the CMDMGR_CmdFuncPtr_t definition
 **
 */
-bool SCHEDULER_LoadMsgTblEntryCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool SCHEDULER_LoadMsgTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    const  KIT_SCH_LoadMsgTblEntry_CmdPayload_t *LoadMsgTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_LoadMsgTblEntry_t);   
@@ -479,7 +479,7 @@ bool SCHEDULER_LoadMsgTblEntryCmd(void* ObjDataPtr, const CFE_MSG_Message_t *Msg
 ** Notes:
 **   1. Utiity functions send events for errors.
 */
-bool SCHEDULER_LoadSchTblEntryCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool SCHEDULER_LoadSchTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    const  KIT_SCH_LoadSchTblEntry_CmdPayload_t *LoadSchTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_LoadSchTblEntry_t);

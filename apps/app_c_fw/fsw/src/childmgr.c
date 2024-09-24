@@ -378,7 +378,7 @@ void CHILDMGR_ResetStatus(CHILDMGR_Class_t *ChildMgr)
 void ChildMgr_TaskMainCallback(void)
 {
 
-   CHILDMGR_Class_t * ChildMgr = NULL; 
+   CHILDMGR_Class_t *ChildMgr = NULL; 
 
    /*
    ** The child task runs until the parent dies (normal end) or

@@ -78,7 +78,7 @@ static PKTTBL_Data_t   TblData;        /* Working buffer for loads */
 
 static void ConstructJsonPacket(JsonPacket_t *JsonPacket, uint16 PktArrayIdx);
 static bool LoadJsonData(size_t JsonFileLen);
-static bool WriteJsonPkt(int32 FileHandle, const PKTTBL_Pkt_t* Pkt, bool FirstPktWritten);
+static bool WriteJsonPkt(int32 FileHandle, const PKTTBL_Pkt_t *Pkt, bool FirstPktWritten);
 
 
 /******************************************************************************
@@ -228,7 +228,7 @@ void PKTTBL_SetTblToUnused(PKTTBL_Data_t *TblPtr)
 ** Function: ConstructJsonPacket
 **
 */
-static void ConstructJsonPacket(JsonPacket_t* JsonPacket, uint16 PktArrayIdx)
+static void ConstructJsonPacket(JsonPacket_t *JsonPacket, uint16 PktArrayIdx)
 {
 
    char KeyStr[64];
@@ -408,7 +408,7 @@ static bool LoadJsonData(size_t JsonFileLen)
 **   1. Can't end last record with a comma so logic checks that commas only
 **      start to be written after the first packet has been written
 */
-static bool WriteJsonPkt(int32 FileHandle, const PKTTBL_Pkt_t* Pkt, bool FirstPktWritten)
+static bool WriteJsonPkt(int32 FileHandle, const PKTTBL_Pkt_t *Pkt, bool FirstPktWritten)
 {
    
    bool PktWritten = false;

@@ -35,13 +35,6 @@
       <!--**** DataTypeSet:  Entry Types ****-->
       <!--***********************************-->
     
-      <EnumeratedDataType name="CrcUint8" shortDescription="8-bit CRC algorithm selection" >
-        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
-        <EnumerationList>
-          <Enumeration label="CRC_16" value="${CFE_MISSION/ES_CRC_16}" shortDescription="Only CRC supported by cFE ES" />
-        </EnumerationList>
-      </EnumeratedDataType>
-
       <EnumeratedDataType name="FileSysTblEntryState" shortDescription="" >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
@@ -148,7 +141,7 @@
         <EntryList>
           <Entry name="Filename"   type="BASE_TYPES/PathName"   shortDescription="path/filename of file to send info for" />
           <Entry name="ComputeCrc" type="APP_C_FW/BooleanUint8" shortDescription="True: Compute CRC, FALSE: Do not compute CRC" />
-          <Entry name="CrcType"    type="CrcUint8"              shortDescription="Select which type of CRC algorithm to use" />
+          <Entry name="CrcType"    type="APP_C_FW/CrcUint8"     shortDescription="Select which type of CRC algorithm to use" />
         </EntryList>
       </ContainerDataType>
 
@@ -222,14 +215,14 @@
 
       <ContainerDataType name="FileInfoTlm_Payload" shortDescription="">
         <EntryList>
-          <Entry name="State"        type="BASE_TYPES/uint8"    shortDescription="See FileUtil_FileState definitions. TODO: Add enum" />
-          <Entry name="CrcComputed"  type="BASE_TYPES/uint8"    shortDescription="Flag indicating whether a CRC was computed" />
-          <Entry name="Spare"        type="BASE_TYPES/uint16"   shortDescription="Double word aligment padding" />
-          <Entry name="Crc"          type="BASE_TYPES/uint32"   shortDescription="CRC value if computed" />
-          <Entry name="Size"         type="BASE_TYPES/uint32"   shortDescription="File Size in bytes" />
-          <Entry name="Time"         type="BASE_TYPES/uint32"   shortDescription="Time of last file modification" />
-          <Entry name="Mode"         type="BASE_TYPES/uint32"   shortDescription="Permissions as received by call to TODO" />
-          <Entry name="Filename"     type="BASE_TYPES/PathName" shortDescription="" />
+          <Entry name="State"        type="BASE_TYPES/uint8"      shortDescription="See FileUtil_FileState definitions. TODO: Add enum" />
+          <Entry name="CrcComputed"  type="APP_C_FW/BooleanUint8" shortDescription="Flag indicating whether a CRC was computed" />
+          <Entry name="Spare"        type="BASE_TYPES/uint16"     shortDescription="Double word aligment padding" />
+          <Entry name="Crc"          type="BASE_TYPES/uint32"     shortDescription="CRC value if computed" />
+          <Entry name="Size"         type="BASE_TYPES/uint32"     shortDescription="File Size in bytes" />
+          <Entry name="Time"         type="BASE_TYPES/uint32"     shortDescription="Time of last file modification" />
+          <Entry name="Mode"         type="BASE_TYPES/uint32"     shortDescription="Permissions as received by call to TODO" />
+          <Entry name="Filename"     type="BASE_TYPES/PathName"   shortDescription="" />
         </EntryList>
       </ContainerDataType>
 

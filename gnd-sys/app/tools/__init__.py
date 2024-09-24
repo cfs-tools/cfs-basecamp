@@ -31,8 +31,10 @@ from .appstore import AppStore, AppSpec, ManageUsrApps
 from .apptemplate import CreateApp
 from .cfstarget import AppTargetStatus, AppTopicIdStatus, Cfs, CfsStdout, ManageCfs
 from .eds import CfeTopicIds, AppEds
+from .githubapps import GitHubApps
 from .jsonfile import JsonTblTopicMap
 from .pdfviewer import PdfViewer
+from .projtarget import CreateProject
 from .tutorial import ManageTutorials
 from .texteditor import TextEditor
 from .utils import *

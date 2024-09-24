@@ -270,7 +270,7 @@ void MSGTBL_ResetStatus(void)
 ** Function: ConstructJsonMessage
 **
 */
-static void ConstructJsonMessage(JsonMessage_t* JsonMessage, uint16 MsgArrayIdx)
+static void ConstructJsonMessage(JsonMessage_t *JsonMessage, uint16 MsgArrayIdx)
 {
 
    char KeyStr[64];

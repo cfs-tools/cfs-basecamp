@@ -84,7 +84,7 @@ static const char* JsonStatusStr[] = {
 
 /* JSONTypes_t -  String lookup table */
 
-static const char* JsonTypeStr[] = {
+static const char *JsonTypeStr[] = {
   
   "Invalid",  /* JSONInvalid */
   "String",   /* JSONString  */
@@ -97,7 +97,7 @@ static const char* JsonTypeStr[] = {
   
 };
 
-static const char* BoolStr[] = {
+static const char *BoolStr[] = {
    "false",
    "true",
    "UNDEF"
@@ -242,7 +242,7 @@ void CJSON_ObjConstructor(CJSON_Obj_t *Obj, const char *QueryKey,
 **
 ** Type checking should enforce valid parameter but check just to be safe.
 */
-const char* CJSON_ObjTypeStr(JSONTypes_t  ObjType)
+const char *CJSON_ObjTypeStr(JSONTypes_t  ObjType)
 {
 
    uint8 i = 0;
@@ -302,7 +302,7 @@ bool CJSON_ProcessFileAlt(const char *Filename, char *JsonBuf,
 **    None
 **
 */
-static bool LoadObj(CJSON_Obj_t* Obj, const char* Buf, size_t BufLen, OBJ_Necessity_t Necessity)
+static bool LoadObj(CJSON_Obj_t *Obj, const char *Buf, size_t BufLen, OBJ_Necessity_t Necessity)
 {
    
    bool         RetStatus = false;
@@ -440,7 +440,7 @@ static bool LoadObj(CJSON_Obj_t* Obj, const char* Buf, size_t BufLen, OBJ_Necess
 **       printing 100 bytes per OS_printf() call
 **
 */
-static void PrintJsonBuf(const char* JsonBuf, size_t BufLen)
+static void PrintJsonBuf(const char *JsonBuf, size_t BufLen)
 {
    
    int  i = 0;
@@ -476,9 +476,9 @@ static void PrintJsonBuf(const char* JsonBuf, size_t BufLen)
 **     structure. 
 **
 */
-static bool ProcessFile(const char* Filename, char* JsonBuf, size_t MaxJsonFileChar,
+static bool ProcessFile(const char *Filename, char *JsonBuf, size_t MaxJsonFileChar,
                         CJSON_LoadJsonData_t LoadJsonData,
-                        CJSON_LoadJsonDataAlt_t LoadJsonDataAlt, void* UserDataPtr,
+                        CJSON_LoadJsonDataAlt_t LoadJsonDataAlt, void *UserDataPtr,
                         bool CallbackWithUserData)
 {
 
@@ -584,7 +584,7 @@ static bool StubLoadJsonData(size_t JsonFileLen)
 **      therefore it should never get executed.
 **
 */
-static bool StubLoadJsonDataAlt(size_t JsonFileLen, void* UserDataPtr)
+static bool StubLoadJsonDataAlt(size_t JsonFileLen, void *UserDataPtr)
 {
    
    CFE_EVS_SendEvent(CJSON_INTERNAL_ERR_EID, CFE_EVS_EventType_CRITICAL, 

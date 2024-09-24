@@ -50,7 +50,7 @@ static void CreateBinCntStr(void);
 /** Global File Data **/
 /**********************/
 
-static HISTOGRAM_Class_t*  Histogram = NULL;
+static HISTOGRAM_Class_t *Histogram = NULL;
 
 
 /******************************************************************************

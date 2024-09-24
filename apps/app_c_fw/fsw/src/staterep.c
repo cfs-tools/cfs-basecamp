@@ -57,10 +57,10 @@ typedef struct
 /** Local Function Prototypes **/
 /*******************************/
 
-static bool GetIdBit(STATEREP_Class_t*    StateRep,
-                     const char*          CallerStr,
+static bool GetIdBit(STATEREP_Class_t     *StateRep,
+                     const char           *CallerStr,
                      uint16               Id,
-                     StateRepBitStruct_t* StateRepBit);
+                     StateRepBitStruct_t  *StateRepBit);
                          
 
 /******************************************************************************
@@ -69,8 +69,8 @@ static bool GetIdBit(STATEREP_Class_t*    StateRep,
 ** Notes:
 **    None
 */
-void STATEREP_Constructor(STATEREP_Class_t*  StateRep, 
-                          uint16             IdCnt)
+void STATEREP_Constructor(STATEREP_Class_t  *StateRep, 
+                          uint16            IdCnt)
 {
 
    uint16 RemBitCnt, i;
@@ -108,8 +108,8 @@ bool STATEREP_ClearBitCmd(                   void *ObjDataPtr,  /* Pointer to an
                           const CFE_MSG_Message_t *MsgPtr)      /* Pointer to STATEREP_ClearBitCmd struct      */
 {
 
-   STATEREP_Class_t*          StateRep    = (STATEREP_Class_t*)ObjDataPtr;
-   STATEREP_ClearBitCmdMsg_t* ClearBitCmd = (STATEREP_ClearBitCmdMsg_t*)MsgPtr;
+   STATEREP_Class_t           *StateRep    = (STATEREP_Class_t*)ObjDataPtr;
+   STATEREP_ClearBitCmdMsg_t  *ClearBitCmd = (STATEREP_ClearBitCmdMsg_t*)MsgPtr;
 
 
    bool                 RetStatus = true;
@@ -163,13 +163,13 @@ bool STATEREP_ClearBitCmd(                   void *ObjDataPtr,  /* Pointer to an
 ** Notes:
 **    None
 */
-bool STATEREP_ConfigBitCmd(                void*  ObjDataPtr,  /* Pointer to an instance of a STATEREP_Class   */
-                           const CFE_MSG_Message_t *MsgPtr)    /* Pointer to STATEREP_ConfigBitCmd struct */
+bool STATEREP_ConfigBitCmd(                void    *ObjDataPtr,  /* Pointer to an instance of a STATEREP_Class   */
+                           const CFE_MSG_Message_t *MsgPtr)      /* Pointer to STATEREP_ConfigBitCmd struct */
 
 {
 
-   STATEREP_Class_t*            StateRep     = (STATEREP_Class_t*)ObjDataPtr;
-   STATEREP_ConfigBitCmdMsg_t*  ConfigBitCmd = (STATEREP_ConfigBitCmdMsg_t*)MsgPtr;
+   STATEREP_Class_t            *StateRep     = (STATEREP_Class_t*)ObjDataPtr;
+   STATEREP_ConfigBitCmdMsg_t  *ConfigBitCmd = (STATEREP_ConfigBitCmdMsg_t*)MsgPtr;
 
    bool RetStatus = true;
 
@@ -243,8 +243,8 @@ bool STATEREP_ConfigBitCmd(                void*  ObjDataPtr,  /* Pointer to an 
 **    1. Logic assumes STATEREP_REPORT_MODE has two states.
 **
 */
-void STATEREP_GenTlmMsg(STATEREP_Class_t*  StateRep,
-                        STATEREP_TlmMsg_t* StateRepMsg)
+void STATEREP_GenTlmMsg(STATEREP_Class_t  *StateRep,
+                        STATEREP_TlmMsg_t *StateRepMsg)
 {
 
    uint16  i;
@@ -283,8 +283,8 @@ void STATEREP_GenTlmMsg(STATEREP_Class_t*  StateRep,
 **       return status is provided because the caller always expects the call
 **       to be successful.
 */
-void STATEREP_SetBit(STATEREP_Class_t*  StateRep,
-                             uint16     Id)
+void STATEREP_SetBit(STATEREP_Class_t  *StateRep,
+                             uint16    Id)
 {
 
    bool                 ValidId;
@@ -319,7 +319,7 @@ void STATEREP_SetBit(STATEREP_Class_t*  StateRep,
 **    None
 **
 */
-void STATEREP_SetTlmMode(STATEREP_Class_t*   StateRep,
+void STATEREP_SetTlmMode(STATEREP_Class_t    *StateRep,
                          STATEREP_TlmMode_t  TlmMode)
 {
 
@@ -332,7 +332,7 @@ void STATEREP_SetTlmMode(STATEREP_Class_t*   StateRep,
 ** Function: STATEREP_TlmModeStr
 **
 */
-const char* STATEREP_TlmModeStr(STATEREP_TlmMode_t  TlmMode)
+const char *STATEREP_TlmModeStr(STATEREP_TlmMode_t  TlmMode)
 {
 
    static const char* TlmModeStr[] =
@@ -362,10 +362,10 @@ const char* STATEREP_TlmModeStr(STATEREP_TlmMode_t  TlmMode)
 **    1. If the ID is invalid (too big) then an event message is sent.
 **
 */
-static bool GetIdBit(STATEREP_Class_t*    StateRep,
-                     const char*          CallerStr,
+static bool GetIdBit(STATEREP_Class_t     *StateRep,
+                     const char           *CallerStr,
                      uint16               Id,
-                     StateRepBitStruct_t* StateRepBit)                        
+                     StateRepBitStruct_t  *StateRepBit)                        
 {
 
    bool  RetStatus = true;

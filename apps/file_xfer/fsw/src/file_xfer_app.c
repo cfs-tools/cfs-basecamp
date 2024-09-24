@@ -127,7 +127,7 @@ void FILE_XFER_AppMain(void)
 **
 */
 
-bool FILE_XFER_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool FILE_XFER_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CFE_EVS_SendEvent (FILE_XFER_NOOP_EID, CFE_EVS_EventType_INFORMATION,
@@ -145,7 +145,7 @@ bool FILE_XFER_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 **
 */
 
-bool FILE_XFER_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool FILE_XFER_ResetAppCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CFE_EVS_ResetFilter (FITP_DATA_SEGMENT_CMD_ERR_EID);

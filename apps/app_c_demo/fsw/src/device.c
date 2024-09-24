@@ -47,7 +47,7 @@
 /** Global File Data **/
 /**********************/
 
-static DEVICE_Class_t*  Device = NULL;
+static DEVICE_Class_t *Device = NULL;
 
 
 /******************************************************************************

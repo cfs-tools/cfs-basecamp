@@ -203,8 +203,8 @@ bool SCHTBL_DumpCmd(osal_id_t FileHandle)
 ** Compute and load EntryIndex if the SlotIndex and ActivityIndex are valid.
 ** Event message text assumes commands are being validated 
 */
-bool SCHTBL_GetEntryIndex(const char* EventStr, uint16 SlotIndex, 
-                          uint16 ActivityIndex, uint16* EntryIndex)
+bool SCHTBL_GetEntryIndex(const char *EventStr, uint16 SlotIndex, 
+                          uint16 ActivityIndex, uint16 *EntryIndex)
 {
    
    bool RetStatus = false;
@@ -307,7 +307,7 @@ void SCHTBL_ResetStatus(void)
 ** validate command and table parameters that may not be packed identically
 ** to the internal structure.
 */
-bool SCHTBL_ValidEntry(const char* EventStr, uint16 Enabled, uint16 Period, 
+bool SCHTBL_ValidEntry(const char *EventStr, uint16 Enabled, uint16 Period, 
                        uint16 Offset, uint16 MsgTblIndex)
 {
 
@@ -368,7 +368,7 @@ bool SCHTBL_ValidEntry(const char* EventStr, uint16 Enabled, uint16 Period,
 ** Function: ConstructJsonActivity
 **
 */
-static void ConstructJsonActivity(JsonActivity_t* JsonActivity, uint16 ActivityArrayIdx, uint16 SlotArrayIdx)
+static void ConstructJsonActivity(JsonActivity_t *JsonActivity, uint16 ActivityArrayIdx, uint16 SlotArrayIdx)
 {
 
    char KeyStr[64];
@@ -395,7 +395,7 @@ static void ConstructJsonActivity(JsonActivity_t* JsonActivity, uint16 ActivityA
 ** Function: ConstructJsonSlot
 **
 */
-static void ConstructJsonSlot(JsonSlot_t* JsonSlot, uint16 SlotArrayIdx)
+static void ConstructJsonSlot(JsonSlot_t *JsonSlot, uint16 SlotArrayIdx)
 {
 
    char KeyStr[64];

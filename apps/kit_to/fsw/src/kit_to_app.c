@@ -149,7 +149,7 @@ void KIT_TO_AppMain(void)
 **
 */
 
-bool KIT_TO_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool KIT_TO_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CFE_EVS_SendEvent (KIT_TO_APP_NOOP_EID, CFE_EVS_EventType_INFORMATION,
@@ -167,7 +167,7 @@ bool KIT_TO_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 **
 */
 
-bool KIT_TO_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool KIT_TO_ResetAppCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CFE_EVS_ResetAllFilters();
@@ -188,7 +188,7 @@ bool KIT_TO_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 **
 */
 
-bool KIT_TO_SendDataTypesTlmCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool KIT_TO_SendDataTypesTlmCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    int32 Status;
@@ -205,7 +205,7 @@ bool KIT_TO_SendDataTypesTlmCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPt
 ** Function: KIT_TO_SetRunLoopDelayCmd
 **
 */
-bool KIT_TO_SetRunLoopDelayCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool KIT_TO_SetRunLoopDelayCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    const KIT_TO_SetRunLoopDelay_CmdPayload_t *SetRunLoopDelay = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_TO_SetRunLoopDelay_t);
@@ -247,7 +247,7 @@ bool KIT_TO_SetRunLoopDelayCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr
 ** Function: KIT_TO_TestPktFilterCmd
 **
 */
-bool KIT_TO_TestPktFilterCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool KIT_TO_TestPktFilterCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    return true;

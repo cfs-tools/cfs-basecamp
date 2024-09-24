@@ -356,13 +356,13 @@ class AppStore():
                                   sg.Text(self.git_app_repo.get_descr(app), font=hdr_value_font, size=(100,1))])
                 
         layout = [
-                  [sg.Text("Select one or more apps to download then follow the steps in 'Add App'. See 'Add App' tutorial if you are unfamiliar with the steps.\nAn app's JSON spec file has a 'requires' parameter that identifies dependencies that must be installed first.\n", font=hdr_value_font)],
+                  [sg.Text("Select one or more apps to download then follow the steps in 'File->Add Target App'. See 'Tutorials->TBD' tutorial if you are unfamiliar with the steps.\nAn app's JSON spec file has a 'requires' parameter that identifies dependencies that must be installed first.\n", font=hdr_value_font)],
                   app_layout, 
                   [sg.Text("")],
-                  [sg.Button('Download', font=hdr_label_font, button_color=('SpringGreen4')), sg.Button('Cancel', font=hdr_label_font)]
+                  [sg.Button('Download', font=hdr_label_font, button_color=('SpringGreen4'), pad=(2,0)), sg.Button('Cancel', font=hdr_label_font, pad=(2,0))]
                  ]
 
-        window = sg.Window('Download App', layout, modal=False)
+        window = sg.Window('Download User App', layout, modal=False)
         return window
 
 

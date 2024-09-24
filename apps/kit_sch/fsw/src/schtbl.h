@@ -133,7 +133,7 @@ typedef struct
 **      because a reference is stored by schtbl.c.
 **
 */
-void SCHTBL_Constructor(SCHTBL_Class_t*ObjPtr);
+void SCHTBL_Constructor(SCHTBL_Class_t *ObjPtr);
 
 
 /******************************************************************************

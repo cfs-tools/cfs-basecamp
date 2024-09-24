@@ -90,7 +90,7 @@ typedef struct
 typedef struct
 { 
    bool         IsOpen;
-   const char*  Name;
+   const char  *Name;
 
 } FileUtil_CheckFileState_t;
 
@@ -142,7 +142,7 @@ bool FileUtil_AppendPathSep(char *DirName, uint16 BufferLen);
 **
 ** Return a string describing the FileUtil_FileState enumeration.
 */
-const char* FileUtil_FileStateStr(FileUtil_FileState_t  FileState);
+const char *FileUtil_FileStateStr(FileUtil_FileState_t  FileState);
 
 
 /******************************************************************************

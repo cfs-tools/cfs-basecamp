@@ -86,7 +86,7 @@ typedef struct
    ** App Framework References
    */
    
-   const INITBL_Class_t*  IniTbl;
+   const INITBL_Class_t  *IniTbl;
 
    /*
    ** Telemetry Packets

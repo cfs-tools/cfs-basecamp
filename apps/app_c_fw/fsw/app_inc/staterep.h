@@ -220,7 +220,7 @@ typedef struct
 **      default is STATEREP_NEW_REPORT.
 **
 */
-void STATEREP_Constructor(STATEREP_Class_t*  StateRep, 
+void STATEREP_Constructor(STATEREP_Class_t  *StateRep, 
                           uint16             IdCnt);      /* Number of state definition IDs used (not an index, but a count) */
                              
 
@@ -327,7 +327,7 @@ void STATEREP_SetTlmMode(STATEREP_Class_t   *StateRep,
 ** Notes:
 **   None
 */
-const char* STATEREP_TlmModeStr(STATEREP_TlmMode_t  TlmMode);
+const char *STATEREP_TlmModeStr(STATEREP_TlmMode_t  TlmMode);
 
 
 #endif  /* _staterep_ */

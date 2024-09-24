@@ -59,6 +59,15 @@
       <!--**** DataTypeSet:  Entry Types ****-->
       <!--***********************************-->
 
+      <!-- cFS Extension -->
+
+      <EnumeratedDataType name="CrcUint8" shortDescription="8-bit CRC algorithm selection" >
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="CRC_16" value="${CFE_MISSION/ES_CRC_16}" shortDescription="Only CRC supported by cFE ES" />
+        </EnumerationList>
+      </EnumeratedDataType>
+
       <!-- General -->
 
       <StringDataType name="IPv4Address" length="16" />

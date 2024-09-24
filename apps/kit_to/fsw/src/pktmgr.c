@@ -53,7 +53,7 @@
 static void  ComputeStats(uint16 PktsSent, uint32 BytesSent);
 static void  DestructorCallback(void);
 static void  FlushTlmPipe(void);
-static bool  LoadPktTbl(PKTTBL_Data_t* NewTbl);
+static bool  LoadPktTbl(PKTTBL_Data_t *NewTbl);
 static int32 PackEdsOutputMessage(void *DestBuffer, const CFE_MSG_Message_t *SrcBuffer, 
                                   size_t SrcBufferSize, size_t *EdsDataSize);
 static int32 SubscribeNewPkt(PKTTBL_Pkt_t *NewPkt);
@@ -62,7 +62,7 @@ static int32 SubscribeNewPkt(PKTTBL_Pkt_t *NewPkt);
 /** Global File Data **/
 /**********************/
 
-static PKTMGR_Class_t*  PktMgr = NULL;
+static PKTMGR_Class_t *PktMgr = NULL;
 static CFE_HDR_TelemetryHeader_PackedBuffer_t SocketBuffer;
 static uint16 SocketBufferLen = sizeof(SocketBuffer);
 

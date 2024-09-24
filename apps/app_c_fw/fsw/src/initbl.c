@@ -40,9 +40,9 @@
 /** Local File Function Prototypes **/
 /************************************/
 
-static bool BuildJsonTblObjArray (INITBL_Class_t* IniTbl);
-static bool LoadJsonData(size_t JsonFileLen, void* UserDataPtr);
-static bool ValidJsonObjCfg(const INITBL_Class_t* IniTbl, uint16 JsonObjIndex, JSONTypes_t Type);
+static bool BuildJsonTblObjArray (INITBL_Class_t *IniTbl);
+static bool LoadJsonData(size_t JsonFileLen, void *UserDataPtr);
+static bool ValidJsonObjCfg(const INITBL_Class_t *IniTbl, uint16 JsonObjIndex, JSONTypes_t Type);
 
 
 /******************************************************************************

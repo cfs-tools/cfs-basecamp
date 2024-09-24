@@ -115,7 +115,7 @@ typedef struct
 } CHILDMGR_CmdQ_t;
 
 
-typedef bool (*CHILDMGR_CmdFuncPtr_t) (void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+typedef bool (*CHILDMGR_CmdFuncPtr_t) (void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 /*
 ** Objects register their command functions so each command structure
@@ -128,7 +128,7 @@ typedef bool (*CHILDMGR_CmdFuncPtr_t) (void* ObjDataPtr, const CFE_MSG_Message_t
 ** Manage app objects function callback signature 
 */
 struct CHILDMGR_Struct;
-typedef bool (*CHILDMGR_TaskCallback_t) (struct CHILDMGR_Struct* ChildMgr);
+typedef bool (*CHILDMGR_TaskCallback_t) (struct CHILDMGR_Struct *ChildMgr);
 
 
 /*

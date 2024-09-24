@@ -87,7 +87,7 @@ typedef struct
 typedef struct
 {
 
-   void*          TblData;
+   void           *TblData;
    size_t         TblDataLen;
    bool           Updated;
    JSONTypes_t    Type;      /* Defined in core_json.h */
@@ -119,7 +119,7 @@ typedef struct
 
 /* User callback function to load table data */
 typedef bool (*CJSON_LoadJsonData_t)(size_t JsonFileLen);
-typedef bool (*CJSON_LoadJsonDataAlt_t)(size_t JsonFileLen, void* UserDataPtr);
+typedef bool (*CJSON_LoadJsonDataAlt_t)(size_t JsonFileLen, void *UserDataPtr);
 
 
 /************************/
@@ -167,7 +167,7 @@ bool CJSON_LoadObj(CJSON_Obj_t *Obj, const char *Buf, size_t BufLen);
 **   1. See file prologue for supported JSON types.
 **
 */
-size_t CJSON_LoadObjArray(CJSON_Obj_t *Obj, size_t ObjCnt, const char* Buf, size_t BufLen);
+size_t CJSON_LoadObjArray(CJSON_Obj_t *Obj, size_t ObjCnt, const char *Buf, size_t BufLen);
 
 
 /******************************************************************************
@@ -227,6 +227,6 @@ bool CJSON_ProcessFile(const char *Filename, char *JsonBuf,
 */
 bool CJSON_ProcessFileAlt(const char *Filename, char *JsonBuf, 
                           size_t MaxJsonFileChar, CJSON_LoadJsonDataAlt_t LoadJsonDataAlt,
-                          void* UserDataPtr);
+                          void *UserDataPtr);
 
 #endif /* _cjson_ */

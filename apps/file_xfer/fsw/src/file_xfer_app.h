@@ -178,14 +178,14 @@ void FILE_XFER_AppMain(void);
 ** Function: FILE_XFER_NoOpCmd
 **
 */
-bool FILE_XFER_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FILE_XFER_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
 ** Function: FILE_XFER_ResetAppCmd
 **
 */
-bool FILE_XFER_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FILE_XFER_ResetAppCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 #endif /* _file_xfer_app_ */

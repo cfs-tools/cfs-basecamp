@@ -185,7 +185,7 @@ typedef struct
 **   1. This must be called prior to any other function.
 **
 */
-void FOTP_Constructor(FOTP_Class_t*  FotpPtr, INITBL_Class_t* IniTbl);
+void FOTP_Constructor(FOTP_Class_t *FotpPtr, INITBL_Class_t *IniTbl);
 
 
 /******************************************************************************
@@ -194,7 +194,7 @@ void FOTP_Constructor(FOTP_Class_t*  FotpPtr, INITBL_Class_t* IniTbl);
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FOTP_CancelTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FOTP_CancelTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -212,7 +212,7 @@ void FOTP_Execute(void);
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FOTP_PauseTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FOTP_PauseTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -228,7 +228,7 @@ void FOTP_ResetStatus(void);
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FOTP_ResumeTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FOTP_ResumeTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -237,7 +237,7 @@ bool FOTP_ResumeTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FOTP_StartBinTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FOTP_StartBinTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -248,7 +248,7 @@ bool FOTP_StartBinTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FOTP_StartTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FOTP_StartTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 #endif /* _fotp_ */

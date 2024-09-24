@@ -173,7 +173,7 @@ typedef struct
 **   1. This must be called prior to any other function.
 **
 */
-void FITP_Constructor(FITP_Class_t*  FitpPtr);
+void FITP_Constructor(FITP_Class_t *FitpPtr);
 
 
 /******************************************************************************
@@ -184,7 +184,7 @@ void FITP_Constructor(FITP_Class_t*  FitpPtr);
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FITP_CancelTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FITP_CancelTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -195,7 +195,7 @@ bool FITP_CancelTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FITP_DataSegmentCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FITP_DataSegmentCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -206,7 +206,7 @@ bool FITP_DataSegmentCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FITP_FinishTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FITP_FinishTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -224,7 +224,7 @@ void FITP_ResetStatus(void);
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FITP_StartBinTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FITP_StartBinTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -235,7 +235,7 @@ bool FITP_StartBinTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
-bool FITP_StartTransferCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FITP_StartTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 #endif /* _fitp_ */

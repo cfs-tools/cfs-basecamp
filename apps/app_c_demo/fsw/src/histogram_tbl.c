@@ -54,7 +54,7 @@ static bool ValidTblData(void);
 /** Global File Data **/
 /**********************/
 
-static HISTOGRAM_TBL_Class_t* HistogramTbl = NULL;
+static HISTOGRAM_TBL_Class_t  *HistogramTbl = NULL;
 
 static HISTOGRAM_TBL_Data_t TblData; /* Working buffer for loads */
 

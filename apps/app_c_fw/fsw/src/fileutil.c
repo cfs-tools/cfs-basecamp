@@ -34,9 +34,9 @@
 /** Local Functions **/
 /*********************/
 
-static void CountOpenFiles(osal_id_t ObjId, void* CallbackArg);
+static void CountOpenFiles(osal_id_t ObjId, void *CallbackArg);
 static bool IsValidFilename(const char *Filename, uint32 Length);
-static void LoadOpenFileData(osal_id_t ObjId, void* CallbackArg);
+static void LoadOpenFileData(osal_id_t ObjId, void *CallbackArg);
 static CFE_ES_TaskId_t TaskId_FromOSAL(osal_id_t id);
 
 /************************/
@@ -91,10 +91,10 @@ bool FileUtil_AppendPathSep(char *DirName, uint16 BufferLen)
 **
 ** Type checking should enforce valid parameter but check just to be safe.
 */
-const char* FileUtil_FileStateStr(FileUtil_FileState_t  FileState)
+const char *FileUtil_FileStateStr(FileUtil_FileState_t  FileState)
 {
 
-   static const char* FileStateStr[] = 
+   static const char *FileStateStr[] = 
    {
       "Undefined", 
       "Invalid Filename",    /* FILEUTIL_FILENAME_INVALID */
@@ -233,7 +233,7 @@ uint16 FileUtil_GetOpenFileList(FileUtil_OpenFileList_t *OpenFileList)
 ** Read a line from a text file.
 **
 */
-bool FileUtil_ReadLine (int FileHandle, char* DestBuf, int MaxChar) 
+bool FileUtil_ReadLine (int FileHandle, char *DestBuf, int MaxChar) 
 {
 
    char    c, *DestPtr;
@@ -272,7 +272,7 @@ bool FileUtil_ReadLine (int FileHandle, char* DestBuf, int MaxChar)
 ** Notes:
 **  1. Verify file name is valid and that the directory exists.
 */
-bool FileUtil_VerifyDirForWrite(const char* Filename)
+bool FileUtil_VerifyDirForWrite(const char *Filename)
 {
 
    bool RetStatus = false;
@@ -300,7 +300,7 @@ bool FileUtil_VerifyDirForWrite(const char* Filename)
 **     are scenarios when the user must stil open the file.  For example when
 **     they pass the filename to a third party library. 
 */
-bool FileUtil_VerifyFileForRead(const char* Filename)
+bool FileUtil_VerifyFileForRead(const char *Filename)
 {
 
    bool       RetStatus = false;
@@ -337,7 +337,7 @@ bool FileUtil_VerifyFileForRead(const char* Filename)
 ** Notes:
 **  1. Verify file name len, termination, and characters are valid.
 */
-bool FileUtil_VerifyFilenameStr(const char* Filename)
+bool FileUtil_VerifyFilenameStr(const char *Filename)
 {
 
    int16  Len = 0;
@@ -385,7 +385,7 @@ bool FileUtil_VerifyFilenameStr(const char* Filename)
 ** Notes:
 **  1. Callback function for OS_ForEachObject()
 */
-static void CountOpenFiles(osal_id_t ObjId, void* CallbackArg)
+static void CountOpenFiles(osal_id_t ObjId, void *CallbackArg)
 {
 
    uint16* OpenFileCount = (uint16*)CallbackArg;
@@ -463,7 +463,7 @@ static bool IsValidFilename(const char *Filename, uint32 Length)
 ** Notes:
 **  1. Callback function for OS_ForEachObject()
 */
-static void LoadOpenFileData(osal_id_t ObjId, void* CallbackArg)
+static void LoadOpenFileData(osal_id_t ObjId, void *CallbackArg)
 {
 
    FileUtil_OpenFileList_t* OpenFileList = (FileUtil_OpenFileList_t*)CallbackArg;

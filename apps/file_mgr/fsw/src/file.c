@@ -20,7 +20,7 @@
 **       CFE_MISSION_EVS_MAX_MESSAGE_LENGTH and relies on CFE_EVS_SendEvent() to
 **       truncate long messages. TODO - Improve this.
 **    2. When get FileUtil_GetFileInfo() is used to verify whether a target file
-**       exists it does not verify the directroy path is valid so an operation
+**       exists it does not verify the directory path is valid so an operation
 **       could still get an error when it tries to use the target path/file.
 **
 */
@@ -795,7 +795,7 @@ static bool ComputeFileCrc(const char *CmdName, const char *Filename, uint32 *Cr
             OS_close(FileHandle);
             
             CFE_EVS_SendEvent(FILE_COMPUTE_FILE_CRC_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "Concatenate file cmd error: File read error, OS_read status = %d", FileBytesRead);
+                              "%s failed: Error computing CRC, OS_read status = %d", Filename, FileBytesRead);
 
          }
          else

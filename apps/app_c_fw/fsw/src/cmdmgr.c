@@ -38,7 +38,7 @@
 /** Global File Data **/
 /**********************/
 
-static const char* BoolStr[] = {
+static const char *BoolStr[] = {
    "FALSE",
    "TRUE",
    "UNDEF"
@@ -49,8 +49,8 @@ static const char* BoolStr[] = {
 /** File Function Prototypes **/
 /******************************/
 
-static void LogMsgBytes(uint8* MsgPtr, size_t PayloadLen, CFE_MSG_FcnCode_t FuncCode);
-static bool UnusedFuncCode(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+static void LogMsgBytes(uint8 *MsgPtr, size_t PayloadLen, CFE_MSG_FcnCode_t FuncCode);
+static bool UnusedFuncCode(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -61,7 +61,7 @@ static bool UnusedFuncCode(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 **       called using the same cmdmgr instance.
 **
 */
-void CMDMGR_Constructor(CMDMGR_Class_t* CmdMgr)
+void CMDMGR_Constructor(CMDMGR_Class_t *CmdMgr)
 {
 
    int i;

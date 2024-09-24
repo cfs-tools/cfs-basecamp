@@ -147,7 +147,7 @@ typedef struct
 ** Notes:
 **   None
 */
-void FILESYS_Constructor(FILESYS_Class_t* FileSysPtr, const INITBL_Class_t* IniTbl);
+void FILESYS_Constructor(FILESYS_Class_t *FileSysPtr, const INITBL_Class_t *IniTbl);
 
 
 /******************************************************************************

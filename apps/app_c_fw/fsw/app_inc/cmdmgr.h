@@ -108,9 +108,9 @@ typedef struct
 typedef struct
 {
 
-   uint16               UserDataLen;    /* User data length in bytes  */
-   void*                DataPtr;
-   CMDMGR_CmdFuncPtr_t  FuncPtr; 
+   uint16                UserDataLen;    /* User data length in bytes  */
+   void                 *DataPtr;
+   CMDMGR_CmdFuncPtr_t   FuncPtr; 
 
    CMDMGR_AltCnt_t      AltCnt;
 

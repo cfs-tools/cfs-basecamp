@@ -42,7 +42,7 @@ static int32 ValidateTbl(void* TblPtr);
 /** File Global Data **/
 /**********************/
 
-static FILESYS_Class_t*  FileSys = NULL;
+static FILESYS_Class_t  *FileSys = NULL;
 
 
 /******************************************************************************
@@ -53,7 +53,7 @@ void FILESYS_Constructor(FILESYS_Class_t *FileSysPtr, const INITBL_Class_t *IniT
 {
  
    FileSys = FileSysPtr;
-   const char* DefTblFilename = INITBL_GetStrConfig(IniTbl, CFG_TBL_DEF_FILENAME);
+   const char *DefTblFilename = INITBL_GetStrConfig(IniTbl, CFG_TBL_DEF_FILENAME);
 
    CFE_PSP_MemSet((void*)FileSys, 0, sizeof(FILESYS_Class_t));
    

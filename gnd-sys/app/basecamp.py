@@ -67,7 +67,7 @@ import EdsLib
 import CFE_MissionLib
 from tools import PySimpleGUI_License
 from tools import CreateApp, ManageTutorials, crc_32c, datagram_to_str, compress_abs_path, TextEditor
-from tools import AppStore, ManageCodeTutorials
+from tools import CreateProject, AppStore, ManageCodeTutorials
 from tools import AppTargetStatus, AppTopicIdStatus, Cfs, CfsStdout, ManageCfs
 from cfsinterface import CmdTlmRouter
 from cfsinterface import Cfe, EdsMission
@@ -133,16 +133,17 @@ class IniConfig():
             rows.append([sg.Checkbox(param, default=False, font=hdr_label_font, size=col1_size, key=f'-PARAM_{param}-'),
                          sg.Input(self.config.get(self.modifiable[param],param), size=col2_size, key=f'-VALUE_{param}-')])
         layout = [
-                  [sg.Text('\nSelect and enter new values for the parameters you want to update:\n',font=hdr_value_font)],
+                  [sg.Text('\nSelect and enter new values for the Basecamp configuration parameters you want to update:\n',font=hdr_value_font)],
                   rows, 
                   [sg.Text(f'\n"Update" updates the selected parameters for the current session', font=hdr_value_font)],
-                  [sg.Text(f'"Save"     updates the selected parameters and creates {self.usr_ini_file} for future sessions\n', font=hdr_value_font)],
+                  [sg.Text(f'"Save"     updates the selected parameters and if needed creates {self.usr_ini_file} for', font=hdr_value_font, size=(65,1))],
+                  [sg.Text(f'                 future sessions. The current parameter file is {self.ini_file_in_use}\n', font=hdr_value_font, size=(65,1))],
                   [sg.Button('Update', font=hdr_label_font, pad=butt_pad, button_color=('SpringGreen4')), 
                    sg.Button('Save',   font=hdr_label_font, pad=butt_pad, button_color=('SpringGreen4')),
                    sg.Button('Cancel', font=hdr_label_font, pad=butt_pad)]
                  ]
 
-        window = sg.Window(f'Update Configuration Parameters - {self.ini_file_in_use}', layout, modal=False)
+        window = sg.Window(f'Update Basecamp Configuration Parameters', layout, modal=False)
         return window
 
     def gui(self):
@@ -651,13 +652,26 @@ class App():
     CFS_CMD_DEST = Enum('cFSCmdDest', ['UDP', 'MQTT'])
     CFS_TLM_SRC  = {'LOCAL': 'Local', 'REMOTE': 'Remote'}
     
+    FONT_HDR_LABEL = ('Arial bold',14)
+    FONT_HDR_TEXT  = ('Arial',14)
+    FONT_BDY_LABEL = ('Arial bold',12)
+    FONT_BDY_TEXT  = ('Arial',12)
+    FONT_BDY_FIX_LABEL = ('Courier bold',12)
+    FONT_BDY_FIX_TEXT  = ('Courier',12)
+    
     def __init__(self, ini_file):
 
         self.path = os.getcwd()
         self.cfs_interface_dir = os.path.join(self.path, "cfsinterface")
         self.ini_config = IniConfig(ini_file)
 
-        self.APP_VERSION = self.ini_config.get('APP','VERSION')
+        self.APP_VERSION   = self.ini_config.get('APP','VERSION')
+        self.APP_STORE_URL = self.ini_config.get('APP','APP_STORE_URL')
+        self.PROJECTS_URL  = self.ini_config.get('APP','PROJECTS_URL')
+
+        self.USR_APP_PATH       = self.ini_config.get('PATHS','USR_APP_PATH')
+        self.APP_TEMPLATES_PATH = self.ini_config.get('PATHS', 'APP_TEMPLATES_PATH')
+        self.PROJECTS_PATH      = self.ini_config.get('PATHS','PROJECTS_PATH')
 
         self.EDS_MISSION_NAME    = self.ini_config.get('CFS_TARGET','MISSION_EDS_NAME')
         self.EDS_CFS_TARGET_NAME = self.ini_config.get('CFS_TARGET','CPU_EDS_NAME')
@@ -706,9 +720,8 @@ class App():
         self.all_app_list = []  # Combined user and cFE app list
 
         self.manage_tutorials = ManageTutorials(self.ini_config.get('PATHS', 'TUTORIALS_PATH'))
-        self.create_app       = CreateApp(self.ini_config.get('PATHS', 'APP_TEMPLATES_PATH'),
-                                          self.ini_config.get('PATHS', 'USR_APP_PATH'))
-        self.manage_code_tutorials = ManageCodeTutorials(self.ini_config.get('PATHS', 'USR_APP_PATH'))
+        self.create_app       = CreateApp(self.APP_TEMPLATES_PATH, self.USR_APP_PATH)
+        self.manage_code_tutorials = ManageCodeTutorials(self.USR_APP_PATH)
         self.cfs_mqtt_cmd_client = CfsMqttCmdClient(self.CFS_MQTT_BROKER_ADDR, self.ini_config.get('NETWORK','MQTT_CLIENT_NAME'),
                                                     self.CFS_MQTT_CMD_TOPIC, self.display_event)
         
@@ -793,7 +806,9 @@ class App():
         self.send_cfs_cmd('CFE_EVS', evs_cmd,  {'AppName': 'CFE_TIME', 'EventID': Cfe.CFE_TIME_FLY_OFF_EID, 'Mask': Cfe.CFE_EVS_FIRST_ONE_STOP})
 
     def ComingSoonPopup(self, feature_str):
-        sg.popup(feature_str, title='Coming soon...', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+        # Popup doesn't have size parameter so add padding to make sure title is displayed
+        feature_str = f'\n{feature_str}\n                                                     \x00'
+        sg.popup(feature_str, title='Coming soon...', line_width=80, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
  
     def shutdown(self):
         """
@@ -1004,17 +1019,18 @@ class App():
         sg.theme('LightGreen')
         sg.set_options(element_padding=(0, 0))
     
-        learn_menu = ['Documents...'] + ['---']
+        tutorial_menu = []
         if len(self.manage_code_tutorials.tutorial_titles) > 0:
-            learn_menu += self.manage_tutorials.tutorial_titles + ['---'] + self.manage_code_tutorials.tutorial_titles
+            tutorial_menu += self.manage_tutorials.tutorial_titles + ['---'] + self.manage_code_tutorials.tutorial_titles
         else:
-            learn_menu += self.manage_tutorials.tutorial_titles
+            tutorial_menu += self.manage_tutorials.tutorial_titles
         
         menu_def = [
-                       ['System', ['Options', 'About', 'Exit']],
-                       ['Developer', ['Create App', 'Download App', 'Add App', 'Remove App', 'Report App Status', '---', 'Run Perf Monitor']], #todo: 'Certify App' 
-                       ['Operator', ['Browse Files', 'Run Script', 'Plot Data', '---', 'Control Remote Target', 'Configure Command Destination', 'Configure Telemetry Source']],
-                       ['Learn', learn_menu]
+                       ['File',       ['Create Project...', '---', 'Create User App', 'Download User App', 'User App Status', '---', 'Add User App to Target', 'Remove User from App Target', '---', 'Exit']], #TODO: 'Certify App'
+                       ['Tools',      ['Browse Files', 'Run Script', 'Plot Data', '---', 'Run Perf Monitor', '---', 'Preferences']],
+                       ['Remote Ops', ['Configure Command Destination', 'Configure Telemetry Source', 'Control Remote Target']],  
+                       ['Tutorials',  tutorial_menu],
+                       ['Help',       ['Documents...', 'About']]
                    ]
 
         self.common_cmds = ['-- Common Commands--', 'Enable Telemetry', 'Reset Time', 'Noop/Reset App', 'Restart App', 'Configure Event Types', 'Reset Event Filter', 'Ena/Dis Flywheel', 'Set Tlm Source', 'cFE Version']
@@ -1162,76 +1178,62 @@ class App():
             ##### MENU EVENTS #####
             #######################
 
-            ### SYSTEM ###
+            ### FILE ###
 
-            if self.event == 'Options':
-                update_str = self.ini_config.gui()
-                if update_str is not None:
-                    self.display_event(update_str)
-            
-            elif self.event == 'About':
-                about_msg = ('Basecamp provides a cFS application framework,\n'
-                             'build/runtime tools, and a lightweight GUI that\n'
-                             'simplify creating, integrating, testing, and\n'
-                             'deploying cFS applications.\n\n'
-                             f'Version {self.APP_VERSION}')
-                sg.popup(about_msg,
-                         title='About Basecamp', font='Courier 12', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
-       
-            ### CFS DEVELOPER ###
+            if self.event == 'Create Project...':
+                manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
+                CreateProject(self.PROJECTS_URL, self.PROJECTS_PATH, self.APP_STORE_URL, self.USR_APP_PATH, manage_cfs).execute()
 
-            elif self.event == 'Create App':
+            elif self.event == 'Create User App':
                 self.create_app.execute()
 
-            elif self.event == 'Download App':
+            elif self.event == 'Download User App':
                 git_topic_include = self.ini_config.get('APP','APP_STORE_INCLUDE').split(',')
                 git_topic_exclude = self.ini_config.get('APP','APP_STORE_EXCLUDE').split(',')
-                app_store = AppStore(self.ini_config.get('APP','APP_STORE_URL'), self.ini_config.get('PATHS','USR_APP_PATH'),git_topic_include, git_topic_exclude)
+                app_store = AppStore(self.APP_STORE_URL, self.USR_APP_PATH,git_topic_include, git_topic_exclude)
                 app_store.execute()
  
-            elif self.event in ('Add App','Remove App', 'Report App Status'):
-                manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.ini_config.get('PATHS', 'USR_APP_PATH'), self.window, self.EDS_CFS_TARGET_NAME)
-                manage_cfs.execute(self.event.split(' ')[0])
+            elif self.event in ('Add User App to Target','Remove User from App Target', 'User App Status'):
+                manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
+                manage_cfs.execute(self.event.split(' ')[0]) # First menu word used as execute() command
 
-            if self.event == 'Certify App':
+            elif self.event == 'Certify App':
                 self.ComingSoonPopup("Certify your app to an OpenSatKit app repo")
 
-            elif self.event == 'Run Perf Monitor':
-                subprocess.Popen("java -jar ../perf-monitor/CPM.jar",shell=True)  #TODO - Use ini file path definition
-
-                                                  
-            ### OPERATOR ###
-
-            elif self.event == '-ENA_TLM-':
-                self.enable_telemetry()
-
-            elif self.event == 'Run Script':
-                self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_CMD_PORT'))
-                self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_TLM_PORT'))
-                self.script_runner = sg.execute_py_file("scriptrunner.py", cwd=self.cfs_interface_dir)
+            ### TOOLS ###
 
             elif self.event == 'Browse Files' or self.event == '-FILE_BROWSER-':
                 self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','FILE_BROWSER_CMD_PORT'))
                 self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','FILE_BROWSER_TLM_PORT'))
                 self.file_browser = sg.execute_py_file("filebrowser.py", cwd=self.cfs_interface_dir)
 
+            elif self.event == 'Run Script':
+                self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_CMD_PORT'))
+                self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_TLM_PORT'))
+                self.script_runner = sg.execute_py_file("scriptrunner.py", cwd=self.cfs_interface_dir)
+
             elif self.event == 'Plot Data':
                 self.launch_tlmplot()
-                
-            elif self.event == 'Control Remote Target':
-                self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','TARGET_CONTROL_CMD_PORT'))
-                tools_dir = os.path.join(self.path, "cfsinterface")
-                self.target_control = sg.execute_py_file("targetcontrol.py", cwd=tools_dir)
 
+            elif self.event == 'Run Perf Monitor':
+                subprocess.Popen("java -jar ../perf-monitor/CPM.jar",shell=True)  #TODO - Use ini file path definition
+
+            elif self.event == 'Preferences':
+                update_str = self.ini_config.gui()
+                if update_str is not None:
+                    self.display_event(update_str)
+
+            ### Remote Ops ###
+                
             elif self.event == 'Configure Command Destination':
                 pop_win = sg.Window('Configure Command Destination',
-                                    [[sg.Text("")],
-                                     [sg.Text("UDP:",  size=(6,1)), sg.Text(f'Send commands to cFS IP address/port defined in {BASECAMP_INI_FILE}')],
-                                     [sg.Text("MQTT:", size=(6,1)), sg.Text(f'Send commands to MQTT broker/topic defined in {BASECAMP_INI_FILE}')],
-                                     [sg.Text("")],
-                                     [sg.Button('UDP',  button_color=('SpringGreen4'), enable_events=True, key='-UDP-',  pad=(10,1)),
-                                      sg.Button('MQTT', button_color=('SpringGreen4'), enable_events=True, key='-MQTT-', pad=(10,1)), 
-                                      sg.Cancel(button_color=('gray'), pad=(10,1))]])
+                                    [[sg.Text('')],
+                                     [sg.Text("'UDP'",  size=(8,1), justification='center'), sg.Text(f'Send commands to cFS IP address/port defined in {BASECAMP_INI_FILE}')],
+                                     [sg.Text("'MQTT'", size=(8,1), justification='center'), sg.Text(f'Send commands to MQTT broker/topic defined in {BASECAMP_INI_FILE}')],
+                                     [sg.Button('UDP',  button_color=('SpringGreen4'), enable_events=True, key='-UDP-',  pad=(2,1)),
+                                      sg.Button('MQTT', button_color=('SpringGreen4'), enable_events=True, key='-MQTT-', pad=(2,1)), 
+                                      sg.Cancel(button_color=('gray'), pad=(2,1))],
+                                     [sg.Text("\nSee 'Basecamp Remote Ops' document for details.")]])
             
                 while True:  # Event Loop
                     pop_event, pop_values = pop_win.read(timeout=200)
@@ -1253,13 +1255,13 @@ class App():
                 
             elif self.event == 'Configure Telemetry Source':
                 pop_win = sg.Window('Configure Telemetry Source',
-                                    [[sg.Text("")],
-                                     [sg.Text("LOCAL:",  size=(6,1)), sg.Text("KIT_TO configured to send telemetry from the local target")],
-                                     [sg.Text("REMOTE:", size=(6,1)), sg.Text("KIT_TO configured to send telemetry from a remote target. Requires MQTT_GW")],
-                                     [sg.Text("")],
-                                     [sg.Button('Local',  button_color=('SpringGreen4'), enable_events=True, key='-LOCAL-',  pad=(10,1)),
-                                      sg.Button('Remote', button_color=('SpringGreen4'), enable_events=True, key='-REMOTE-', pad=(10,1)), 
-                                      sg.Cancel(button_color=('gray'), pad=(10,1))]])
+                                    [[sg.Text('')],
+                                     [sg.Text("'LOCAL'",  size=(10,1), justification='center'), sg.Text("Configure KIT_TO to send telemetry from the local target")],
+                                     [sg.Text("'REMOTE'", size=(10,1), justification='center'), sg.Text("Configure KIT_TO to send telemetry from a remote target. Requires the JMSG_MQTT project.")],
+                                     [sg.Button('Local',  button_color=('SpringGreen4'), enable_events=True, key='-LOCAL-',  pad=(2,1)),
+                                      sg.Button('Remote', button_color=('SpringGreen4'), enable_events=True, key='-REMOTE-', pad=(2,1)), 
+                                      sg.Cancel(button_color=('gray'), pad=(2,1))],
+                                     [sg.Text("\nSee 'Basecamp Remote Ops' document for details.")]])
             
                 while True:  # Event Loop
                     pop_event, pop_values = pop_win.read(timeout=200)
@@ -1274,30 +1276,12 @@ class App():
                         
                 pop_win.close()
 
-            ### DOCUMENTS ###
-                """ 
-                # Permision Denied, not portable
-                subprocess.Popen([path_filename],shell=True) 
-                subprocess.call(["xdg-open", path_filename]) 
-                # Browser launch issues & wonky for enbvironments like WSL
-                prefix = 'file://wsl.localhost/Ubuntu'
-                prefix = 'file:/' #TODO - Put in ini file?
-                try:
-                    displayed = webbrowser.open(path_filename, new=1, autoraise=True)
-                    print(f'After webbrowser open {displayed}')
-                except Exception as e:
-                    displayed = False;
-                    logger.error(f'Exception opening {path_filename} in browser\n{str(e)}')
-                    print(f'Exception opening {path_filename} in browser\n{str(e)}')
-                if not displayed:
-                    text = sg.popup_get_text(f'Failed to display PDF document. Paste the following path/file (already added to clipboard) into your browser.',
-                                             title='Document', default_text= path_filename, size=(90, 5), keep_on_top=True, grab_anywhere=True, modal=False)
-                    sg.clipboard_set(text)
-                """
-            
-            ### LEARN ###
-            elif self.event == 'Documents...':
-                self.view_pdf_doc(self.default_doc)
+            elif self.event == 'Control Remote Target':
+                self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','TARGET_CONTROL_CMD_PORT'))
+                tools_dir = os.path.join(self.path, "cfsinterface")
+                self.target_control = sg.execute_py_file("targetcontrol.py", cwd=tools_dir)
+
+            ### TUTORIALS ###
 
             elif self.event in self.manage_tutorials.tutorial_titles:
                 """
@@ -1315,6 +1299,39 @@ class App():
                 """
                 self.view_tutorial_doc("appcodetutorial.py", self.manage_code_tutorials.tutorial_lookup[self.event].path)
             
+            ### HELP ###
+                """ 
+                # Permision Denied, not portable
+                subprocess.Popen([path_filename],shell=True) 
+                subprocess.call(["xdg-open", path_filename]) 
+                # Browser launch issues & wonky for environments like WSL
+                prefix = 'file://wsl.localhost/Ubuntu'
+                prefix = 'file:/' #TODO - Put in ini file?
+                try:
+                    displayed = webbrowser.open(path_filename, new=1, autoraise=True)
+                    print(f'After webbrowser open {displayed}')
+                except Exception as e:
+                    displayed = False;
+                    logger.error(f'Exception opening {path_filename} in browser\n{str(e)}')
+                    print(f'Exception opening {path_filename} in browser\n{str(e)}')
+                if not displayed:
+                    text = sg.popup_get_text(f'Failed to display PDF document. Paste the following path/file (already added to clipboard) into your browser.',
+                                             title='Document', default_text= path_filename, size=(90, 5), keep_on_top=True, grab_anywhere=True, modal=False)
+                    sg.clipboard_set(text)
+                """
+            elif self.event == 'Documents...':
+                self.view_pdf_doc(self.default_doc)
+
+            elif self.event == 'About':
+                about_msg = ('Basecamp provides a cFS application framework,\n'
+                             'build/runtime tools, and a lightweight GUI that\n'
+                             'simplify creating, integrating, testing, and\n'
+                             'deploying cFS applications.\n\n'
+                             f'Version {self.APP_VERSION}')
+                sg.popup(about_msg,
+                         title='About Basecamp', font='Courier 12', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+
+                                                              
             #################################
             ##### TOP ROW BUTTON EVENTS #####
             #################################
@@ -1434,6 +1451,9 @@ class App():
                          self.window["-CFS_TIME-"].update(EdsMission.NULL_TLM_STR)
                     """
         
+            elif self.event == '-ENA_TLM-':
+                self.enable_telemetry()
+
             elif self.event == '-COMMON_CMD-':
                 cfs_config_cmd = self.values['-COMMON_CMD-']
                 
@@ -1666,7 +1686,7 @@ class App():
 
 def run_app():
 
-    #todo - Try to get reload EDS to work
+    #TODO: Try to get reload EDS to work
     execute = True
     while execute:
         app = App(BASECAMP_INI_FILE)

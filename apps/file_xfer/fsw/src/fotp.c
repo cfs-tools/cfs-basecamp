@@ -42,7 +42,7 @@ typedef enum
 /*******************************/
 
 static void DestructorCallback(void);
-const char* FileTransferStateStr(FOTP_FileTransferState_t  FileTransferState);
+const char *FileTransferStateStr(FOTP_FileTransferState_t  FileTransferState);
 static SendDataSegmentState_t SendDataSegments(void);
 static bool SendFileTransferTlm(FOTP_FileTransferState_t FileTransferState);
 static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferCmd);
@@ -52,7 +52,7 @@ static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferC
 /** Global File Data **/
 /**********************/
 
-static FOTP_Class_t* Fotp = NULL;
+static FOTP_Class_t *Fotp = NULL;
 static uint8 DataSegBuf[FITP_DATA_SEG_MAX_LEN];
 
 /******************************************************************************

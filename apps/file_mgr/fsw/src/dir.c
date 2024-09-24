@@ -50,22 +50,22 @@ typedef enum
 /*******************************/
 
 static bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeTime, SendDirListOpt_t SendDirListOpt);
-static void LoadFileEntry(const char* PathFilename, DIR_FileEntry_t* FileEntry, uint16* TaskBlockCount, bool IncludeSizeTime);
-static bool WriteDirListToFile(const char* DirNameWithSep, osal_id_t DirId, int32 FileHandle, bool IncludeSizeTime);
+static void LoadFileEntry(const char *PathFilename, DIR_FileEntry_t *FileEntry, uint16 *TaskBlockCount, bool IncludeSizeTime);
+static bool WriteDirListToFile(const char *DirNameWithSep, osal_id_t DirId, int32 FileHandle, bool IncludeSizeTime);
 
 
 /**********************/
 /** Global File Data **/
 /**********************/
 
-static DIR_Class_t*  Dir = NULL;
+static DIR_Class_t *Dir = NULL;
 
 
 /******************************************************************************
 ** Function: DIR_Constructor
 **
 */
-void DIR_Constructor(DIR_Class_t*  DirPtr, const INITBL_Class_t* IniTbl)
+void DIR_Constructor(DIR_Class_t *DirPtr, const INITBL_Class_t *IniTbl)
 {
  
    Dir = DirPtr;
@@ -696,7 +696,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
                      if (Dir->ListTlm.Payload.DirFileCnt > Dir->ListTlm.Payload.DirListOffset)
                      {
                 
-                        FILE_MGR_DirListFileEntry_t* TlmFileEntry = &Dir->ListTlm.Payload.FileList[Dir->ListTlm.Payload.PktFileCnt];
+                        FILE_MGR_DirListFileEntry_t *TlmFileEntry = &Dir->ListTlm.Payload.FileList[Dir->ListTlm.Payload.PktFileCnt];
 
                         FilenameLen = strlen(OS_DIRENTRY_NAME(DirEntry));
 
