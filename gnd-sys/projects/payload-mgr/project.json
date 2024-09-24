@@ -1,0 +1,17 @@
+{
+   "title": "Payload Manager",
+   "version": "1.0",
+   "short-descr": "Use a payload manager app to operate a simulated payload",
+   "description": [
+      "This project helps answer the common cFS question, 'How should I design a cFS app to manage",
+      "a science payload?' There are multiple approaches towards solving this problem. This project",
+      "is not intended to provide a survey of designs, rather it shows a specific design that you can",
+      "evaluate within the context of your situation.\n",
+      "A secondary objective is to show how a cFS library and application can be used to simulate a",
+      "payload. This effective strategy lets you run your payload manager app prior to having a test",
+      "configuration with the target hardware. It’s also a flexible environment that lets you test",
+      "error paths."
+   ],
+   "app-list": "pl_sim_lib,pl_mgr,pl_sim"
+}
+

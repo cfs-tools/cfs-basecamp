@@ -1,0 +1,13 @@
+{
+   "title": "Raspberry Pi LED Control",
+   "version": "1.0",
+   "short-descr": "Control an LED on a Raspeberry Pi",
+   "description": [
+      "In this project you will connect an LED to a Raspberry Pi’s General-Purpose Input/Output",
+      "(GPIO) header and control the LED using a cFS app.  It allows cFS developers to gain",
+      "experience with using a library and app to interface and control an external hardware",
+      "component using low-cost materials."
+   ],
+   "app-list": "pi_iolib,gpio_demo"
+}
+
