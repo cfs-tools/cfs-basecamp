@@ -4,10 +4,16 @@
    "short-descr": "Control an LED on a Raspeberry Pi",
    "description": [
       "In this project you will connect an LED to a Raspberry Pi’s General-Purpose Input/Output",
-      "(GPIO) header and control the LED using a cFS app.  It allows cFS developers to gain",
-      "experience with using a library and app to interface and control an external hardware",
-      "component using low-cost materials."
+      "(GPIO) header and control the LED using a cFS app.  You will gain experience with using a",
+      "library and app to interface and control an external hardware component using low-cost",
+      "materials."
    ],
-   "app-list": "pi_iolib,gpio_demo"
+   
+   "app-list": "pi_iolib,gpio_demo",
+
+   "popup-instructions": "Prior to restarting the Basecamp GUI, configure basecamp.ini to run the cFS with elevated privileges:\n  'SUDO_START_CFS' to True\n  'PASSWORD' to your Pi's password\n\nSee https://openmissionstack.com/projects_read/gpio_demo for operations instructions.",
+   
+   "doc": "gpio_demo-project.pdf"
+
 }
 

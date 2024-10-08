@@ -1,0 +1,20 @@
+{
+   "title": "Space Steps Apps",
+   "version": "1.0",
+   "short-descr": "Interact with Space Steps web apps via MQTT",
+   "description": [
+      "The Space Steps website https://spacesteps.com/apps contains graphical apps that respond",
+      "to messages received from an MQTT broker. The cFS JMSG_MQTT app creates a communications",
+      "bridge between an MQTT broker and the cFS's Software Bus. Basecamp's JSON Message (JMSG)",
+      "utility performs the translations between SB binary messages and MQTT JSON messages. JMSG",
+      "tests send data to the Space Steps apps."
+   ],
+   
+   "app-list": "mqtt_lib,jmsg_lib,jmsg_app,jmsg_mqtt",
+   
+   "popup-instructions": "Prior to restarting the Basecamp GUI two tables in basecamp_defs must be configured:\n   cpu1_jmsg_mqtt_ini.json: Set 'MQTT_BROKER_ADDRESS' to 'broker.emqx.io'\n   cpu1_jmsg_topics.json: Set 'basecamp/demo/sc/rate' 'enabled' entry to 'true'\n\nSee the project doc for operations instructions."
+   
+}
+
+
+

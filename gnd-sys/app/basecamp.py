@@ -694,8 +694,10 @@ class App():
         self.GND_TLM_TIMEOUT  = float(self.ini_config.getint('NETWORK','GND_TLM_TIMEOUT'))/1000.0
         self.ROUTER_CTRL_PORT = self.ini_config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
 
-        self.default_doc = self.ini_config.get('APP','DEFAULT_DOC')
-        self.docs_path   = compress_abs_path(os.path.join(self.path, self.ini_config.get('PATHS','APP_DOC_PATH')))
+        self.default_tech_doc = self.ini_config.get('APP','DEFAULT_TECH_DOC')
+        self.default_proj_doc = self.ini_config.get('APP','DEFAULT_PROJ_DOC')
+        self.tech_docs_path   = compress_abs_path(os.path.join(self.path, self.ini_config.get('PATHS','TECH_DOC_PATH')))
+        self.proj_docs_path   = compress_abs_path(os.path.join(self.path, self.ini_config.get('PATHS','PROJ_DOC_PATH')))
         self.tools_path  = os.path.join(self.path, "tools")
         
         self.cfs_exe_rel_path   = 'build/exe/' + self.EDS_CFS_TARGET_NAME.lower()
@@ -859,13 +861,12 @@ class App():
             if app_name not in self.cfe_app_list and app_name not in self.app_tlm_list:
                 self.app_tlm_list.append(app_name)
 
-    def view_pdf_doc(self, pdf_filename):
-        pdf_path     = self.docs_path
+    def view_pdf_doc(self, pdf_path, pdf_filename):
         pdf_pathfile = f'{pdf_path}{pdf_filename}'
         print(f'path_filename: {pdf_pathfile}')
         layout = [[sg.T('')], 
                   [sg.Text('Dir:   '), sg.Text(pdf_path,key='-DIR_TEXT-')],
-                  [sg.Text('File: '), sg.Input(pdf_filename,size=(30,1),enable_events=True,key="-INP_FILE-", pad=(5,1)), sg.FileBrowse(initial_folder=self.docs_path, file_types=[("PDF Files","*.pdf")])],
+                  [sg.Text('File: '), sg.Input(pdf_filename,size=(30,1),enable_events=True,key="-INP_FILE-", pad=(5,1)), sg.FileBrowse(initial_folder=pdf_path, file_types=[("PDF Files","*.pdf")])],
                   [sg.Button('Open',button_color=('SpringGreen4'),enable_events=True,key='-OPEN-', pad=(5,1)),sg.Cancel(button_color=('gray'))]
                  ]
         doc_window = sg.Window('Basecamp Documents', layout, size=(500,100))
@@ -1030,7 +1031,7 @@ class App():
                        ['Tools',      ['Browse Files', 'Run Script', 'Plot Data', '---', 'Run Perf Monitor', '---', 'Preferences']],
                        ['Remote Ops', ['Configure Command Destination', 'Configure Telemetry Source', 'Control Remote Target']],  
                        ['Tutorials',  tutorial_menu],
-                       ['Help',       ['Documents...', 'About']]
+                       ['Help',       ['Tech Docs...', 'Project Docs...', 'About']]
                    ]
 
         self.common_cmds = ['-- Common Commands--', 'Enable Telemetry', 'Reset Time', 'Noop/Reset App', 'Restart App', 'Configure Event Types', 'Reset Event Filter', 'Ena/Dis Flywheel', 'Set Tlm Source', 'cFE Version']
@@ -1319,8 +1320,11 @@ class App():
                                              title='Document', default_text= path_filename, size=(90, 5), keep_on_top=True, grab_anywhere=True, modal=False)
                     sg.clipboard_set(text)
                 """
-            elif self.event == 'Documents...':
-                self.view_pdf_doc(self.default_doc)
+            elif self.event == 'Tech Docs...':
+                self.view_pdf_doc(self.tech_docs_path, self.default_tech_doc)
+
+            elif self.event == 'Project Docs...':
+                self.view_pdf_doc(self.proj_docs_path, self.default_proj_doc)
 
             elif self.event == 'About':
                 about_msg = ('Basecamp provides a cFS application framework,\n'

@@ -71,6 +71,14 @@ class ProjectTemplateJson(JsonFile):
     def app_list(self):
         return self.json['app-list'].split(',')
                   
+    def popup_instructions(self):
+        instructions = ''
+        try:
+           instructions = self.json['popup-instructions']
+        except:
+           pass
+        return  instructions
+
 
 ###############################################################################
 
@@ -92,31 +100,54 @@ class ProjectTemplate():
         self.new_app_dir = None
         self.has_tutorial = False
         
+        self.max_progress = 10
+        self.cur_progress = 0
+        self.progress_bar = None
+        self.progress_txt = None
+        
+    def update_progress(self, text, delta):
+        """
+        This is called by create_project() after the progress window is created.
+        """
+        self.cur_progress += delta
+
+        self.progress_txt.update(text)
+        self.progress_bar.update_bar(self.cur_progress)
+        
     def create_project(self, project_name):
+        
+        github_txt = 'Downloading apps from github\n'
+        layout = [[sg.Text(github_txt, key='-PROGRESS_TEXT-', size=(50,2))],
+                  [sg.ProgressBar(max_value=self.max_progress, orientation='h', size=(50, 20), key='-PROGRESS-', bar_color=('green', 'white'))]]
+        window = sg.Window(f'Create {project_name} Project', layout, keep_on_top=True, finalize=True)
 
-        layout = [[sg.Text('Downloading apps from github\n',key='-PROGRESS_TEXT-')],
-                  [sg.ProgressBar(max_value=10, orientation='h', size=(20, 20), key='-PROGRESS-', bar_color=('green', 'white'))]]
-        window = sg.Window(f'Create Project {project_name}', layout, finalize=True)
-
-        progress_bar = window['-PROGRESS-']
-        progress_txt = window['-PROGRESS_TEXT-']
-
+        self.progress_bar = window['-PROGRESS-']
+        self.progress_txt = window['-PROGRESS_TEXT-']
+        
+        # 1. Download github apps
+        github_delta = int((self.max_progress/2)/len(self.json.app_list())) # Download gets half of progress bar
         github_apps = GitHubApps(self.git_url, self.usr_app_rel_path)
         github_apps.create_dict()
         for app in self.json.app_list():
+            self.update_progress(github_txt, github_delta)
             github_apps.clone(app,quiet_ops=True)
         
-        progress_bar.update_bar(3)
-        progress_txt.update('Adding apps to cFS target\n')
-  
+        # 2. Add apps to cFS target
+        self.update_progress('Adding apps to cFS target\n', 1)
         self.manage_cfs.add_usr_app_list(self.json.app_list())
+        sleep(4) # Allow user to see change. 
 
-        progress_bar.update_bar(6)
-        progress_txt.update('Building new cFS target\n')
-
+        # 3. Build cFS target
+        build_txt   = 'Building new cFS target\n'
+        build_delta = int((self.max_progress/2)-1) # Build gets half progress bar minus 'Add apps to target'
         self.manage_cfs.build_target()
-        progress_bar.update_bar(9)
-        self.manage_cfs.restart_main_gui()
+        #TODO: Open loop delay didn't work because sleep interferes with main GUI process window update
+        #TODO: Is there a way to get build_target process feedback?
+        #for x in range(2, 30, 3):
+        #   self.update_progress(build_txt, build_delta)
+        #   sleep(4)  
+        self.update_progress(build_txt, build_delta)
+        self.manage_cfs.restart_main_gui(self.json.popup_instructions())
 
         window.close()
       
@@ -165,7 +196,7 @@ class CreateProject():
                                             sg.Text(project_meta_data.json.short_description(), font=hdr_value_font, size=(50,1))])
         
         layout = [
-                  [sg.Text(f"Create a new cFS project target. This includes downloading libs/apps from github, adding them to the cFS target build files, and building the new target. Projects are defined at '{self.projects_url}'.\n", font=hdr_value_font, size=(80,5))],
+                  [sg.Text(f"Create a new cFS project target. This includes downloading libs/apps from github, adding them to the cFS target build files, and building the new target. Project documents are in 'Help->Project Docs...' and videos are at '{self.projects_url}'.\n", font=hdr_value_font, size=(80,5))],
                   [sg.Text('Select Project: ', font=hdr_label_font)],
                   project_template_layout, 
                   [sg.Text('', font=hdr_value_font)],
@@ -216,8 +247,9 @@ class CreateProject():
                         self.selected_project.create_project(project_name)
                     except Exception as e:
                         print(e)
-                        sg.popup(f'Failed to create {project_name}', title="Create Project", modal=False)
-                            
+                        sg.popup(f'Failed to create {project_name}', title="Create Project", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                break
+                
         self.window.close()
 
 

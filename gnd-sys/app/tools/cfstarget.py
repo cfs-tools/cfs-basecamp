@@ -379,7 +379,7 @@ class ManageCfs():
             ## Step 4 - Restart Basecamp
 
             elif self.event == '-4_AUTO-': # Reload cFS python EDS definitions
-                if self.restart_main_gui():
+                if self.restart_main_gui(''):
                     restart_main_window = True
                 break
                 
@@ -544,18 +544,40 @@ class ManageCfs():
             self.cfs_stdout.start()
 
                 
-    def restart_popup(self):
+    def restart_popup(self, instructions):
+        """
         return sg.popup_ok_cancel(f"Wait for the 'Built target mission-install' status line in the 'cFS Target Process Window' that indicates the cFS target has been successfully built. Basecamp must be restarted to use the new command and telemetry definitions.\n\nSelect <OK> to shutdown Basecamp so it can be restarted.\n\n",
-                                  title='Restart cFS Target', font=('Arial', 14), keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                                  title='Restart Basecamp GUI', font=('Arial', 14), keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+        """
+        button = 'Cancel'
+        text_width = 80
+        layout = [[sg.Text("Wait for the 'Built target mission-install' status line in the 'cFS Target Process Window' before restarting Basecamp.", size=(text_width, None), auto_size_text=True)],
+                  [sg.Text(f'\n{instructions}\n', text_color='red', size=(text_width, None), auto_size_text=True)],
+                  [sg.Text("\nSelect <OK> to shutdown Basecamp so it can be restarted.")],
+                  [sg.Ok(button_color=('SpringGreen4'), pad=(2,1)), sg.Cancel(button_color=('gray'), pad=(2,1))]]
 
-    def restart_main_gui(self):
+        window = sg.Window('Restart Basecamp GUI', layout, grab_anywhere=True, modal=True)
+
+        while True:  # Event Loop
+            pop_event, pop_values = window.read(timeout=1000)
+            print(f'pop_event: {pop_event}')
+            if pop_event in (sg.WIN_CLOSED, 'Cancel'):
+                break
+            elif pop_event == 'Ok':
+                button = pop_event
+                break
+
+        window.close()
+        return button
+        
+    def restart_main_gui(self, instructions):
         """
         This performs the same functionality as the '-4_AUTO-' window event. It is provided for 
         non-GUI situations. 
         """
         restart = False
-        button = self.restart_popup()
-        if button == 'OK':
+        button = self.restart_popup(instructions)
+        if button == 'Ok':
             restart = True        
             self.main_window['-RESTART-'].click()
         return restart

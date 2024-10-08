@@ -12,6 +12,10 @@
       "configuration with the target hardware. It’s also a flexible environment that lets you test",
       "error paths."
    ],
-   "app-list": "pl_sim_lib,pl_mgr,pl_sim"
+   
+   "app-list": "pl_sim_lib,pl_mgr,pl_sim",
+   
+   "popup-instructions": ""
+
 }
 
