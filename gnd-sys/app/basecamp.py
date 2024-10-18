@@ -68,7 +68,7 @@ import CFE_MissionLib
 from tools import PySimpleGUI_License
 from tools import CreateApp, ManageTutorials, crc_32c, datagram_to_str, compress_abs_path, TextEditor
 from tools import CreateProject, AppStore, ManageCodeTutorials
-from tools import AppTargetStatus, AppTopicIdStatus, Cfs, CfsStdout, ManageCfs
+from tools import AppTargetStatus, AppTopicIdStatus, Cfs, CfsStdout, ManageCfs, build_cfs_target
 from cfsinterface import CmdTlmRouter
 from cfsinterface import Cfe, EdsMission
 from cfsinterface import TelecommandInterface, TelecommandScript
@@ -1343,24 +1343,16 @@ class App():
             elif self.event == '-CREATE_CFS-':
             
                 if self.cfs_subprocess is None:
-                    build_cfs_sh = os.path.join(self.path, Cfs.SH_BUILD_CFS_TOPICIDS)
-                    self.cfs_build_subprocess = subprocess.Popen('%s %s' % (build_cfs_sh, self.cfs_abs_base_path),
-                                                       stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True)
-                    if self.cfs_build_subprocess is not None:
-                        self.cfs_stdout = CfsStdout(self.cfs_build_subprocess, self.window)
-                        self.cfs_stdout.start()
+                    build_cfs_script = os.path.join(self.path, Cfs.SH_BUILD_CFS_TOPICIDS)
+                    build_cfs_target(build_cfs_script, self.cfs_abs_base_path, self.window)
                 else:
                     sg.popup("A cFS image is currently running. You must stop the current image prior to building a new image.", title='Build cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                 
             elif self.event == '-BUILD_CFS-':
             
                 if self.cfs_subprocess is None:
-                    build_cfs_sh = os.path.join(self.path, Cfs.SH_MAKE_INSTALL_CFS)
-                    self.cfs_build_subprocess = subprocess.Popen('%s %s' % (build_cfs_sh, self.cfs_abs_base_path),
-                                                       stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True)
-                    if self.cfs_build_subprocess is not None:
-                        self.cfs_stdout = CfsStdout(self.cfs_build_subprocess, self.window)
-                        self.cfs_stdout.start()
+                    build_cfs_script = os.path.join(self.path, Cfs.SH_MAKE_INSTALL_CFS)
+                    build_cfs_target(build_cfs_script, self.cfs_abs_base_path, self.window)
                 else:
                     sg.popup("A cFS image is currently running. You must stop the current image prior to building a new image.", title='Build cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 

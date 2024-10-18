@@ -250,8 +250,11 @@ class CreateApp():
                                         sg.Text(app_meta_data.json.short_description(), font=hdr_value_font, size=(65,1))])
         
         layout = [
-                  [sg.Text("\nAfter you create an app using a template, you must add it to the cFS target using 'File->Add Target App'. Each app includes a coding tutorial that is added to the 'Tutorials' menu.\n", font=hdr_value_font, size=(80,5))],        
-                  [sg.Text('Select Application Template: ', font=hdr_label_font)],
+                  [sg.Text('Create a new app by selecting the application template and clicking the <Create App> button:', font=hdr_label_font, size=(80,None))],
+                  [sg.Text("   - Follow the steps in 'File->Add User App to Target' to the apps/libs to the cFS target", font=hdr_value_font)],
+                  [sg.Text("   - The <Description> button summarizes the app's objectives", font=hdr_value_font)],
+                  [sg.Text("   - Each app includes a coding tutorial that is added to the 'Tutorials' menu after the Basecamp GUI is restarted", font=hdr_value_font)],
+                  [sg.Text('\nSelect Application Template: ', font=hdr_label_font)],
                   app_template_layout, 
                   [sg.Text('', font=hdr_value_font)],
                   [sg.T('Application Name: ', font=hdr_label_font), sg.In(key='-APP_NAME-', font=hdr_value_font, size=(25,1))],

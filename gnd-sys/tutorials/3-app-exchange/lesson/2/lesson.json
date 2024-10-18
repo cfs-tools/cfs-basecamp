@@ -1,9 +1,9 @@
 {
   "time-stamp": "",
-  "title": "MQTT Gateway Lib/App",
+  "title": "Payload Manager Example",
   "objective": [
-    "Introduce the MQTT library and gateway app and use them as examples for using the cFS App Exchange"
+    "Use the apps in Payload Manager Project as an example use case"
   ],
-  "current-slide": 1,
+  "current-slide": 0,
   "complete": false
 }

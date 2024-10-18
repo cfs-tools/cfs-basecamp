@@ -29,7 +29,7 @@ PySimpleGUI_License = 'e1ygJ1MkaOW0NTl0b2nJNylRVlH4ltwGZXSfIF6aIikCRCpBcs3GRRywa
 from .appcodetutorial import ManageCodeTutorials
 from .appstore import AppStore, AppSpec, ManageUsrApps
 from .apptemplate import CreateApp
-from .cfstarget import AppTargetStatus, AppTopicIdStatus, Cfs, CfsStdout, ManageCfs
+from .cfstarget import AppTargetStatus, AppTopicIdStatus, Cfs, CfsStdout, ManageCfs, build_cfs_target
 from .eds import CfeTopicIds, AppEds
 from .githubapps import GitHubApps
 from .jsonfile import JsonTblTopicMap

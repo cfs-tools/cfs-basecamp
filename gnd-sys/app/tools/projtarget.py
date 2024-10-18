@@ -124,8 +124,11 @@ class ProjectTemplate():
         self.progress_bar = window['-PROGRESS-']
         self.progress_txt = window['-PROGRESS_TEXT-']
         
+        github_delta = int((self.max_progress/2-1)/len(self.json.app_list())) # Download gets half of progress bar minus 'Add apps to target' step
+        build_range  = int((self.max_progress/2))     
+        build_delta  = 1
+        # Build gets half progress bar 
         # 1. Download github apps
-        github_delta = int((self.max_progress/2)/len(self.json.app_list())) # Download gets half of progress bar
         github_apps = GitHubApps(self.git_url, self.usr_app_rel_path)
         github_apps.create_dict()
         for app in self.json.app_list():
@@ -135,21 +138,27 @@ class ProjectTemplate():
         # 2. Add apps to cFS target
         self.update_progress('Adding apps to cFS target\n', 1)
         self.manage_cfs.add_usr_app_list(self.json.app_list())
-        sleep(4) # Allow user to see change. 
+        sleep(4) # Allow user to see change 
 
         # 3. Build cFS target
-        build_txt   = 'Building new cFS target\n'
-        build_delta = int((self.max_progress/2)-1) # Build gets half progress bar minus 'Add apps to target'
-        self.manage_cfs.build_target()
-        #TODO: Open loop delay didn't work because sleep interferes with main GUI process window update
-        #TODO: Is there a way to get build_target process feedback?
-        #for x in range(2, 30, 3):
-        #   self.update_progress(build_txt, build_delta)
-        #   sleep(4)  
-        self.update_progress(build_txt, build_delta)
-        self.manage_cfs.restart_main_gui(self.json.popup_instructions())
-
+        """
+        This is a very crude display management scheme. The cFS build process runs asynchronously,
+        doesn't provide feedback on progress and the time to build the target is unknown. Therefore
+        the goal of this algorithm is to let the user know progress is being made and end with a
+        dialogue that tells them how they know the build is done. 
+        
+        Can't use sleep() because it interferes with main GUI process window update so using window.read()
+       
+       """
+        build_txt    = 'Building new cFS target\n'
+        delay_factor = build_delta * 4000  # Milliseconds for each delta
+        self.manage_cfs.build_target()     # Start async build process
+        for i in range(1, build_range):
+            self.update_progress(build_txt, build_delta)
+            window.read(timeout=delay_factor)
         window.close()
+
+        self.manage_cfs.restart_main_gui(self.json.popup_instructions())
       
         return True
         
@@ -180,7 +189,7 @@ class CreateProject():
         logger.debug("Project Template Lookup " + str(self.project_template_lookup))
                 
         self.window  = None
-        self.selected_app = None
+        self.selected_project = None
         
     def create_window(self):
         """
@@ -196,12 +205,13 @@ class CreateProject():
                                             sg.Text(project_meta_data.json.short_description(), font=hdr_value_font, size=(50,1))])
         
         layout = [
-                  [sg.Text(f"Create a new cFS project target. This includes downloading libs/apps from github, adding them to the cFS target build files, and building the new target. Project documents are in 'Help->Project Docs...' and videos are at '{self.projects_url}'.\n", font=hdr_value_font, size=(80,5))],
-                  [sg.Text('Select Project: ', font=hdr_label_font)],
+                  [sg.Text(f'Create a new cFS project target by selecting the project and clicking the <Create Project> button:', font=hdr_label_font, size=(80,None))],
+                  [sg.Text(f"   - The <Description> button summarizes the project's objectives", font=hdr_value_font)],
+                  [sg.Text(f"   - Project documents are in 'Help->Project Docs...'", font=hdr_value_font)],
+                  [sg.Text(f"   - Step-by-step instructions with videos are at '{self.projects_url}'", font=hdr_value_font)],
+                  [sg.Text('\nSelect Project: ', font=hdr_label_font)],
                   project_template_layout, 
-                  [sg.Text('', font=hdr_value_font)],
-                  [sg.Text('Project Name: ', font=hdr_label_font), sg.InputText(key='-PROJECT_NAME-', font=hdr_value_font, size=(25,1))],
-                  [sg.Text('\n', font=hdr_value_font)],
+                  [sg.Text(f'\nProject creation includes downloading libs/apps from github, adding them to the cFS target build files, and building the new target.\n', font=hdr_value_font, size=(80,None))],
                   [sg.Button('Create Project', button_color=('SpringGreen4'), pad=(2,0)), sg.Button('Description', pad=(2,0)), sg.Button('Cancel', pad=(2,0))]
                  ]
         
@@ -220,35 +230,28 @@ class CreateProject():
 
             if self.event in (sg.WIN_CLOSED, 'Cancel') or self.event is None:       
                 break
-            
-            self.selected_project = None
-            for title in self.project_template_titles:
-                if self.values[title] == True:
-                    self.selected_project = self.project_template_lookup[title]
-                    break
-                    
-            if self.event == 'Description':
+                                
+            if self.event in ['Description','Create Project']:
                 if self.selected_project is not None:
-                    description = ""
-                    for description_line in self.selected_project.json.description():
-                        description += description_line + '\n'
-                    sg.popup(description, title=self.selected_project.json.title(), font='Courier 12', line_width=sg.MESSAGE_BOX_LINE_WIDTH*2)
+                    if self.event == 'Create Project':
+                        project_name = self.selected_project.json.title()
+                        if len(project_name) > 0:
+                            try:
+                                self.selected_project.create_project(project_name)
+                            except Exception as e:
+                                print(e)
+                                sg.popup(f'Failed to create {project_name}', title="Create Project", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                        break
+                    else:
+                        description = ""
+                        for description_line in self.selected_project.json.description():
+                            description += description_line + '\n'
+                        sg.popup(description, title=self.selected_project.json.title(), font='Courier 12', line_width=sg.MESSAGE_BOX_LINE_WIDTH*2)
                 else:
                     sg.popup("Please select a project", title="Create Project", modal=False)
                 
             if self.event in self.project_template_titles:
-                if self.selected_project is not None:
-                    self.window["-PROJECT_NAME-"].update(self.selected_project.json.title())
-                
-            if self.event == 'Create Project':
-                project_name = self.values['-PROJECT_NAME-']
-                if len(project_name) > 0:
-                    try:
-                        self.selected_project.create_project(project_name)
-                    except Exception as e:
-                        print(e)
-                        sg.popup(f'Failed to create {project_name}', title="Create Project", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
-                break
+                self.selected_project = self.project_template_lookup[self.event]
                 
         self.window.close()
 

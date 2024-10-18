@@ -55,6 +55,20 @@ DEFAULT_TARGET_NAME = 'cpu1'                # TODO: Parameterize
 CFS_DEFS_FOLDER     = 'basecamp_defs'
 INSERT_KEYWORD      = '!BASECAMP-INSERT!'
 
+
+###############################################################################
+
+def build_cfs_target(cfs_build_script, cfs_abs_base_path, main_window):
+
+    build_subprocess = subprocess.Popen(f'{cfs_build_script} {cfs_abs_base_path}',
+                       stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True)
+    if build_subprocess is not None:
+        cfs_stdout = CfsStdout(build_subprocess, main_window)
+        cfs_stdout.start()
+
+    return build_subprocess
+
+
 ###############################################################################
 
 class Cfs():
@@ -536,13 +550,8 @@ class ManageCfs():
         return table_list
                 
     def build_target(self):
-        build_cfs_sh = os.path.join(self.basecamp_abs_path, Cfs.SH_BUILD_CFS_TOPICIDS)
-        self.build_subprocess = subprocess.Popen(f'{build_cfs_sh} {self.cfs_abs_base_path}',
-                                stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True)
-        if self.build_subprocess is not None:
-            self.cfs_stdout = CfsStdout(self.build_subprocess, self.main_window)
-            self.cfs_stdout.start()
-
+        build_cfs_script = os.path.join(self.basecamp_abs_path, Cfs.SH_BUILD_CFS_TOPICIDS)
+        build_cfs_target(build_cfs_script, self.cfs_abs_base_path, self.main_window)
                 
     def restart_popup(self, instructions):
         """
@@ -559,8 +568,7 @@ class ManageCfs():
         window = sg.Window('Restart Basecamp GUI', layout, grab_anywhere=True, modal=True)
 
         while True:  # Event Loop
-            pop_event, pop_values = window.read(timeout=1000)
-            print(f'pop_event: {pop_event}')
+            pop_event, pop_values = window.read(timeout=100)
             if pop_event in (sg.WIN_CLOSED, 'Cancel'):
                 break
             elif pop_event == 'Ok':

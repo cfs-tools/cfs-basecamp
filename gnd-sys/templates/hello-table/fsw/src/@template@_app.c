@@ -136,7 +136,7 @@ bool @TEMPLATE@_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 **      reentrant. Applications use the singleton pattern and store a
 **      reference pointer to the object data during construction.
 */
-bool @TEMPLATE@_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool @TEMPLATE@_ResetAppCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CFE_EVS_ResetAllFilters();
@@ -291,7 +291,7 @@ static void SendStatusTlm(void)
 
    @TEMPLATE@_StatusTlm_Payload_t *Payload = &@Template@.StatusTlm.Payload;
    /* Good design practice in case app expands to more than one table */
-   const TBLMGR_Tbl_t* LastTbl = TBLMGR_GetLastTblStatus(TBLMGR_OBJ);
+   const TBLMGR_Tbl_t *LastTbl = TBLMGR_GetLastTblStatus(TBLMGR_OBJ);
 
    /*
    ** Framework Data

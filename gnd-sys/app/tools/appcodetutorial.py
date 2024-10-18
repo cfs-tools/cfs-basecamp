@@ -68,7 +68,7 @@ class CodeTutorialJson(JsonFile):
     def document(self):
         return self.json['document']
 
-    
+
 ###############################################################################
 
 class CodeTutorial():
@@ -86,12 +86,12 @@ class CodeTutorial():
         self.lesson_path = os.path.join(tutorial_path, LESSON_DIR)
         self.lesson_list = [int(l) for l in os.listdir(self.lesson_path) if l.isnumeric()]
         self.lesson_list.sort()
-
+        self.lesson_keys = []
+        
         self.lesson_objs = {}
         self.display = True
         self.reset   = False
-
-
+        
     def create_lesson_objs(self):
         self.lesson_objs = {}
         for l in self.lesson_list:
@@ -100,7 +100,7 @@ class CodeTutorial():
             if os.path.exists(lesson_pathname):
                 self.lesson_objs[l] = CodeLesson(self.json.title(), l, lesson_num_path)            
             else:
-                print(f'{LESSON_JSON_FILE} not found for lesson {l}')
+                sg.popup(f'{LESSON_JSON_FILE} not found for lesson {l}', title="Code Lesson Error", modal=False)
                 
     def create_window(self):
         """
@@ -110,28 +110,37 @@ class CodeTutorial():
         hdr_label_font = ('Arial bold',12)
         hdr_value_font = ('Arial',12)
         
-        objective_text = ""
+        tutorial_objective_text = ""
         for objective_line in self.json.objective():
-            objective_text += objective_line
+            tutorial_objective_text += objective_line
 
         resume_lesson = 1
         for lesson in self.lesson_objs.values():
-            if lesson.complete:
-                resume_lesson += 1
-            else:
+            if not lesson.complete:
+                resume_lesson = lesson.number
                 break
-                    
+
         lesson_layout = []
         for lesson in self.lesson_objs.values():
+            lesson_key     = f'-LESSON_{lesson.number}-'
             title          = f'{lesson.number}-{lesson.title}'
             complete_state = 'Yes' if lesson.complete else 'No'
-            radio_state    = True  if lesson.number == resume_lesson else False
-            lesson_layout.append([sg.Radio(title, 'LESSONS', default=radio_state, font=hdr_value_font, size=(30,0), key=f'-LESSON{lesson.number}-'), sg.Text(complete_state, key=f'-COMPLETE{lesson.number}-')])
-        
+            radio_state = False
+            if lesson.number == resume_lesson:
+                radio_state   = True  
+                lesson_number = lesson.number
+                lesson_objective_text = lesson.json.get_objective_text()
+            lesson_layout.append([sg.Radio(title, 'LESSONS', default=radio_state, font=hdr_value_font, size=(30,0), key=lesson_key, enable_events=True), sg.Text(complete_state, key=f'-COMPLETE_{lesson.number}-')])
+            self.lesson_keys.append(lesson_key)
+             
+        window_width = 40     
         # Layouts can't be reused/shared so if someone does a tutorial reset it causes issues if layout is a class variable
         layout = [
-                  [sg.Text('Objectives', font=hdr_label_font), sg.Button('Document', pad=(2,0)) ],
-                  [sg.MLine(default_text=objective_text, font = hdr_value_font, size=(40, 4))],
+                  [sg.Text(tutorial_objective_text, font=hdr_label_font, size=(window_width,None), text_color='black', justification='center')],
+                  [sg.Push(), sg.Button('Tutorial Document'), sg.Push()],
+                  [sg.Text('')],
+                  [sg.Text(f'Lesson {lesson_number} Objective', font=hdr_label_font, key='-LESSON_TITLE-')],
+                  [sg.MLine(default_text=lesson_objective_text, font=hdr_value_font, size=(window_width,4), key='-LESSON_OBJECTIVE-')],
                   # Lesson size less than lesson layout so complete status will appear centered 
                   [sg.Text('Lesson', font=hdr_label_font, size=(30,0)),sg.Text('Complete', font=hdr_label_font, size=(10,0))],  
                   lesson_layout, 
@@ -140,21 +149,25 @@ class CodeTutorial():
 
         window = sg.Window(self.json.title(), layout, modal=True)
         return window
-        
-        
+
     def selected_lesson(self):
         """
         Return the selected lesson.
         """
         lesson_obj = None
         for lesson in self.lesson_objs:
-            if self.values[f'-LESSON{lesson}-'] == True:
+            if self.values[f'-LESSON_{lesson}-'] == True:
                lesson_obj = self.lesson_objs[lesson]
                break
                
         return lesson_obj
-    
-    
+
+    def completed_lessons(self, window):
+        completed_lessons = True
+        for lesson in range(1, len(self.lesson_objs)+1):
+            completed_lessons = completed_lessons and (window[f'-COMPLETE_{lesson}-'].get() == 'Yes')
+        return completed_lessons
+
     def gui(self):
         """
         Navigating through lessons is not strictly enforced.  The goal is to keep the user
@@ -178,13 +191,12 @@ class CodeTutorial():
                     lesson_obj = self.selected_lesson()
                     if lesson_obj is not None: 
                         if lesson_obj.execute():
-                            window[f'-COMPLETE{lesson_obj.number}-'].update('Yes')
-                            # If not last lesson then redisplay lesson window
-                            if lesson_obj.number < len(self.lesson_objs):
+                            window[f'-COMPLETE_{lesson_obj.number}-'].update('Yes')
+                            # Redisplay lesson window if all lessons not complete
+                            if not self.completed_lessons(window):
                                 self.reset = True
                             break
 
-                            
                 elif self.event == 'Objective':
                     lesson_obj = self.selected_lesson()
                     if lesson_obj is not None: 
@@ -195,7 +207,7 @@ class CodeTutorial():
                     else:
                         sg.popup("Please select an application template", title="Create Application", modal=False)
                 
-                elif self.event == 'Document':
+                elif self.event == 'Tutorial Document':
                     pdf_filename = os.path.join(self.path, DOCS_DIR, self.json.document())
                     pdf_viewer = PdfViewer(pdf_filename)
                     pdf_viewer.execute()
@@ -211,7 +223,13 @@ class CodeTutorial():
                        lesson.reset()   
                     self.reset = True
                     break
-        
+                 
+                elif self.event in self.lesson_keys:
+                    lesson_obj = self.selected_lesson()
+                    if lesson_obj is not None:
+                        window['-LESSON_TITLE-'].update(f'Lesson {lesson_obj.number} Objective')
+                        window['-LESSON_OBJECTIVE-'].update(lesson_obj.json.get_objective_text())
+                        
             self.json.update()
             window.close()
         
@@ -284,6 +302,11 @@ class CodeLessonJson(JsonFile):
     def set_lesson_file(self, file):
         self.json['current-file'] = file
 
+    def get_objective_text(self):
+        objective_text = ""
+        for objective_line in self.objective():
+            objective_text += objective_line
+        return objective_text
 
 ###############################################################################
 
@@ -680,7 +703,7 @@ class CodeLessonEditor():
                 
             elif encoded_event in ("b'-INSTRUCTIONS-'",):
                 title = f'{self.code_lesson.user_filename()}: {self.code_lesson.exercise_id()} Instructions' 
-                sg.popup(self.code_lesson.exercise_instructions(), title=title , line_width=132, font = 'Courier 12')
+                sg.popup(self.code_lesson.exercise_instructions(), title=title , line_width=132, font = 'Courier 12', modal=False, non_blocking=True, grab_anywhere=True)
 
             prev_encoded_event = encoded_event
 

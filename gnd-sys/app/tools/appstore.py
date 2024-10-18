@@ -345,19 +345,23 @@ class AppStore():
     def create_window(self):
         """
         """
-        hdr_label_font = ('Arial bold',12)
+        hdr_label_font = ('Arial bold',14)
         hdr_value_font = ('Arial',12)
+        window_width   = 100
         app_layout = []
         for app in self.git_app_repo.app_dict.keys():
             topics = self.git_app_repo.get_topics(app)
             if any(x in topics for x in self.git_topic_include) and not any(x in topics for x in self.git_topic_exclude):
                 self.git_app_repo_keys.append(app)
                 app_layout.append([sg.Checkbox(app.upper(), default=False, font=hdr_label_font, size=(10,0), key=f'-{app}-'),  
-                                  sg.Text(self.git_app_repo.get_descr(app), font=hdr_value_font, size=(100,1))])
+                                  sg.Text(self.git_app_repo.get_descr(app), font=hdr_value_font, size=(window_width,1))])
                 
         layout = [
-                  [sg.Text("Select one or more apps to download then follow the steps in 'File->Add Target App'. See 'Tutorials->TBD' tutorial if you are unfamiliar with the steps.\nAn app's JSON spec file has a 'requires' parameter that identifies dependencies that must be installed first.\n", font=hdr_value_font)],
-                  app_layout, 
+                  [sg.Text("Select one or more apps to download and click the <Download> button to add them to the usr/app repositories:", font=hdr_label_font, size=(window_width,None))],
+                  [sg.Text("   - Follow the steps in 'File->Add User App to Target' to add the apps/libs to the cFS target", font=hdr_value_font)],
+                  [sg.Text("   - The Hello World tutorial in 'Tutorials->Create App Tool' describes the steps to add an app to a cFS target", font=hdr_value_font)],
+                  [sg.Text("   - An app's JSON spec file has a 'requires' parameter that identifies dependencies that must be installed prior to the app\n", font=hdr_value_font)],
+                  [app_layout],
                   [sg.Text("")],
                   [sg.Button('Download', font=hdr_label_font, button_color=('SpringGreen4'), pad=(2,0)), sg.Button('Cancel', font=hdr_label_font, pad=(2,0))]
                  ]

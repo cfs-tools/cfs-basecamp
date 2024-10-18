@@ -104,7 +104,12 @@ class Lesson():
         self.page_curr  = 0
         self.page_prev  = 0
 
-
+    def get_objective_text(self):
+        objective_text = ""
+        for objective_line in self.json.objective():
+            objective_text += objective_line
+        return objective_text
+        
     def get_pdf_page_png_image(self, page_num):
 
         if self.page_dlist[page_num] is None:
@@ -155,11 +160,11 @@ class Lesson():
             if event in (sg.WIN_CLOSED, 'Exit') or event is None:
                 break
 
-            if event == 'Mark as Complete':
+            elif event == 'Mark as Complete':
                self.json.set_complete(True)
                break
                
-            if event in ("Next", "MouseWheel:Down", "Down:116", "Next:117", "KP_Next:89"):
+            elif event in ("Next", "MouseWheel:Down", "Down:116", "Next:117", "KP_Next:89"):
                 self.page_curr += 1
                 if self.page_curr >= self.page_count:
                     self.page_curr = 0                
@@ -198,6 +203,7 @@ class Tutorial():
         self.lesson_list = [int(l) for l in os.listdir(self.lesson_path) if l.isnumeric()]
         self.lesson_list.sort()
         logger.debug(f'self.lesson_list = {str(self.lesson_list)}')
+        self.lesson_keys = []
         
         self.display = True
         self.reset   = False
@@ -228,30 +234,36 @@ class Tutorial():
         hdr_label_font = ('Arial bold',12)
         hdr_value_font = ('Arial',12)
         
-        objective_text = ""
+        tutorial_objective_text = ""
         for objective_line in self.json.objective():
-            objective_text += objective_line
+            tutorial_objective_text += objective_line
 
         resume_lesson = 1
         for lesson in self.lesson_objs.values():
-            if lesson.complete:
-                resume_lesson += 1
-            else:
+            if not lesson.complete:
+                resume_lesson = lesson.number
                 break
                     
         lesson_layout = []
         for lesson in self.lesson_objs.values():
             logger.debug("Lesson Layout " + lesson.title)
+            lesson_key     = f'-LESSON_{lesson.number}-'
             title          = f'{lesson.number}-{lesson.title}'
             complete_state = 'Yes' if lesson.complete else 'No'
-            radio_state    = True  if lesson.number == resume_lesson else False
-            lesson_layout.append([sg.Radio(title, 'LESSONS', default=radio_state, font=hdr_value_font, size=(30,0), key=f'-LESSON{lesson.number}-'), sg.Text(complete_state, key=f'-COMPLETE{lesson.number}-')])
+            radio_state = False
+            if lesson.number == resume_lesson:
+                radio_state   = True  
+                lesson_number = lesson.number
+                lesson_objective_text = lesson.get_objective_text()
+            lesson_layout.append([sg.Radio(title, 'LESSONS', default=radio_state, font=hdr_value_font, size=(30,0), key=lesson_key, enable_events=True), sg.Text(complete_state, key=f'-COMPLETE_{lesson.number}-')])
+            self.lesson_keys.append(lesson_key)
         
-        
+        window_width = 40
         # Layouts can't be reused/shared so if someone does a tutorial reset it causes issues if layout is a class variable
         layout = [
-                  [sg.Text('Objectives', font=hdr_label_font)],
-                  [sg.MLine(default_text=objective_text, font = hdr_value_font, size=(40, 4))],
+                  [sg.Text(tutorial_objective_text, font=hdr_label_font, size=(window_width,None), text_color='black', justification='center')],
+                  [sg.Text(f'Lesson {lesson_number} Objective', font=hdr_label_font, key='-LESSON_TITLE-')],
+                  [sg.MLine(default_text=lesson_objective_text, font=hdr_value_font, size=(window_width, 4), key='-LESSON_OBJECTIVE-')],
                   # Lesson size less than lesson layout so complete status will appear centered 
                   [sg.Text('Lesson', font=hdr_label_font, size=(28,0)),sg.Text('Complete', font=hdr_label_font, size=(10,0))],  
                   lesson_layout, 
@@ -267,12 +279,17 @@ class Tutorial():
         """
         lesson_obj = None
         for lesson in self.lesson_objs:
-            if self.values[f'-LESSON{lesson}-'] == True:
+            if self.values[f'-LESSON_{lesson}-'] == True:
                lesson_obj = self.lesson_objs[lesson]
                break
                
         return lesson_obj
 
+    def completed_lessons(self, window):
+        completed_lessons = True
+        for lesson in range(1, len(self.lesson_objs)+1):
+            completed_lessons = completed_lessons and (window[f'-COMPLETE_{lesson}-'].get() == 'Yes')
+        return completed_lessons
         
     def gui(self):
         """
@@ -288,26 +305,32 @@ class Tutorial():
 
             while True: # Event Loop
 
-                self.event, self.values = window.read(timeout=100)
-                   
+                self.event, self.values = window.read(timeout=1000)
+                
                 if self.event in (sg.WIN_CLOSED, 'Exit') or self.event is None:       
                     break
             
-                if self.event == 'Start':
+                elif self.event == 'Start':
                     lesson_obj = self.selected_lesson()
                     if lesson_obj is not None: 
                         if lesson_obj.execute():
-                            window[f'-COMPLETE{lesson_obj.number}-'].update('Yes') 
-                            # If not last lesson then redisplay lesson window
-                            if lesson_obj.number < len(self.lesson_objs):
+                            window[f'-COMPLETE_{lesson_obj.number}-'].update('Yes') 
+                            # Redisplay lesson window if all lessons not complete
+                            if not self.completed_lessons(window):
                                 self.reset = True
                             break
 
-                if self.event == 'Reset':
+                elif self.event == 'Reset':
                     for lesson in list(self.lesson_objs.values()):
                        lesson.reset()   
                     self.reset = True
                     break
+                
+                elif self.event in self.lesson_keys:
+                    lesson_obj = self.selected_lesson()
+                    if lesson_obj is not None:
+                        window['-LESSON_TITLE-'].update(f'Lesson {lesson_obj.number} Objective')
+                        window['-LESSON_OBJECTIVE-'].update(lesson_obj.get_objective_text())
         
             self.json.update()
             window.close()
@@ -458,7 +481,7 @@ class TutorialPng():
             title          = f'{lesson.number}-{lesson.title}'
             complete_state = 'Yes' if lesson.complete else 'No'
             radio_state    = True if lesson.number == resume_lesson else False
-            lesson_layout.append([sg.Radio(title, 'LESSONS', default=radio_state, font=hdr_value_font, size=(30,0), key=f'-LESSON{lesson.number}-'), sg.Text(complete_state, key=f'-COMPLETE{lesson.number}-')])
+            lesson_layout.append([sg.Radio(title, 'LESSONS', default=radio_state, font=hdr_value_font, size=(30,0), key=f'-LESSON_{lesson.number}-'), sg.Text(complete_state, key=f'-COMPLETE_{lesson.number}-')])
         
         
         # Layouts can't be reused/shared so if someone does a tutorial reset it causes issues if layout is a class variable
@@ -495,9 +518,9 @@ class TutorialPng():
             
                 if self.event == 'Start':
                     for lesson in self.lesson_objs:
-                        if self.values[f'-LESSON{lesson}-'] == True:
+                        if self.values[f'-LESSON_{lesson}-'] == True:
                             if self.lesson_objs[lesson].execute():
-                                window[f'-COMPLETE{lesson}-'].update('Yes') 
+                                window[f'-COMPLETE_{lesson}-'].update('Yes') 
                 
                 if self.event == 'Reset':
                     for lesson in list(self.lesson_objs.values()):

@@ -107,7 +107,7 @@ void @TEMPLATE@_AppMain(void)
 ** Function: @TEMPLATE@_NoOpCmd
 **
 */
-bool @TEMPLATE@_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool @TEMPLATE@_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CFE_EVS_SendEvent (@TEMPLATE@_NOOP_EID, CFE_EVS_EventType_INFORMATION,
@@ -128,7 +128,7 @@ bool @TEMPLATE@_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 **      reentrant. Applications use the singleton pattern and store a
 **      reference pointer to the object data during construction.
 */
-bool @TEMPLATE@_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+bool @TEMPLATE@_ResetAppCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    CMDMGR_ResetStatus(CMDMGR_OBJ);

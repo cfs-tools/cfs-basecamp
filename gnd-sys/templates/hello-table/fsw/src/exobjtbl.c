@@ -50,7 +50,7 @@ static bool LoadJsonData(size_t JsonFileLen);
 /** Global File Data **/
 /**********************/
 
-static EXOBJTBL_Class_t* ExObjTbl = NULL;
+static EXOBJTBL_Class_t *ExObjTbl = NULL;
 
 static EXOBJTBL_Data_t TblData; /* Working buffer for loads */
  
