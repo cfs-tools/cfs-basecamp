@@ -9,11 +9,11 @@
       "materials."
    ],
    
-   "app-list": "pi_iolib,gpio_demo",
+   "app-list": "rpi_iolib,rpi_led",
 
    "popup-instructions": "Prior to restarting the Basecamp GUI, configure basecamp.ini to run the cFS with elevated privileges:\n  'SUDO_START_CFS' to True\n  'PASSWORD' to your Pi's password\n\nSee https://openmissionstack.com/projects_read/gpio_demo for operations instructions.",
    
-   "doc": "gpio_demo-project.pdf"
+   "doc": "rpi_led-project.pdf"
 
 }
 
