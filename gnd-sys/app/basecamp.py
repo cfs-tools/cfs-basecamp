@@ -1067,7 +1067,7 @@ class App():
                       sg.Text('Image', font=pri_hdr_font, pad=(10,1)),
                       sg.Text(self.GUI_NO_IMAGE_TXT, key='-CFS_IMAGE-', font=sec_hdr_font, text_color='blue')],
                      [sg.Frame('', [[sg.Button('Ena Tlm', enable_events=True, key='-ENA_TLM-', pad=((10,5),(12,12))),
-                      sg.Button('Files...', enable_events=True, key='-FILE_BROWSER-', pad=((5,5),(12,12))),
+                      sg.Button('Browse Files', enable_events=True, key='-FILE_BROWSER-', pad=((5,5),(12,12))),
                       sg.Text('Quick Cmd:', font=sec_hdr_font, pad=((0,0),(12,12))),
                       sg.Combo(self.common_cmds, enable_events=True, key="-COMMON_CMD-", default_value=self.common_cmds[0], pad=((0,5),(12,12))),
                       sg.Text('Send Cmd:', font=sec_hdr_font, pad=((5,0),(12,12))),

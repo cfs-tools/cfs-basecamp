@@ -251,7 +251,7 @@ class CreateApp():
         
         layout = [
                   [sg.Text('Create a new app by selecting the application template and clicking the <Create App> button:', font=hdr_label_font, size=(80,None))],
-                  [sg.Text("   - Follow the steps in 'File->Add User App to Target' to the apps/libs to the cFS target", font=hdr_value_font)],
+                  [sg.Text("   - Follow the steps in 'File->Add User App to Target' to add the apps/libs to the cFS target", font=hdr_value_font)],
                   [sg.Text("   - The <Description> button summarizes the app's objectives", font=hdr_value_font)],
                   [sg.Text("   - Each app includes a coding tutorial that is added to the 'Tutorials' menu after the Basecamp GUI is restarted", font=hdr_value_font)],
                   [sg.Text('\nSelect Application Template: ', font=hdr_label_font)],
