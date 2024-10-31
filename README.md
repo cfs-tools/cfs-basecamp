@@ -1,5 +1,5 @@
 # core Flight System (cFS) Basecamp
-*cFS Basecamp* provides a lightweight environment to help you learn NASA’s [core Flight System (cFS)](https://github.com/nasa/cFS) and create app-based solutions for your projects. Basecamp's default cFS target runs on Linux and includes an app suite that provides a complete operational environment including support for onboard file management and transferring files between the ground and flight systems. The built-in hands-on tutorials allow you to be immediately productive. The [Open Mission Stack](https://openmissionstack.com/) website contains cFS educational material that includes [cFS-based projects](https://openmissionstack.com/projects). These goal-oriented software/hardware projects rely on [cFS Basecamp's Apps](https://github.com/orgs/cfs-apps/repositories) to provide the project functionality.  The cFS Basecamp Python GUI automates the app integration process.
+*cFS Basecamp* provides a lightweight environment to help you learn NASA’s [core Flight System (cFS)](https://github.com/nasa/cFS) and create app-based solutions for your projects. Basecamp's default cFS target runs on Linux and includes an app suite that provides a complete operational environment including support for onboard file management and transferring files between the ground and flight systems. The built-in hands-on tutorials allow you to be immediately productive. The [Space Steps](https://spacesteps.com/) website contains cFS educational material that includes [cFS-based projects](https://spacesteps.com/category/projects/). These goal-oriented software/hardware projects rely on [cFS Basecamp's Apps](https://github.com/orgs/cfs-apps/repositories) to provide the project functionality.  The cFS Basecamp Python GUI automates the app integration process.
 
 This 'App Store' approach is made possible by using a standard application framework that includes runtime JSON initialization files and by using the [cfe-eds-framework](https://github.com/jphickey/cfe-eds-framework) cFS distribution that includes a CCSDS Electronic Data Sheets (EDS) toolchain. Each cFS application interface is defined using EDS specifications and the cfe-eds-framework build toolchain generates artifacts that are used by both the flight and ground software systems. App specification and packaging standards are being defined that will allow the cFS community to easily share apps. 
 
@@ -11,7 +11,7 @@ For users who are working on a flight mission, the [cFS Platform List](https://g
 The system can be developed on any GNU/Linux development host. The following commands install the development packages for
 a Debian/Ubuntu environment. Other Linux distributions should provide a similar set of packages but, the package names and
 installation tool names may vary. If you're running on a Raspberry Pi with a 32-bit Raspbian operating system please refer to
-the [cFS Raspberry Pi LED Control Project](https://openmissionstack.com/projects_read/gpio_demo) for details on how to configure and build the cFS. 
+the [cFS Raspberry Pi LED Control Project](https://spacesteps.com/2024/10/12/cfs-raspberry-pi-led-control/) for details on how to configure and build the cFS. 
 
     sudo apt-get update -y 
     sudo apt-get install -y build-essential
@@ -82,5 +82,5 @@ To stop/exit a virtual environment issue the *deactivate* directive and your com
 ## Watch [Open STEMware's YouTube Videos](https://www.youtube.com/@OpenSTEMware?)
 [![cFS Basecamp Introduction Video](http://img.youtube.com/vi/jwV3_9W8dcY/0.jpg)](https://www.youtube.com/watch?v=jwV3_9W8dcY)
 
-## Create with Basecamp Projects at [Open Mission Stack](https://openmissionstack.com/)
-[![cFS Basecamp Projects](https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/OpenMissionStack.png)](https://openmissionstack.com/projects)
+## Create with Basecamp Projects at [Space Steps](https://spacesteps.com/)
+[![cFS Basecamp Projects](https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/SpaceSteps-Projects.png)](https://spacesteps.com/category/projects/)
