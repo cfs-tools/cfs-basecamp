@@ -67,7 +67,7 @@
 /* 
 ** TODO - Consider refactor into 2 structures so one can be passed as a const 
 ** TODO - Every table manager object defines the following data. A CJSON struct
-** TODO   with a pointer to app's buffer coudl be creared. Think about user
+** TODO   with a pointer to app's buffer could be created. Think about user
 ** TODO   read/write with the structure.
 ** TODO       bool         Loaded;   
 ** TODO       uint16       LastLoadCnt;

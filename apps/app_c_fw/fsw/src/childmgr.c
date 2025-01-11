@@ -76,7 +76,7 @@ static ChildTask_t ChildTask = { 0, {NULL, NULL, NULL, NULL, NULL} };
 **
 ** Notes:
 **   1. This function must be called prior to any other functions being
-**      called using the same cmdmgr instance.
+**      called using the same childmgr instance.
 **   2. Constructors typically have a void return type. This returns a status
 **      so the caller can respond to failures.
 */
@@ -627,7 +627,7 @@ static CHILDMGR_Class_t *GetChildMgrInstance(void)
       
          i++;
          
-      } /* End tsk loop */
+      } /* End task loop */
    } /* End if successfully retreived task ID */
    else
    {
