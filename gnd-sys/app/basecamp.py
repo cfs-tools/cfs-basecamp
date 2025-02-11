@@ -864,12 +864,12 @@ class App():
     def view_pdf_doc(self, pdf_path, pdf_filename):
         pdf_pathfile = f'{pdf_path}{pdf_filename}'
         print(f'path_filename: {pdf_pathfile}')
-        layout = [[sg.T('')], 
-                  [sg.Text('Dir:   '), sg.Text(pdf_path,key='-DIR_TEXT-')],
+        layout = [[sg.Text('Dir:   '), sg.Text(pdf_path,key='-DIR_TEXT-')],
                   [sg.Text('File: '), sg.Input(pdf_filename,size=(30,1),enable_events=True,key="-INP_FILE-", pad=(5,1)), sg.FileBrowse(initial_folder=pdf_path, file_types=[("PDF Files","*.pdf")])],
+                  [sg.T('')], 
                   [sg.Button('Open',button_color=('SpringGreen4'),enable_events=True,key='-OPEN-', pad=(5,1)),sg.Cancel(button_color=('gray'))]
                  ]
-        doc_window = sg.Window('Basecamp Documents', layout, size=(500,100))
+        doc_window = sg.Window('Basecamp Documents', layout, size=(420,140))
         while True:
             doc_event, doc_values = doc_window.read()
             if doc_event in (sg.WIN_CLOSED, 'Exit', 'Cancel'):

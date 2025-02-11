@@ -202,6 +202,114 @@ bool PktUtil_IsPacketFiltered(const CFE_MSG_Message_t *MsgPtr, const PktUtil_Fil
 
 
 /******************************************************************************
+** Function: PktUtil_ParseCsvStr
+**
+** Notes:
+**   1. The CsvEntry array data fields are loaded with the data values in the
+**      CsvStr. The CsvStr is not a const because it is modified by strtok()
+**      as it is parsed.
+**   2. The caller is responsible for ensuring the order of parameters in the
+**      CsvStr match the JMsg CSV entry definitions.
+**
+*/
+int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCnt)
+{
+   
+   bool   ValidCsv = true;
+   char   *Token, *ErrCheck;
+   int    TokenIdx=0, EntryIdx=0, Len;
+   int    IntValue;
+   float  FltValue;
+
+   
+   Token = strtok(CsvStr, ","); 
+   while (Token != NULL && TokenIdx < (ParamCnt+1)*2)
+   {
+      OS_printf("[%d]%s\t", TokenIdx, Token); 
+      //TODO: Consider keyword string check fro even indices
+      if (TokenIdx%2 == 1)
+      {
+         EntryIdx = TokenIdx/2;
+         OS_printf("[EntryIdx = %d]",EntryIdx);
+         switch(CsvEntry[EntryIdx].Type)
+         {
+            case PKTUTIL_CSV_STRING:
+               Len = strlen(Token);
+               if (Len <= PKTUTIL_CSV_STR_LEN)
+               {                  
+                  memcpy(CsvEntry[EntryIdx].Data,Token,Len);
+               }
+               else
+               {
+                  ValidCsv = false;
+                  CFE_EVS_SendEvent(PKTUTIL_CSV_PARSE_ERR_EID, CFE_EVS_EventType_ERROR, 
+                                    "JMSG script tlm token %s length exceeds max length %d", 
+                                    Token, PKTUTIL_CSV_STR_LEN);
+               }
+               break;
+               
+            case PKTUTIL_CSV_INTEGER:
+               IntValue = (int)strtol(Token, &ErrCheck, 10);
+               if (ErrCheck != Token)
+               {
+                  OS_printf("[IntValue = %d]",IntValue);
+                  memcpy(CsvEntry[EntryIdx].Data, &IntValue, sizeof(int));
+               }
+               else
+               {
+                  ValidCsv = false;
+                  CFE_EVS_SendEvent(PKTUTIL_CSV_PARSE_ERR_EID, CFE_EVS_EventType_ERROR, 
+                                    "JMSG script tlm token %s failed to convert to an integer", 
+                                    Token);
+               }              
+               break;
+               
+            case PKTUTIL_CSV_FLOAT:
+               FltValue = (float)strtod(Token, &ErrCheck);
+               if (ErrCheck != Token)
+               {
+                  OS_printf("[FltValue = %f]",FltValue);
+                  memcpy(CsvEntry[EntryIdx].Data, &FltValue, sizeof(float));
+               }               
+               else
+               {
+                  ValidCsv = false;
+                  CFE_EVS_SendEvent(PKTUTIL_CSV_PARSE_ERR_EID, CFE_EVS_EventType_ERROR, 
+                                    "JMSG script tlm token %s failed to convert to a float", 
+                                    Token);
+               }    
+               break;
+            
+            default:
+               ValidCsv = false;
+               CFE_EVS_SendEvent(PKTUTIL_CSV_PARSE_ERR_EID, CFE_EVS_EventType_ERROR, 
+                                 "Invalid JMSG token type %d in JMSG CSV definition entry %d", 
+                                 CsvEntry[EntryIdx].Type, EntryIdx);
+               break;            
+
+         } 
+      } /* End if data token */
+      
+      if (ValidCsv)
+      {
+         Token = strtok(NULL, ",");
+         TokenIdx++;
+      }
+      else
+      {
+         Token = NULL;
+      }
+      
+   } /* End Token loop */  
+   
+   OS_printf("\n");
+      
+   return EntryIdx;  
+   
+} /* End PktUtil_ParseCsvStr() */ 
+
+
+/******************************************************************************
 ** Function: HexChar2Bin
 **
 */

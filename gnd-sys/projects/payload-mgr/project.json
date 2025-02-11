@@ -9,7 +9,7 @@
       "evaluate within the context of your situation.\n",
       "A secondary objective is to show how a cFS library and application can be used to simulate a",
       "payload. This effective strategy lets you run your payload manager app prior to having a test",
-      "configuration with the target hardware. It’s also a flexible environment that lets you test",
+      "configuration with the target hardware. It is also a flexible environment that lets you test",
       "error paths. See https://spacesteps.com/2024/10/12/cfs-payload-manager-app/ for details."
    ],
    

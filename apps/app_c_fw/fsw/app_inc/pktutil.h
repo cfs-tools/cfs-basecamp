@@ -70,9 +70,48 @@
 #endif
 */
 
+
+/*
+** Event Message IDs
+*/
+
+#define PKTUTIL_CSV_PARSE_ERR_EID  (APP_C_FW_PKTUTIL_BASE_EID + 0)
+
+
 /**********************/
 /** Type Definitions **/
 /**********************/
+
+/*
+** CSV string parsing utility
+*/
+
+typedef enum 
+{
+   PKTUTIL_CSV_STRING  = 0,
+   PKTUTIL_CSV_INTEGER = 1,
+   PKTUTIL_CSV_FLOAT   = 2
+   
+} PKTUTIL_CSV_Type_t;
+
+typedef enum
+{
+   PKTUTIL_CSV_STR_LEN = APP_C_FW_PKTUTIL_CSV_PARAM_NAME_MAX_LEN,
+   PKTUTIL_CSV_INT_LEN = 4,
+   PKTUTIL_CSV_FLT_LEN = 4
+
+} PKTUTIL_CSV_Size_t;
+
+
+typedef struct
+{
+   void                *Data;
+   PKTUTIL_CSV_Type_t  Type;   
+   PKTUTIL_CSV_Size_t  Size;
+
+   
+} PKTUTIL_CSV_Entry_t;
+
 
 /*
 ** PktUtil_IsPacketFiltered() should be used by ground commands
@@ -159,6 +198,20 @@ bool PktUtil_IsFilterTypeValid(uint16 FilterType);
 **
 */
 bool PktUtil_IsPacketFiltered(const CFE_MSG_Message_t *MsgPtr, const PktUtil_Filter_t *Filter);
+
+
+/******************************************************************************
+** Function: PktUtil_ParseCsvStr
+**
+** Notes:
+**   1. The CsvEntry array data fields are loaded with the data values in the
+**      CsvStr. The CsvStr is not a const because it is modified by strtok()
+**      as it is parsed.
+**   2. The caller is responsible for ensuring the order of parameters in the
+**      CsvStr match the JMsg CSV entry definitions.
+**
+*/
+int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCnt);
 
 
 #endif /* _pkt_util_ */

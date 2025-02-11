@@ -50,11 +50,15 @@
       <Define name="CJSON_BASE_EID"    value="30" />
       <Define name="CHILDMGR_BASE_EID" value="50" />
       <Define name="STATEREP_BASE_EID" value="60" />
-      <Define name="UTILS_BASE_EID"    value="80" />
+      <Define name="FILEUTIL_BASE_EID" value="80" />
+      <Define name="PKTUTIL_BASE_EID"  value="90" />
       <Define name="APP_BASE_EID"      value="100"  shortDescription="Starting ID for Apps using the framework"/>
       <Define name="LIB_BASE_EID"      value="1000" shortDescription="Starting ID for Libs using the framework"/>
 
+      <!-- APP_C_FW::PktUtil -->
       
+      <Define name="PKTUTIL_CSV_PARAM_NAME_MAX_LEN"  value="20" />
+
       <!--***********************************-->
       <!--**** DataTypeSet:  Entry Types ****-->
       <!--***********************************-->
