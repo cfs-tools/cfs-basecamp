@@ -45,8 +45,8 @@ Perform the following steps to create and activate a Python virtual environment 
     
 Your command line prompt should now begin with (env) to indicate you are running in the virtual environment. Next, use PIP to install the packages required by Basecamp.
 
-    pip3 install PySimpleGUI requests paho-mqtt numpy pymupdf
-
+    pip3 install rsa requests paho-mqtt numpy pymupdf
+    python3 -m pip install -i https://PySimpleGUI.net/install PySimpleGUI
 
 # Install and Run Basecamp
 Begin these steps in *'your_project'* directory created during the Python Prerequisite steps.
