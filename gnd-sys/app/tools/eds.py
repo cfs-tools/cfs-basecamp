@@ -44,8 +44,8 @@ EDS_TAG_TOPIC_ID = 'Define'
 EDS_ATTR_TOPIC_ID_NAME  = 'name'
 EDS_ATTR_TOPIC_ID_DESCR = 'shortDescription'
 
-SPARE_CMD_TOPIC_KEYWORD = 'USER_CMD_TOPICID_'
-SPARE_TLM_TOPIC_KEYWORD = 'USER_TLM_TOPICID_'
+USER_CMD_TOPIC_KEYWORD = 'USER_CMD_TOPICID_'
+USER_TLM_TOPIC_KEYWORD = 'USER_TLM_TOPICID_'
 
 # App Spec EDS keywords
 
@@ -79,8 +79,8 @@ class CfeTopicIds():
 
         self.topicid_path_file = topicid_path_file
         self.dom = xml.dom.minidom.parse(topicid_path_file)
-        self.spare_cmd_topics = self.get_spare_topics(SPARE_CMD_TOPIC_KEYWORD)
-        self.spare_tlm_topics = self.get_spare_topics(SPARE_TLM_TOPIC_KEYWORD)
+        self.spare_cmd_topics = self.get_spare_topics(USER_CMD_TOPIC_KEYWORD)
+        self.spare_tlm_topics = self.get_spare_topics(USER_TLM_TOPIC_KEYWORD)
 
     def spare_cmd_topic_cnt(self):
         return len(self.spare_cmd_topics)
@@ -125,7 +125,7 @@ class CfeTopicIds():
                 descr = topic.getAttribute(EDS_ATTR_TOPIC_ID_DESCR)
                 if len(descr) > 0:
                     topic.setAttribute(EDS_ATTR_TOPIC_ID_NAME, descr)
-                    self.spare_cmd_topics = self.get_spare_topics(SPARE_CMD_TOPIC_KEYWORD)
+                    self.spare_cmd_topics = self.get_spare_topics(USER_CMD_TOPIC_KEYWORD)
                 break
 
     def replace_spare_tlm_topic(self, tlm_topic_id_name):
@@ -149,7 +149,7 @@ class CfeTopicIds():
                 descr = topic.getAttribute(EDS_ATTR_TOPIC_ID_DESCR)
                 if len(descr) > 0:
                     topic.setAttribute(EDS_ATTR_TOPIC_ID_NAME, descr)
-                    self.spare_tlm_topics = self.get_spare_topics(SPARE_TLM_TOPIC_KEYWORD)
+                    self.spare_tlm_topics = self.get_spare_topics(USER_TLM_TOPIC_KEYWORD)
                 break
 
     def prettier_xml(self, pretty_xml):

@@ -210,7 +210,7 @@
             }},
 
             {"activity": {
-               "name":    "SPARE_TOPICID",
+               "name":    "USER_TOPICID",
                "descr":   "",
                "index":   2,
                "enabled": "false",
@@ -220,7 +220,7 @@
             }},
 
             {"activity": {
-               "name":    "SPARE_TOPICID",
+               "name":    "USER_TOPICID",
                "descr":   "",
                "index":   3,
                "enabled": "false",
@@ -230,7 +230,7 @@
             }},
 
             {"activity": {
-               "name":    "SPARE_TOPICID",
+               "name":    "USER_TOPICID",
                "descr":   "",
                "index":   4,
                "enabled": "false",
@@ -240,7 +240,7 @@
             }},
 
             {"activity": {
-               "name":    "SPARE_TOPICID",
+               "name":    "USER_TOPICID",
                "descr":   "",
                "index":   5,
                "enabled": "false",
@@ -250,7 +250,7 @@
             }},
 
             {"activity": {
-               "name":    "SPARE_TOPICID",
+               "name":    "USER_TOPICID",
                "descr":   "",
                "index":   6,
                "enabled": "false",
@@ -260,7 +260,7 @@
             }},
 
             {"activity": {
-               "name":    "SPARE_TOPICID",
+               "name":    "USER_TOPICID",
                "descr":   "",
                "index":   7,
                "enabled": "false",
@@ -270,7 +270,7 @@
             }},
             
             {"activity": {
-               "name":    "SPARE_TOPICID",
+               "name":    "USER_TOPICID",
                "descr":   "",
                "index":   8,
                "enabled": "false",
@@ -280,7 +280,7 @@
             }},
             
             {"activity": {
-               "name":    "SPARE_TOPICID",
+               "name":    "USER_TOPICID",
                "descr":   "",
                "index":   9,
                "enabled": "false",
@@ -290,7 +290,7 @@
             }},
             
             {"activity": {
-               "name":    "SPARE_TOPICID",
+               "name":    "USER_TOPICID",
                "descr":   "",
                "index":   10,
                "enabled": "false",
@@ -300,7 +300,7 @@
             }},
             
             {"activity": {
-               "name":    "SPARE_TOPICID",
+               "name":    "USER_TOPICID",
                "descr":   "",
                "index":   11,
                "enabled": "false",

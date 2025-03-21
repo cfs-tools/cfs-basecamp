@@ -43,16 +43,16 @@
       "CI_LAB_SEND_HK_TOPICID"     : "topic-id-20",
       "SAMPLE_APP_SEND_HK_TOPICID" : "topic-id-21",
       
-      "SPARE_TOPICID" : "topic-id-30",
-      "SPARE_TOPICID" : "topic-id-31",
-      "SPARE_TOPICID" : "topic-id-32",
-      "SPARE_TOPICID" : "topic-id-33",
-      "SPARE_TOPICID" : "topic-id-34",
-      "SPARE_TOPICID" : "topic-id-35",
-      "SPARE_TOPICID" : "topic-id-36",
-      "SPARE_TOPICID" : "topic-id-37",
-      "SPARE_TOPICID" : "topic-id-38",
-      "SPARE_TOPICID" : "topic-id-39",
+      "USER_TOPICID" : "topic-id-30",
+      "USER_TOPICID" : "topic-id-31",
+      "USER_TOPICID" : "topic-id-32",
+      "USER_TOPICID" : "topic-id-33",
+      "USER_TOPICID" : "topic-id-34",
+      "USER_TOPICID" : "topic-id-35",
+      "USER_TOPICID" : "topic-id-36",
+      "USER_TOPICID" : "topic-id-37",
+      "USER_TOPICID" : "topic-id-38",
+      "USER_TOPICID" : "topic-id-39",
 
       "end": true
       
@@ -179,7 +179,7 @@
       }},
 
       {"message": {
-         "name":  "SPARE_TOPICID",
+         "name":  "USER_TOPICID",
          "id": 30,
          "topic-id-30": 0,
          "topic-id": 0,
@@ -188,7 +188,7 @@
       }},
 
       {"message": {
-         "name":  "SPARE_TOPICID",
+         "name":  "USER_TOPICID",
          "id": 31,
          "topic-id-31": 0,
          "topic-id": 0,
@@ -197,7 +197,7 @@
       }},
       
       {"message": {
-         "name":  "SPARE_TOPICID",
+         "name":  "USER_TOPICID",
          "id": 32,
          "topic-id-32": 0,
          "topic-id": 0,
@@ -206,7 +206,7 @@
       }},
       
       {"message": {
-         "name":  "SPARE_TOPICID",
+         "name":  "USER_TOPICID",
          "id": 33,
          "topic-id-33": 0,
          "topic-id": 0,
@@ -215,7 +215,7 @@
       }},
       
       {"message": {
-         "name":  "SPARE_TOPICID",
+         "name":  "USER_TOPICID",
          "id": 34,
          "topic-id-34": 0,
          "topic-id": 0,
@@ -224,7 +224,7 @@
       }},
       
       {"message": {
-         "name":  "SPARE_TOPICID",
+         "name":  "USER_TOPICID",
          "id": 35,
          "topic-id-35": 0,
          "topic-id": 0,
@@ -233,7 +233,7 @@
       }},
       
       {"message": {
-         "name":  "SPARE_TOPICID",
+         "name":  "USER_TOPICID",
          "id": 36,
          "topic-id-36": 0,
          "topic-id": 0,
@@ -242,7 +242,7 @@
       }},
       
       {"message": {
-         "name":  "SPARE_TOPICID",
+         "name":  "USER_TOPICID",
          "id": 37,
          "topic-id-37": 0,
          "topic-id": 0,
@@ -251,7 +251,7 @@
       }},
       
       {"message": {
-         "name":  "SPARE_TOPICID",
+         "name":  "USER_TOPICID",
          "id": 38,
          "topic-id-38": 0,
          "topic-id": 0,
@@ -260,7 +260,7 @@
       }},
       
       {"message": {
-         "name":  "SPARE_TOPICID",
+         "name":  "USER_TOPICID",
          "id": 39,
          "topic-id-39": 0,
          "topic-id": 0,

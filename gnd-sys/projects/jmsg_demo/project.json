@@ -1,0 +1,20 @@
+{
+   "title": "JMSG Demo",
+   "version": "1.0",
+   "short-descr": "Demonstrate JSON Message Facility",
+   "description": [
+      "In this project you will use the JMSG_DEMO app to learn how Basecamp's JSON",
+      "Message(JMSG) Facility is used to communicate between the Software Bus and",
+      "either a UDP or MQTT communications link. JMSG_DEMO serves an example for how",
+      "developers can create an app that uses the Facility for external communications.",
+      "The Facility translates between SB binary messages and text JMSGs."
+   ],
+   
+   "app-list": "mqtt_lib,jmsg_lib,jmsg_app,jmsg_udp,jmsg_mqtt,jmsg_demo",
+
+   "popup-instructions": "This project uses Basecamp's JSON Messaging (JMSG) facility that communicates with external systems. See this project's document for configuration details.",
+   
+   "doc": "jmsg-demo-project.pdf"
+
+}
+

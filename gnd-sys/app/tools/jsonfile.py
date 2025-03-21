@@ -91,15 +91,15 @@ class JsonTblTopicMap():
        "start": true,
        "ES_HK_TLM_TOPICID"       : "topic-id-0",
        ...
-       "SPARE_70_TOPICID"   : "topic-id-70",
-       "SPARE_71_TOPICID"   : "topic-id-71",
+       "USER_70_TOPICID"   : "topic-id-70",
+       "USER_71_TOPICID"   : "topic-id-71",
        ...
       "end": true
     },
     
     A packet table entry
       {"packet": {
-         "name": "SPARE_TOPICID",
+         "name": "USER_TOPICID",
          "topic-id-83": 0,
          "topic-id": 0,
          "priority": 0,
@@ -117,9 +117,9 @@ class JsonTblTopicMap():
     JSON_TOPIC_ID_PREFIX  = 'topic-id-'
     JSON_TOPIC_NAME       = 'name'
     
-    JSON_SPARE_TOPIC_PREFIX  = 'SPARE_'
-    JSON_SPARE_TOPIC_NAME    = 'SPARE_TOPICID'
-    JSON_SPARE_TOPIC_KEYWORD = 'topic-id-'
+    JSON_USER_TOPIC_PREFIX  = 'USER_'
+    JSON_USER_TOPIC_NAME    = 'USER_TOPICID'
+    JSON_USER_TOPIC_KEYWORD = 'topic-id-'
     
     def __init__(self, json_file):
         self.file = json_file
@@ -132,7 +132,7 @@ class JsonTblTopicMap():
         self.topic_map = self.json[JsonTblTopicMap.JSON_TOPIC_ID_MAP]
 
     def spare_topics(self):
-        spare_topics = [topic for topic in self.topic_map if JsonTblTopicMap.JSON_SPARE_TOPIC_PREFIX in topic]
+        spare_topics = [topic for topic in self.topic_map if JsonTblTopicMap.JSON_USER_TOPIC_PREFIX in topic]
         return spare_topics
         
     def replace_spare_topics(self, new_topics):
@@ -170,7 +170,7 @@ class JsonTblTopicMap():
                             del new_topics[new_topics.index(keyword_str)]
                             if len(new_topics) == 0:
                                replaced_list = True
-                        elif  keyword_str.startswith(JsonTblTopicMap.JSON_SPARE_TOPIC_PREFIX):
+                        elif  keyword_str.startswith(JsonTblTopicMap.JSON_USER_TOPIC_PREFIX):
                             # Logic has a hole in it if new_topic[0] occurs later in the JSON file
                             line = f'      "{new_topics[0]}": "{keyword_val}",\n'
                             replaced_tids[keyword_val] = new_topics[0]   # Save topic names for later substitution
@@ -224,7 +224,7 @@ class JsonTblTopicMap():
                             print(f'Keyword: {keyword_str} at remove_list index {remove_idx}')
                             spare_id = re.search(r'\d+', keyword[1]).group()
                             print(f'spare_id: {spare_id}')
-                            spare_key = f'SPARE_{spare_id}_TOPICID'
+                            spare_key = f'USER_{spare_id}_TOPICID'
                             line = f'      "{spare_key}":{keyword[1]}'
                             print('newline: ', line)
                             del remove_topics[remove_idx]
@@ -239,7 +239,7 @@ class JsonTblTopicMap():
                            for topic_name in remove_topic_names:
                                if topic_name in keyword_val:
                                    print('orgline: ', line)
-                                   line = f'           "{keyword_str}":"{JsonTblTopicMap.JSON_SPARE_TOPIC_NAME}",\n'
+                                   line = f'           "{keyword_str}":"{JsonTblTopicMap.JSON_USER_TOPIC_NAME}",\n'
                                    print('newline: ', line)
                 
                 instantiated_text += line
