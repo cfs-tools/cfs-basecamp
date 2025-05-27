@@ -305,7 +305,7 @@ class CreateApp():
                         app_created, new_app_dir = self.selected_app.create_app(app_name, os.path.join(os.getcwd(),self.usr_app_path))
                         if app_created:
                             status_text = f'Successfully created {app_name} in {new_app_dir}\n'
-                            instruct_text = f"> Use 'Develop->Add App' to add {app_name} to the cFS target.\n"
+                            instruct_text = f"> Use 'File->Add User App to Target' to add {app_name} to the cFS target.\n"
                             tutorial_text = ''
                             if self.selected_app.has_tutorial:
                                 tutorial_text = "> A coding tutorial will be added to the 'Learn' dropdown menu when Basecanp is restarted.\n"

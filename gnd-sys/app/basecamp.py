@@ -1028,7 +1028,7 @@ class App():
         
         menu_def = [
                        ['File',       ['Create Project...', '---', 'Create User App', 'Download User App', 'User App Status', '---', 'Add User App to Target', 'Remove User from App Target', '---', 'Exit']], #TODO: 'Certify App'
-                       ['Tools',      ['Browse Files', 'Run Script', 'Plot Data', '---', 'Run Perf Monitor', '---', 'Preferences']],
+                       ['Tools',      ['Browse Files', 'Run Cmd Sequencer', 'Run Script', 'Plot Data', '---', 'Run Perf Monitor', '---', 'Preferences']],
                        ['Remote Ops', ['Configure Command Destination', 'Configure Telemetry Source', 'Control Remote Target']],  
                        ['Tutorials',  tutorial_menu],
                        ['Help',       ['Tech Docs...', 'Project Docs...', 'About']]
@@ -1208,6 +1208,11 @@ class App():
                 self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','FILE_BROWSER_TLM_PORT'))
                 self.file_browser = sg.execute_py_file("filebrowser.py", cwd=self.cfs_interface_dir)
 
+            elif self.event == 'Run Cmd Sequencer':
+                self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','CMD_SEQUENCER_CMD_PORT'))
+                self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','CMD_SEQUENCER_TLM_PORT'))
+                self.script_runner = sg.execute_py_file("cmdsequencer.py", cwd=self.cfs_interface_dir)
+        
             elif self.event == 'Run Script':
                 self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_CMD_PORT'))
                 self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_TLM_PORT'))

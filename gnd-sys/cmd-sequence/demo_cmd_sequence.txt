@@ -1,0 +1,43 @@
+"""
+This demo command sequence serves as a template for user command scripts. Command
+sequences are a list of commands that are individually sent by the user. 
+
+This demo command sequence serves as a template for user command scripts. Command
+sequences are a list of commands that are individually sent by the user.  Command
+sequences are useful when teaching how to perform an operational function.  The 
+user can control the operational flow and observe the flight software responses.
+The command parameters are hardcoded because sequences are written to support a 
+specific lesson. 
+
+This file’s syntax is simple. Lines beginning with a ‘>’ are commands that can be
+sent by the user. These lines are extracted from the file and presented to the user
+in a scrollable window where they send each command. Each command line can have a
+comment that starts with a ‘#’ character.  Command comments are displayed in a second
+window when the command is highlighted. Comments should help the user understand
+expected behavior and which telemetry points to use to verify the command behaved as
+expected. 
+
+Command Line syntax: > App_Name, Command, {dictionary of parameters} ## Comment
+
+Only lines starting with ">" are interpreted so all other lines are treated as
+file comments.
+
+'##' can't be part of a command or contained in a comment. It can only be used to start
+a comment.
+
+"""
+
+# cFE Service No Op commands
+
+> 'CFE_ES', 'NoopCmd', {}     ## Event message sent identifying cFE, OSAL and PSP versions, CFE_ES HK_TLM CommandCounter increments 
+> 'CFE_EVS', 'NoopCmd', {}    ## Event message sent identifying cFE version, CFE_EVS HK_TLM CommandCounter increments
+> 'CFE_SB', 'NoopCmd', {}     ## Event message sent identifying cFE version, CFE_SB HK_TLM CommandCounter increments
+> 'CFE_TBL', 'NoopCmd', {}    ## Event message sent identifying cFE version, CFE_TBL HK_TLM CommandCounter increments
+> 'CFE_TIME', 'NoopCmd', {}   ## Event message sent identifying cFE version, CFE_TIME HK_TLM CommandCounter increments
+
+
+# Example commands with parameters
+
+> 'CFE_ES', 'QueryOneCmd', {'Application': 'APP_C_DEMO'}  ## A CFE_ES APP_TLM message is sent containing APP_C_DEMO information
+
+
