@@ -196,7 +196,7 @@ class TelecommandInterface(CfeEdsTarget):
                 cmd_has_payload, cmd_payload_item = self.get_cmd_entry_payload(cmd_entry)
                     
                 if cmd_has_payload:
-                    
+
                     payload_entry = self.eds_mission.get_database_named_entry(cmd_payload_item[2])
                     payload = payload_entry()
 
@@ -218,106 +218,6 @@ class TelecommandInterface(CfeEdsTarget):
         """
         return re.findall("'([^']*)'", str(cmd_obj.__class__))[1]
 
-    def get_payload_struct(self, base_entry, base_object, base_name):
-        """
-        Recursive function that goes through an EDS object structure (arrays and structs)
-        To get down to the fundamental objects (ints, strings, enumerations).
-
-        Inputs:
-            eds_db - EDS database
-            base_entry - EDS fucntion to create the base_object
-            base_object - EDS Object that is iterated over to find the structure
-            base_name - Name used in the recursion to get the full name of a fundamental object
-
-        Outputs:
-            EDS Object data structure
-        """
-        struct = {}
-
-        # Arrays
-        if (self.eds_mission.lib_db.IsArray(base_object)):
-
-            # Get the type of an array element
-            array_type_split = str(type(base_object[0])).split("'")
-            logger.debug("array_type_split[1] = " + str(array_type_split[1]))
-            logger.debug("array_type_split[3] = " + str(array_type_split[3]))
-            array_entry = self.eds_mission.get_database_named_entry(array_type_split[3])
-            #todo: array_entry = self.eds_mission.lib_db.DatabaseEntry(array_type_split[1], array_type_split[3])
-            array_object = array_entry()
-
-            # Loop over all the aray elements
-            struct = []
-            struct_name = base_name + array_entry.Name
-            for i in range(len(base_object)):
-                struct_name = f"{base_name}[{i}]"
-                array_struct = self.get_payload_struct(array_entry, array_object, struct_name)
-                struct.append(array_struct)
-
-        # Containers
-        elif (self.eds_mission.lib_db.IsContainer(base_object)):
-
-            # Iterate over the subobjects within the container
-            for subobj in base_object:
-                for subentry in base_entry:
-                    if subobj[0] == subentry[0]:
-                        logger.debug("subentry[1] = " + str(subentry[1]))
-                        logger.debug("subentry[2] = " + str(subentry[2]))
-                        entry_eds = self.eds_mission.get_database_named_entry(subentry[2])
-                        #todo: entry_eds = self.eds_mission.lib_db.DatabaseEntry(subentry[1], subentry[2])
-                        struct_name = f"{base_name}.{subobj[0]}"
-                        struct[subobj[0]] = self.get_payload_struct(entry_eds, subobj[1], struct_name)
-
-        # Enumeration
-        elif (self.eds_mission.lib_db.IsEnum(base_entry)):
-
-            struct = ()
-            enum_dict = {}
-            # Iterate over the Enumeration labels
-            for enum in base_entry:
-                enum_dict[enum[0]] = enum[1]
-                struct = (base_name, base_entry, 'enum', enum_dict)
-
-        # Anything left over uses an entry field
-        else:
-            struct = (base_name, base_entry, 'entry', None)
-
-        return struct
-
-
-    def set_payload_values(self, structure):
-        """
-        Iterating over the payload structure from get_payload_structure function,
-        this create a payload object that fills in the payload of the cmd object.
-
-        Input:
-        structure - the result structure from get_payload_structure
-
-        Output:
-        result - payload structure to fill in the cmd object
-        """
-        if isinstance(structure, dict):
-            logger.debug("Dictionary struct = " + str(structure))
-            result = {}
-            for item in list(structure.keys()):
-                result[item] = self.set_payload_values(structure[item])
-        elif isinstance(structure, list):
-            logger.debug("List struct = " + str(structure))
-            result = []
-            for item in structure:
-                result.append(self.set_payload_values(item))
-        elif isinstance(structure, tuple):
-            #structure = [payload_name, payload_eds_entry, payload_type, payload_list]
-            logger.debug("Tuple struct = " + str(structure))
-            result = self.load_payload_entry_value(structure[0],structure[1],structure[2],structure[3])
-            logger.debug("@@@result = " + str(result))
-        else:
-            #todo: Return errors and strings to keep this independent of the user interface 
-            logger.debug("Something went wrong in the Set Payload Values function")
-            result = None
-        
-        return result
-
-
     def remove_eds_payload_name_prefix(self, eds_name):
         """
         Strip the 'Payload' prefix from an EDS payload name so only the payload
@@ -325,11 +225,7 @@ class TelecommandInterface(CfeEdsTarget):
         """        
         return eds_name[eds_name.find('.')+1:]
         
-            
-    def load_payload_entry_value(self, payload_eds_name, payload_eds_entry, payload_type, payload_list):
-        raise NotImplementedError
 
-    
     def send_command(self, cmd_obj):
         """
         """
@@ -385,7 +281,7 @@ class TelecommandScript(TelecommandInterface):
         cmd_sent   = False
         cmd_text   = f'{app_name}/{cmd_name}'
         cmd_status = f'Error sending {cmd_text} command'
-
+        
         cmd_valid, cmd_status, cmd_obj = self.get_cfs_cmd_obj(app_name, cmd_name, cmd_payload)
     
         if cmd_valid:

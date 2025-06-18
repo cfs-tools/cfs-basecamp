@@ -222,7 +222,7 @@ class TelecommandGui(TelecommandInterface):
         self.payload_gui_entries = {}    
         """
         payload_gui_entries manages displaying and retrieving data from the GUI. The following methods
-        methods manage the dictionary 
+        manage the dictionary 
            1. create_payload_gui_entries()  - Creates initial dictionary from EDS information. gui_value & gui_value_key are null
            2. display_payload_gui_entries() - Sets gui_value_key as it builds the command's payload screen
            3. load_payload_entry_value()    - Called when a command is being built and sent. Uses gui_value_key to retrieve user input
@@ -464,7 +464,10 @@ class TelecommandGui(TelecommandInterface):
                             self.display_payload_gui_entries()
                 
             if self.event == '-SEND_CMD-':
-
+                """
+                The following command is used as an example in the comments
+                   FILE_MGR/SendDirListTlm_Payload')({'DirName': 'test', 'DirListOffset': 0, 'IncludeSizeTime': 'FALSE'})
+                """
                 if topic_name == self.eds_mission.TOPIC_CMD_TITLE_KEY:
                     cmd_text  = 'Please select a topic before sending a command'
                     break
@@ -491,16 +494,24 @@ class TelecommandGui(TelecommandInterface):
                     if cmd_has_payload:
             
                         try:
+                            """
+                            cmd_payload_item[1] = basecamp
+                            cmd_payload_item[2] = FILE_MGR/SendDirListTlm_CmdPayload
+                            payload_entry = EdsLib.DatabaseEntry('basecamp','FILE_MGR/SendDirListTlm_CmdPayload')
+                            payload = EdsLib.DatabaseEntry('basecamp','FILE_MGR/SendDirListTlm_CmdPayload')({'DirName': '', 'DirListOffset': 0, 'IncludeSizeTime': 'FALSE'})
+                            self.payload_struct: 
+                               {'DirName': ('Payload.DirName', EdsLib.DatabaseEntry('basecamp','BASE_TYPES/PathName'), 'entry', None),
+                                'DirListOffset': ('Payload.DirListOffset', EdsLib.DatabaseEntry('basecamp','BASE_TYPES/uint16'), 'entry', None), 
+                                'IncludeSizeTime': ('Payload.IncludeSizeTime', EdsLib.DatabaseEntry('basecamp','APP_C_FW/BooleanUint16'), 'enum', {'FALSE': 0, 'TRUE': 1})}
+                            eds_payload = eds_payload: {'DirName': 'test', 'DirListOffset': '0', 'IncludeSizeTime': 'FALSE'}
+                            payload: EdsLib.DatabaseEntry('basecamp','FILE_MGR/SendDirListTlm_CmdPayload')({'DirName': 'test', 'DirListOffset': 0, 'IncludeSizeTime': 'FALSE'})
+                            """
                             # Use the information from the database entry iterator to get a payload Entry and object
-                            logger.debug(f'cmd_payload_item[1] = {str(cmd_payload_item[1])}')
-                            logger.debug(f'cmd_payload_item[2] = {str(cmd_payload_item[2])}')
                             #todo: payload_entry = self.eds_mission.lib_db.DatabaseEntry(cmd_payload_item[1], cmd_payload_item[2])
                             payload_entry = self.eds_mission.get_database_named_entry(cmd_payload_item[2])
                             payload = payload_entry()
                             logger.debug(f'payload_entry = {str(payload_entry)}')
                             logger.debug(f'payload = {str(payload)}')
-
-                            #payload = EdsLib.DatabaseEntry(self.EDS_MISSION_NAME,'FILE_MGR/SendDirListTlm_Payload')({'DirName': '', 'DirListOffset': 0, 'IncludeSizeTime': 'FALSE'})
                             #todo: Check if None? payload_struct = self.get_payload_struct(payload_entry, payload, 'Payload')
                             eds_payload = self.set_payload_values(self.payload_struct)
                             payload = payload_entry(eds_payload)                   

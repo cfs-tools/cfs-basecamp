@@ -18,14 +18,14 @@
     
     Notes:
       1. The class designs are based on the Observer Design Pattern and they
-         also correlate with netwroking roles. 
+         also correlate with networking roles. 
          
          -----------------------------------------------------------
          | Class             | Design Patttern Role | Network Role |
          --------------------|----------------------|---------------
          | TelemetryMessage  | Subject              | None         |
          --------------------|----------------------|---------------
-         | TelemetryServer   | Supply Subject data  | Server       |
+         | TelemetryServer   | Supply Subject Data  | Server       |
          --------------------|----------------------|---------------
          | TelemetryObserver | Observer             | Client       |
          -----------------------------------------------------------
@@ -121,7 +121,7 @@ class TelemetryMessage:
 
 class TelemetryObserver(ABC):
     """
-    The Observer interface declares the notify method, used by subjects. Unlike
+    The Observer interface declares the notify method used by subjects. Unlike
     TelemetryMessage, an abstract base class is defined because there are
     different observer scenarios (i.e. GUI vs scripting) that need to be
     accommodated.

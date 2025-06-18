@@ -51,24 +51,8 @@ FILESYS_TblData_t FILESYS_Tbl =
     {                                   /* - 3 - */
         FILESYS_TBL_ENTRY_UNUSED,       /* Entry state (enabled, disabled, unused) */
         "",                             /* File system name (logical mount point) */
-    },
-    {                                   /* - 4 - */
-        FILESYS_TBL_ENTRY_UNUSED,       /* Entry state (enabled, disabled, unused) */
-        "",                             /* File system name (logical mount point) */
-    },
-    {                                   /* - 5 - */
-        FILESYS_TBL_ENTRY_UNUSED,       /* Entry state (enabled, disabled, unused) */
-        "",                             /* File system name (logical mount point) */
-    },
-    {                                   /* - 6 - */
-        FILESYS_TBL_ENTRY_UNUSED,       /* Entry state (enabled, disabled, unused) */
-        "",                             /* File system name (logical mount point) */
-    },
-    {                                   /* - 7 - */
-        FILESYS_TBL_ENTRY_UNUSED,       /* Entry state (enabled, disabled, unused) */
-        "",                             /* File system name (logical mount point) */
-    },
-  },
+    }
+  }
 };
 
 /*

@@ -69,7 +69,7 @@
   <!--******************************************-->
 
   <Package name="FILE_MGR" shortDescription="FILE_MGR configurable items">
-    <Define name="FILESYS_TBL_VOL_CNT" value="8" />
+    <Define name="FILESYS_TBL_VOL_CNT" value="4" />
     <Define name="OS_MAX_NUM_OPEN_FILES" value="8"  shortDescription="Placeholder until find the correct way to define it"/>
     <Define name="DIR_LIST_FILE_ENTRIES" value="20" shortDescription="Number of files in each directory listing telemetry packet" />
   </Package>

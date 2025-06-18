@@ -156,9 +156,9 @@ class TlmScreen():
     def update(self, tlm_msg: TelemetryMessage):
         """
         Receive telemetry updates. Using window['-TLM_UPDATE-'].click() synchronizes
-        the update with the window read loop. If this method weren't used additional
-        logic would be reuired to make sure the first tlm update is process after the
-        window read() ha executed at least once.
+        the update with the window read loop. If this method wasn't used, additional
+        logic would be required to make sure the first tlm update is processed after
+        the window read() has executed at least once.
         
         self.payload_str_max_len is set here as opposed to the constructor because an
         initial tlm_msg object does not have its eds_obj and eds_entry attributes set

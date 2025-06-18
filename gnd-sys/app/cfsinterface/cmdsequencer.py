@@ -275,7 +275,7 @@ class CmdSequencer(CmdTlmProcess):
         window_width = 100
         col_width  = int(window_width/2-3)
         col_height = 10
-        menu_layout = [['File',['&Command File...','---','Help','Exit']]]
+        menu_layout = [['File',['&Open...','---','Help','Exit']]]
 
         col_title_font = ('Arial bold',16)
         pri_hdr_font   = ('Arial bold',14)
@@ -340,12 +340,13 @@ class CmdSequencer(CmdTlmProcess):
                 else:
                     sg.popup("Please select/highlight a command to be sent", title='Send Command Error', grab_anywhere=True, modal=False)
 
-            elif self.event == 'Command File...':
+            elif self.event == 'Open...':
                 cmd_seq_file = sg.popup_get_file('', title='Command Sequence File', no_window=True, default_path=self.cmd_sequence_path, initial_folder=self.cmd_sequence_path, file_types=(("Text Files", "*.txt"),), default_extension=CMD_SEQ_FILE_EXT) # , history=True)
-                print(f'file={cmd_seq_file}')
-                (self.cmd_seq_filename, self.cmd_seq_commands, self.cmd_seq_comments) = CmdSequenceFile().load_file(cmd_seq_file)
-                self.window['-COMMAND_FILE-'].update(self.cmd_seq_filename)
-                self.window['-COMMAND_LIST-'].update(self.cmd_seq_commands)
+                if cmd_seq_file is not None:
+                    print(f'file={cmd_seq_file}')
+                    (self.cmd_seq_filename, self.cmd_seq_commands, self.cmd_seq_comments) = CmdSequenceFile().load_file(cmd_seq_file)
+                    self.window['-COMMAND_FILE-'].update(self.cmd_seq_filename)
+                    self.window['-COMMAND_LIST-'].update(self.cmd_seq_commands)
                 
             elif self.event == 'Help':
                 self.help_text.display()
