@@ -64,8 +64,9 @@ class EdsMission:
     
     #todo: Are there invalid ID conventions in the EDS to use as default values & for validity checks
     NULL_ID  = -1
-    NULL_CMD_STR = '--'        # Command parameter default value, keep short to simplify user entry
-    NULL_TLM_STR = '--Null--'  # Display when no value received yet
+    NULL_CMD_STR = '--'           # Command parameter default value, keep short to simplify user entry
+    NULL_TLM_STR = '--Null--'     # Display when no value received yet    
+    TBL_FILE_TOKEN = 'TBL_FILE'   # Table file interface names must end with this token (don't include '_' to TBL_FILE to be the whole name
     
     #todo: Decide how to manage these. They are a subset of 'standard' definitions
     # Supported interface types defined in the EDS
@@ -78,8 +79,9 @@ class EdsMission:
     TARGET_TITLE_KEY    = "-- Target --"
     TOPIC_CMD_TITLE_KEY = "-- Command Topic --"
     TOPIC_TLM_TITLE_KEY = "-- Telemetry Topic --"
+    TOPIC_TBL_TITLE_KEY = "-- Table Topic --"
     COMMAND_TITLE_KEY   = "-- Command --"
-
+    
     def __init__(self, mission_name, interface_type):
         self.mission_name = mission_name
         self.interface_type = interface_type
@@ -149,10 +151,25 @@ class EdsMission:
             topic_dict = {EdsMission.TOPIC_TLM_TITLE_KEY: EdsMission.NULL_ID}
 
         for topic in self.interface:
-            topic_dict[topic[0]] = topic[1]
+            if not topic[0].endswith(EdsMission.TBL_FILE_TOKEN):
+                topic_dict[topic[0]] = topic[1]
         
-        return topic_dict
+        return dict(sorted(topic_dict.items()))
 
+    def get_tbl_topic_dict(self):
+        """
+        The current EDS does not support cFS tables so they are defined as 
+        pseudo telemetry with a naming convention of ending the topic name
+        with EdsMission.TBL_FILE_TOKEN
+        """
+        topic_dict = {EdsMission.TOPIC_TBL_TITLE_KEY: EdsMission.NULL_ID}
+
+        for topic in self.interface:
+            print(f'topic[0]: {topic[0]}')
+            if topic[0].endswith(EdsMission.TBL_FILE_TOKEN):
+                topic_dict[topic[0]] = topic[1]
+        
+        return dict(sorted(topic_dict.items()))
 
     def get_eds_id_from_topic(self, topic_name):
         """
@@ -320,7 +337,7 @@ class CfeEdsTarget:
         Output:
         result - payload structure to fill in the cmd object
         """
-        print(f'set_payload_values(structure): {structure}')
+        #print(f'set_payload_values(structure): {structure}')
         if isinstance(structure, dict):
             logger.debug("Dictionary struct = " + str(structure))
             result = {}

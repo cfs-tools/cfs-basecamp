@@ -113,8 +113,8 @@
 		
 		<Define name="APP_C_DEMO_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 28"/>
 		<Define name="PROTO_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 29"/>
-		<Define name="SAMPLE_APP_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 30"/>
-		<Define name="SAMPLE_APP_SEND_HK_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 31"/>
+		<Define name="SAMPLE_APP_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 30" shortDescription="Value must match sample app's sample_app_msgids.h definition"/>
+		<Define name="SAMPLE_APP_SEND_HK_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 31" shortDescription="Value must match sample app's sample_app_msgids.h definition"/>
 		
 		<!-- ##################  -->
 		<!-- ##  User Apps   ##  -->
@@ -217,7 +217,9 @@
 		<Define name="APP_C_DEMO_STATUS_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 35"/>
 		<Define name="APP_C_DEMO_BIN_PLAYBK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 36"/>
 		<Define name="PROTO_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 37"/>
-		<Define name="SAMPLE_APP_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 38"/>
+		<Define name="SAMPLE_APP_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 38" shortDescription="Value must match sample app's sample_app_msgids.h definition"/>
+		<Define name="SAMPLE_APP_TBL_FILE_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 39" shortDescription="Basecamp topic ID used by table manager"/>
+		<Define name="FILE_MGR_FILE_SYS_TBL_FILE_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 40"/>
 		
 		<!-- ##################  -->
 		<!-- ##  User Apps   ##  -->
@@ -229,28 +231,25 @@
 		<!-- ##   TELEMETRY_NUM_TOPICIDS defines the maximum number of topic IDs          ## -->
 		<!-- ############################################################################### -->
 
-
-		<Define name="USER_TLM_TOPICID_01" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 39" shortDescription="USER_TLM_TOPICID_01"/>
-		<Define name="USER_TLM_TOPICID_02" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 40" shortDescription="USER_TLM_TOPICID_02"/>
-		<Define name="USER_TLM_TOPICID_03" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 41" shortDescription="USER_TLM_TOPICID_03"/>
-		<Define name="USER_TLM_TOPICID_04" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 42" shortDescription="USER_TLM_TOPICID_04"/>
-		<Define name="USER_TLM_TOPICID_05" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 43" shortDescription="USER_TLM_TOPICID_05"/>
-		<Define name="USER_TLM_TOPICID_06" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 44" shortDescription="USER_TLM_TOPICID_06"/>
-		<Define name="USER_TLM_TOPICID_07" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 45" shortDescription="USER_TLM_TOPICID_07"/>
-		<Define name="USER_TLM_TOPICID_08" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 46" shortDescription="USER_TLM_TOPICID_08"/>
-		<Define name="USER_TLM_TOPICID_09" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 47" shortDescription="USER_TLM_TOPICID_09"/>
-		<Define name="USER_TLM_TOPICID_10" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 48" shortDescription="USER_TLM_TOPICID_10"/>
-		<Define name="USER_TLM_TOPICID_11" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 49" shortDescription="USER_TLM_TOPICID_11"/>
-		<Define name="USER_TLM_TOPICID_12" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 50" shortDescription="USER_TLM_TOPICID_12"/>
-		<Define name="USER_TLM_TOPICID_13" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 51" shortDescription="USER_TLM_TOPICID_13"/>
-		<Define name="USER_TLM_TOPICID_14" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 52" shortDescription="USER_TLM_TOPICID_14"/>
-		<Define name="USER_TLM_TOPICID_15" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 53" shortDescription="USER_TLM_TOPICID_15"/>
-		<Define name="USER_TLM_TOPICID_16" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 54" shortDescription="USER_TLM_TOPICID_16"/>
-		<Define name="USER_TLM_TOPICID_17" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 55" shortDescription="USER_TLM_TOPICID_17"/>
-		<Define name="USER_TLM_TOPICID_18" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 56" shortDescription="USER_TLM_TOPICID_18"/>
-		<Define name="USER_TLM_TOPICID_19" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 57" shortDescription="USER_TLM_TOPICID_19"/>
-		<Define name="USER_TLM_TOPICID_20" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 58" shortDescription="USER_TLM_TOPICID_20"/>
-		<Define name="USER_TLM_TOPICID_21" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 59" shortDescription="USER_TLM_TOPICID_21"/>
+		<Define name="USER_TLM_TOPICID_03" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 41" shortDescription="USER_TLM_TOPICID_01"/>
+		<Define name="USER_TLM_TOPICID_04" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 42" shortDescription="USER_TLM_TOPICID_02"/>
+		<Define name="USER_TLM_TOPICID_05" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 43" shortDescription="USER_TLM_TOPICID_03"/>
+		<Define name="USER_TLM_TOPICID_06" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 44" shortDescription="USER_TLM_TOPICID_04"/>
+		<Define name="USER_TLM_TOPICID_07" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 45" shortDescription="USER_TLM_TOPICID_05"/>
+		<Define name="USER_TLM_TOPICID_08" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 46" shortDescription="USER_TLM_TOPICID_06"/>
+		<Define name="USER_TLM_TOPICID_09" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 47" shortDescription="USER_TLM_TOPICID_07"/>
+		<Define name="USER_TLM_TOPICID_10" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 48" shortDescription="USER_TLM_TOPICID_08"/>
+		<Define name="USER_TLM_TOPICID_11" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 49" shortDescription="USER_TLM_TOPICID_09"/>
+		<Define name="USER_TLM_TOPICID_12" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 50" shortDescription="USER_TLM_TOPICID_10"/>
+		<Define name="USER_TLM_TOPICID_13" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 51" shortDescription="USER_TLM_TOPICID_11"/>
+		<Define name="USER_TLM_TOPICID_14" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 52" shortDescription="USER_TLM_TOPICID_12"/>
+		<Define name="USER_TLM_TOPICID_15" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 53" shortDescription="USER_TLM_TOPICID_13"/>
+		<Define name="USER_TLM_TOPICID_16" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 54" shortDescription="USER_TLM_TOPICID_14"/>
+		<Define name="USER_TLM_TOPICID_17" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 55" shortDescription="USER_TLM_TOPICID_15"/>
+		<Define name="USER_TLM_TOPICID_18" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 56" shortDescription="USER_TLM_TOPICID_16"/>
+		<Define name="USER_TLM_TOPICID_19" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 57" shortDescription="USER_TLM_TOPICID_17"/>
+		<Define name="USER_TLM_TOPICID_20" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 58" shortDescription="USER_TLM_TOPICID_18"/>
+		<Define name="USER_TLM_TOPICID_21" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 59" shortDescription="USER_TLM_TOPICID_19"/>
 
 	</Package>
 </DesignParameters>

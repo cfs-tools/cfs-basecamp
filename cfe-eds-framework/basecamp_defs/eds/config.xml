@@ -68,6 +68,10 @@
   <!--**** Basecamp App Runtime Definitions ****-->
   <!--******************************************-->
 
+  <Package name="SAMPLE_APP">
+    <Define name="STRING_VAL_LEN" value="10" />
+  </Package>
+  
   <Package name="FILE_MGR" shortDescription="FILE_MGR configurable items">
     <Define name="FILESYS_TBL_VOL_CNT" value="4" />
     <Define name="OS_MAX_NUM_OPEN_FILES" value="8"  shortDescription="Placeholder until find the correct way to define it"/>

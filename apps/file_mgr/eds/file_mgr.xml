@@ -44,6 +44,47 @@
       </EnumeratedDataType>
 
 
+      <!--**********************************-->
+      <!--**** DataTypeSet: Table Files ****-->
+      <!--**********************************-->
+
+
+      <!-- TODO: Orginal def used by code. If table manager pseudo tlm works, this needs to be merged and/or code updated to use new definitions -->
+      
+      <ContainerDataType name="FileSysTblEntry" shortDescription="">
+        <EntryList>
+          <Entry name="VolumeState" type="BASE_TYPES/uint32" shortDescription="todo" />
+          <Entry name="VolumeName" type="BASE_TYPES/PathName" shortDescription="Name of file system volume" />
+        </EntryList>
+      </ContainerDataType>
+      
+      <ArrayDataType name="FileSysTblEntries" dataTypeRef="FileSysTblEntry" shortDescription="">
+        <DimensionList>
+          <Dimension size="${FILE_MGR/FILESYS_TBL_VOL_CNT}" />
+        </DimensionList>
+      </ArrayDataType>
+      
+      <ContainerDataType name="FileSysTbl" shortDescription="FILE_MGR file system table">
+        <EntryList>
+          <Entry name="Config" type="FileSysTblEntries" />
+        </EntryList>
+      </ContainerDataType>
+      
+      <!-- TODO: New types will need to be merged if table manager works -->
+      <ArrayDataType name="FileSysTblData" dataTypeRef="FileSysTblEntry">
+        <DimensionList>
+           <Dimension size="${FILE_MGR/FILESYS_TBL_VOL_CNT}"/>
+        </DimensionList>
+      </ArrayDataType>
+
+      <ContainerDataType name="FileSysTblFile_Payload" shortDescription="Pseudo telemetry payload">
+        <EntryList>
+          <Entry name="FileHdr"  type="CFE_FS/Header"    shortDescription="cFE standard file header" />
+          <Entry name="TblHdr"   type="CFE_TBL/File_Hdr" shortDescription="cFE standard table header" />
+          <Entry name="TblData"  type="FileSysTblData"   shortDescription="" />
+        </EntryList>
+      </ContainerDataType>
+
       <!--***************************************-->
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
@@ -488,28 +529,13 @@
         </EntryList>
       </ContainerDataType>
 
-      <!--*****************************-->
-      <!--**** DataTypeSet: Tables ****-->
-      <!--*****************************-->
-
-      <ContainerDataType name="FileSysTblEntry" shortDescription="">
+      <ContainerDataType name="FileSysTblFile" baseType="CFE_HDR/TelemetryHeader">
         <EntryList>
-          <Entry name="VolumeState" type="BASE_TYPES/uint32" shortDescription="todo" />
-          <Entry name="VolumeName" type="BASE_TYPES/PathName" shortDescription="Name of file system volume" />
-        </EntryList>
-      </ContainerDataType>
-      <ArrayDataType name="FileSysTblEntries" dataTypeRef="FileSysTblEntry" shortDescription="">
-        <DimensionList>
-          <Dimension size="${FILE_MGR/FILESYS_TBL_VOL_CNT}" />
-        </DimensionList>
-      </ArrayDataType>
-      <ContainerDataType name="FileSysTbl" shortDescription="FILE_MGR file system table">
-        <EntryList>
-          <Entry name="Config" type="FileSysTblEntries" />
+          <Entry type="FileSysTblFile_Payload" name="Payload" shortDescription="FileSysTblFile_Payload"/>
         </EntryList>
       </ContainerDataType>
     </DataTypeSet>
-        
+    
     <ComponentSet>
       <Component name="Application">
 
@@ -548,6 +574,11 @@
               <GenericTypeMap name="TelemetryDataType" type="FileSysTblTlm" />
             </GenericTypeMapSet>
           </Interface>
+          <Interface name="FILE_SYS_TBL_FILE" shortDescription="Pseudo telemetry for File System Table File" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="FileSysTblFile" />
+            </GenericTypeMapSet>
+          </Interface>
         </RequiredInterfaceSet>
 
         <!--***************************************-->
@@ -561,7 +592,8 @@
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="DirListTlmTopicId"     initialValue="${CFE_MISSION/FILE_MGR_DIR_LIST_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="FileInfoTlmTopicId"    initialValue="${CFE_MISSION/FILE_MGR_FILE_INFO_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="OpenFileTlmTopicId"    initialValue="${CFE_MISSION/FILE_MGR_OPEN_FILE_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FileSysTblTlmTopicId"  initialValue="${CFE_MISSION/FILE_MGR_FILE_SYS_TBL_FILE_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FileSysTblTlmTopicId"  initialValue="${CFE_MISSION/FILE_MGR_FILE_SYS_TBL_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FileSysTblFileTopicId" initialValue="${CFE_MISSION/FILE_MGR_FILE_SYS_TBL_FILE_TOPICID}" />
           </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
@@ -571,6 +603,7 @@
             <ParameterMap interface="FILE_INFO_TLM"     parameter="TopicId" variableRef="FileInfoTlmTopicId" />
             <ParameterMap interface="OPEN_FILE_TLM"     parameter="TopicId" variableRef="OpenFileTlmTopicId" />
             <ParameterMap interface="FILE_SYS_TBL_TLM"  parameter="TopicId" variableRef="FileSysTblTlmTopicId" />
+            <ParameterMap interface="FILE_SYS_TBL_FILE" parameter="TopicId" variableRef="FileSysTblFileTopicId" />
           </ParameterMapSet>
         </Implementation>
       </Component>

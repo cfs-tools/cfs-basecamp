@@ -41,6 +41,7 @@ import PySimpleGUI as sg
 
 WINDOW_TITLE  = 'Table Manager'
 TBL_FILE_EXT  = 'tbl'
+MODIFIED_CHAR = '*'
 
 ###############################################################################
 
@@ -52,7 +53,7 @@ class HelpText():
         self.text = \
            ("Table Manager allows users to load a binary cFS table from a\n"
            "file, modify the data values and save changes to a file. Tables\n"
-           "must be defined in an app's EDS spec using Basecamp's psuedo\n"
+           "must be defined in an app's EDS spec using Basecamp's pseudo\n"
            "telemtry table file EDS conventions. This convention is a temporary\n"
            "work around until NASA supports EDS table file definitions as\n"
            "part of the EDS 'required interface' definition.")
@@ -105,19 +106,45 @@ class TblManager():
             [sg.Menu(menu_layout)],
             [sg.Text('Click on a data parameter row to edit its contents.', font=hdr_label_font)],
             [sg.Text('Parameter: ', font=hdr_label_font, size=(10,1)), sg.Text('', font=hdr_content_font, size=(75,1), border_width=1, justification='left', key='-PARAMETER-')],
-            [sg.Text('Value: ', font=hdr_label_font, size=(10,1)), sg.Input('', font=hdr_content_font, size=(25,1), border_width=1, justification='right', key='-DATA-'), sg.Button('Update', enable_events=True, button_color=('SpringGreen4'), key='-UPDATE-', pad=((5,5),(12,12))),], #, relief=sg.RELIEF_RAISED
+            [sg.Text('Value: ', font=hdr_label_font, size=(10,1)), sg.Input('', font=hdr_content_font, size=(25,1), border_width=1, justification='right', key='-DATA-'), sg.Button('Update', enable_events=True, button_color=('SpringGreen4'), key='-UPDATE-'),], #, relief=sg.RELIEF_RAISED
             [[tbl_widget]]]
              
         window = sg.Window(self.window_title, self.layout, resizable=True)        
         
         return window
 
-
     def reset_tbl_data_modified(self):
-        self.window_title.replace('*','')
+        print(f'reset_tbl_data_modified(): {self.window_title}')
+        self.window_title = self.window_title.replace(MODIFIED_CHAR,'')
         self.window.set_title(self.window_title)
-        self.tbl_data_modified = True
+        print(f'reset_tbl_data_modified(): {self.window_title}')
+        self.tbl_data_modified = False
+        self.window['-PARAMETER-'].update('')
+        self.window['-DATA-'].update('')
 
+    def post_save_file_processing(self, err_str):
+        if err_str != None:
+            sg.popup(err_str, title='Save File Error', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)        
+        self.reset_tbl_data_modified()
+                
+    def select_tbl_topic_popup(self):
+        tbl_topic = None
+        topic_list = list(self.tbl_file.topic_dict.keys())
+        
+        layout = [
+            [sg.Text("Select a table topic:"), sg.Combo(topic_list, topic_list[0], key='-TBL_TOPIC-')],
+            [sg.Button('Select', button_color=('SpringGreen4'), enable_events=True, key='-SELECT-', pad=(3,1)), sg.Cancel(button_color=('gray'), pad=(3,1))]]
+
+        window = sg.Window('Table Topics', layout)
+        while True:
+            event, values = window.read()
+            if event in (sg.WIN_CLOSED, 'Cancel'):
+                break
+            if event == '-SELECT-':
+                tbl_topic = values['-TBL_TOPIC-']
+                break
+        window.close()
+        return tbl_topic
         
     def execute(self):
         """
@@ -141,43 +168,53 @@ class TblManager():
                 break
 
             elif isinstance(event, tuple) and event[0] == '-TABLE-' and event[1] == '+CLICKED+':
-                row,col = event[2]
-                print(f'Table[{row},{col}]: {self.tbl_file.tbl_data_array[row][0]}: {self.tbl_file.tbl_data_array[row][1]}')
-                self.window['-PARAMETER-'].update(self.tbl_file.tbl_data_array[row][0])
-                self.window['-DATA-'].update(self.tbl_file.tbl_data_array[row][1])
+                if self.tbl_file.data_loaded:
+                    row,col = event[2]
+                    print(f'Table[{row},{col}]: {self.tbl_file.tbl_data_array[row][0]}: {self.tbl_file.tbl_data_array[row][1]}')
+                    self.window['-PARAMETER-'].update(self.tbl_file.tbl_data_array[row][0])
+                    self.window['-DATA-'].update(self.tbl_file.tbl_data_array[row][1])
 
             elif event == '-UPDATE-':
                 self.window['-TABLE-'].update(values=self.tbl_file.update_data_array(row,1,values['-DATA-']))
                 # Add data modified indicator on first update
                 if not self.tbl_data_modified:
-                    self.window_title = '*' + self.window_title
+                    self.window_title = MODIFIED_CHAR + self.window_title
                     self.window.set_title(self.window_title)
                 self.tbl_data_modified = True
                 
             elif event == 'Open...':
-                tbl_file = sg.popup_get_file('', title='Table File', no_window=True, default_path=self.flt_server_path, initial_folder=self.flt_server_path, file_types=(("Table Files", "*.tbl"),), default_extension=TBL_FILE_EXT) # , history=True)
-                tbl_data_array = self.tbl_file.read(tbl_file,'FILE_MGR/Application/FILE_SYS_TBL_FILE') # TODO: Add topic ID support
-                if len(tbl_data_array) > 6:  # TODO: Pick number that ensures at least the file headers exist
-                    # TODO: Remove backdoor test 
-                    if tbl_file is None:
-                        tbl_file = 'FILE_MGR_SYS_TBL_TLM'
-                    self.window_title = f'{WINDOW_TITLE}: {os.path.basename(tbl_file)}'
-                    self.window.set_title(self.window_title)
-                    self.window['-TABLE-'].update(values=tbl_data_array)
-                    self.tbl_data_modified = False
+                tbl_topic = self.select_tbl_topic_popup()
+                if tbl_topic != None:
+                    if tbl_topic != self.tbl_file.eds_mission.TOPIC_TBL_TITLE_KEY:
+                        # popup_get_file() message parameter ignored when no_window=True
+                        tbl_file = sg.popup_get_file('', no_window=True, default_path=self.flt_server_path, initial_folder=self.flt_server_path, file_types=(("Table Files", "*.tbl"),), default_extension=TBL_FILE_EXT) # , history=True)
+                        print(f'tbl_file: {tbl_file}')
+                        err_str, tbl_data_array = self.tbl_file.read(tbl_file,tbl_topic)
+                        if err_str == None:
+                            if len(tbl_data_array) > 6:  # TODO: Pick number that ensures at least the file headers exist
+                                # TODO: Remove testing backdoor 
+                                if tbl_file is None:
+                                    tbl_file = 'FILE_MGR_SYS_TBL_TLM'
+                                self.window_title = f'{WINDOW_TITLE}: {os.path.basename(tbl_file)}'
+                                self.window.set_title(self.window_title)
+                                self.window['-TABLE-'].update(values=tbl_data_array)
+                                self.reset_tbl_data_modified()
+                        else:
+                            sg.popup(err_str, title='Read File Error', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)        
+                    else:
+                        sg.popup('Please select a table topic from the dropdown list', title='Table Topic', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
             
             elif event == 'Save':
-                self.tbl_file.write()
-                self.reset_tbl_data_modified()
+                err_str = self.tbl_file.write()
+                self.post_save_file_processing(err_str)
 
             elif event == 'Save As...':
                 path_filename = sg.popup_get_file('Save File', save_as=True, no_window=True)
-                self.tbl_file.write_file(path_filename)
-                self.reset_tbl_data_modified()
+                err_str = self.tbl_file.write_file(path_filename)
+                self.post_save_file_processing(err_str)
 
             elif event == 'Help':
-                self.tbl_file.create_byte_data()
-                #self.help_text.display()
+                self.help_text.display()
                 
         self.window.close()
 

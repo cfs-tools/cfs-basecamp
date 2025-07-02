@@ -176,9 +176,9 @@ class CfsStdout(threading.Thread):
                 self.cfs_subprocess_log += line
 
         Reading stdout is a blocking function. The current design does not let the process get killed and I
-        think it's because the read function is always active. I put the try block there becuase I'd like to
-        add an exception mechanism to allow the thread to be terminated. Subprocess communiate with a timeout
-        i not an option because the child process is terminated if a timeout occurs. I tried the psuedo terminal
+        think it's because the read function is always active. I put the try block there because I'd like to
+        add an exception mechanism to allow the thread to be terminated. Subprocess communicating with a timeout
+        is not an option because the child process is terminated if a timeout occurs. I tried the pseudo terminal
         module as an intermediator between the cFS process and stdout thinking it may be non-blocking but
         it still blocked. 
         

@@ -853,7 +853,7 @@ class App():
     def create_app_cmd_list(self, cmd_topics):
         """
         Populate self.app_cmd_list with the app names defined in cmd_topics. Assumes the app name 
-         
+        starts the topic string.
         """
         for topic in cmd_topics:
             app_name = topic.split('/')[0]
@@ -865,13 +865,13 @@ class App():
     def create_app_tlm_list(self, tlm_topics):
         """
         Populate self.app_tlm_list with the app names defined in tlm_topics. Assumes the app name 
-         
+        starts the topic string.
         """
         for topic in tlm_topics:
             app_name = topic.split('/')[0]
             if app_name not in self.cfe_app_list and app_name not in self.app_tlm_list:
                 self.app_tlm_list.append(app_name)
-
+        
     def view_pdf_doc(self, pdf_path, pdf_filename):
         pdf_pathfile = f'{pdf_path}{pdf_filename}'
         print(f'path_filename: {pdf_pathfile}')
@@ -1039,7 +1039,7 @@ class App():
         
         menu_def = [
                        ['File',       ['Create Project...', '---', 'Create User App', 'Download User App', 'User App Status', '---', 'Add User App to Target', 'Remove User from App Target', '---', 'Exit']], #TODO: 'Certify App'
-                       ['Tools',      ['Browse Files', 'Run Cmd Sequencer', 'Run Script', 'Plot Data', '---', 'Run Perf Monitor', '---', 'Preferences']],
+                       ['Tools',      ['Browse Files', 'Run Cmd Sequencer', 'Run Script', 'Manage cFS Tables', 'Plot Data', '---', 'Run Perf Monitor', '---', 'Preferences']],
                        ['Remote Ops', ['Configure Command Destination', 'Configure Telemetry Source', 'Control Remote Target']],  
                        ['Tutorials',  tutorial_menu],
                        ['Help',       ['Tech Docs...', 'Project Docs...', 'About']]
@@ -1222,12 +1222,15 @@ class App():
             elif self.event == 'Run Cmd Sequencer':
                 self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','CMD_SEQUENCER_CMD_PORT'))
                 self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','CMD_SEQUENCER_TLM_PORT'))
-                self.script_runner = sg.execute_py_file("cmdsequencer.py", cwd=self.cfs_interface_dir)
+                self.cmd_sequencer = sg.execute_py_file("cmdsequencer.py", cwd=self.cfs_interface_dir)
         
             elif self.event == 'Run Script':
                 self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_CMD_PORT'))
                 self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_TLM_PORT'))
                 self.script_runner = sg.execute_py_file("scriptrunner.py", cwd=self.cfs_interface_dir)
+
+            elif self.event == 'Manage cFS Tables':
+                self.tbl_manager = sg.execute_py_file("tblmanager.py", cwd=self.cfs_interface_dir)
 
             elif self.event == 'Plot Data':
                 self.launch_tlmplot()
