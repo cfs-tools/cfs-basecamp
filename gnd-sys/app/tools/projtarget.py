@@ -18,8 +18,8 @@
 
     Purpose:
         Provide classes that manage the creation of target projects. Target
-        projects automated the process of downloading apps and building a 
-        new cFS target to implement a cFS target.        
+        projects automate the process of downloading apps and building a 
+        new cFS target to implement a project cFS target.        
 """
 
 import sys
@@ -39,14 +39,14 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     from jsonfile   import JsonFile
-    from utils      import compress_abs_path
-    from githubapps import GitHubApps
+    from utils      import AppStoreDef, compress_abs_path
+    from appstore   import GitHubAppRepo
     from cfstarget  import ManageCfs
 else:
-    from .jsonfile   import JsonFile
-    from .utils      import compress_abs_path
-    from .githubapps import GitHubApps
-    from .cfstarget  import ManageCfs
+    from .jsonfile  import JsonFile
+    from .utils     import AppStoreDef, compress_abs_path
+    from .appstore  import GitHubAppRepo
+    from .cfstarget import ManageCfs
 
 from tools import PySimpleGUI_License
 import PySimpleGUI as sg
@@ -57,10 +57,14 @@ PROJECT_JSON_FILE = 'project.json'
 
 class ProjectTemplateJson(JsonFile):
     """
-    Manage project template JSON files.
+    Provide a functional interface to project template JSON files. Ideally all
+    JSON objects are present. However, only app-list is required so the others
+    trying to access the others may generate an exception.
     """
     def __init__(self, json_file):
         super().__init__(json_file)
+        self.support_files = None
+        self.support_files_valid = False # True means self.support_files len greater than zero
         
     def version(self):
         return self.json['version']
@@ -70,7 +74,7 @@ class ProjectTemplateJson(JsonFile):
         
     def app_list(self):
         return self.json['app-list'].split(',')
-                  
+
     def popup_instructions(self):
         instructions = ''
         try:
@@ -78,6 +82,36 @@ class ProjectTemplateJson(JsonFile):
         except:
            pass
         return  instructions
+
+    def load_support_files(self):
+        self.support_files = {}
+        try:
+           self.support_files = self.json['support-files']
+           if len(self.support_files) > 0:
+               self.support_files_valid = True
+        except:
+           pass
+        return  self.support_files
+
+    def get_support_file(self, support_file_key):
+        """
+        All support file objects use the same syntax of a string of comma
+        separated filenames 
+        """
+        support_file_list = []
+        if self.support_files is None:
+            self.load_support_files() 
+
+        if self.support_files_valid:
+            try:
+                support_file_string = self.support_files[support_file_key]
+                # Check greater than 0 length in case a couple of spaces
+                if len(support_file_string) > 3:
+                    support_file_list = support_file_string.split(',')
+            except:
+                pass
+        
+        return support_file_list
 
 
 ###############################################################################
@@ -129,18 +163,39 @@ class ProjectTemplate():
         build_delta  = 1
         # Build gets half progress bar 
         # 1. Download github apps
-        github_apps = GitHubApps(self.git_url, self.usr_app_rel_path)
-        github_apps.create_dict()
+        git_app_repo = GitHubAppRepo(self.git_url, AppStoreDef.BASECAMP_REPO_BRANCH, self.usr_app_rel_path, quiet_ops=True)
+        git_app_repo.create_dict()
         for app in self.json.app_list():
             self.update_progress(github_txt, github_delta)
-            github_apps.clone(app,quiet_ops=True)
+            # Clone functions report status to user via popups
+            if app.startswith(AppStoreDef.PROXY_APP_PREFIX):
+                ret_status = git_app_repo.clone_proxy_repo(app)
+            else:
+                ret_status = git_app_repo.clone_basecamp_repo(app) 
         
-        # 2. Add apps to cFS target
-        self.update_progress('Adding apps to cFS target\n', 1)
-        self.manage_cfs.add_usr_app_list(self.json.app_list())
-        sleep(4) # Allow user to see change 
+        # 2. Copy support files        
+        copied_support_files = False
+        try:
+            self.update_progress('Copying support files to gnd-sys directories\n', 1)
+            self.copy_support_files()
+            sleep(4) # Allow user to see change 
+            copied_support_files = True
+        except Exception as e:
+            sg.popup(f'Failed to copy {project_name} support files.\nException: {e}\nWill attempt to create cFS target next.', title="Create Project Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+        
+        # 3. Add apps to cFS target
+        added_apps_to_target = False
+        try:
+            self.update_progress('Adding apps to cFS target\n', 1)
+            # Convert any proxy names to their real counterpart name by removing proxy prefix
+            app_list = [app_name.replace(AppStoreDef.PROXY_APP_PREFIX, '') for app_name in self.json.app_list()]
+            self.manage_cfs.add_usr_app_list(app_list)
+            sleep(4) # Allow user to see change 
+            added_apps_to_target = True
+        except Exception as e:
+            sg.popup(f'Failed to create {project_name}.\nException: {e}', title="Create Project Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
 
-        # 3. Build cFS target
+        # 4. Build cFS target
         """
         This is a very crude display management scheme. The cFS build process runs asynchronously,
         doesn't provide feedback on progress and the time to build the target is unknown. Therefore
@@ -149,19 +204,55 @@ class ProjectTemplate():
         
         Can't use sleep() because it interferes with main GUI process window update so using window.read()
        
-       """
-        build_txt    = 'Building new cFS target\n'
-        delay_factor = build_delta * 4000  # Milliseconds for each delta
-        self.manage_cfs.build_target()     # Start async build process
-        for i in range(1, build_range):
-            self.update_progress(build_txt, build_delta)
-            window.read(timeout=delay_factor)
+        """
+        if added_apps_to_target:
+            build_txt    = 'Building new cFS target\n'
+            delay_factor = build_delta * 4000  # Milliseconds for each delta
+            self.manage_cfs.build_target()     # Start async build process
+            for i in range(1, build_range):
+                self.update_progress(build_txt, build_delta)
+                window.read(timeout=delay_factor)
+        
         window.close()
-
         self.manage_cfs.restart_main_gui(self.json.popup_instructions())
       
         return True
+ 
+    def copy_support_files(self):
+        """
+        Assumes all support files are in the project's base directory. 
+        """
         
+        gnd_sys_app_path = compress_abs_path(os.path.join(self.path, '../../app'))
+        print(f'gnd_sys_app_path: {gnd_sys_app_path}')
+        config = configparser.ConfigParser()
+        config.read(os.path.join(gnd_sys_app_path,'basecamp.ini'))
+
+        support_dict = {
+            'cmd-seq':     'CMD_SEQUENCE_PATH',
+            'file-server': 'FLT_SERVER_PATH',
+            'scripts':     'SCRIPT_PATH',
+            'templates':   'APP_TEMPLATES_PATH',
+            'tutorials':   'TUTORIALS_PATH'
+            }
+
+        for support_file in support_dict:
+            file_list = self.json.get_support_file(support_file)
+            if file_list != None:
+                config_param = support_dict[support_file]
+                rel_gnd_path = config.get('PATHS',config_param)           
+                for file in file_list:
+                    src_pathfile = os.path.join(self.path, file)
+                    dst_pathfile = os.path.join(gnd_sys_app_path, rel_gnd_path, file)
+                    os.makedirs(os.path.dirname(dst_pathfile), exist_ok=True)
+                    copy_file = True
+                    if os.path.exists(dst_pathfile):
+                        overwrite = sg.popup_yes_no(f'{dst_pathfile} exists.\nDo you want to overwrite it?',  title='Create Project')
+                        copy_file = (overwrite == 'Yes')
+                    if copy_file:
+                        shutil.copyfile(src_pathfile, dst_pathfile)
+
+
 ###############################################################################
 
 class CreateProject():
@@ -183,7 +274,7 @@ class CreateProject():
             #todo: ProjectTemplate constructor could raise exception if JSON doesn't exist or is malformed
             project_template_json_file = os.path.join(projects_path, project_template_folder, PROJECT_JSON_FILE)
             if os.path.exists(project_template_json_file):
-                project_template = ProjectTemplate(os.path.join(projects_path, project_template_folder),git_url,usr_app_rel_path,self.manage_cfs)
+                project_template = ProjectTemplate(os.path.join(projects_path, project_template_folder), git_url, usr_app_rel_path, self.manage_cfs)
                 self.project_template_titles.append(project_template.json.title())
                 self.project_template_lookup[project_template.json.title()] = project_template                    
         logger.debug("Project Template Lookup " + str(self.project_template_lookup))
@@ -239,8 +330,7 @@ class CreateProject():
                             try:
                                 self.selected_project.create_project(project_name)
                             except Exception as e:
-                                print(e)
-                                sg.popup(f'Failed to create {project_name}', title="Create Project", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                                sg.popup(f'Failed to create {project_name}.\nException: {e}', title="Create Project Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
                         break
                     else:
                         description = ""

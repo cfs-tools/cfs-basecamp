@@ -409,7 +409,7 @@ class FileBrowser(CmdTlmProcess):
         pri_hdr_font   = ('Arial bold',14)
         list_font      = ('Courier',11)
         log_font       = ('Courier',11)
-        self.gnd_file_menu = ['_', ['Refresh', '---', 'Send Text to Flight', 'Send Binary to Flight', '---', 'Edit File', 'Rename File', 'Delete File']] #TODO - Decide on dir support 
+        self.gnd_file_menu = ['_', ['Refresh', '---', 'Send Text to Flight', 'Send Binary to Flight', '---', 'Edit File', 'Edit cFS Table', 'Rename File', 'Delete File']] #TODO - Decide on dir support 
         self.gnd_col = [
             [sg.Text('Ground', font=col_title_font)],
             [sg.Text('Folder'), sg.In(self.default_gnd_path, size=(25,1), enable_events=True ,key='-GND_FOLDER-'), sg.FolderBrowse(initial_folder=self.default_gnd_path)],
@@ -501,7 +501,7 @@ class FileBrowser(CmdTlmProcess):
 
             elif self.event == 'Edit File':
                 """
-                Only loads initial file if it is of a partial type. Does allow editor to be 
+                Only loads initial file if it is of a particular type. Does allow editor to be 
                 launched if no file selected. 
                 """
                 #TODO - Use ini file config
@@ -516,6 +516,22 @@ class FileBrowser(CmdTlmProcess):
                     if filename.endswith((".txt", ".json", ".h", ".c", ".py", ".cmake", ".scr")):
                         filename = self.gnd_dir.path_filename(filename)
                 self.text_editor = sg.execute_py_file("texteditor.py", parms=filename, cwd=tools_path)
+
+            elif self.event == 'Edit cFS Table':
+                """
+                Only loads initial file if it is of a particular type. Does allow editor to be 
+                launched if no file selected. 
+                """
+                #TODO - Use ini file config
+                app_path = os.getcwd()
+                if 'cfsinterface' not in app_path:
+                    app_path = os.path.join(app_path, 'cfsinterface')
+                filename = ''
+                if len(self.values['-GND_FILE_LIST-']) > 0:
+                    filename = self.get_filename(self.values['-GND_FILE_LIST-'][0])
+                    if filename.endswith((".tbl", ".bin")):
+                        filename = self.gnd_dir.path_filename(filename)
+                self.table_manager = sg.execute_py_file("tblmanager.py", parms=filename, cwd=app_path)
 
             elif self.event == 'Delete File':
                 if len(self.values['-GND_FILE_LIST-']) > 0:

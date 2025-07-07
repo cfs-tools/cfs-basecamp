@@ -113,8 +113,8 @@
 		
 		<Define name="APP_C_DEMO_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 28"/>
 		<Define name="PROTO_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 29"/>
-		<Define name="SAMPLE_APP_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 30" shortDescription="Value must match sample app's sample_app_msgids.h definition"/>
-		<Define name="SAMPLE_APP_SEND_HK_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 31" shortDescription="Value must match sample app's sample_app_msgids.h definition"/>
+		<Define name="SAMPLE_APP_CMD_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 30"/>
+		<Define name="SAMPLE_APP_SEND_HK_TOPICID" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 31"/>
 		
 		<!-- ##################  -->
 		<!-- ##  User Apps   ##  -->
@@ -154,8 +154,6 @@
 		<Define name="USER_CMD_TOPICID_26" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 57" shortDescription="USER_CMD_TOPICID_26"/>
 		<Define name="USER_CMD_TOPICID_27" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 58" shortDescription="USER_CMD_TOPICID_27"/>
 		<Define name="USER_CMD_TOPICID_28" value="${CFE_MISSION/TELECOMMAND_BASE_TOPICID} + 59" shortDescription="USER_CMD_TOPICID_28"/>
-
-		
 		<!-- ###########################  -->
 		<!-- ## core Flight Executive ##  -->
 		<!-- ###########################  -->
@@ -217,9 +215,9 @@
 		<Define name="APP_C_DEMO_STATUS_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 35"/>
 		<Define name="APP_C_DEMO_BIN_PLAYBK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 36"/>
 		<Define name="PROTO_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 37"/>
-		<Define name="SAMPLE_APP_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 38" shortDescription="Value must match sample app's sample_app_msgids.h definition"/>
-		<Define name="SAMPLE_APP_TBL_FILE_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 39" shortDescription="Basecamp topic ID used by table manager"/>
-		<Define name="FILE_MGR_FILE_SYS_TBL_FILE_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 40"/>
+		<Define name="SAMPLE_APP_HK_TLM_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 38"/>
+		<Define name="SAMPLE_APP_TBL_FILE_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 39" shortDescription="Basecamp pseudo tlm topic ID used by Table Manager tool"/>
+		<Define name="FILE_MGR_FILE_SYS_TBL_FILE_TOPICID" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 40" shortDescription="Basecamp pseudo tlm topic ID used by Table Manager tool"/>
 		
 		<!-- ##################  -->
 		<!-- ##  User Apps   ##  -->
@@ -250,6 +248,6 @@
 		<Define name="USER_TLM_TOPICID_19" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 57" shortDescription="USER_TLM_TOPICID_17"/>
 		<Define name="USER_TLM_TOPICID_20" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 58" shortDescription="USER_TLM_TOPICID_18"/>
 		<Define name="USER_TLM_TOPICID_21" value="${CFE_MISSION/TELEMETRY_BASE_TOPICID} + 59" shortDescription="USER_TLM_TOPICID_19"/>
-
+	
 	</Package>
 </DesignParameters>

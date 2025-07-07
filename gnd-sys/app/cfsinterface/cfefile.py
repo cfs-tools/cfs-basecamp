@@ -137,15 +137,16 @@ class CfeFile(CfeEdsTarget):
 
     def read(self, path_filename, topic_name):
         """
-        TODO: Add pseudo telemetry CCSDS header with topic_id
         """
         self.path_filename = path_filename
         self.topic_name = topic_name 
+        self.topic_id = None
         self.data_loaded = False
         self.file_data = None
         self.tbl_data_array = []
         self.err_str = None
         
+        print('>>>Enter read()')
         if path_filename not in (None,''):
             if os.path.isfile(path_filename):
                 try:              
@@ -166,16 +167,16 @@ class CfeFile(CfeEdsTarget):
                     file_hdr_len_hi = self.file_data[8]  << 8 | self.file_data[9]
                     file_hdr_len    = file_hdr_len_hi << 16 | file_hdr_len_lo
                     print(f'file_hdr_len: {file_hdr_len}')  
-                    topic_id    = self.topic_dict[topic_name] + 3
+                    self.topic_id = self.topic_dict[topic_name] + 3
                     tlm_msg_len = len(self.file_data) + 5
-                    print(f'topic_id: {topic_id}, tlm_msg_len: {tlm_msg_len}') 
+                    print(f'self.topic_id: {self.topic_id}, tlm_msg_len: {tlm_msg_len}') 
                     tlm_msg_len = list(tlm_msg_len.to_bytes(2,byteorder='big'))
                     print(f'bytes(tlm_msg_len): {tlm_msg_len}')
                     tlm_msg_len_lo = tlm_msg_len[1]
                     tlm_msg_len_hi = tlm_msg_len[0]
                     print(f'tlm_len_hi: {tlm_msg_len_hi}, tlm_len_lo: {tlm_msg_len_lo}')
-                    #                                 Sequence    Length                          Seconds                 SubSecs
-                    self.ccsds_hdr = [0x08, topic_id, 0xD7, 0xC2, tlm_msg_len_hi, tlm_msg_len_lo, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05]
+                    #                                      Sequence    Length                          Seconds                 SubSecs
+                    self.ccsds_hdr = [0x08, self.topic_id, 0xD7, 0xC2, tlm_msg_len_hi, tlm_msg_len_lo, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05]
                     
                     self.file_len = self.file_len + 12
                     self.file_len = list(self.file_len.to_bytes(4,byteorder='big'))
@@ -190,9 +191,10 @@ class CfeFile(CfeEdsTarget):
                     with open('../../flt-file-server/debug.tbl', 'wb') as binary_file:
                          binary_file.write(self.pseudo_tlm_msg)
                     eds_entry, eds_obj = self.eds_mission.decode_message(self.pseudo_tlm_msg)
+                    # extract_data() loads self.tbl_data_array
                     self.extract_data(eds_obj, eds_entry.Name)
                     self.data_loaded = True
-                    print('Exit read()')
+                    print('<<<Exit read()')
                 except Exception as e:
                     print(f'Exception: {e}')                    
                     self.err_str = str(e)
@@ -218,7 +220,7 @@ class CfeFile(CfeEdsTarget):
         try:
             byte_data = self.create_byte_data()
             byte_data_list = list(byte_data)
-            # Set file header length back to 
+            # Set file header length back to header length
             # TODO: Use EDS to get file header length & resolve what the value should be. 
             byte_data_list[20] = 0
             byte_data_list[21] = 0
@@ -390,21 +392,39 @@ class CfeFile(CfeEdsTarget):
         """
         Create a binary byte data array from data self.tbl_data_array
         """
-
-        self.tbl_data_array
+        #print(f'\n*** create_byte_data()\ntopic_name: {self.topic_name}\ntopic_id: {self.topic_id}')
         #print(f'\n***self.tbl_data_array: {self.tbl_data_array}\n')
         #for entry in self.tbl_data_array:
         #    print(f'{entry}')
         self.tbl_data_dict = {entry[0][entry[0].find('.')+1:] : entry[1] for entry in self.tbl_data_array} 
         #print(f'\n***tbl_data_dict: {self.tbl_data_dict}')
                
-        eds_id = self.eds_mission.get_eds_id_from_topic('FILE_MGR/Application/FILE_SYS_TBL_FILE')
+        eds_id = self.eds_mission.get_eds_id_from_topic(self.topic_name) # 'FILE_MGR/Application/FILE_SYS_TBL_FILE'
+        #print(f'eds_id: {eds_id}')
         self.tlm_entry = self.eds_mission.get_database_entry(eds_id)
         self.tlm_obj   = self.tlm_entry()
-            
-        #payload = self.eds_mission.get_topic_payload('FILE_MGR/Application/FILE_SYS_TBL_FILE')
-        #print(f'payload: {payload}')
-        payload_entry = self.eds_mission.get_database_named_entry('FILE_MGR/FileSysTblFile_Payload')
+        #print(f'\nself.tlm_entry: {self.tlm_entry}\nself.tlm_obj: {self.tlm_obj}')
+        
+        """
+        The EDS is API is undocumented and I couldn't reverse engineer a clean way to get the payload
+        string required for the get_database_named_entry() call. The string is of the form:
+            'SAMPLE_APP/TblFile_Payload' or 'FILE_MGR/FileSysTblFile_Payload'
+        
+        The type of the topic name contains the string. For example 
+            EdsLib.DatabaseEntry('basecamp'", "'SAMPLE_APP/TblFile_Payload')        
+        
+        
+        """
+        topic_payload = self.eds_mission.get_topic_payload(self.topic_name) # 'FILE_MGR/Application/FILE_SYS_TBL_FILE'
+        payload_blob  = str(type(topic_payload)).split(',')[1]
+        payload_token = payload_blob[payload_blob.find("'")+1:payload_blob.rfind("'")]
+        print(f'payload_token: {payload_token}')
+        #print(f'topic_payload({type(topic_payload)}): {topic_payload}\n{dir(topic_payload)}')
+        #print(f'topic_payload_type: {topic_payload_type}')
+        #print(f'items(topic_payload): {topic_payload.items()}')
+        #print(f'keys(topic_payload): {topic_payload.keys()}')
+        #print(f'values(topic_payload): {topic_payload.values()}')
+        payload_entry = self.eds_mission.get_database_named_entry(payload_token) # 'FILE_MGR/FileSysTblFile_Payload'
         payload = payload_entry()
         self.payload_struct = self.get_payload_struct(payload_entry, payload, 'Payload')
         

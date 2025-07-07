@@ -9,11 +9,19 @@
       "materials. See https://spacesteps.com/2024/10/12/cfs-raspberry-pi-led-control for details."
    ],
    
-   "app-list": "rpi_iolib,rpi_led",
+   "doc": "rpi_led-project.pdf",
 
    "popup-instructions": "Prior to restarting the Basecamp GUI, configure basecamp.ini to run the cFS with elevated privileges:\n  'SUDO_START_CFS' to True\n  'PASSWORD' to your Pi's password\n\nSee https://spacesteps.com/2024/10/12/cfs-raspberry-pi-led-control for more details.",
    
-   "doc": "rpi_led-project.pdf"
+   "app-list": "rpi_iolib,rpi_led",
 
+   "support-files":
+      { 
+         "cmd-seq":     "",
+         "file-server": "",
+         "scripts":     "",
+         "templates":   "",
+         "tutorials":   ""
+      }
 }
 

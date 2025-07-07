@@ -37,7 +37,7 @@ class JsonFile():
     within the Json classes to localize impacts due to JSON key changes.
     """
     def __init__(self, json_file):
-
+        #TODO: Add exceptioon protection for ill formed JSON
         self.file = json_file
         f = open(json_file)
         self.json = json.load(f)

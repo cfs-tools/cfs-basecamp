@@ -51,6 +51,7 @@ import PySimpleGUI as sg
 CMD_SEQ_FILE_EXT          = 'txt'
 CMD_SEQ_START_CHAR        = '>'
 CMD_SEQ_COMMENT_DELIMITER = '##'
+CMD_SEQ_FIELD_DELIMITER   = ','
 
 ###############################################################################
 
@@ -327,8 +328,9 @@ class CmdSequencer(CmdTlmProcess):
             elif self.event in ('Send Command'):
                 if len(self.values['-COMMAND_LIST-']) > 0:
                     print(f'{self.values['-COMMAND_LIST-'][0]}')
-                    tokens = self.values['-COMMAND_LIST-'][0].split(',')
-                    if len(tokens) == 3:
+                    tokens = self.values['-COMMAND_LIST-'][0].split(CMD_SEQ_FIELD_DELIMITER)
+                    # Crude sanity check 
+                    if len(tokens) >= 3:
                         cmd_str = f'self.send_cfs_cmd({self.values['-COMMAND_LIST-'][0]})'                        
                         try:
                            exec(cmd_str)

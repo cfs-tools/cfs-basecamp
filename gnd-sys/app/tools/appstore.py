@@ -14,13 +14,14 @@
     GNU Affero General Public License for more details.
 
     Purpose:
-        Provide classes that manage downloading and installing apps from git repos
+        Provide classes that manage downloading and installing apps from github repos
         
     Notes:    
         Assumes the exact same app name is used for
         - App directory
         - App Electronic Data Sheet (EDS) file
         - App cFS spec JSON file 
+        - Proxy app name following AppStoreDef.PROXY_APP_PREFIX
 """
 
 import sys
@@ -36,11 +37,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
-    from eds   import AppEds
-    from utils import compress_abs_path
+    from eds     import AppEds
+    from usrapps import AppSpec
+    from utils   import AppStoreDef, compress_abs_path
 else:
-    from .eds   import AppEds
-    from .utils import compress_abs_path
+    from .eds     import AppEds
+    from .usrapps import AppSpec
+    from .utils   import AppStoreDef, compress_abs_path
 
 from tools import PySimpleGUI_License
 import PySimpleGUI as sg
@@ -48,16 +51,20 @@ import PySimpleGUI as sg
 
 ###############################################################################
 
-class GitHubAppProject():
-    '''
-    Manage the interface to cFS apps in github repos  
-    '''
-    def __init__(self, git_url, usr_app_rel_path):
+class GitHubAppRepo():
+    """   
+    """
+    def __init__(self, git_url, branch_tag, usr_app_rel_path, quiet_ops=False):
         """
         usr_app_rel_path  - Relative path to where git repos should be cloned into
+        
+        quiet_ops: Used for non-GUI scenarios when autonomous/silent operations
+        is needed. Error dialogues are still displayed. 
         """
         self.usr_clone_path = usr_app_rel_path
-        self.git_url  = git_url
+        self.git_url    = git_url
+        self.branch_tag = branch_tag
+        self.quiet_ops = quiet_ops
         self.app_repo = None
         self.app_dict = {}
          
@@ -83,30 +90,126 @@ class GitHubAppProject():
             
         return ret_status
         
-
-    def clone(self, app_name):
+    def get_target_dir(self, app_name):
+        """
+        Return directory that was cloned into.
+        """
+        return compress_abs_path(os.path.join(os.getcwd(), self.usr_clone_path, app_name))
+        
+    
+    def clone_repo(self, git_url, app_name, display_success_popup=True):
         """
         """
-        if app_name in self.app_dict:
-            clone_repo = True
-            target_dir = compress_abs_path(os.path.join(os.getcwd(), self.usr_clone_path, app_name))
-            if os.path.exists(target_dir):
-                overwrite = sg.popup_yes_no(f"{target_dir} exists. Do you want to overwrite it?",  title="AppStore")
-                if (overwrite == 'Yes'):
-                    shutil.rmtree(target_dir)
-                else:
-                    clone_repo = False
-            if clone_repo:
-                saved_cwd = os.getcwd()
-                os.chdir(self.usr_clone_path)
-                clone_url = self.app_dict[app_name]["clone_url"]
-                sys_status = os.system("git clone {}".format(self.app_dict[app_name]["clone_url"]))
-                if (sys_status == 0):
+        ret_status = False
+        clone_repo = True
+        target_dir = self.get_target_dir(app_name)
+        if os.path.exists(target_dir):
+            overwrite = sg.popup_yes_no(f"{target_dir} exists. Do you want to overwrite it?",  title="AppStore")
+            if (overwrite == 'Yes'):
+                shutil.rmtree(target_dir)
+            else:
+                clone_repo = False
+                ret_status = True
+            
+        if clone_repo:
+            saved_cwd = os.getcwd()
+            os.chdir(self.usr_clone_path)
+            sys_status = os.system(f'git clone --branch {self.branch_tag} {git_url}')
+            if (sys_status == 0):
+                if display_success_popup:
                     sg.popup(f'Successfully cloned {app_name} into {target_dir}', title='AppStore')
-                else:
-                    sg.popup(f'Error cloning {app_name} into {target_dir}', title='AppStore Error')
-                os.chdir(saved_cwd)
-     
+                ret_status = True
+            else:
+                sg.popup(f'Error cloning {app_name} into {target_dir}', title='AppStore Error')
+                ret_status = False
+            os.chdir(saved_cwd)
+
+        return ret_status
+
+
+    def clone_basecamp_repo(self, app_name, display_success_popup=True):
+        """
+        """
+        ret_status = False
+        if app_name in self.app_dict:
+            url = self.app_dict[app_name]['clone_url']
+            ret_status = self.clone_repo(url, app_name, display_success_popup)
+        
+        return ret_status
+
+ 
+    def clone_proxy_repo(self, proxy_app_name):
+        """
+        A Basecamp proxy app contains an app spec with information for cloning a non-Basecamp repo
+        and updating the other party's repo with files that allow it to be integrated into Basecamp.
+        The external repos are typically NASA cFS app repos.
+        
+        This a helper function only used by clone() so it can assume the cwd is in user apps folder
+                
+        When this function is called the proxy app repo has been cloned. The remaining steps
+        are:
+          1. Read proxy app spec
+          2. Clone actual app 
+          3. Use proxy app spec to copy files into actual app's repo
+        
+        """
+        ret_status = False
+        proxy_app_dir = self.get_target_dir(proxy_app_name)
+        real_app_name = proxy_app_name[len(AppStoreDef.PROXY_APP_PREFIX):]
+        real_app_dir  = self.get_target_dir(real_app_name)
+        print(f'\n****proxy_app_dir: {proxy_app_dir}, proxy_app_name: {proxy_app_name}')
+        print(f'****real_app_dir: {real_app_dir}, real_app_name: {real_app_name}')
+
+        cloned_proxy = self.clone_basecamp_repo(proxy_app_name, display_success_popup=False)
+        print(f'cloned_proxy: {cloned_proxy}')
+        if cloned_proxy:
+            proxy_app_spec   = AppSpec(proxy_app_dir, proxy_app_name, proxy=True)
+            real_github_repo = proxy_app_spec.get_real_github_repo()
+            print(f'****real_github_repo: {real_github_repo}')
+            if len(real_github_repo) == 2:
+                git_app_repo = GitHubAppRepo(real_github_repo[0],real_github_repo[1], self.usr_clone_path)
+                ret_status = git_app_repo.clone_repo(real_github_repo[0], real_app_name, display_success_popup=(not self.quiet_ops))
+                print(f'\nReal clone ret_status: {ret_status}')
+                if ret_status:
+                    proxy_file_list = proxy_app_spec.get_proxy_file_list()
+                    print(f'\n>>>proxy_file_list = {proxy_file_list}')
+                    # No files is treated as invalid. This could change if Basecamp becomes wildly
+                    # adopted and compliant third party repos flood the internet :-)
+                    if len(proxy_file_list) > 0:                    
+                        ret_status = self.copy_proxy_files(proxy_app_dir, real_app_dir, proxy_file_list)
+                    else:
+                        ret_status = False
+
+        if ret_status:
+            sg.popup(f'Successfully cloned and populated {real_app_name} from {proxy_app_name}', title='AppStore')
+        else:
+            sg.popup(f'Error cloning and populating {real_app_name} from {proxy_app_name}', title='AppStore Error')
+
+        return ret_status
+
+
+    def copy_proxy_files(self, proxy_app_dir, real_app_dir, proxy_file_list):
+        """
+        """
+        ret_status = False
+        for proxy_file in proxy_file_list:
+            proxy_file = proxy_file.split(AppStoreDef.PROXY_FILE_COPY_TOKEN)
+            src_pathfile = os.path.join(proxy_app_dir, proxy_file[0].strip())
+            dst_pathfile = os.path.join(real_app_dir,  proxy_file[1].strip())            
+            os.makedirs(os.path.dirname(dst_pathfile), exist_ok=True)
+            print(f'src_pathfile: {src_pathfile}')
+            print(f'dst_pathfile: {dst_pathfile}')
+            try:
+                print(f'\n>>>Copying {src_pathfile} {AppStoreDef.PROXY_FILE_COPY_TOKEN} {dst_pathfile}')
+                shutil.copyfile(src_pathfile, dst_pathfile)        
+                ret_status = True
+            except Exception as e:     
+                ret_status = False                
+                sg.popup(f'Error copying proxy file from\n   {src_pathfile}\nto  {dst_pathfile}\n{e}', title='AppStore Error')
+        
+        return ret_status
+
+
     def get_descr(self, app_name):
         """
         """
@@ -123,204 +226,38 @@ class GitHubAppProject():
             topics = self.app_dict[app_name]['topics']
         return topics
 
-
-###############################################################################
-
-class AppSpec():
-    """
-    The access methods are defined according to the activities a developer
-    needs to do to integrate an app.
-    This design supports topic IDs being defined in multiple EDS files per
-    lib/app.
-    Only one JSON spec per lib/app is allowed and using the <app name>.json
-    naming convention.    
-    """
-    def __init__(self, app_path, app_name):
-
-        self.app_path   = app_path
-        self.app_name   = app_name
-        self.eds_path   = os.path.join(app_path, 'eds')
-        self.json_file  = os.path.join(app_path, app_name+'.json')
-        self.eds_specs  = []
-        self.cmd_topics = []
-        self.tlm_topics = []
-        self.is_valid   = False
-        self.has_topics = False
-        self.json = None
-        self.app  = None
-        self.cfs  = None
-
-        # 'is_valid' and 'has_topics' are False and will be set to True as needed
-        # EDS files are required for apps and optional for libraries to be valid
-        if self.read_json_file():
-            self.read_eds_files()
-
-    def read_eds_files(self):
+    def clone_old(self, app_name, proxy=False, success_popup=True):
         """
-        JSON spec must be loaded prior to calling this function 
         """
-        # Libraries don't require an EDS spec
-        if self.cfs['cfe-type'] == 'CFE_LIB':
-            self.is_valid = True
-
-        if os.path.exists(self.eds_path):
-            eds_dir   = os.listdir(self.eds_path)
-            eds_files = [filename for filename in eds_dir if '.xml' in filename]
-            print(f'*** eds_files: {eds_files}')
-            for eds_filename in eds_files:
-                eds_file = os.path.join(self.eds_path, eds_filename)
-                eds_spec = self.read_eds_file(eds_file)
-                if eds_spec is not None:
-                    self.eds_specs.append(eds_spec)
-            if len(self.eds_specs) > 0:
-                for eds_spec in self.eds_specs:
-                    self.cmd_topics += eds_spec.cmd_topics()
-                    self.tlm_topics += eds_spec.tlm_topics()
-                print(f'*** self.cmd_topics: {self.cmd_topics}')
-                print(f'*** self.tlm_topics: {self.tlm_topics}')
-                if (len(self.cmd_topics) > 0 or len(self.tlm_topics) > 0):
-                    self.has_topics = True
-                    if self.cfs['cfe-type'] == 'CFE_APP':
-                        self.is_valid = True
-        else:
-            if self.cfs['cfe-type'] == 'CFE_APP':
-                sg.popup(f'App is missing an EDS spec. Expected {self.eds_path} to exist', title='AppStore Error', grab_anywhere=True, modal=False)
-        
+        ret_status = False
+        if app_name in self.app_dict or proxy:
+            clone_repo = True
+            target_dir = compress_abs_path(os.path.join(os.getcwd(), self.usr_clone_path, app_name))
+            if os.path.exists(target_dir):
+                overwrite = sg.popup_yes_no(f"{target_dir} exists. Do you want to overwrite it?",  title="AppStore")
+                if (overwrite == 'Yes'):
+                    shutil.rmtree(target_dir)
+                else:
+                    clone_repo = False
+                    ret_status = True
             
-    def read_json_file(self):
-    
-        if os.path.exists(self.json_file):
-            try:
-                f = open(self.json_file)
-                self.json = json.load(f)
-                f.close()
-            except:
-                sg.popup(f'Error loading JSON spec file {self.json_file}', title='AppStore Error', grab_anywhere=True, modal=False)
-                return False
-        else:
-            sg.popup(f'Error loading JSON spec file {self.json_file}', title='AppStore Error', grab_anywhere=True, modal=False)
-            return False
-        
-        try:
-            self.app = self.json['app']
-            try:
-                self.cfs = self.app['cfs']
-            except:
-                sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'cfs' object", title='AppStore Error', grab_anywhere=True, modal=False)
-                return False
-        except:
-            sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'app' object", title='AppStore Error', grab_anywhere=True, modal=False)
-            return False
-        
-        return True
-        
-    def has_topic_ids(self):
-        return self.has_topics
-        
-    def read_eds_file(self, eds_filename):        
-        eds_obj = None
-        try:
-            eds_obj = AppEds(eds_filename)
-        except Exception as e: 
-            if (self.cfs['cfe-type'] == 'CFE_APP'):
-                sg.popup(f'Exception {repr(e)} raised when attempting to read app EDS file {eds_filename}', title='AppStore Error', grab_anywhere=True, modal=False)
-            elif (self.cfs['cfe-type'] == 'CFE_LIB'):
-                sg.popup(f'Exception {repr(e)} raised when attempting to read library EDS file {eds_filename}', title='AppStore Error', grab_anywhere=True, modal=False)
-            else:
-                pass
-        return eds_obj        
-       
-    def get_app_info(self):
-        info = {}
-        info['title']       = self.app['title']
-        info['version']     = self.app['version']
-        info['supplier']    = self.app['supplier']
-        info['url']         = self.app['url']
-        info['description'] = self.app['description']
-        info['requires']    = self.app['requires']
-        return info
+            if clone_repo:
+                saved_cwd = os.getcwd()
+                os.chdir(self.usr_clone_path)
+                clone_url = self.app_dict[app_name]["clone_url"]
+                sys_status = os.system("git clone {}".format(self.app_dict[app_name]["clone_url"]))
+                if (sys_status == 0):
+                    if app_name.startswith(AppStoreDef.PROXY_APP_PREFIX):
+                        ret_status = self.clone_proxy_app(target_dir, app_name)
+                    else:
+                        if success_popup:
+                            sg.popup(f'Successfully cloned {app_name} into {target_dir}', title='AppStore')
+                else:
+                    sg.popup(f'Error cloning {app_name} into {target_dir}', title='AppStore Error')
+                    ret_status = False
+                os.chdir(saved_cwd)
+        return ret_status
 
-    def get_cmd_topics(self):
-        return self.cmd_topics
-    
-    def get_tlm_topics(self):
-        return self.tlm_topics
-    
-    def get_targets_cmake_files(self):
-        """
-        The targets.cmake file needs
-           1. The app's object file name for the 'cpu1_APPLIST'
-           2. The names of all the tables that need to be copied from the app's tables directory into
-              the cFS '_defs' directory 
-        """
-        files = {}
-        files['obj-file'] = self.cfs['obj-file']
-        files['tables']   = self.cfs['tables']
-        return files
-
-    def get_startup_scr_entry(self):
-        '''
-        Create an cfe_es_startup.scr entry string that contains the following fields:
-        
-        1. Object Type      -- CFE_APP for an Application, or CFE_LIB for a library.
-        2. Filename         -- This is a cFE Virtual filename, not a vxWorks device/pathname
-        3. Entry Point      -- This is the "main" function for Apps.
-        4. CFE Name         -- The cFE name for the APP or Library
-        5. Priority         -- This is the Priority of the App, not used for Library
-        6. Stack Size       -- This is the Stack size for the App, not used for the Library
-        7. Load Address     -- This is the Optional Load Address for the App or Library. Currently not implemented
-                               so keep it at 0x0.
-        8. Exception Action -- This is the Action the cFE should take if the App has an exception.
-                               0        = Just restart the Application
-                               Non-Zero = Do a cFE Processor Reset
-
-        CFE_APP, file_xfer,       FILE_XFER_AppMain,   FILE_XFER,    80,   16384, 0x0, 0;
-        '''
-        entry_str = ''
-        try:
-            entry_str = self.cfs['cfe-type']      + ', ' + \
-                        self.cfs['obj-file']      + ', ' + \
-                        self.cfs['entry-symbol']  + ', ' + \
-                        self.cfs['name']          + ', ' + \
-                        str(self.cfs['priority']) + ', ' + \
-                        str(self.cfs['stack'])    + ', 0x0, ' + \
-                        str(self.cfs['exception-action']) + ';' 
-        except:
-            sg.popup(f'Error creating targets.cmake entry due to missing or malformed JSON file.\nPartial entry string = {self.json_file}', title='AppStore Error', grab_anywhere=True, modal=False)
-        
-        return entry_str
-
-
-###############################################################################
-
-class ManageUsrApps():
-    """
-    Discover what user apps exists (each app in separate directory) and
-    create a 'database' of app specs that can be used by the user to integrate
-    apps into a cFS target.
-    """
-    def __init__(self, usr_app_abs_path):
-
-        self.path = usr_app_abs_path
-        self.app_specs = {}
-        
-        usr_app_list = os.listdir(usr_app_abs_path)
-        usr_app_list.sort()
-        # Assumes app directory name equals app name
-        for app_name in usr_app_list:
-            app_path = os.path.join(usr_app_abs_path, app_name)
-            if os.path.isdir(os.path.join(usr_app_abs_path, app_name)):
-                # AppSpec manages exceptions so caller can simply check 'is_valid'
-                app_spec = AppSpec(app_path, app_name)
-                if app_spec.is_valid:
-                    self.app_specs[app_name] = app_spec        
-        
-    def get_app_specs(self):
-        return self.app_specs
-
-    def get_app_spec(self, app_name):
-        return self.app_specs[app_name]
-            
               
 ###############################################################################
 
@@ -329,6 +266,7 @@ class AppStore():
     Manage the user interface for downloading apps from github and cloning
     them into the user's app directory. 
     """
+        
     def __init__(self, git_url, usr_app_rel_path, git_topic_include, git_topic_exclude):
         """
         git_topic_include - List of github topics identifying repos to be included
@@ -337,7 +275,7 @@ class AppStore():
         self.git_topic_include = git_topic_include
         self.git_topic_exclude = git_topic_exclude 
         self.usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(), usr_app_rel_path))
-        self.git_app_repo = GitHubAppProject(git_url, usr_app_rel_path)
+        self.git_app_repo = GitHubAppRepo(git_url, AppStoreDef.BASECAMP_REPO_BRANCH, usr_app_rel_path)
         self.git_app_repo_keys = [] # keys of app repos that pass the include/exclude filters 
         self.window  = None
 
@@ -345,15 +283,15 @@ class AppStore():
     def create_window(self):
         """
         """
-        hdr_label_font = ('Arial bold',14)
-        hdr_value_font = ('Arial',12)
-        window_width   = 100
+        hdr_label_font = ('Arial bold',12)
+        hdr_value_font = ('Arial',11)
+        window_width   = 110
         app_layout = []
         for app in self.git_app_repo.app_dict.keys():
             topics = self.git_app_repo.get_topics(app)
             if any(x in topics for x in self.git_topic_include) and not any(x in topics for x in self.git_topic_exclude):
                 self.git_app_repo_keys.append(app)
-                app_layout.append([sg.Checkbox(app.upper(), default=False, font=hdr_label_font, size=(10,0), key=f'-{app}-'),  
+                app_layout.append([sg.Checkbox(app.upper(), default=False, font=hdr_label_font, size=(18,0), key=f'-{app}-'),  
                                   sg.Text(self.git_app_repo.get_descr(app), font=hdr_value_font, size=(window_width,1))])
                 
         layout = [
@@ -386,7 +324,11 @@ class AppStore():
                 print(f'self.git_app_repo_keys={self.git_app_repo_keys}')
                 for app in self.git_app_repo_keys:
                     if self.values[f'-{app}-'] == True:
-                        self.git_app_repo.clone(app) # Clone reports status to user via popups
+                        # Clone functions report status to user via popups
+                        if app.startswith(AppStoreDef.PROXY_APP_PREFIX):
+                            ret_status = self.git_app_repo.clone_proxy_repo(app)
+                        else:
+                            ret_status = self.git_app_repo.clone_basecamp_repo(app) 
                 break
                 
         self.window.close()
@@ -407,22 +349,9 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
 
-    git_url = config.get('APP','APP_STORE_URL')
-    usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(),'..', config.get('PATHS', 'USR_APP_PATH'))) 
+    GIT_URL          = config.get('APP','APP_STORE_URL')
+    USR_APP_REL_PATH = config.get('PATHS', 'USR_APP_PATH')
+    usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(),'..', USR_APP_REL_PATH)) 
 
-    #app_store = AppStore(git_url, usr_app_path)
-    #app_store.execute()
-    
-    
-    manage_usr_apps = ManageUsrApps(usr_app_abs_path)
-    
-    berry_imu = manage_usr_apps.get_app_spec('berry_imu')
-    print(berry_imu.get_targets_cmake_files())
-    print(berry_imu.get_startup_scr_entry())
-    
-    gpio_demo = manage_usr_apps.get_app_spec('gpio_demo')
-    print(gpio_demo.get_targets_cmake_files())
-    print(gpio_demo.get_startup_scr_entry())
-    
-    
-
+    app_store = AppStore(GIT_URL, usr_app_abs_path)
+    app_store.execute()

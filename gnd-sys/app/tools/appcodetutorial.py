@@ -321,7 +321,7 @@ class CodeLesson():
     # Special IDs indicating the entire file is the excercise
     
     JSON_EX_IS_FILE_ID = '~FILE~'  # JSON exercise ID  
-    GUI_EX_IS_FILE_ID  = '-EX1-'   # Exercise displayed in teh GUI
+    GUI_EX_IS_FILE_ID  = '-EX1-'   # Exercise displayed in the GUI
     
 
     def __init__(self, tutorial, number, path):

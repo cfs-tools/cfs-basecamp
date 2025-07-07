@@ -18,7 +18,7 @@
 
     Notes:
       1. Assumes the exact same app name is used for
-          - git repo,  FSW object, app directory 
+          - git repo, FSW object, app directory 
       
 """
 import os
@@ -200,7 +200,7 @@ class TelecommandGui(TelecommandInterface):
         eds_mission -
         eds_target  - String containing the identical target name used in the EDS  
         host        - String containing the socket address, e.g. '127.0.0.1:1234'
-        port        - Integer containing socket pManageUsrAppsort
+        port        - Integer containing socket port
         """
         self.NULL_CMD_STR = self.eds_mission.NULL_CMD_STR
         self.NULL_TLM_STR = self.eds_mission.NULL_TLM_STR
@@ -1094,9 +1094,9 @@ class App():
                       sg.Text('Time:', font=sec_hdr_font, pad=(4,1)), sg.Text(EdsMission.NULL_TLM_STR, key='-CFS_TIME-', font=sec_hdr_font, text_color='blue'), 
                       sg.Button('Restart', enable_events=True, key='-RESTART-', visible=False)],
                      #[sg.Output(font=log_font, size=(125, 10))],
-                     [sg.MLine(default_text=self.cfs_subprocess_log, font=log_font, enable_events=True, size=(135, 15), key='-CFS_PROCESS_TEXT-')],
+                     [sg.MLine(default_text=self.cfs_subprocess_log, font=log_font, enable_events=True, size=(135, 20), key='-CFS_PROCESS_TEXT-')],
                      [sg.Text('Ground Events', font=pri_hdr_font), sg.Button('Clear', enable_events=True, key='-CLEAR_EVENTS-', pad=(5,1))],
-                     [sg.MLine(default_text=self.event_log, font=log_font, enable_events=True, size=(135, 15), key='-EVENT_TEXT-')]
+                     [sg.MLine(default_text=self.event_log, font=log_font, enable_events=True, size=(135, 8), key='-EVENT_TEXT-')]
                  ]
 
         #sg.Button('Send Cmd', enable_events=True, key='-SEND_CMD-', pad=(10,1)),
@@ -1193,8 +1193,9 @@ class App():
             ### FILE ###
 
             if self.event == 'Create Project...':
+                project_path = os.path.join(self.path,self.PROJECTS_PATH)
                 manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
-                CreateProject(self.PROJECTS_URL, self.PROJECTS_PATH, self.APP_STORE_URL, self.USR_APP_PATH, manage_cfs).execute()
+                CreateProject(self.PROJECTS_URL, project_path, self.APP_STORE_URL, self.USR_APP_PATH, manage_cfs).execute()
 
             elif self.event == 'Create User App':
                 self.create_app.execute()

@@ -17,10 +17,12 @@
         Define classes for managing a cFS target
         
     Notes:
-        Assumes the exact same app name is used for
-        - App directory
-        - App Electronic Data Sheet (EDS) file
-        - App cFS spec JSON file 
+      1. Assumes the exact same app name is used for
+         - App directory
+         - App Electronic Data Sheet (EDS) file
+         - App cFS spec JSON file 
+         - Proxy app name following AppStoreDef.PROXY_APP_PREFIX
+      2. Proxy apps are not removed when the 'real' app is removed.
 """
 
 import sys
@@ -36,14 +38,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
-    from appstore import AppSpec, ManageUsrApps
     from eds      import AppEds, CfeTopicIds
     from jsonfile import JsonTblTopicMap
+    from usrapps  import AppSpec, ManageUsrApps
     from utils    import compress_abs_path
 else:
-    from .appstore import AppSpec, ManageUsrApps
     from .eds      import AppEds, CfeTopicIds
     from .jsonfile import JsonTblTopicMap
+    from .usrapps  import AppSpec, ManageUsrApps
     from .utils    import compress_abs_path
     
 from tools import PySimpleGUI_License
@@ -55,6 +57,9 @@ DEFAULT_TARGET_NAME = 'cpu1'                # TODO: Parameterize
 CFS_DEFS_FOLDER     = 'basecamp_defs'
 INSERT_KEYWORD      = '!BASECAMP-INSERT!'
 
+# Basecamp's default configuration supports these apps so they can't be removed
+# like other app store apps
+RESERVED_APPS       = ['sample_app']
 
 ###############################################################################
 
@@ -518,7 +523,7 @@ class ManageCfs():
         
     def add_usr_app_list(self, usr_app_list):
         """
-        This is used to added a list of apps to a target without using a GUI
+        This is used to add a list of apps to a target without using a GUI
         """
         self.manage_usr_apps = ManageUsrApps(self.usr_app_path)
         status_text = ''
@@ -828,17 +833,18 @@ class ManageCfs():
         return update_passed, popup_text 
         
     def restore_topic_ids(self):
-        cmd_topics = self.usr_app_spec.get_cmd_topics()
-        tlm_topics = self.usr_app_spec.get_tlm_topics()
-        cfe_topic_ids  = CfeTopicIds(self.cfe_topic_id_file)
-        kit_to_pkt_tbl = JsonTblTopicMap(self.kit_to_tbl_file)
-        for cmd in cmd_topics:
-            cfe_topic_ids.restore_spare_cmd_topic(cmd)
-        for tlm in tlm_topics:
-            cfe_topic_ids.restore_spare_tlm_topic(tlm)
-        cfe_topic_ids.write_doc_to_file()
-        kit_to_pkt_tbl.restore_spare_topics(tlm_topics)
-
+        if self.usr_app_spec.app_name not in RESERVED_APPS:
+            cmd_topics = self.usr_app_spec.get_cmd_topics()
+            tlm_topics = self.usr_app_spec.get_tlm_topics()
+            cfe_topic_ids  = CfeTopicIds(self.cfe_topic_id_file)
+            kit_to_pkt_tbl = JsonTblTopicMap(self.kit_to_tbl_file)
+            for cmd in cmd_topics:
+                cfe_topic_ids.restore_spare_cmd_topic(cmd)
+            for tlm in tlm_topics:
+                cfe_topic_ids.restore_spare_tlm_topic(tlm)
+            cfe_topic_ids.write_doc_to_file()
+            kit_to_pkt_tbl.restore_spare_topics(tlm_topics)
+            
     def remove_app_src_files(self):
         app_path = os.path.join(self.usr_app_path, self.selected_app)
         try:
@@ -980,9 +986,13 @@ class ManageCfs():
         defs_file_list = os.listdir(self.cfs_abs_defs_path)
 
         if not all(f'{self.cfs_target}_{req_tbl}' in defs_file_list for req_tbl in app_table_list):
-            target_status.tbl_files_in_defs['state'] = False
-            target_status.tbl_files_in_defs['descr'] = f"Not all tables {app_table_list} found in basecamp_defs directory"
-         
+            # OSK tables must be copied into basecamp_defs, cFS tables are generated during build process
+            if app_info['framework'] == AppSpec.APP_FRAMEWORK_OSK:
+                target_status.tbl_files_in_defs['state'] = False
+                target_status.tbl_files_in_defs['descr'] = f"Not all tables {app_table_list} found in basecamp_defs directory"
+            elif app_info['framework'] == AppSpec.APP_FRAMEWORK_CFS:
+                target_status.tbl_files_in_defs['descr'] = f"cFS apps do not require tables in basecamp_defs directory"
+                
         return target_status
          
     def verify_app_topic_ids(self, app):
@@ -992,6 +1002,7 @@ class ManageCfs():
           2. Telemetry topic IDs defined in TO's table
         """
         self.usr_app_spec = self.manage_usr_apps.get_app_spec(app)
+        app_info          = self.usr_app_spec.get_app_info()
         app_table_list    = self.get_app_table_list()
 
         # Status defaults to valid and each verification below sets invalid states
@@ -1020,9 +1031,12 @@ class ManageCfs():
                 with open(self.cfe_topic_id_file) as f:
                     cfe_topic_ids = f.read()
                 if not all(topic_id in cfe_topic_ids for topic_id in ini_topic_ids): # Simple check not concerned with commented out topics
-                    topic_id_status.ini_topics_defined['state'] = False
-                    topic_id_status.ini_topics_defined['descr'] = f"Not all ini table topic IDs {ini_topic_ids} found in {self.cfe_topic_id_filename}"            
-                
+                    if app_info['framework'] == AppSpec.APP_FRAMEWORK_OSK:
+                        topic_id_status.ini_topics_defined['state'] = False
+                        topic_id_status.ini_topics_defined['descr'] = f"Not all ini table topic IDs {ini_topic_ids} found in {self.cfe_topic_id_filename}"            
+                    elif app_info['framework'] == AppSpec.APP_FRAMEWORK_CFS:
+                        topic_id_status.ini_topics_defined['descr'] = f"cFS apps do not require topic IDs in a JOSN ini file"
+               
                 # 2. Verify kit_to filter table contains ini table telemetry topic IDs. This isn't required but good practice for testing               
                 with open(self.kit_to_tbl_file) as f:
                     kit_to_tbl = f.read()
@@ -1035,8 +1049,11 @@ class ManageCfs():
                 topic_id_status.ini_topics_defined['descr'] = f"App's ini table file {init_table[0]} not in basecamp_defs directory"            
             
         elif init_table_len == 0:
-            topic_id_status.ini_topics_defined['state'] = False
-            topic_id_status.ini_topics_defined['descr'] = f"Init table not found in {app_table_list} using '_ini' substring"
+            if app_info['framework'] == AppSpec.APP_FRAMEWORK_OSK:
+                topic_id_status.ini_topics_defined['state'] = False
+                topic_id_status.ini_topics_defined['descr'] = f"Init table not found in {app_table_list} using '_ini' substring"
+            elif app_info['framework'] == AppSpec.APP_FRAMEWORK_CFS:
+                topic_id_status.ini_topics_defined['descr'] = f"cFS apps do not require a JOSN '_ini' file"             
         else:
             topic_id_status.ini_topics_defined['state'] = False
             topic_id_status.ini_topics_defined['descr'] = f"Found more than 1 init table in {app_table_list} using '_ini' substring"

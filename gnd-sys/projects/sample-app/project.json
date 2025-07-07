@@ -6,12 +6,22 @@
       "This project installs NASA's Sample App and Library. Since Basecamp uses Electronic Data",
       "Sheets (EDS), the NASA repos have been copied to Basecamp's 'App Store', augmented with",
       "EDS and Basecamp JSON app specs. The CMakeLists.txt files have been modified to match",
-      "Basecamp's cFS version, but the code is unmodified."
+      "Basecamp's cFS version. The only code modification is the replacement of ",
+      "fsw/platform_inc/sample_app_msgids.h so EDS topic IDs are used."
    ],
+
+   "popup-instructions": "",
    
-   "app-list": "sample_app_lib,sample_app",
+   "app-list": "proxy_sample_lib,proxy_sample_app",
    
-   "popup-instructions": "In basecamp_defs/cpu1_kit_sch_schtbl.json set the SAMPLE_APP_SEND_HK_TOPICID activity 'enabled' entry to true"
+   "support-files":
+      { 
+         "cmd-seq":     "sample_app_tbl_mgmt.txt",
+         "file-server": "sample_app_tbl.tbl",
+         "scripts":     "",
+         "templates":   "",
+         "tutorials":   ""
+      }
 
 }
 

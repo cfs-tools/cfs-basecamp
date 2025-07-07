@@ -10,11 +10,19 @@
       "The Facility translates between SB binary messages and text JMSGs."
    ],
    
-   "app-list": "mqtt_lib,jmsg_lib,jmsg_app,jmsg_udp,jmsg_mqtt,jmsg_demo",
+   "doc": "jmsg-demo-project.pdf",
 
    "popup-instructions": "This project uses Basecamp's JSON Messaging (JMSG) facility that communicates with external systems. See this project's document for configuration details.",
    
-   "doc": "jmsg-demo-project.pdf"
+   "app-list": "mqtt_lib,jmsg_lib,jmsg_app,jmsg_udp,jmsg_mqtt,jmsg_demo",
 
+   "support-files":
+      { 
+         "cmd-seq":     "",
+         "file-server": "",
+         "scripts":     "",
+         "templates":   "",
+         "tutorials":   ""
+      }
 }
 

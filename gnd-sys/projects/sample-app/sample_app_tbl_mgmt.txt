@@ -1,0 +1,20 @@
+"""
+Sample App Table
+"""
+
+# 1. Dump table
+# 2. Transfer table file to the ground
+
+> 'CFE_TBL', 'DumpCmd', {'ActiveTableFlag': 'ACTIVE', 'TableName':'SAMPLE_APP.SampleAppTable', 'DumpFilename':'/cf/t.tbl'}  ## Use File Broswer to transfer the table to the ground
+
+
+# 1. Modify the table in Table Manager
+# 2. Transfer file to flight
+# 3. Load table
+# 4. Validate table
+# 5. Activate table
+
+> 'CFE_TBL', 'LoadCmd', {'LoadFilename':'/cf/t.tbl'}  ##
+> 'CFE_TBL', 'ValidateCmd', {'ActiveTableFlag': 'INACTIVE', 'TableName':'SAMPLE_APP.SampleAppTable'}  ##
+> 'CFE_TBL', 'ActivateCmd', {'TableName':'SAMPLE_APP.SampleAppTable'}  ##
+

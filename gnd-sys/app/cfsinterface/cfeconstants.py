@@ -14,7 +14,7 @@
 
     Purpose:
         Define cFE constants
-        todo: These definitions should come from EDS
+        TODO: These definitions should come from EDS
 
 """
 
