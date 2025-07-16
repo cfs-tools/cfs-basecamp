@@ -6,7 +6,7 @@
       "This project installs NASA's Sample App and Library. It uses Basecamp's proxy repo",
       "feature that supports cloning a specific version of a NASA app and augmenting the",
       "app's repo to make it compatible with Basecamp's cFE version and app store. The",
-      "proxy app repos listed below contain repo augmentation details."  
+      "proxy app repo specs contain Sample App augmentation details."
    ],
 
    "popup-instructions": "",
