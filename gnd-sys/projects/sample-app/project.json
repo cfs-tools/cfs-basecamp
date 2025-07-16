@@ -3,11 +3,10 @@
    "version": "1.0",
    "short-descr": "Install NASA's Sample App and Library",
    "description": [
-      "This project installs NASA's Sample App and Library. Since Basecamp uses Electronic Data",
-      "Sheets (EDS), the NASA repos have been copied to Basecamp's 'App Store', augmented with",
-      "EDS and Basecamp JSON app specs. The CMakeLists.txt files have been modified to match",
-      "Basecamp's cFS version. The only code modification is the replacement of ",
-      "fsw/platform_inc/sample_app_msgids.h so EDS topic IDs are used."
+      "This project installs NASA's Sample App and Library. It uses Basecamp's proxy repo",
+      "feature that supports cloning a specific version of a NASA app and augmenting the",
+      "app's repo to make it compatible with Basecamp's cFE version and app store. The",
+      "proxy app repos listed below contain repo augmentation details."  
    ],
 
    "popup-instructions": "",

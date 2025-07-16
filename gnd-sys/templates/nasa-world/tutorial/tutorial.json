@@ -1,0 +1,8 @@
+{
+  "time-stamp": "",
+  "title": "NASA World",
+  "objective": [
+    "Introduce developers to NASA style application design, telecommand processing, telemetry message generation"
+  ],
+  "document": "nasa-world-tutorial.pdf"
+}

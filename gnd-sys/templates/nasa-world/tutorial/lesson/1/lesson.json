@@ -1,0 +1,59 @@
+{
+  "time-stamp": "",
+  "title": "Add Command",
+  "objective": [
+    "Learn how to define commands using Electronic Data Sheets and how to define and dispatch a command handler function."
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "eds",
+      "name": "@template@.xml",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the '<DataTypeSet>' element.\n2. Within this element create a new 'ContainerDataType':\n    Named 'SetParamCmd_Payload'\n    EntryList entry named 'Param' with type 'BASE_TYPES/uint16'\n\nNote BASE_TYPES is defined in cfe/modules/core_api/eds/base_types.xml"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the 'ResetCountersCmd' ContainerDataType.\n2. After this entry create a new 'ContainerDataType':\n    Named 'SetParamCmd'\n    FunctionCode value of '2'\n    EntryList entry named 'Payload' with type 'SetParamCmd_Payload'\n\nNote the GUI needs to be retarted after building the new lesson cFS target."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_events.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. At the end of the event message identify list add:\n    #define @TEMPLATE@_CMD_SET_PARAM_INF_EID 8\n\nNote this is the event ID for the event message send when the command is processed. "
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. After the @TEMPLATE@_Noop() function protoype definition add the @TEMPLATE@_SetParam() definition:\n    int32 @TEMPLATE@_SetParam(const @TEMPLATE@_SetParamCmd_t *Msg);\n    Note the function is globally defined (as opposed to statically in @template@_app.c) so it can be accessed by a unit test."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. In function @TEMPLATE@_ProcessGroundCommand() after the case statement for @TEMPLATE@_RESET_COUNTERS_CC add\n    The @TEMPLATE@_SET_PARAM_CC case statement code from the exercise window"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. After the case statement for @TEMPLATE@_RESET_COUNTERS_CC add\n    The @TEMPLATE@_SetParam() code from the exercise window"
+        }
+      ]
+    }
+  ]
+}

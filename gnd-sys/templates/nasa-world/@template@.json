@@ -2,11 +2,12 @@
    
    "title": "@TEMPLATE@",
    "version": "1.0.0",
-   "supplier": "bitValence",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
    "url": "",
 
    "description": [
-      "This app was generated using the hello-world template"
+      "This app was generated using the NASA World template"
    ],
 
    "cfs": {
@@ -18,11 +19,11 @@
       "stack": 16384,
       "load_addr": 0,
       "exception-action": 0,
-      "app-framework": "osk",
-      "tables": ["hi_world_ini.json"]
+      "app-framework": "cfs",
+      "tables": []
    },
 
-   "requires": ["app_c_fw"]
+   "requires": []
    
 }}
 

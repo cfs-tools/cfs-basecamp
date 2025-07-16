@@ -209,8 +209,11 @@ class CodeTutorial():
                 
                 elif self.event == 'Tutorial Document':
                     pdf_filename = os.path.join(self.path, DOCS_DIR, self.json.document())
-                    pdf_viewer = PdfViewer(pdf_filename)
-                    pdf_viewer.execute()
+                    try:
+                        pdf_viewer = PdfViewer(pdf_filename)
+                        pdf_viewer.execute()
+                    except:
+                        sg.popup(f'Error opening tutorial PDF file {pdf_filename}', title='File Open Error')
 
                 elif self.event == 'Reset':
                     """
@@ -703,8 +706,11 @@ class CodeLessonEditor():
                 
             elif encoded_event in ("b'-INSTRUCTIONS-'",):
                 title = f'{self.code_lesson.user_filename()}: {self.code_lesson.exercise_id()} Instructions' 
-                sg.popup(self.code_lesson.exercise_instructions(), title=title , line_width=132, font = 'Courier 12', modal=False, non_blocking=True, grab_anywhere=True)
-
+                instructions = sg.popup(self.code_lesson.exercise_instructions(), title=title , line_width=132, font = 'Courier 12', modal=False, non_blocking=True, grab_anywhere=True)
+            
+            elif encoded_event in ("b'OK'",):
+                instructions.close()
+            
             prev_encoded_event = encoded_event
 
             

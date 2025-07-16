@@ -257,7 +257,7 @@ class CreateApp():
                   [sg.Text('\nSelect Application Template: ', font=hdr_label_font)],
                   app_template_layout, 
                   [sg.Text('', font=hdr_value_font)],
-                  [sg.T('Application Name: ', font=hdr_label_font), sg.In(key='-APP_NAME-', font=hdr_value_font, size=(25,1))],
+                  [sg.T('Application Name(max 12 characters): ', font=hdr_label_font), sg.In(key='-APP_NAME-', font=hdr_value_font, size=(25,1))],
                   [sg.Text('', font=hdr_value_font)],
                   [sg.Button('Create App', button_color=('SpringGreen4'), pad=(2,0)), sg.Button('Description', pad=(2,0)), sg.Button('Cancel', pad=(2,0))]
                  ]

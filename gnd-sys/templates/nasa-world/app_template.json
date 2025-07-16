@@ -1,0 +1,58 @@
+{
+   "title": "Hello NASA",
+   "version": "1.0",
+   "short-descr": "Minimal NASA style app with command and telemetry interfaces",
+   "default-app-name": "nasa_world",
+   "description": [
+      "Minimal app with command and telemetry interfaces. It has two commands that by convention",
+      "are part of every app.",
+      "  The 'No Operation(NOOP)' command sends an event message with the app's version number.",
+      "  The Reset Counters command resets the app's command counters.\n",
+      "The app outputs one housekeeping telemetry message every 4 seconds that is sent in response to an",
+      "onboard scheduling message sent by the Scheduler App(kit_sch).",
+      "  Includes command valid and invalid counters.\n",
+      "This app follows the NASA app design style that is described in the tutorial's document. This initial",
+      "hello app is a pared down version of NASA's Sample App https://github.com/nasa/sample_app and the",
+      "sample app coding tutorials will augment this app to implement the features of the Sample App."
+   ],
+
+   "dir": [
+      {
+         "path": "",
+         "files": ["CMakeLists.txt", "@template@.json"]
+      },
+      {
+         "path": "fsw/mission_inc",
+         "files": ["@template@_perfids.h"]
+      },
+      {
+         "path": "fsw/platform_inc",
+         "files": ["@template@_msgids.h"]
+      },
+      {
+         "path": "fsw/src",
+         "files": ["@template@_app.c", "@template@_app.h", "@template@_events.h", "@template@_msg.h", "@template@_version.h"]
+      },
+      {
+         "path": "eds",
+         "files": ["@template@.xml"]
+      },
+      {
+         "path": "tutorial",
+         "files": ["tutorial.json"]
+      },
+      {
+         "path": "tutorial/docs",
+         "files": ["nasa-world-tutorial.pdf&"]
+      },
+      {
+         "path": "tutorial/lesson/1",
+         "files": ["lesson.json", "@template@.xml", "@template@_events.h", "@template@_app.h", "@template@_app.c"]
+      },
+      {
+         "path": "tutorial/lesson/2",
+         "files": ["lesson.json", "@template@.xml", "@template@_app.h", "@template@_app.c"]
+      }
+   ]
+}
+

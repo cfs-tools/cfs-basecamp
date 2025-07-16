@@ -1,7 +1,7 @@
 {
    "title": "Hello World",
    "version": "1.0",
-   "short-descr": "Minimal app with command and telemetry interfaces",
+   "short-descr": "Minimal Basecamp style app with command and telemetry interfaces",
    "default-app-name": "hi_world",
    "description": [
       "Minimal app with command and telemetry interfaces. It has two commands that by convention ",
@@ -10,7 +10,7 @@
       "  The Reset App command resets the app to a known state. Historially this command only reset",
       "  counters. The Basecamp convention is to reset any status or state that makes sense for the app.\n",
       "The app outputs one status telemetry message every 4 seconds that is sent in response to an",
-      "onboard scheduling message sent by the Scheduler App(kit_to).",
+      "onboard scheduling message sent by the Scheduler App(kit_sch).",
       "  Includes command valid and invalid counters.\n",
       "This app uses the Basecamp C Application Framework(app_c_fw). This framework is object-based and",
       "uses design patterns to help developers create consistent app designs that are robust and easy to",

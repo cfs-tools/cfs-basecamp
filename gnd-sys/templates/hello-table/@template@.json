@@ -15,7 +15,7 @@
       "entry-symbol": "@TEMPLATE@_AppMain",
       "name": "@TEMPLATE@",
       "priority": 70,
-      "stack": 32768,
+      "stack": 16384,
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
