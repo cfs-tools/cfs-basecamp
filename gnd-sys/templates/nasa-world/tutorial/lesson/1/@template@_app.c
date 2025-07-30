@@ -241,10 +241,10 @@ void @TEMPLATE@_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr)
 
             break;
 
-        case @TEMPLATE@_SET_PARAM_CC:
-            if (@TEMPLATE@_VerifyCmdLength(&SBBufPtr->Msg, sizeof(@TEMPLATE@_SetParamCmd_t)))
+        case @TEMPLATE@_EXAMPLE_PARAM_CC:
+            if (@TEMPLATE@_VerifyCmdLength(&SBBufPtr->Msg, sizeof(@TEMPLATE@_ExampleParamCmd_t)))
             {
-                @TEMPLATE@_SetParam((@TEMPLATE@_SetParamCmd_t *)SBBufPtr);
+                @TEMPLATE@_ExampleParamCmd((@TEMPLATE@_ExampleParamCmd_t *)SBBufPtr);
             }
 
             break;
@@ -299,7 +299,7 @@ int32 @TEMPLATE@_Noop(const @TEMPLATE@_NoopCmd_t *Msg)
     return CFE_SUCCESS;
 }
 
-//EX2
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /*  Purpose:                                                                  */
@@ -317,27 +317,27 @@ int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg)
     return CFE_SUCCESS;
 }
 
+//EX2
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /*  Purpose:                                                                  */
-/*         This function set a global data paramter                           */
+/*         This function reports the command parameter in an event message    */
 /*                                                                            */
 /* * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * *  * *  * * * * */
-int32 @TEMPLATE@_SetParam(const @TEMPLATE@_SetParamCmd_t *Msg)
+int32 @TEMPLATE@_ExampleParamCmd(const @TEMPLATE@_ExampleParamCmd_t *Msg)
 {
    
-   const NASA_WORLD_SetParamCmd_Payload_t *Cmd = &Msg->Payload;
+   const NASA_WORLD_ExampleParamCmd_Payload_t *Cmd = &Msg->Payload;
    
-   CFE_EVS_SendEvent (@TEMPLATE@_CMD_SET_PARAM_INF_EID, CFE_EVS_EventType_INFORMATION,
-                      "Set Parameter commmand received a parameter value %d",
+   CFE_EVS_SendEvent (@TEMPLATE@_EXAMPLE_PARAM_CMD_INF_EID, CFE_EVS_EventType_INFORMATION,
+                      "Example parameter commmand received a parameter value of %d",
                       Cmd->Param);
    
    @TEMPLATE@_Data.CmdCounter++;
     
    return CFE_SUCCESS;
 
-
-} /* End @TEMPLATE@_SetParam() */
+} /* End @TEMPLATE@_ExampleParamCmd() */
 //EX2
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/

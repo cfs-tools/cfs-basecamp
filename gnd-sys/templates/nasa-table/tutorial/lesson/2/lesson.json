@@ -1,0 +1,54 @@
+{
+  "time-stamp": "",
+  "title": "Add Table Load Management",
+  "objective": [
+    "Learn how to use the 'housekeeping cycle' to manage table loads and how to ",
+    "provide a function that validates a table's content prior to it being activated."
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "fsw/platform_inc",
+      "name": "@template@_table.h",, "@template@_events.h"
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Add the table validation macro definition from the exercise window."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_events.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. At the end of the event message identifier list add:\n    #define @TEMPLATE@_TABLE_VALIDATE_ERR_EID    9\n\nNote this is the event ID for the event message sent when the command is processed."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the 'Local functions' comment block added in the previous lesson. Add the table validation function prototype:\n    static int32 ValidateExampleTbl(void *TblData);"
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the CFE_TBL_Register() added to @TEMPLATE@_Init) in the previous lesson. Change the NULL parameter to\n    ValidateExampleTbl"
+        },
+        {
+          "id": "EX3",
+          "instructions": "1. Locate the @TEMPLATE@_ReportHousekeeping() function and before the return statement add:\n    CFE_TBL_Manage(@TEMPLATE@_Data.TblHandle);\n\nThis function checks for pending table loads. If one exists then\n the app's validation function is called if one was provided during registration."
+        },
+        {
+          "id": "EX4",
+          "instructions": "1. Go to the end of the file and add the ValidateExampleTbl() function from the exercise window."
+        }
+      ]
+    }
+  ]
+}

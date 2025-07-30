@@ -1,8 +1,8 @@
 /*
 ** Basecamp Notes:
 **   1. This file is replaced by code generated from the EDS file
-**         @template@.xml 
-**   2. The app includes the EDS generated header files
+**         @template@.xml
+**   2. @template@_app.h includes the EDS generated header files
 **         @template@_eds_cc.h
 **         @template@_eds_typedefs.h
 **

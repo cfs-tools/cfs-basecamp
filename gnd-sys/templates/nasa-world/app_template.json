@@ -1,5 +1,5 @@
 {
-   "title": "Hello NASA",
+   "title": "NASA World",
    "version": "1.0",
    "short-descr": "Minimal NASA style app with command and telemetry interfaces",
    "default-app-name": "nasa_world",
@@ -47,7 +47,7 @@
       },
       {
          "path": "tutorial/lesson/1",
-         "files": ["lesson.json", "@template@.xml", "@template@_events.h", "@template@_app.h", "@template@_app.c"]
+         "files": ["lesson.json", "@template@_msg.h", "@template@.xml", "@template@_events.h", "@template@_app.h", "@template@_app.c"]
       },
       {
          "path": "tutorial/lesson/2",

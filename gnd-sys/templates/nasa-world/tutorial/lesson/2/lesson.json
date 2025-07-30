@@ -2,7 +2,8 @@
   "time-stamp": "",
   "title": "Add Telemetry Data Point",
   "objective": [
-    "Learn how to modify an Electronic Data Sheet telemetry message payload definition and telemeter the value."
+    "Learn how to add a parameter to an Electronic Data Sheet telemetry message ",
+    "payload definition and telemeter the value."
   ],
   "current-file": "Undefined",
   "complete": false,
@@ -13,7 +14,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. Add the following entry to StatusTlm_Payload's <EntryList>:\n    Entry name='SetParamCmdVal'\n    type='BASE_TYPES/uint16'\n\nNote the GUI needs to be retarted after building the new lesson cFS target."
+          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. Add the following entry to StatusTlm_Payload's <EntryList>:\n    Entry name='ExampleParamCmdVal'\n    type='BASE_TYPES/uint16'\n\nNote the GUI needs to be retarted after building the new lesson cFS target."
         }
       ]
     },
@@ -23,7 +24,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. In the @TEMPLATE@_Data_t definition after the 'Command interface counters' add  a new parameter:\n    uint16 SetParamCmdVal;\n    Note this will be loaded by the new command and the data type must match the command parameter defined in the EDS."
+          "instructions": "1. In the @TEMPLATE@_Data_t definition after the 'Command interface counters' add  a new parameter:\n    uint16 ExampleParamCmdVal;\n    Note this will be loaded by the new command and the data type must match the command parameter defined in the EDS."
         }
       ]
     },
@@ -33,15 +34,15 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the @TEMPLATE@_Init()function and after the 'Initialize app command'section add:\n    @TEMPLATE@_Data.SetParamCmdVal = 0;"
+          "instructions": "1. Locate the @TEMPLATE@_Init()function and after the 'Initialize app command'section add:\n    @TEMPLATE@_Data.ExampleParamCmdVal = 0;"
         },
         {
           "id": "EX2",
-          "instructions": "1. Locate the SendHousekeepingTlm() function. After the command counter lines add:\n    @TEMPLATE@_Data.HkTlm.Payload.SetParamCmdVal = @TEMPLATE@_Data.SetParamCmdVal;"
+          "instructions": "1. Locate the ReportHousekeeping() function. After the command counter lines add:\n    @TEMPLATE@_Data.HkTlm.Payload.ExampleParamCmdVal = @TEMPLATE@_Data.ExampleParamCmdVal;"
         },
         {
           "id": "EX3",
-          "instructions": "1. Locate the @TEMPLATE@_SetParamCmd() function added in lesson 1. Before the call to CFE_EVS_SendEvent() add:\n    @TEMPLATE@_Data.SetParamCmdVal = Cmd->Param;"
+          "instructions": "1. Locate the @TEMPLATE@_ExampleParamCmd() function added in lesson 1. Before the call to CFE_EVS_SendEvent() add:\n    @TEMPLATE@_Data.ExampleParamCmdVal = Cmd->Param;"
         }
       ]
     }

@@ -39,7 +39,7 @@ else:
 from tools import crc_32c, compress_abs_path, TextEditor, PySimpleGUI_License
 import PySimpleGUI as sg
 
-WINDOW_TITLE  = 'Table Manager'
+WINDOW_TITLE  = 'cFS Table Manager'
 TBL_FILE_EXT  = 'tbl'
 MODIFIED_CHAR = '*'
 
@@ -49,11 +49,11 @@ class HelpText():
     """
     """
     def __init__(self):
-  
+        # No need for space at the end of each line
         self.text = \
            ("Table Manager allows users to load a binary cFS table from a\n"
            "file, modify the data values and save changes to a file. Tables\n"
-           "must be defined in an app's EDS spec using Basecamp's pseudo\n"
+           "must be defined in an app's EDS spec using Basecamp's proxy\n"
            "telemtry table file EDS conventions. This convention is a temporary\n"
            "work around until NASA supports EDS table file definitions as\n"
            "part of the EDS 'required interface' definition.")
@@ -110,7 +110,7 @@ class TblManager():
         hdr_label_font   = ('Arial bold',12)
         hdr_content_font = ('Arial',12)
 
-        #TODO: Add instructions about pseudo telemetry and selecting the correct topic. Somewhere document psuedo telemetry conventions
+        #TODO: Add instructions about proxy telemetry and selecting the correct topic. Somewhere document proxy telemetry conventions
         self.layout = [
             [sg.Menu(menu_layout)],
             [sg.Text('Click on a data parameter row to edit its contents.', font=hdr_label_font)],

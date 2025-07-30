@@ -443,7 +443,7 @@ class ManageCfs():
                   [sg.Button('Remove App', button_color=('SpringGreen4'), pad=(2,0)), sg.Cancel(button_color=('gray'), pad=(2,0))]
                  ]
         
-        window = sg.Window('Remove User from App Target', layout, resizable=True, finalize=True)
+        window = sg.Window('Remove User App from Target', layout, resizable=True, finalize=True)
         while True: # Event Loop
             self.event, self.values = window.read()
             if self.event in (sg.WIN_CLOSED, 'Cancel') or self.event is None:       

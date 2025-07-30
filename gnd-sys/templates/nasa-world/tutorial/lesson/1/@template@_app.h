@@ -34,11 +34,19 @@
 #include "cfe_sb.h"
 #include "cfe_es.h"
 
+//EX1
+/*
+** There are no code changes in this exercise. The point of the exercise
+** is to make you aware that @template@_msg.h has been commented out and
+** replaced with the eds header files. 
+**
+*/
 #include "@template@_perfids.h"
 #include "@template@_msgids.h"
 // Replaced by EDS: #include "@template@_msg.h"
 #include "@template@_eds_cc.h"
 #include "@template@_eds_typedefs.h"
+//EX1
 
 /***********************************************************************/
 #define @TEMPLATE@_PIPE_DEPTH 32 /* Depth of the Command Pipe for Application */
@@ -92,7 +100,7 @@ typedef struct
 } @TEMPLATE@_Data_t;
 
 /****************************************************************************/
-//EX1
+//EX2
 /*
 ** Local function prototypes.
 **
@@ -104,14 +112,14 @@ int32 @TEMPLATE@_Init(void);
 void  @TEMPLATE@_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr);
 void  @TEMPLATE@_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr);
 int32 @TEMPLATE@_ReportHousekeeping(const CFE_MSG_CommandHeader_t *Msg);
-int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg);
 int32 @TEMPLATE@_Noop(const @TEMPLATE@_NoopCmd_t *Msg);
-int32 @TEMPLATE@_SetParam(const @TEMPLATE@_SetParamCmd_t *Msg);
+int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg);
+int32 @TEMPLATE@_ExampleParamCmd(const @TEMPLATE@_ExampleParamCmd_t *Msg);
 void  @TEMPLATE@_GetCrc(const char *TableName);
 
 int32 @TEMPLATE@_TblValidationFunc(void *TblData);
 
 bool @TEMPLATE@_VerifyCmdLength(CFE_MSG_Message_t *MsgPtr, size_t ExpectedLength);
-//EX1
+//EX2
 
 #endif /* @TEMPLATE@_H */

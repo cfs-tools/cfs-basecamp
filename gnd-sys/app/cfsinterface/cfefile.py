@@ -25,9 +25,9 @@
          container type definitions can't be directly accessed EdsLib.
          They must be accessed from the RequiredInterface and this interface
          is defined from a Software Bus perspective. The workaround is 
-         to define binary files in a pseudo telemetry packet.
-      3. Pseudo telemetry messages are used because command function codes
-         complicate using them. However telemetry messages create the problem
+         to define binary files in a proxy telemetry packet.
+      3. Proxy telemetry messages are used because command function codes
+         complicate things. However telemetry messages create the problem
          that existing CfeTarget classes don't have methods for loading
          telemetry values. Therefore some functionality has been added to
          the CfeFile that may be suitable for higher level classes.
@@ -90,7 +90,7 @@ The cFS defines the binary header file in cfe_tbl.xml:
 class CfeFile(CfeEdsTarget):
     """
     This class can be used for all binary files because the files are defined in 
-    EDS and a "pseudo telmeetry" topic ID is used to identify the EDS messages
+    EDS and a "proxy telmeetry" topic ID is used to identify the EDS messages
     that defined the file's contents. See the file prologue notes for more details.
     
     Assumes cFE files are of a reasonable size and the entire file can be read
@@ -157,7 +157,7 @@ class CfeFile(CfeEdsTarget):
                     print(f'self.file_len: {self.file_len}')
                     
                     """
-                    Create a pseudo telemetry packet
+                    Create a proxy telemetry packet
                       1. Create a CCSDS header with topic ID and length (add 5 to file table length)
                       2. Add CCSDS header len (12 bytes) to file header data length
                       3. Concatentate CCSDS header and table file data
@@ -186,11 +186,11 @@ class CfeFile(CfeEdsTarget):
                     self.file_data_list[10] = self.file_len[2]
                     self.file_data_list[11] = self.file_len[3]
                     
-                    self.pseudo_tlm_msg = bytes(self.ccsds_hdr) + bytes(self.file_data_list)
-                    print(f'self.pseudo_tlm_msg: {self.pseudo_tlm_msg}')
+                    self.proxy_tlm_msg = bytes(self.ccsds_hdr) + bytes(self.file_data_list)
+                    print(f'self.proxy_tlm_msg: {self.proxy_tlm_msg}')
                     with open('../../flt-file-server/debug.tbl', 'wb') as binary_file:
-                         binary_file.write(self.pseudo_tlm_msg)
-                    eds_entry, eds_obj = self.eds_mission.decode_message(self.pseudo_tlm_msg)
+                         binary_file.write(self.proxy_tlm_msg)
+                    eds_entry, eds_obj = self.eds_mission.decode_message(self.proxy_tlm_msg)
                     # extract_data() loads self.tbl_data_array
                     self.extract_data(eds_obj, eds_entry.Name)
                     self.data_loaded = True
@@ -353,7 +353,7 @@ class CfeFile(CfeEdsTarget):
 
         
 
-        #self.save_file('file_mgr_sys_pseudo.tbl', bytes(FILE_MGR_SYS_TBL_TLM))
+        #self.save_file('file_mgr_sys_proxy.tbl', bytes(FILE_MGR_SYS_TBL_TLM))
         
         #eds_entry, eds_obj = self.eds_mission.decode_message(bytes(CFE_ES_HK))
         eds_entry, eds_obj = self.eds_mission.decode_message(bytes(FILE_MGR_SYS_TBL_TLM))

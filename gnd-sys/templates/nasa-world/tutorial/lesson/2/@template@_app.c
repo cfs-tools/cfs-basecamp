@@ -119,9 +119,9 @@ int32 @TEMPLATE@_Init(void)
     @TEMPLATE@_Data.ErrCounter = 0;
 
     /*
-    ** Initialize Set Command Param Data
+    ** Initialize Example Param Command Data
     */
-    @TEMPLATE@_Data.SetParamCmdVal = 0;
+    @TEMPLATE@_Data.ExampleParamCmdVal = 0;
     //EX1
     
     /*
@@ -247,10 +247,10 @@ void @TEMPLATE@_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr)
 
             break;
 
-        case @TEMPLATE@_SET_PARAM_CC:
-            if (@TEMPLATE@_VerifyCmdLength(&SBBufPtr->Msg, sizeof(@TEMPLATE@_SetParamCmd_t)))
+        case @TEMPLATE@_EXAMPLE_PARAM_CC:
+            if (@TEMPLATE@_VerifyCmdLength(&SBBufPtr->Msg, sizeof(@TEMPLATE@_ExampleParamCmd_t)))
             {
-                @TEMPLATE@_SetParam((@TEMPLATE@_SetParamCmd_t *)SBBufPtr);
+                @TEMPLATE@_ExampleParamCmd((@TEMPLATE@_ExampleParamCmd_t *)SBBufPtr);
             }
 
             break;
@@ -280,7 +280,11 @@ int32 @TEMPLATE@_ReportHousekeeping(const CFE_MSG_CommandHeader_t *Msg)
     */
     @TEMPLATE@_Data.HkTlm.Payload.CommandErrorCounter = @TEMPLATE@_Data.ErrCounter;
     @TEMPLATE@_Data.HkTlm.Payload.CommandCounter      = @TEMPLATE@_Data.CmdCounter;
-    @TEMPLATE@_Data.HkTlm.Payload.SetParamCmdVal      = @TEMPLATE@_Data.SetParamCmdVal;
+
+    /*
+    ** Get the parameter set by last 'ExampleParamCmd' command
+    */
+    @TEMPLATE@_Data.HkTlm.Payload.ExampleParamCmdVal  = @TEMPLATE@_Data.ExampleParamCmdVal;
     
     /*
     ** Send housekeeping telemetry packet...
@@ -329,26 +333,26 @@ int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /*  Purpose:                                                                  */
-/*         This function set a global data paramter                           */
+/*         This function set a global data parameter that is sent in the      */
+/*         housekeeping telemetry message.                                    */
 /*                                                                            */
 /* * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * *  * *  * * * * */
-int32 @TEMPLATE@_SetParam(const @TEMPLATE@_SetParamCmd_t *Msg)
+int32 @TEMPLATE@_ExampleParamCmd(const @TEMPLATE@_ExampleParamCmd_t *Msg)
 {
    
-   const NASA_WORLD_SetParamCmd_Payload_t *Cmd = &Msg->Payload;
+   const NASA_WORLD_ExampleParamCmd_Payload_t *Cmd = &Msg->Payload;
    
-   @TEMPLATE@_Data.SetParamCmdVal = Cmd->Param;
+   @TEMPLATE@_Data.ExampleParamCmdVal = Cmd->Param;
    
    CFE_EVS_SendEvent (@TEMPLATE@_CMD_SET_PARAM_INF_EID, CFE_EVS_EventType_INFORMATION,
-                      "Set Parameter commmand received a parameter value %d",
+                      "Example parameter commmand received a parameter value of %d",
                       Cmd->Param);
    
    @TEMPLATE@_Data.CmdCounter++;
     
    return CFE_SUCCESS;
 
-
-} /* End @TEMPLATE@_SetParam() */
+} /* End @TEMPLATE@_ExampleParamCmd() */
 //EX3
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/

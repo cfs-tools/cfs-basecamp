@@ -1,0 +1,42 @@
+{
+  "time-stamp": "",
+  "title": "Basecamp Table Manager",
+  "objective": [
+    "Learn how to define a table in an Electronic Data Sheet and to use Basecamp's ",
+    "tools to transfer tables between the flight-ground and to view and modify ",
+    "table contents.",
+    "After defining the table in EDS and rebuilding the cFS target refer to exercises ",
+    "in the Tutorial Document for how to use Basecamap's tools to manage tables" 
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "eds",
+      "name": "@template@.xml",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. At the end of the <DataTypeSet> add the TblFile_Payload and TblFile_Payload <ContainerDataType> as shown in the exercise window.\n\nRefer to the Tutorial Document for more information."
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. At the end of the <RequiredInterfaceSet> add the TBL_FILE <Interface> as shown in the exercise window.\n\nRefer to the Tutorial Document for more information."
+        },
+        {
+          "id": "EX3",
+          "instructions": "1. In the <Implementation> section add the TblFileTopicId <VariableSet> and <ParameterMapSet> entries as shown in the exercise window.\n\nRefer to the Tutorial Document for more information."
+        }
+      ]
+    },
+    {
+      "path": "",
+      "name": "reinstall_app_instructions.txt",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "See exercise window for instructions."}
+      ]
+    }
+  ]
+}

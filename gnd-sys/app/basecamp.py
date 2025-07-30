@@ -137,7 +137,7 @@ class IniConfig():
                   rows, 
                   [sg.Text(f'\n"Update" updates the selected parameters for the current session', font=hdr_value_font)],
                   [sg.Text(f'"Save"     updates the selected parameters and if needed creates {self.usr_ini_file} for', font=hdr_value_font, size=(65,1))],
-                  [sg.Text(f'                 future sessions. The current parameter file is {self.ini_file_in_use}\n', font=hdr_value_font, size=(65,1))],
+                  [sg.Text(f'                for future sessions. The current parameter file is {self.ini_file_in_use}\n', font=hdr_value_font, size=(65,1))],
                   [sg.Button('Update', font=hdr_label_font, pad=butt_pad, button_color=('SpringGreen4')), 
                    sg.Button('Save',   font=hdr_label_font, pad=butt_pad, button_color=('SpringGreen4')),
                    sg.Button('Cancel', font=hdr_label_font, pad=butt_pad)]
@@ -1038,7 +1038,7 @@ class App():
             tutorial_menu += self.manage_tutorials.tutorial_titles
         
         menu_def = [
-                       ['File',       ['Create Project...', '---', 'Create User App', 'Download User App', 'User App Status', '---', 'Add User App to Target', 'Remove User from App Target', '---', 'Exit']], #TODO: 'Certify App'
+                       ['File',       ['Create Project...', '---', 'Create User App', 'Download User App', 'User App Status', '---', 'Add User App to Target', 'Remove User App from Target', '---', 'Exit']], #TODO: 'Certify App'
                        ['Tools',      ['Browse Files', 'Run Cmd Sequencer', 'Run Script', 'Manage cFS Tables', 'Plot Data', '---', 'Run Perf Monitor', '---', 'Preferences']],
                        ['Remote Ops', ['Configure Command Destination', 'Configure Telemetry Source', 'Control Remote Target']],  
                        ['Tutorials',  tutorial_menu],
@@ -1206,7 +1206,7 @@ class App():
                 app_store = AppStore(self.APP_STORE_URL, self.USR_APP_PATH,git_topic_include, git_topic_exclude)
                 app_store.execute()
  
-            elif self.event in ('Add User App to Target','Remove User from App Target', 'User App Status'):
+            elif self.event in ('Add User App to Target','Remove User App from Target', 'User App Status'):
                 manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
                 manage_cfs.execute(self.event.split(' ')[0]) # First menu word used as execute() command
 

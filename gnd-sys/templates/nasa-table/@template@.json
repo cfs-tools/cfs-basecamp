@@ -1,0 +1,28 @@
+{ "app": {
+   
+   "title": "@TEMPLATE@",
+   "version": "1.0.0",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
+   "url": "",
+
+   "description": [
+      "This app was generated using the NASA Table template"
+   ],
+
+   "cfs": {
+      "cfe-type": "CFE_APP",
+      "obj-file": "@template@",
+      "entry-symbol": "@TEMPLATE@_AppMain",
+      "name": "@TEMPLATE@",
+      "priority": 70,
+      "stack": 16384,
+      "load_addr": 0,
+      "exception-action": 0,
+      "app-framework": "cfs",
+      "tables": []
+   },
+
+   "requires": []
+   
+}}

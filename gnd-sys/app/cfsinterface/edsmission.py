@@ -159,7 +159,7 @@ class EdsMission:
     def get_tbl_topic_dict(self):
         """
         The current EDS does not support cFS tables so they are defined as 
-        pseudo telemetry with a naming convention of ending the topic name
+        proxy telemetry with a naming convention of ending the topic name
         with EdsMission.TBL_FILE_TOKEN
         """
         topic_dict = {EdsMission.TOPIC_TBL_TITLE_KEY: EdsMission.NULL_ID}

@@ -102,8 +102,8 @@ int32 @TEMPLATE@_Init(void);
 void  @TEMPLATE@_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr);
 void  @TEMPLATE@_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr);
 int32 @TEMPLATE@_ReportHousekeeping(const CFE_MSG_CommandHeader_t *Msg);
-int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg);
 int32 @TEMPLATE@_Noop(const @TEMPLATE@_NoopCmd_t *Msg);
+int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg);
 void  @TEMPLATE@_GetCrc(const char *TableName);
 
 int32 @TEMPLATE@_TblValidationFunc(void *TblData);

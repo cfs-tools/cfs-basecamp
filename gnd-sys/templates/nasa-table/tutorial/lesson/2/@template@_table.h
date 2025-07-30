@@ -1,0 +1,58 @@
+/************************************************************************
+ * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ *
+ * Copyright (c) 2020 United States Government as represented by the
+ * Administrator of the National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ************************************************************************/
+
+/**
+ * @file
+ *
+ * Define @TEMPLATE@ table
+ */
+
+
+#ifndef @TEMPLATE@_TABLE_H
+#define @TEMPLATE@_TABLE_H
+
+#define @TEMPLATE@_TBL_FILE   "/cf/@template@_tbl.tbl"
+
+/*
+** These macros are used in @template@_app.c but can not be used in 
+** @template@_tbl.c in the CFE_TBL_FILEDEF() macro so those hardcoded
+** parameters must match these definitions. 
+*/
+#define @TEMPLATE@_APP_NAME          "@TEMPLATE@"
+#define @TEMPLATE@_EX_TBL_CFE_NAME   "ExampleTable"
+#define @TEMPLATE@_EX_TBL_NAME       @TEMPLATE@_APP_NAME##"."##@TEMPLATE@_EX_TBL_CFE_NAME
+
+//EX1
+/* 
+** Table Validation Constants 
+*/
+#define @TEMPLATE@_TBL_INT1_MAX    20   // Maximum positive value for Int1 element
+#define @TEMPLATE@_TBL_RANGE_ERR   -1   // Return error code if data fails range validation check 
+
+//EX1
+
+/*
+** Table structure
+*/
+typedef struct
+{
+    uint16 Int1;
+    uint16 Int2;
+} @TEMPLATE@_Table_t;
+
+#endif /* @TEMPLATE@_TABLE_H */

@@ -1,0 +1,95 @@
+{
+  "time-stamp": "",
+  "title": "Add a Table",
+  "objective": [
+    "Learn how to define and access a table and its data."
+  ],
+  "current-file": "Undefined",
+  "complete": false,
+  "file": [
+    {
+      "path": "",
+      "name": "CMakeLists.txt",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Add 'aux_source_directory(fsw/tables APP_TABLE_FILES)' so the table source file is included in the build."
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Add 'add_cfe_tables(@template@ ${APP_TABLE_FILES})' so the table tool creation tool is invoked to create the .tbl file."
+        }
+      ]
+    },
+    {
+      "path": "eds",
+      "name": "@template@.xml",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the ExampleParamCmd definition in the '<DataTypeSet>' element. After this definiton, insert a new ExampleTable ContainerDataType definition as shown in the exercise window.\n\nNote TODO explain why required"
+        }
+      ]
+    },
+    {
+      "path": "fsw/platform_inc",
+      "name": "@template@_table.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Add macros that define the default table filename and cFE name\n    @TEMPLATE@_TABLE_FILE \"/cf/@template@_tbl.tbl\"\n    #define @TEMPLATE@_TBL_NAME   \"@TEMPLATE@.ExampleTable\"\n\nNote see the block comment above the macros for limitations imposed by the CFE_TBL_FILEDEF() macro."
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Add the @TEMPLATE@_Table_t definition from the exercise window."
+        }
+      ]
+    },
+    {
+      "path": "fsw/tables",
+      "name": "@template@_tbl.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Add the code from the exercise window that includes the default table values and an invocation of the CFE_TBL_FILEDEF() macro to supply information to the table creation tool. "
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.h",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Add a variable to @TEMPLATE@_Data_t to store the 'table handle'\n    CFE_TBL_Handle_t TblHandle;\n\nTable handles are provided by the cFE and allow apps to access their table data."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. At the end of the @template@ includes add\n    #include \"@template@_table.h\""
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. After the global data @TEMPLATE@_Data is declared add\n    static int32 SendTblDataEvent(void);\n\nNote this does not follow the Sample App global function convention. This was doen to show there are options as  described Basecamp's App Dev Guide."
+        },
+        {
+          "id": "EX3",
+          "instructions": "1. Locate the @TEMPLATE@_Init() fucntion. At the end of the\nfunction before the initialization complete event message, add the code from the exercise window."
+        },
+        {
+          "id": "EX4",
+          "instructions": "1. In the @TEMPLATE@_Noop() function add\n    SendTblDataEvent();\n\nThis function is added in the next exercise."
+        },
+        {
+          "id": "EX5",
+          "instructions": "1. Go to the end of the file and add the SendTblDataEvent() function from the exercise window."
+        }
+      ]
+    }
+  ]
+}

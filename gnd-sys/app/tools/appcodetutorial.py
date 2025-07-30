@@ -429,7 +429,7 @@ class EditorConfig():
         self.config = {
             'theme':   'BluePurple',
             'themes':  sg.list_of_look_and_feel_values(),
-            'font':    ('Courier New', 12),
+            'font':    ('Courier New', 11),
             'tabsize': 4 
             }
         
@@ -569,8 +569,15 @@ class CodeLessonEditor():
         """
         Create the main window. Non-class variables are used so it can be refreshed, PySimpleGui
         layouts can't be shared.
+        
         This editor is intentionally very simple. I orginally had tutorial guidance as a second window
         pane but this wastes screen space and is annoying when you don't need the guidance.
+        
+        The exercise '▼' and '▲' down arrows are defined to follow the exercise numbers. This is may
+        seem obvious but I went through an interation where I defined the arrows to mean the direction
+        of moving through the source code as the user made code changes. Down went 'lower' in the file 
+        which would mean a higher line number. May seem odd now, but seemed 'obvious' before. It's all
+        a matter of perspective. 
         """
         window_width = 100
         column_width = int(window_width/2)
@@ -597,8 +604,8 @@ class CodeLessonEditor():
             [
               sg.Text('Exercise:', font=self.config.get('font')),# size=(window_width-10,1)
               sg.Text(self.code_lesson.exercise_id(), font=self.config.get('font'), size=(5,1), relief=sg.RELIEF_RAISED, border_width=1, justification='center', key='-EXERCISE-'),
-              sg.Button('▼', font='arrow_font 11', border_width=0, pad=(2,0), key='-CODE_DOWN-'),
-              sg.Button('▲', font='arrow_font 11', border_width=0, pad=(2,0), key='-CODE_UP-'),
+              sg.Button('▼', font='arrow_font 11', border_width=0, pad=(2,0), key='-DEC_EXERCISE-'),
+              sg.Button('▲', font='arrow_font 11', border_width=0, pad=(2,0), key='-INC_EXERCISE-'),
               sg.InputText(str(self.code_lesson.exercise_idx+1), size=(4,1), key='-EXERCISE_NUM-', justification='center'),
               sg.Text('of '),
               sg.InputText(str(self.code_lesson.exercise_cnt), size=(4,1), key='-EXERCISE_CNT-', justification='center'),
@@ -621,10 +628,11 @@ class CodeLessonEditor():
 
         prev_encoded_event = None
         read_with_timeout  = False
+        instructions = None
         while True:
 
             self.event, self.values = window.read() # (timeout=50) - Using a timeout stops the control scheme from working
-
+            print(f'self.event" {self.event}')
             if self.event in (sg.WIN_CLOSED, 'Exit') or self.event is None:
                 if self.user_file_mod:
                     if self.values is None:
@@ -633,11 +641,12 @@ class CodeLessonEditor():
                         self.check_n_save_user_file(window)
     
                 break
+            
             elif self.event == '-COMPLETED-':
                 self.code_lesson.json.set_complete(True)
                 self.lesson_completed = True
                 break
-            
+                    
             # The goal is to capture control-key events in a portable way so I avoided the tkinter event
             # binding method. However, I've only tested this on tkinter so it may not be portable.
             # When a control-key sequence is pressed two events are generated. key followed by a delayed
@@ -694,23 +703,22 @@ class CodeLessonEditor():
                 window['-FILE_NUM-'].update(str(self.code_lesson.file_idx+1))
                 self.update_file_displays(window)
                 
-            elif encoded_event in ("b'-CODE_DOWN-'",):
+            elif encoded_event in ("b'-INC_EXERCISE-'",):
+                # See create_window() block comment for direction explanation
                 self.code_lesson.increment_exercise()
                 window['-EXERCISE_NUM-'].update(str(self.code_lesson.exercise_idx+1))
                 self.write_lesson_window(window)
                 
-            elif encoded_event in ("b'-CODE_UP-'",):
+            elif encoded_event in ("b'-DEC_EXERCISE-'",):
+                # See create_window() block comment for direction explanation
                 self.code_lesson.decrement_exercise()
                 window['-EXERCISE_NUM-'].update(str(self.code_lesson.exercise_idx+1))
                 self.write_lesson_window(window)
                 
             elif encoded_event in ("b'-INSTRUCTIONS-'",):
                 title = f'{self.code_lesson.user_filename()}: {self.code_lesson.exercise_id()} Instructions' 
-                instructions = sg.popup(self.code_lesson.exercise_instructions(), title=title , line_width=132, font = 'Courier 12', modal=False, non_blocking=True, grab_anywhere=True)
-            
-            elif encoded_event in ("b'OK'",):
-                instructions.close()
-            
+                instructions = sg.popup_no_buttons(self.code_lesson.exercise_instructions(), title=title , line_width=132, font = 'Courier 12', modal=True, non_blocking=True, grab_anywhere=True)
+                            
             prev_encoded_event = encoded_event
 
             

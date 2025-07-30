@@ -1,3 +1,17 @@
+//EX1
+/*
+** There are no code changes in this exercise. The point of the exercise
+** is to make you aware of the following:
+**
+**   1. This file is replaced by code generated from the EDS file
+**         @template@.xml 
+**
+**   2. The @template@_app.h includes the EDS generated header files
+**         @template@_eds_cc.h
+**         @template@_eds_typedefs.h
+**
+*/
+//EX1
 /************************************************************************
  * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
  *
@@ -25,14 +39,13 @@
 #ifndef @TEMPLATE@_MSG_H
 #define @TEMPLATE@_MSG_H
 
-//EX1
+
 /*
 ** @TEMPLATE@ command codes
 */
 #define @TEMPLATE@_NOOP_CC           0
 #define @TEMPLATE@_RESET_COUNTERS_CC 1
-#define @TEMPLATE@_SET_PARAM_CC      2
-//EX1
+#define @TEMPLATE@_EXAMPLE_PARAM_CC  2
 
 /*************************************************************************/
 

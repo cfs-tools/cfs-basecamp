@@ -1,0 +1,60 @@
+{
+   "title": "NASA Table",
+   "version": "1.0",
+   "short-descr": "Add a table to the NASA World app",
+   "default-app-name": "nasa_table",
+   "description": [
+      "This tutorial starts with the final app created by the NASA World lessons. The table topics",
+      "covered in this tutorial include:",
+      "   - Defining a table and including it in the target build",
+      "   - Periodically checking to determine whether a new table is avilable",
+      "   - Providing a table validation function that validates a table's content before it can be loaded"
+   ],
+
+   "dir": [
+      {
+         "path": "",
+         "files": ["CMakeLists.txt", "@template@.json"]
+      },
+      {
+         "path": "fsw/mission_inc",
+         "files": ["@template@_perfids.h"]
+      },
+      {
+         "path": "fsw/platform_inc",
+         "files": ["@template@_msgids.h", "@template@_table.h"]
+      },
+      {
+         "path": "fsw/src",
+         "files": ["@template@_app.c", "@template@_app.h", "@template@_events.h", "@template@_msg.h", "@template@_version.h"]
+      },
+      {
+         "path": "fsw/tables",
+         "files": ["@template@_tbl.c"]
+      },
+      {
+         "path": "eds",
+         "files": ["@template@.xml"]
+      },
+      {
+         "path": "tutorial",
+         "files": ["tutorial.json"]
+      },
+      {
+         "path": "tutorial/docs",
+         "files": ["nasa-table-tutorial.pdf&"]
+      },
+      {
+         "path": "tutorial/lesson/1",
+         "files": ["lesson.json", "CMakeLists.txt", "@template@.xml", "@template@_table.h", "@template@_tbl.c", "@template@_app.h", "@template@_app.c"]
+      },
+      {
+         "path": "tutorial/lesson/2",
+         "files": ["lesson.json", "@template@_table.h", "@template@_events.h", "@template@_app.c", "reinstall_app_instructions.txt"]
+      },
+      {
+         "path": "tutorial/lesson/3",
+         "files": ["lesson.json", "@template@.xml"]
+      }
+   ]
+}

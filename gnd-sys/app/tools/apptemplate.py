@@ -222,7 +222,9 @@ class CreateApp():
         self.app_templates_path = app_templates_path
         self.app_template_titles = []
         self.app_template_lookup = {}  # [title]  => AppTemplate
-        for app_template_folder in os.listdir(self.app_templates_path):
+        template_list = os.listdir(self.app_templates_path)
+        # app_template.json will be in the list and ignored
+        for app_template_folder in sorted(template_list):
             logger.debug("App template folder: " + app_template_folder)
             #todo: AppTemplate constructor could raise exception if JSON doesn't exist or is malformed
             app_template_json_file = os.path.join(app_templates_path, app_template_folder, TEMPLATE_JSON_FILE)

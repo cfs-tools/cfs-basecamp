@@ -66,29 +66,6 @@
         </ConstraintSet>
       </ContainerDataType>
       
-      <!-- Note the type name here must be "SampleAppTable" to match the C table definition file,
-           but the source code uses the type "SampleAppTable" -->
-      <ContainerDataType name="SampleAppTable" shortDescription="Example Table structure">
-        <EntryList>
-          <Entry name="Int1" type="BASE_TYPES/uint16" />
-          <Entry name="Int2" type="BASE_TYPES/uint16" />
-        </EntryList>
-      </ContainerDataType>
-      
-      <ContainerDataType name="TblFile_Payload" shortDescription="Pseudo telemetry payload">
-        <EntryList>
-          <Entry name="FileHdr" type="CFE_FS/Header"    shortDescription="cFE standard file header" />
-          <Entry name="TblHdr"  type="CFE_TBL/File_Hdr" shortDescription="cFE standard table header" />
-          <Entry name="TblData" type="SampleAppTable"   shortDescription="" />
-        </EntryList>
-      </ContainerDataType>
-      
-      <ContainerDataType name="TblFile" baseType="CFE_HDR/TelemetryHeader">
-        <EntryList>
-          <Entry type="TblFile_Payload" name="Payload" shortDescription="TblFile_Payload"/>
-        </EntryList>
-      </ContainerDataType>
-      
     </DataTypeSet>
 
     <ComponentSet>
@@ -110,25 +87,18 @@
               <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
             </GenericTypeMapSet>
           </Interface>
-          <Interface name="TBL_FILE" shortDescription="Pseudo telemetry for File System Table File" type="CFE_SB/Telemetry">
-            <GenericTypeMapSet>
-              <GenericTypeMap name="TelemetryDataType" type="TblFile" />
-            </GenericTypeMapSet>
-          </Interface>
         </RequiredInterfaceSet>
         <Implementation>
           <VariableSet>
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"     initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId"  initialValue="${CFE_MISSION/@TEMPLATE@_SEND_HK_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"   initialValue="${CFE_MISSION/@TEMPLATE@_HK_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="TblFileTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_TBL_FILE_TOPICID}" />
          </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>
             <ParameterMap interface="CMD"      parameter="TopicId" variableRef="CmdTopicId" />
             <ParameterMap interface="SEND_HK"  parameter="TopicId" variableRef="SendHkTopicId" />
             <ParameterMap interface="HK_TLM"   parameter="TopicId" variableRef="HkTlmTopicId" />
-            <ParameterMap interface="TBL_FILE" parameter="TopicId" variableRef="TblFileTopicId" />
           </ParameterMapSet>
         </Implementation>
       </Component>

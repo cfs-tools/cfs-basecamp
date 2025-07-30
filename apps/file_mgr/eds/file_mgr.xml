@@ -49,7 +49,7 @@
       <!--**********************************-->
 
 
-      <!-- TODO: Orginal def used by code. If table manager pseudo tlm works, this needs to be merged and/or code updated to use new definitions -->
+      <!-- TODO: Orginal def used by code. If table manager proxy tlm works, this needs to be merged and/or code updated to use new definitions -->
       
       <ContainerDataType name="FileSysTblEntry" shortDescription="">
         <EntryList>
@@ -77,7 +77,7 @@
         </DimensionList>
       </ArrayDataType>
 
-      <ContainerDataType name="FileSysTblFile_Payload" shortDescription="Pseudo telemetry payload">
+      <ContainerDataType name="FileSysTblFile_Payload" shortDescription="Proxy telemetry payload">
         <EntryList>
           <Entry name="FileHdr"  type="CFE_FS/Header"    shortDescription="cFE standard file header" />
           <Entry name="TblHdr"   type="CFE_TBL/File_Hdr" shortDescription="cFE standard table header" />
@@ -574,7 +574,7 @@
               <GenericTypeMap name="TelemetryDataType" type="FileSysTblTlm" />
             </GenericTypeMapSet>
           </Interface>
-          <Interface name="FILE_SYS_TBL_FILE" shortDescription="Pseudo telemetry for File System Table File" type="CFE_SB/Telemetry">
+          <Interface name="FILE_SYS_TBL_FILE" shortDescription="Proxy telemetry for File System Table File" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="FileSysTblFile" />
             </GenericTypeMapSet>
