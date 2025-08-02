@@ -552,8 +552,21 @@ class BasecampTelemetryMonitor(TelemetryObserver):
     callback_functions
        [app_name] : {packet: [item list]} 
     
-    """
 
+    """
+    STALE_TLM_LIM = 6  # Number of seconds to declare telemetry stale 
+    
+    MON_STATE_CFS_IDLE = 0
+    MON_STATE_CFS_INIT = 1
+    MON_STATE_CFS_EXEC = 2
+    
+    MON_CMD_START_CFS = 0
+    MON_CMD_STOP_CFS  = 1
+    MON_CMD_RECV_TLM  = 2
+    MON_CMD_POLL_TLM  = 3
+    
+    
+    
     def __init__(self, tlm_server: TelemetryQueueServer, tlm_monitors, tlm_callback, event_queue):
         super().__init__(tlm_server)
 
@@ -569,6 +582,9 @@ class BasecampTelemetryMonitor(TelemetryObserver):
                 self.tlm_server.add_msg_observer(tlm_msg, self)        
                 logger.info(f'Basecamp telemetry adding observer for {tlm_msg.app_name}: {tlm_msg.msg_name}')
         
+        self.mon_state = self.MON_STATE_CFS_IDLE
+        self.mon_timer = 0
+        self.stale_alerted = False
 
     def update(self, tlm_msg: TelemetryMessage) -> None:
         """
@@ -597,6 +613,68 @@ class BasecampTelemetryMonitor(TelemetryObserver):
             logger.error(f'Telemetry update exception\n{str(e)}')
 
 
+    def check_stale_tlm(self, mon_cmd):
+        """
+        Assumes it is called at a 1Hz frequency
+
+        Stale telemetry is used to monitor the operational state of a running
+        cFS target. A state machine is used with teh following states:
+            IDLE
+            - The cFS has not been started
+            - When a Start cFS command is received transition to CFS_INIT
+            CFS_INIT
+            - A start cFS command has been process and no telemetry has been
+              received
+            - If telemetry is received transition to CFS_EXEC
+            - If no telemetry is received for N seconds notify the user
+              Include diagnostic help
+            CFS_EXEC
+            - Transition to IDLE if cFS Stop command received
+            - If no telemetry is received for N seconds notify the user
+              Include diagnostic help        
+        """
+        
+        if self.mon_state == self.MON_STATE_CFS_IDLE:
+           self.mon_timer = 0
+           self.stale_alerted = False
+           if mon_cmd == self.MON_CMD_START_CFS:
+               self.mon_state = self.MON_STATE_CFS_INIT
+
+        elif self.mon_state == self.MON_STATE_CFS_INIT:
+           if mon_cmd == self.MON_CMD_START_CFS:
+               self.mon_timer = 0
+               self.stale_alerted = False
+           elif mon_cmd == self.MON_CMD_STOP_CFS:
+               self.mon_state = self.MON_STATE_CFS_IDLE
+           elif mon_cmd == self.MON_CMD_RECV_TLM:
+               self.mon_state = self.MON_STATE_CFS_EXEC
+               self.mon_timer = 0
+               self.stale_alerted = False
+           else:
+               self.mon_timer += 1
+               if self.mon_timer > self.STALE_TLM_LIM and not self.stale_alerted:
+                   sg.popup("Either the cFS is not running or telemetry output is not enabled. For troubleshooting help launch the 'Build and Run the cFS' tutorial. From the main menu select Tutorials->Build and Run the cFS and then start lesson 2", title='Stale Telemetry Alert', line_width=80, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                   self.stale_alerted = True
+        
+        elif self.mon_state == self.MON_STATE_CFS_EXEC:
+           if mon_cmd == self.MON_CMD_START_CFS:
+               self.mon_state = self.MON_STATE_CFS_INIT
+               self.mon_timer = 0
+               self.stale_alerted = False
+           elif mon_cmd == self.MON_CMD_STOP_CFS:
+               self.mon_state = self.MON_STATE_CFS_IDLE
+           elif mon_cmd == self.MON_CMD_RECV_TLM:
+               self.mon_timer = 0
+               self.stale_alerted = False
+           else:
+               self.mon_timer += 1
+               if self.mon_timer > self.STALE_TLM_LIM and not self.stale_alerted:
+                   sg.popup('Executive Service telemetry is not updating!', title='Stale Telemetry Alert', line_width=80, keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+                   self.stale_alerted = True
+        
+        return self.stale_alerted
+        
+        
 ###############################################################################
 
 class CfsMqttCmdClient():
@@ -709,7 +787,7 @@ class App():
         self.default_proj_doc = self.ini_config.get('APP','DEFAULT_PROJ_DOC')
         self.tech_docs_path   = compress_abs_path(os.path.join(self.path, self.ini_config.get('PATHS','TECH_DOC_PATH')))
         self.proj_docs_path   = compress_abs_path(os.path.join(self.path, self.ini_config.get('PATHS','PROJ_DOC_PATH')))
-        self.tools_path  = os.path.join(self.path, "tools")
+        self.tools_path       = os.path.join(self.path, "tools")
         
         self.cfs_exe_rel_path   = 'build/exe/' + self.EDS_CFS_TARGET_NAME.lower()
         self.cfs_exe_file       = 'core-' + self.EDS_CFS_TARGET_NAME.lower()
@@ -734,7 +812,7 @@ class App():
 
         self.manage_tutorials = ManageTutorials(self.ini_config.get('PATHS', 'TUTORIALS_PATH'))
         self.create_app       = CreateApp(self.APP_TEMPLATES_PATH, self.USR_APP_PATH)
-        self.manage_code_tutorials = ManageCodeTutorials(self.USR_APP_PATH)
+        self.manage_code_tutorials = ManageCodeTutorials(self.tools_path, self.USR_APP_PATH)
         self.cfs_mqtt_cmd_client = CfsMqttCmdClient(self.CFS_MQTT_BROKER_ADDR, self.ini_config.get('NETWORK','MQTT_CLIENT_NAME'),
                                                     self.CFS_MQTT_CMD_TOPIC, self.display_event)
         
@@ -746,7 +824,7 @@ class App():
         self.tlm_plot       = None
         self.tlm_screen     = None
 
-        #todo: Add robust telmeetry screen port number management
+        #todo: Add robust telemetry screen port number management
         # tlm_screen_port is used a starting port number and each telemetry
         # screen is open with a new port number. This strategy assumes 
         # basecamp is run for short periods of time with only a few telemetry
@@ -765,6 +843,7 @@ class App():
     def display_tlm_monitor(self, app_name, tlm_msg, tlm_item, tlm_text):
         #TODO: print("Received [%s, %s, %s] %s" % (app_name, tlm_msg, tlm_item, tlm_text))
         self.window["-CFS_TIME-"].update(tlm_text)
+        self.tlm_monitor.check_stale_tlm(BasecampTelemetryMonitor.MON_CMD_RECV_TLM)
 
     def send_cfs_mqtt_cmd(self, cmd_obj):
         """
@@ -1162,9 +1241,12 @@ class App():
         self.window = self.create_window(sys_target_str, sys_comm_str)
         # --- Loop taking in user input --- #
         restart = False
+        window_read_timeout = 50
+        tlm_mon_1hz_poll_lim = 1000/window_read_timeout
+        tlm_mon_1hz_poll_cnt = 0
         while True:
     
-            self.event, self.values = self.window.read(timeout=50)
+            self.event, self.values = self.window.read(timeout=window_read_timeout)
             logger.debug("App Window Read()\nEvent: %s\nValues: %s" % (self.event, self.values))
 
             if self.event in (sg.WIN_CLOSED, 'Exit', '-RESTART-') or self.event is None:
@@ -1186,6 +1268,13 @@ class App():
                 self.display_event("Sent remote process command: " + datagram_to_str(datagram))
                 logger.debug("Sent remote process command: " + datagram_to_str(datagram))
 
+            tlm_mon_1hz_poll_cnt += 1
+            if tlm_mon_1hz_poll_cnt > tlm_mon_1hz_poll_lim:
+                stale_tlm = self.tlm_monitor.check_stale_tlm(BasecampTelemetryMonitor.MON_CMD_POLL_TLM)
+                if stale_tlm:
+                    self.display_event('Executive Service telemtry is not updating, verify the cFS is running and cFS telemetry output is enabled')
+                tlm_mon_1hz_poll_cnt = 0
+                
             #######################
             ##### MENU EVENTS #####
             #######################
@@ -1403,7 +1492,7 @@ class App():
                     self.enable_telemetry()
                     self.cfs_stdout = CfsStdout(self.cfs_subprocess, self.window)
                     self.cfs_stdout.start()
-                    
+                    self.tlm_monitor.check_stale_tlm(BasecampTelemetryMonitor.MON_CMD_START_CFS)       
                 """ 
                 #todo: Kill current thread if running
                 #todo: history_setting_filename doesn't seem to do anything. My goal is to save cFS image locations across app invocations 
@@ -1422,50 +1511,48 @@ class App():
                     logger.info("Killing cFS Process")
                     os.killpg(os.getpgid(self.cfs_subprocess.pid), signal.SIGTERM)  # Send the signal to all the process groups
                     self.cfs_subprocess = None
-                    self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
-                    self.window["-CFS_TIME-"].update(EdsMission.NULL_TLM_STR)
+                self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
+                self.window["-CFS_TIME-"].update(EdsMission.NULL_TLM_STR)
+                self.tlm_monitor.check_stale_tlm(BasecampTelemetryMonitor.MON_CMD_STOP_CFS) 
+                """
+                History of 
+                #1
+                if self.cfs_stdout is not None:
+                    self.cfs_stdout.terminate()  # I tried to join() afterwards and it hangs
+                subprocess.Popen(Cfs.SH_STOP_CFS, shell=True)
+                #2                  
+                if hasattr(signal, 'CTRL_C_EVENT'):
+                    self.cfs_subprocess.send_signal(signal.CTRL_C_EVENT)
+                    #os.kill(self.cfs_subprocess.pid, signal.CTRL_C_EVENT)
                 else:
-                    self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
-                    self.window["-CFS_TIME-"].update(EdsMission.NULL_TLM_STR)
-                    """
-                    History of 
-                    #1
+                    self.cfs_subprocess.send_signal(signal.SIGINT)
+                    #pgid = os.getpgid(self.cfs_popen.pid)
+                    #if pgid == 1:
+                    #    os.kill(self.cfs_popen.pid, signal.SIGINT)
+                    #else:
+                    #    os.killpg(os.getpgid(self.cfs_popen.pid), signal.SIGINT) 
+                    #os.kill(self.cfs_popen.pid(), signal.SIGINT)
+                #3
+                self.cfs_subprocess.kill()
+                #4
+                if self.cfs_subprocess.poll() is not None:
+                    logger.info("Killing cFS after subprocess poll")
                     if self.cfs_stdout is not None:
                         self.cfs_stdout.terminate()  # I tried to join() afterwards and it hangs
                     subprocess.Popen(Cfs.SH_STOP_CFS, shell=True)
-                    #2                  
-                    if hasattr(signal, 'CTRL_C_EVENT'):
-                        self.cfs_subprocess.send_signal(signal.CTRL_C_EVENT)
-                        #os.kill(self.cfs_subprocess.pid, signal.CTRL_C_EVENT)
-                    else:
-                        self.cfs_subprocess.send_signal(signal.SIGINT)
-                        #pgid = os.getpgid(self.cfs_popen.pid)
-                        #if pgid == 1:
-                        #    os.kill(self.cfs_popen.pid, signal.SIGINT)
-                        #else:
-                        #    os.killpg(os.getpgid(self.cfs_popen.pid), signal.SIGINT) 
-                        #os.kill(self.cfs_popen.pid(), signal.SIGINT)
-                    #3
-                    self.cfs_subprocess.kill()
-                    #4
-                    if self.cfs_subprocess.poll() is not None:
-                        logger.info("Killing cFS after subprocess poll")
-                        if self.cfs_stdout is not None:
-                            self.cfs_stdout.terminate()  # I tried to join() afterwards and it hangs
-                        subprocess.Popen(Cfs.SH_STOP_CFS, shell=True)
-                        sg.popup("cFS failed to terminate.\nUse another terminal to kill the process.", title='Warning', grab_anywhere=True, modal=False)
-                    else:
-                        self.cfs_subprocess = None
-                    #5 - Trying to confirm process was actually stopped. The exception wasn't raised. I tried a delay but that prevented some events from being displayed
-                    try:
-                         print("Trying PID")
-                         os.getpgid(self.cfs_subprocess.pid)
-                     except ProcessLookupError:
-                         print("PID exception")
-                         self.cfs_subprocess = None
-                         self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
-                         self.window["-CFS_TIME-"].update(EdsMission.NULL_TLM_STR)
-                    """
+                    sg.popup("cFS failed to terminate.\nUse another terminal to kill the process.", title='Warning', grab_anywhere=True, modal=False)
+                else:
+                    self.cfs_subprocess = None
+                #5 - Trying to confirm process was actually stopped. The exception wasn't raised. I tried a delay but that prevented some events from being displayed
+                try:
+                     print("Trying PID")
+                     os.getpgid(self.cfs_subprocess.pid)
+                 except ProcessLookupError:
+                     print("PID exception")
+                     self.cfs_subprocess = None
+                     self.window["-CFS_IMAGE-"].update(self.GUI_NO_IMAGE_TXT)
+                     self.window["-CFS_TIME-"].update(EdsMission.NULL_TLM_STR)
+                """
         
             elif self.event == '-ENA_TLM-':
                 self.enable_telemetry()

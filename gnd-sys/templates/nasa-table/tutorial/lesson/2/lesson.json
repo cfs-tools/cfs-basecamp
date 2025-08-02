@@ -10,7 +10,7 @@
   "file": [
     {
       "path": "fsw/platform_inc",
-      "name": "@template@_table.h",, "@template@_events.h"
+      "name": "@template@_table.h",
       "exercise": [
         {
           "id": "EX1",

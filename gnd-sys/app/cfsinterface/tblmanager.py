@@ -42,6 +42,7 @@ import PySimpleGUI as sg
 WINDOW_TITLE  = 'cFS Table Manager'
 TBL_FILE_EXT  = 'tbl'
 MODIFIED_CHAR = '*'
+TBL_DATA_ROW_START = 23  # Index of first data row
 
 ###############################################################################
 
@@ -113,7 +114,7 @@ class TblManager():
         #TODO: Add instructions about proxy telemetry and selecting the correct topic. Somewhere document proxy telemetry conventions
         self.layout = [
             [sg.Menu(menu_layout)],
-            [sg.Text('Click on a data parameter row to edit its contents.', font=hdr_label_font)],
+            [sg.Text('Click on a data parameter row to edit its contents. The file and table headers are write protected.', font=hdr_label_font)],
             [sg.Text('Parameter: ', font=hdr_label_font, size=(10,1)), sg.Text('', font=hdr_content_font, size=(75,1), border_width=1, justification='left', key='-PARAMETER-')],
             [sg.Text('Value: ', font=hdr_label_font, size=(10,1)), sg.Input('', font=hdr_content_font, size=(25,1), border_width=1, justification='right', key='-DATA-'), sg.Button('Update', enable_events=True, button_color=('SpringGreen4'), key='-UPDATE-'),], #, relief=sg.RELIEF_RAISED
             [[tbl_widget]]]
@@ -223,9 +224,11 @@ class TblManager():
                     #Can get a clicked event with (None,None) for (row,col) 
                     if self.row != None and self.col != None:
                         print(f'Table[{self.row},{self.col}]: {self.cfe_tbl_file.tbl_data_array[self.row][0]}: {self.cfe_tbl_file.tbl_data_array[self.row][1]}')
-                        self.window['-PARAMETER-'].update(self.cfe_tbl_file.tbl_data_array[self.row][0])
-                        self.window['-DATA-'].update(self.cfe_tbl_file.tbl_data_array[self.row][1])
-
+                        if self.row >= TBL_DATA_ROW_START:
+                            self.window['-PARAMETER-'].update(self.cfe_tbl_file.tbl_data_array[self.row][0])
+                            self.window['-DATA-'].update(self.cfe_tbl_file.tbl_data_array[self.row][1])
+                        else:
+                            sg.popup('The file and table headers are write protected.', title='Edit Table Data', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=True)
             elif event == '-UPDATE-':
                 if self.cfe_tbl_file.data_loaded and not self.row == None:
                     print(f"self.row: {self.row}, values['-DATA-']: {values['-DATA-']}")

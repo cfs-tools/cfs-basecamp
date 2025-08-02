@@ -78,8 +78,9 @@ class CodeTutorial():
     contains numbered lesson folders. Each lesson folder contains a 
     lesson.json file.  
     """
-    def __init__(self, tutorial_path):
+    def __init__(self, tools_path, tutorial_path):
 
+        self.tools_path = tools_path
         self.path = tutorial_path
         self.json = CodeTutorialJson(os.path.join(tutorial_path, TUTORIAL_JSON_FILE))
         
@@ -210,8 +211,10 @@ class CodeTutorial():
                 elif self.event == 'Tutorial Document':
                     pdf_filename = os.path.join(self.path, DOCS_DIR, self.json.document())
                     try:
-                        pdf_viewer = PdfViewer(pdf_filename)
-                        pdf_viewer.execute()
+                        if os.path.isfile(pdf_filename):
+                            self.pdf_viewer = sg.execute_py_file("pdfviewer.py", parms=pdf_filename, cwd=self.tools_path)
+                        else:
+                            sg.popup(f'Failed to open {pdf_filename}, file does not exist.', title='Document Open Error', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                     except:
                         sg.popup(f'Error opening tutorial PDF file {pdf_filename}', title='File Open Error')
 
@@ -256,7 +259,7 @@ class ManageCodeTutorials():
     method to retrieve a tutorial given its title. It also means tutorial
     titles must be unique.
     """
-    def __init__(self, usr_app_path):
+    def __init__(self, tools_path, usr_app_path):
 
         self.tutorial_titles = []
         self.tutorial_lookup = {}  # [title]  => Tutorial
@@ -268,7 +271,7 @@ class ManageCodeTutorials():
             tutorial_dir = os.path.join(usr_app_path, usr_app, TUTORIAL_DIR)
             tutorial_json_file = os.path.join(tutorial_dir, TUTORIAL_JSON_FILE)
             if os.path.exists(tutorial_json_file):
-                tutorial = CodeTutorial(tutorial_dir)
+                tutorial = CodeTutorial(tools_path, tutorial_dir)
                 self.tutorial_titles.append(tutorial.json.title())
                 self.tutorial_lookup[tutorial.json.title()] = tutorial
         
@@ -734,6 +737,7 @@ class CodeLessonEditor():
 
 if __name__ == '__main__':
 
+    tools_dir = os.getcwd()
     tutorial_dir = None
     if len(sys.argv) > 1:
         # argv is relative path from gnd-sys/app
@@ -744,11 +748,12 @@ if __name__ == '__main__':
         #with open('/home/osk/sandbox/cayg/temp.txt','w') as f:
         #    f.write(tutorial_dir)
     else:
-        tutorial_dir = compress_abs_path(os.path.join(os.getcwd(),'../../../usr/apps/hello_object/tutorial'))
-        tutorial_dir = compress_abs_path(os.path.join(os.getcwd(),'../../templates/hello-world/tutorial'))
+        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../../usr/apps/hello_object/tutorial'))
+        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../templates/hello-world/tutorial'))
+        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../templates/nasa-table/tutorial'))
     print ("Main: tutorial_dir = " + tutorial_dir)
             
-    tutorial = CodeTutorial(tutorial_dir)
+    tutorial = CodeTutorial(tools_dir, tutorial_dir)
     tutorial.execute()
     
     

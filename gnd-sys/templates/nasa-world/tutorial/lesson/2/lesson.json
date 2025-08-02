@@ -14,7 +14,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. Add the following entry to StatusTlm_Payload's <EntryList>:\n    Entry name='ExampleParamCmdVal'\n    type='BASE_TYPES/uint16'\n\nNote the GUI needs to be retarted after building the new lesson cFS target."
+          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. Add the following entry to StatusTlm_Payload's <EntryList>:\n    Entry name='ExampleParamCmdVal' type='BASE_TYPES/uint16'\n\nNote the GUI needs to be retarted after building the new lesson cFS target."
         }
       ]
     },
@@ -24,7 +24,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. In the @TEMPLATE@_Data_t definition after the 'Command interface counters' add  a new parameter:\n    uint16 ExampleParamCmdVal;\n    Note this will be loaded by the new command and the data type must match the command parameter defined in the EDS."
+          "instructions": "1. In the @TEMPLATE@_Data_t definition after the 'Command interface counters' add  a new parameter:\n    uint16 ExampleParamCmdVal;\n\n    Note this will be loaded by the new command and the data type must match the command parameter defined in the EDS."
         }
       ]
     },

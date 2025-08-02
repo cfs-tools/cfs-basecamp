@@ -1,9 +1,9 @@
 {
   "time-stamp": "",
-  "title": "Running the cFS",
+  "title": "Basecamp App Specs",
   "objective": [
-    "Describe how to run the core Flight System  (cFS) from the GUI and from the command line"
+    "Introduce app specifications and how they are used by Basecamp"
   ],
-  "current-slide": 1,
+  "current-slide": 0,
   "complete": false
 }

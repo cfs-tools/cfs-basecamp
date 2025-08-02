@@ -105,7 +105,7 @@
 
      <!-- Use 16-bit subseconds field for a 48-bit timestamp in TLM messages -->
      <Define name="MSG_TELEMETRY_SUBSECONDS_TYPE" value="uint16"/>
-     <Define name="u" value="littleEndian"/>
+     <Define name="DATA_BYTE_ORDER" value="bigEndian"/>
      <Define name="SIGNED_INTEGER_ENCODING" value="twosComplement"/>
      <Define name="SPACECRAFT_ID" value="66"/>
      <Define name="TELECOMMAND_BASE_TOPICID" value="1"/>

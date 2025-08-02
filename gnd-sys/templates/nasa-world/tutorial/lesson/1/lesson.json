@@ -2,7 +2,7 @@
   "time-stamp": "",
   "title": "Add Command",
   "objective": [
-    "Learn how to define command with a parameter using Electronic Data Sheets and how to ",
+    "Learn how to define a command with a parameter using Electronic Data Sheets and how to ",
     "define and dispatch a command handler function."
   ],
   "current-file": "Undefined",
@@ -66,7 +66,7 @@
         },
         {
           "id": "EX2",
-          "instructions": "1. After the case statement for @TEMPLATE@_RESET_COUNTERS_CC add\n    The @TEMPLATE@_ExampleParamCmd() code from the exercise window"
+          "instructions": "1. After the NASA_WORLD_ResetCounters() command fucntion add\n    The @TEMPLATE@_ExampleParamCmd() code from the exercise window\n\n    Note this file location was chosen because it keeps the command functions together."
         }
       ]
     }

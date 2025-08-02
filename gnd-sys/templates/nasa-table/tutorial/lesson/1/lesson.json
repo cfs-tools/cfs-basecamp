@@ -27,7 +27,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the ExampleParamCmd definition in the '<DataTypeSet>' element. After this definiton, insert a new ExampleTable ContainerDataType definition as shown in the exercise window.\n\nNote TODO explain why required"
+          "instructions": "1. Locate the ExampleParamCmd definition in the '<DataTypeSet>' element. After this definiton, insert a new ExampleTable ContainerDataType definition as shown in the exercise window.\n\nNote the GUI needs to be retarted after building the new lesson cFS target.\nNote TODO explain why required."
         }
       ]
     },
