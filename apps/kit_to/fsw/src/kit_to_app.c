@@ -71,9 +71,10 @@ DEFINE_ENUM(Config,APP_CONFIG)
 
 static CFE_EVS_BinFilter_t  EventFilters[] =
 {  
-   /* Event ID            Mask */
-   {PKTMGR_FORWARD_EID,   CFE_EVS_FIRST_4_STOP},
-   {PKTMGR_UNWRAP_EID,    CFE_EVS_FIRST_4_STOP}
+   /* Event ID                   Mask */
+   {PKTMGR_FORWARD_EID,          CFE_EVS_FIRST_4_STOP},
+   {PKTMGR_UNWRAP_EID,           CFE_EVS_FIRST_4_STOP},
+   {PKTMGR_EDS_PACK_MSG_ERR_EID, CFE_EVS_FIRST_4_STOP}
 };
 
 /*****************/

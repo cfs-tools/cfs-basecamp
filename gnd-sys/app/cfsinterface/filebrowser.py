@@ -203,7 +203,7 @@ class FileXfer():
     def send_bin_file(self, gnd_file, flt_file):
         """
         Send a binary file to the cFS as hex encoded text file. There's interest in 
-        using NASA apps with Basecamp so binary file transfer is needed before the 
+        using NASA apps with Basecamp so binary file transfer is needed. Prior to this 
         I didn't use the python encode/decode because I already had my FSW PktUtil_
         functions and I didn't feel like researching a standards-based solution.
         The data_seg_len represents the binary data length and not the encoded length.

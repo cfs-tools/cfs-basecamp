@@ -385,15 +385,16 @@ class TelemetrySocketServer(TelemetryServer):
                     
                         #self.eds_objects[eds_entry.Name] = eds_obj
                         app_id = int(eds_obj.CCSDS.AppId)
-                        logger.debug("Msg name: %s, Msg Id: %d " % (eds_entry.Name,app_id))
+                        print("Msg name: %s, Msg Id: %d " % (eds_entry.Name,app_id))
                         if app_id in self.tlm_messages:
-                            logger.debug("Calling tlm message update()...")
+                            print("Calling tlm message update()...")
                             self.tlm_messages[app_id].update(eds_entry, eds_obj)
                     
                     except RuntimeError:
-                        logger.error("EDS datagram decode exception. Datagram  = \n %s\n", str(datagram))
-                        logger.error(traceback.print_exc())
-                        
+                        print("EDS datagram decode exception. Datagram  = \n %s\n", str(datagram))
+                        print(traceback.print_exc())
+                else:
+                    print(f'len(datagram): {len(datagram)}')                    
             except socket.timeout:
                 pass
                 #print('Ignored socket error...')
@@ -608,7 +609,7 @@ def main():
     SERVER_TLM_PORT    = config.getint('NETWORK','GND_TLM_PORT')
     SERVER_TLM_TIMEOUT = config.getint('NETWORK','GND_TLM_TIMEOUT')
     
-    system_string = f'Mission: {MISSION}, Target: {CFS_TARGET}, cFS IP Addr: {GND_IP_ADDR}, Gnd Tlm Port {GND_TLM_PORT}'
+    system_string = f'Mission: {MISSION}, Target: {CFS_TARGET}, cFS IP Addr: {GND_IP_ADDR}, Gnd Tlm Port {SERVER_TLM_PORT}'
     try:
         telemetry_server = TelemetrySocketServer(MISSION, CFS_TARGET, GND_IP_ADDR, ROUTER_CTRL_PORT, SERVER_TLM_PORT, SERVER_TLM_TIMEOUT)
         telemetry_cmd_line_client = TelemetryCmdLineClient(telemetry_server, True)

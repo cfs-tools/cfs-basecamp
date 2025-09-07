@@ -62,7 +62,7 @@ class AppSpec():
     CFE_TYPE_PROXY = 'CFE_PROXY'
    
     APP_FRAMEWORK_CFS = 'cfs'
-    APP_FRAMEWORK_OSK = 'osk'  # Named based on Basecamp predecsessor called OpenSatKit 
+    APP_FRAMEWORK_OSK = 'osk'  # Named based on Basecamp predecessor called OpenSatKit 
     
     def __init__(self, app_path, app_name, proxy=False):
         self.app_path   = app_path
@@ -179,6 +179,7 @@ class AppSpec():
         info['url']         = self.json_app['url']
         info['description'] = self.json_app['description']
         info['requires']    = self.json_app['requires']
+        info['obj-type']    = self.json_cfs['cfe-type']
         info['framework']   = self.json_cfs['app-framework']
         return info
 

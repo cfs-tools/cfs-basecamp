@@ -336,6 +336,7 @@ uint16 PKTMGR_OutputTelemetry(void)
                {
                   if (PktMgr->TlmSource == KIT_TO_TlmSource_LOCAL)
                   {
+                     
                      // If it's not a wrapped message then sent it
                      if (!CFE_SB_MsgId_Equal(MsgId, PktMgr->SubWrappedTlmMid))
                      {
@@ -366,6 +367,12 @@ uint16 PKTMGR_OutputTelemetry(void)
                         SocketStatus = OS_SocketSendTo(PktMgr->TlmSockId, SocketBuffer, EdsDataSize, &PktMgr->TlmSocketAddr);
                         ++NumPktsOutput;
                         NumBytesOutput += MsgLen;
+                     }
+                     else
+                     {
+                        CFE_EVS_SendEvent(PKTMGR_EDS_PACK_MSG_ERR_EID,CFE_EVS_EventType_ERROR,
+                              "Error packing EDS output message %d, len %ld",
+                              CFE_SB_MsgIdToValue(MsgId),MsgLen);
                      }
                   } /* End if send msg */
                } /* End if got msg id */

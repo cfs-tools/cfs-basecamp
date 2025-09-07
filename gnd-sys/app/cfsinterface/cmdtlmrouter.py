@@ -147,7 +147,7 @@ class CmdTlmRouter(Thread):
         try:
             del self.cfs_cmd_source[cmd_port]
         except KeyError:
-            logger.error(f'Error removing nonexitent command source {cmd_port} from cfs_cmd_source dictionary')  
+            logger.error(f'Error removing nonexistent command source {cmd_port} from cfs_cmd_source dictionary')  
         
         
     # Ground Commands & Telemetry
@@ -162,7 +162,7 @@ class CmdTlmRouter(Thread):
         try:
             del self.router_ctrl_source[cmd_port]
         except KeyError:
-            logger.error(f'Error removing nonexitent command source {cmd_port} from router_ctrl_source dictionary')  
+            logger.error(f'Error removing nonexistent command source {cmd_port} from router_ctrl_source dictionary')  
 
     def get_gnd_tlm_queue(self):
         return self.gnd_tlm_queue
@@ -178,7 +178,7 @@ class CmdTlmRouter(Thread):
             del self.tlm_dest_addr[tlm_port]
             logger.info(f'Removed telemetry destination port {tlm_port}')
         except KeyError:
-            logger.error(f'Error removing nonexitent telemetry source {tlm_port} from tlm destination dictionary')  
+            logger.error(f'Error removing nonexistent telemetry source {tlm_port} from tlm destination dictionary')  
         self.tlm_dest_mutex.release()
     
     def set_cfs_ip_addr(self, ip_addr):

@@ -234,6 +234,8 @@ if __name__ == '__main__':
         app_name    = 'MQTT_GW'
         tlm_topic   = 'MQTT_GW/Application/HK_TLM'
         tlm_topic   = 'MQTT_GW/Application/DISCRETE_TLM'
+        app_name    = 'HS'
+        tlm_topic   = 'HS/Application/HK_TLM'
 
     gnd_ip_addr  = config.get('NETWORK', 'GND_IP_ADDR')
     mission_name = config.get('CFS_TARGET','MISSION_EDS_NAME')

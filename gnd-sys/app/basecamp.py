@@ -574,7 +574,7 @@ class BasecampTelemetryMonitor(TelemetryObserver):
         self.tlm_callback = tlm_callback
         self.event_queue  = event_queue
         
-        self.sys_apps = ['CFE_ES', 'CFE_EVS', 'CFE_SB', 'CFE_TBL', 'CFE_TIME', 'APP_C_DEMO' 'FILE_MGR' 'FILE_XFER']
+        self.sys_apps = ['CFE_ES', 'CFE_EVS', 'CFE_SB', 'CFE_TBL', 'CFE_TIME', 'APP_C_DEMO', 'FILE_MGR', 'FILE_XFER']
         
         for msg in self.tlm_server.tlm_messages:
             tlm_msg = self.tlm_server.tlm_messages[msg]

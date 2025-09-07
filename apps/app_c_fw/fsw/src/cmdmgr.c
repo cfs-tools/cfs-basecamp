@@ -116,13 +116,11 @@ bool CMDMGR_DispatchFunc(CMDMGR_Class_t *CmdMgr, const CFE_MSG_Message_t *MsgPtr
 
    bool   ValidCmd = false;
    bool   ChecksumValid;
-   size_t UserDataLen; 
-   CFE_MSG_Size_t    MsgSize;
+   size_t UserDataLen;
    CFE_MSG_FcnCode_t FuncCode;
 
    UserDataLen = CFE_SB_GetUserDataLength(MsgPtr);
 
-   CFE_MSG_GetSize(MsgPtr, &MsgSize);
    CFE_MSG_GetFcnCode(MsgPtr, &FuncCode);
    CFE_MSG_ValidateChecksum(MsgPtr, &ChecksumValid);
    #ifdef CMDMGR_DISABLE_CHECKSUM_VALIDATION

@@ -228,6 +228,7 @@ class ManageCfs():
     Manage the display for configuring, building and running the cFS.
     app_abs_path is the python application path, not cFS apps
     #TODO - Define path and file constants. ManageCfs should be its own package with cFS constants.
+    #TODO - Consolidate common logic in restore_targets_cmake(), in_targets_cmake_list(() and update_targets_cmake()
     """
     TRI_STATE = Enum('TriState', ['NOT_APP', 'TRUE', 'FALSE'])
 
@@ -336,7 +337,10 @@ class ManageCfs():
             elif self.event == '-1A_MAN-':
                 self.selected_app = self.values['-USR_APP-']
                 self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
-                self.copy_app_tables(auto_copy=False)  # Copy table files from app dir to cFS '_defs' file
+                app_info = self.usr_app_spec.get_app_info()
+                cfe_obj_type  = app_info['obj-type']
+                app_framework = app_info['framework']
+                self.copy_app_tables(cfe_obj_type, app_framework, auto_copy=False)  # Copy table files from app dir to cFS '_defs' file
             elif self.event == '-1B_MAN-':
                 self.update_targets_cmake(auto_update=False)
             elif self.event == '-1C_MAN-':
@@ -410,8 +414,11 @@ class ManageCfs():
         self.selected_app = usr_app
         self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
         status_text = f"{self.selected_app.upper()} was successfully added to Basecamp's cFS target:\n\n"
+        app_info = self.usr_app_spec.get_app_info()
+        cfe_obj_type  = app_info['obj-type']
+        app_framework = app_info['framework']
         display_auto_popup = False 
-        copy_tables_passed, copy_tables_text = self.copy_app_tables(auto_copy=True)
+        copy_tables_passed, copy_tables_text = self.copy_app_tables(cfe_obj_type, app_framework, auto_copy=True)
         if copy_tables_passed:
             status_text += f'1. {copy_tables_text}\n\n' 
             update_cmake_passed, update_cmake_text = self.update_targets_cmake(auto_update=True)
@@ -473,9 +480,9 @@ class ManageCfs():
         for app in app_name_list:
             app_info = self.manage_usr_apps.get_app_spec(app).get_app_info()           
             install_status = self.app_install_status(app)
-            app_status_layout = [sg.Text(app.upper(), font=hdr_label_font, size=(10,0), pad=(0,5)),
+            app_status_layout = [sg.Text(app.upper(), font=hdr_label_font, size=(12,0), pad=(0,5)),
                                  sg.Text(app_info['version'], font=hdr_value_font, size=(5,0), pad=(0,5)),
-                                 sg.Text(install_status['summary'][1], font=hdr_value_font, text_color=install_status['summary'][2], size=(18,0))]
+                                 sg.Text(install_status['summary'][1], font=hdr_value_font, text_color=install_status['summary'][2], size=(20,0))]
             if install_status['summary'][0]:
                 app_key = f'-{app}-'
                 app_key_list.append(app_key)        
@@ -595,7 +602,7 @@ class ManageCfs():
             self.main_window['-RESTART-'].click()
         return restart
 
-    def copy_app_tables(self, auto_copy):
+    def copy_app_tables(self, cfe_obj_type, app_framework, auto_copy):
         """
         An app's JSON spec table filename should not have a target prefix. The
         default table filename in an app's tables directory should have a 
@@ -608,7 +615,14 @@ class ManageCfs():
         popup_text = 'Undefined'
         table_list = self.get_app_table_list()
         if len(table_list) == 0:
-            popup_text = "No tables copied since it's a library"
+            if cfe_obj_type == AppSpec.CFE_TYPE_LIB:
+                popup_text = "No tables copied since it's a library"
+            else:
+                if app_framework == AppSpec.APP_FRAMEWORK_CFS:
+                    popup_text = "No JSON tables copied since it's a cFS app with binary tables"
+                else:
+                    popup_text = "Error in Basecamp app spec, no JSON tables listed."
+                    copy_passed = False
         else:
             app_table_path = os.path.join(self.usr_app_path, self.selected_app, 'fsw', 'tables')
             if auto_copy:
@@ -720,10 +734,19 @@ class ManageCfs():
             for line in f:
                 if INSERT_KEYWORD in line:
                     if self.cmake_app_list in line:
-                        if obj_file in line:
-                            line = line.replace(obj_file,"")
-                            file_modified = True
-                            logger.info(f'Removed {obj_file} from {self.targets_cmake_file}')
+                        # The string search logic looks for an exact match and allows
+                        # the name being searched to exist in an end-of-line comment
+                        if not line.strip().startswith('#'):  # Non-commented line
+                            i = line.find(')')
+                            obj_file_list = line[:i].split(' ')
+                            try:
+                                index = obj_file_list.index(obj_file)
+                                del obj_file_list[index]
+                                logger.info(f'Removed {obj_file} from {line} in file {self.targets_cmake_file}')
+                                line = " ".join(obj_file_list) + line[i:]     
+                                file_modified = True
+                            except ValueError:
+                                logger.info(f'Attempt to remove {obj_file} from {self.targets_cmake_file}, but not in app list: {line}')   
                     elif self.cmake_file_list in line:
                         for table in table_list:
                             if table in line:

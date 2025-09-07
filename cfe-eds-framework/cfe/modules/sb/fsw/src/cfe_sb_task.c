@@ -295,6 +295,8 @@ int32 CFE_SB_AppInit(void)
 int32 CFE_SB_NoopCmd(const CFE_SB_NoopCmd_t *data)
 {
     CFE_EVS_SendEvent(CFE_SB_CMD0_RCVD_EID, CFE_EVS_EventType_INFORMATION, "No-op Cmd Rcvd: %s", CFE_VERSION_STRING);
+    CFE_EVS_SendEvent(CFE_SB_CMD0_RCVD_EID, CFE_EVS_EventType_INFORMATION, "CFE_SB_Global.Mem.PoolHdl = %ld\n", CFE_ResourceId_ToInteger(CFE_RESOURCEID_UNWRAP(CFE_SB_Global.Mem.PoolHdl)));
+    
     CFE_SB_Global.HKTlmMsg.Payload.CommandCounter++;
 
     return CFE_SUCCESS;

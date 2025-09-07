@@ -64,7 +64,7 @@
 #define PKTMGR_FORWARD_EID              (PKTMGR_BASE_EID + 12)
 #define PKTMGR_UNWRAP_EID               (PKTMGR_BASE_EID + 13)
 #define PKTMGR_DEBUG_EID                (PKTMGR_BASE_EID + 14)
-
+#define PKTMGR_EDS_PACK_MSG_ERR_EID     (PKTMGR_BASE_EID + 15)
 
 /**********************/
 /** Type Definitions **/

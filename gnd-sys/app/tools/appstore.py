@@ -114,6 +114,8 @@ class GitHubAppRepo():
         if clone_repo:
             saved_cwd = os.getcwd()
             os.chdir(self.usr_clone_path)
+            if display_success_popup:
+                sg.popup_quick_message('Github repo cloning in progress. Please be patient...', auto_close_duration=5)
             sys_status = os.system(f'git clone --branch {self.branch_tag} {git_url}')
             if (sys_status == 0):
                 if display_success_popup:
