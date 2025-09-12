@@ -1,11 +1,11 @@
 {
-  "time-stamp": "08/16/2024-15:48:42",
-  "title": "Create App Tool",
+  "time-stamp": "",
+  "title": "Create and Code Apps",
   "objective": [
     "Introduces the create app tool. This tool uses templates ",
-    "to generate an app. Templates can include coding tutorials ",
-    "so hands-on lessons can help users learn how to build upon ",
-    "the app. Bascecamp supports adding user-defined app templates ",
-    "so educators can new apps with coding lessons."
+    "to generate apps. Templates include coding tutorials with ",
+    "hands-on lessons to teach app development concepts. ",
+    "Bascecamp supports adding user-defined app templates ",
+    "so educators can add new apps with coding lessons."
   ]
 }
