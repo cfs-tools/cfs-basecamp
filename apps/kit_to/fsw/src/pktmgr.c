@@ -371,7 +371,7 @@ uint16 PKTMGR_OutputTelemetry(void)
                      else
                      {
                         CFE_EVS_SendEvent(PKTMGR_EDS_PACK_MSG_ERR_EID,CFE_EVS_EventType_ERROR,
-                              "Error packing EDS output message %d, len %ld",
+                              "Error packing EDS output message %d, message length %ld",
                               CFE_SB_MsgIdToValue(MsgId),MsgLen);
                      }
                   } /* End if send msg */

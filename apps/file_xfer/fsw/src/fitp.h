@@ -21,7 +21,7 @@
 **       segment. The need for this protocol was driven by half-duplex and 
 **       highly imbalanced communication links.
 **    2. Only one file tranfer can be active at a time and it is considered
-**       an error if a new transfer is attempted when a trasnfer is already
+**       an error if a new transfer is attempted when a transfer is already
 **       in progress.
 **    3. The file transfer is command driven with the file sender issuing
 **       the following sequence:

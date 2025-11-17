@@ -17,7 +17,7 @@
         },
         {
           "id": "EX2",
-          "instructions": "1. Locate the 'DataTypeSet: Command Packets' comment block.\n2. Create a new 'ContainerDataType':\n    Named 'SetParam'\n    FunctionCode value of '${APP_C_FW/APP_BASE_CC} + 0'\n    EntryList entry named 'Payload' with type 'SetParam_Payload'\n\nNote APP_C_FW/APP_BASE_CC defines the starting command code for applications.\nNote the GUI needs to be retarted after building the new lesson cFS target."
+          "instructions": "1. Locate the 'DataTypeSet: Command Packets' comment block.\n2. Create a new 'ContainerDataType':\n    Named 'SetParam'\n    FunctionCode value of '${APP_C_FW/APP_BASE_CC} + 0'\n    EntryList entry named 'Payload' with type 'SetParam_Payload'\n\nNote APP_C_FW/APP_BASE_CC defines the starting command code for applications.\nNote the GUI needs to be restarted after building the new lesson cFS target."
         }
       ]
     },

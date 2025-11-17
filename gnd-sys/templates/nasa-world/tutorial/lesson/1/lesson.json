@@ -18,7 +18,7 @@
         },
         {
           "id": "EX2",
-          "instructions": "1. Locate the 'ResetCountersCmd' ContainerDataType.\n2. After this entry create a new 'ContainerDataType':\n    Named 'ExampleParamCmd'\n    FunctionCode value of '2'\n    EntryList entry named 'Payload' with type 'ExampleParamCmd_Payload'\n\nNote the GUI needs to be retarted after building the new lesson cFS target."
+          "instructions": "1. Locate the 'ResetCountersCmd' ContainerDataType.\n2. After this entry create a new 'ContainerDataType':\n    Named 'ExampleParamCmd'\n    FunctionCode value of '2'\n    EntryList entry named 'Payload' with type 'ExampleParamCmd_Payload'\n\nNote the GUI needs to be restarted after building the new lesson cFS target."
         }
       ]
     },

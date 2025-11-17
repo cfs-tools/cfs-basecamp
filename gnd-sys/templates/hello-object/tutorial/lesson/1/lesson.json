@@ -13,7 +13,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. In 'StatusTlm_Payload':\n    Change CounterMode type from 'BASE_TYPES/uint16' to 'CounterMode'\n\nNote the GUI needs to be retarted after building the new lesson cFS target."
+          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. In 'StatusTlm_Payload':\n    Change CounterMode type from 'BASE_TYPES/uint16' to 'CounterMode'\n\nNote the GUI needs to be restarted after building the new lesson cFS target."
         }
       ]
     },

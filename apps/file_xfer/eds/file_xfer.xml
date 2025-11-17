@@ -128,16 +128,16 @@
           <Entry name="FileTransferState"   type="FotpState"             shortDescription="See type definition" />
           <Entry name="PausedTransferState" type="FotpState"             shortDescription="Identify which state was paused" />
           <Entry name="PrevSegmentFailed"   type="APP_C_FW/BooleanUint8" shortDescription="If true then FOTP attempts to resend" />
-          <Entry name="FileTransferByteCnt" type="BASE_TYPES/uint32"     shortDescription="Number of file data bytes received/written" />
+          <Entry name="FileTransferByteCnt" type="BASE_TYPES/uint32"     shortDescription="Number of file data bytes sent in telemetry" />
           <Entry name="FileRunningCrc"      type="BASE_TYPES/uint32"     shortDescription="Running CRC of file data received" />
 
-          <Entry name="DataTransferLen"     type="BASE_TYPES/uint32"     shortDescription="" />
-          <Entry name="FileLen"             type="BASE_TYPES/uint32"     shortDescription="" />
+          <Entry name="DataTransferLen"     type="BASE_TYPES/uint32"     shortDescription="(File size–Data offset) when transfer started" />
+          <Entry name="FileLen"             type="BASE_TYPES/uint32"     shortDescription="File size in bytes" />
           <Entry name="FileByteOffset"      type="BASE_TYPES/uint32"     shortDescription="DataSegmentOffset*DataSegmentLen" />
           
-          <Entry name="DataSegmentLen"      type="BASE_TYPES/uint16"     shortDescription="Length in start transfer command" />
+          <Entry name="DataSegmentLen"      type="BASE_TYPES/uint16"     shortDescription="Length specified in start transfer command" />
           <Entry name="DataSegmentOffset"   type="BASE_TYPES/uint16"     shortDescription="Starting data segment" />
-          <Entry name="NextDataSegmentId"   type="BASE_TYPES/uint16"     shortDescription="Starting data segment" />
+          <Entry name="NextDataSegmentId"   type="BASE_TYPES/uint16"     shortDescription="Next data segment to be sent" />
 
           <Entry name="SrcFilename"         type="BASE_TYPES/PathName"   shortDescription="path/filename of file being sent" />
         </EntryList>
@@ -166,7 +166,7 @@
 
       <ContainerDataType name="FotpDataSegmentTlm_Payload" shortDescription="">
         <EntryList>
-          <Entry name="Id"    type="BASE_TYPES/uint16" shortDescription="Integer identifier that increments for each sequential segement" />
+          <Entry name="Id"    type="BASE_TYPES/uint16" shortDescription="Integer identifier that increments for each sequential segment" />
           <Entry name="Len"   type="BASE_TYPES/uint16" shortDescription="Either file length or file length minus commanded segment offset" />
           <Entry name="Data"  type="FotpDataSegment"   shortDescription="Data must be defined last because it is variable length" />
         </EntryList>
@@ -176,7 +176,7 @@
         <EntryList>
           <Entry name="FileLen"           type="BASE_TYPES/uint32" shortDescription="Total file length in bytes" />
           <Entry name="FileCrc"           type="BASE_TYPES/uint32" shortDescription="File CRC" />
-          <Entry name="LastDataSegmentId" type="BASE_TYPES/uint16" shortDescription="Identifer of the last data segmnet sent" />
+          <Entry name="LastDataSegmentId" type="BASE_TYPES/uint16" shortDescription="Identifier of the last data segment sent" />
         </EntryList>
       </ContainerDataType>
 
@@ -371,7 +371,7 @@
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"              initialValue="${CFE_MISSION/FILE_XFER_HK_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="StartFotpTlmTopicId"       initialValue="${CFE_MISSION/FILE_XFER_START_FOTP_TLM_TOPICID}" />
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="FotpDataSegmentTlmTopicId" initialValue="${CFE_MISSION/FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FinishFotpTlmTopicId"       initialValue="${CFE_MISSION/FILE_XFER_FINISH_FOTP_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FinishFotpTlmTopicId"      initialValue="${CFE_MISSION/FILE_XFER_FINISH_FOTP_TLM_TOPICID}" />
           </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          

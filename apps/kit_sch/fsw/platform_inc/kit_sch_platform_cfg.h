@@ -69,8 +69,9 @@
 ** smallest possible message header(see #CFE_SB_TLM_HDR_SIZE and 
 ** #CFE_SB_CMD_HDR_SIZE)
 */
-#define MSGTBL_MAX_MSG_WORDS      8
-#define MSGTBL_MAX_MSG_BYTES      (MSGTBL_MAX_MSG_WORDS*2)
+#define MSGTBL_MAX_MSG_PAYLOAD_WORDS  4
+#define MSGTBL_MAX_MSG_WORDS          ((unsigned int)sizeof(CFE_MSG_CommandHeader_t)/2 + MSGTBL_MAX_MSG_PAYLOAD_WORDS)
+#define MSGTBL_MAX_MSG_BYTES          (MSGTBL_MAX_MSG_WORDS*2)
 
 
 /******************************************************************************

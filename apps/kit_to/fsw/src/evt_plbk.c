@@ -181,7 +181,7 @@ bool EVT_PLBK_ConfigCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    
       CFE_EVS_SendEvent(EVT_PLBK_CFG_CMD_EID, CFE_EVS_EventType_INFORMATION, 
                         "Config playback command accepted with log file %s and HK period %d",
-                        WriteEvsLogFileCmd.Payload.LogFilename, CfgEvtLogPlbk->HkCyclesPerPkt);
+                        EvtPlbk->EventLogFile, CfgEvtLogPlbk->HkCyclesPerPkt);
 
       RetStatus = true;
       

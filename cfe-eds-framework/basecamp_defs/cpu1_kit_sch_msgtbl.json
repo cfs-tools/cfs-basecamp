@@ -4,22 +4,25 @@
         "Steps to add a new message:",
         " 1. Add the topic to the 'topic-id-map' object. The entry must",
         "    be between the 'start' and 'end' entries and use the      ",
-        "    following convention:      ",
-        "     0 - cFE apps              ",
-        "    10 - Base Camp runtime apps",
-        "    20 - Dev & Demo apps       ",
-        "    30 - User apps             ",
-        " 2. Add a new 'message' object. N must be identical in ",
-        "    topic-id-N must match",
-        " 3. The sequence-segmentation flag entry 'seq-seg' can always",
-        "    be set to 49152",
+        "    following convention:                                     ",
+        "     0 - cFE apps                                             ",
+        "    10 - Base Camp runtime apps                               ",
+        "    20 - Dev & Demo apps                                      ",
+        "    30 - User apps                                            ",
+        " 2. Add a new 'message' object. N must be identical in        ",
+        "    topic-id-N must match                                     ",
+        " 3. The sequence-segmentation flag entry 'seq-seg' can always ",
+        "    be set to 49152 (0xC000)                                  ",
         "uint16  Sequence;     /* packet sequence word */                ",
         "  /*  bits  shift                description                  */",
         "  /* 0x3FFF    0  : sequence count                            */",
         "  /* 0xC000   14  : segmentation flags:  3 = complete packet  */",
         "uint16  Length;       /* packet length word */                  ",
         "  /*  bits  shift                description                  */",
-        "  /* 0xFFFF    0  : (total packet length) - 7                 */"
+        "  /* 0xFFFF    0  : (total packet length) - 7                 */",
+        " 4. Provide an optional payload data word array as string     ",
+        "    containing comma separated data values                    ",
+        " Note setting secondary header fields is not currently supported"
         ],
 
    
@@ -157,7 +160,8 @@
          "topic-id-15": 6229,
          "topic-id": 6229,
          "seq-seg": 49152,
-         "length": 1
+         "length": 1,
+         "data-words": "2154,0"
       }},
 
       {"message": {

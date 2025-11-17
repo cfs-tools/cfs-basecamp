@@ -1,0 +1,190 @@
+################################################################################
+cFE Executive Service Performance Monitor Exercise Summary
+
+Notes:
+  1. This exercise is part of the Basecamp cFS Framework Executive Services
+     training module. 
+  2. Debug events are enabled for the apps used during the exercise to
+     provide more information about what's going on
+
+Exercise Steps:
+  1. Environment setup
+  2. Configure the filter masks
+  3. Configure the trigger masks
+  4. Collect the data
+  5. Transfer file from flight to ground
+  6. Start the cFS Performance Monitor (CPM),
+     load and analyze the data  
+  7. Environment cleanup
+
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+
+Detailed Description:
+  
+The Performance Monitor utility contains a flight and ground component that
+allows a user to trace and display the execution of the flight software.
+
+The File Manager(FILE_MGR) and Demo App (APP_C_DEMO) apps are used during the
+demo. FILE_MGR uses the BC_SCH_2_SEC_TOPICID message to send its housekeeping
+(HK) telemetry. This is done to reduce FILE_MGR's activities making it easier
+to anaylze the plots. APP_C_DEMO sends a status message at it's 1Hz execution
+rate so nothing is changed in its configuration. In fact APP_C_DEME's 1Hz rate
+is used as the fundamental periodic event from which to analyze other events.
+
+The cFE Executive Serve (ES) app controls the performance monitor data. The
+operational steps are
+  1. Send SetPerfFilterMaskCmd to configure which performance monitor traces
+     will be logged
+  2. Send SetPerfTriggerMaskCmd to configure which trigger(s) will start the
+     trace log
+  3. Send the StartPerfDataCmd to enabled the data collection that will be
+     started when a trigger occurs
+  4. Wait some amount of time for the data to be collected
+  5. Send the StartPerfDataCmd to terminate data collection and write the data
+     to a file
+  6. Transfer the data file to the ground
+  7. Analyse the data using the cFS Performance Monitor tool.
+
+Notes:
+  1. ES configuration parameter CFE_PLATFORM_ES_PERF_DATA_BUFFER_SIZE defines
+     amount of memory available to capture execution markers. 
+  2. The tools basecamp/gnd-sys/perf-monitor directory contains the cFS
+     Performance Monitor (CPM) User's Guide.
+
+################################################################################
+
+
+================================================================================
+Step 1. Environment Setup
+
+   A. Open CFE_ES HK telemetry page to monitor configuration/status as the
+      exercise steps are being performed.  
+   B. Enable CFE_ES, FILE_MGR debug events
+   C. Disable BC_SCH_2_SEC_TOPICID to stop FILE_MGR HK request activity
+--------------------------------------------------------------------------------
+
+> 'CFE_EVS', 'EnableAppEventTypeCmd', {'AppName': 'CFE_ES',   'BitMask': 0x0F} ## Enable CFE_ES debug events
+> 'CFE_EVS', 'EnableAppEventTypeCmd', {'AppName': 'FILE_MGR', 'BitMask': 0x0F} ## Enable FILE_MGR debug events
+
+> 'KIT_SCH', 'CfgSchTblEntry', {'Enabled': 0, 'Slot': 0, 'Activity': 2} ## Disable BC_SCH_2_SEC_TOPICID entry
+
+
+================================================================================
+Step 2 - Configure the filter masks
+
+  A. Send CE ES commands to configure the following trace filter masks. The masks
+     are arrays of 32-bit words with one bit used to enabled/disable a performance
+     monitor ID trace. The IDs are the bit position so they range from 0..127 
+     across four contiguous 32-bit words. 
+
+         ID    Definition               Mask[] 
+         ---   -----------------------  --------------
+          39   File Manager App         [1] 0x00000080
+          44   File Manager Child Task  [1] 0x00001000
+         127   Demo App                 [3] 0x80000000
+
+  B. Confirm in CFE_ES HK's telemetry the trace masks are configured properly. 
+--------------------------------------------------------------------------------
+
+> 'CFE_ES', 'SetPerfFilterMaskCmd', {'FilterMaskNum': 0, 'FilterMask': 0}
+> 'CFE_ES', 'SetPerfFilterMaskCmd', {'FilterMaskNum': 1, 'FilterMask': 4224}       ## 0x00001080 = 4224
+> 'CFE_ES', 'SetPerfFilterMaskCmd', {'FilterMaskNum': 2, 'FilterMask': 0}
+> 'CFE_ES', 'SetPerfFilterMaskCmd', {'FilterMaskNum': 3, 'FilterMask': 2147483648} ## 0x80000000 = 2147483648
+
+
+================================================================================
+Step 3 - Configure the trigger masks
+
+  A. Send CFE_ES commands to configure one trigger which is the Demo App's 1Hz
+     execution. The trigger mask are structured the same as the filter masks. A
+     '1' (True) indicates an ID is used as a trigger to start data capture. 
+
+         ID   Definition    Mask[] 
+        ---   ------------  --------------
+        127   Demo App      [3] 0x80000000
+
+  B. Confirm in CFE_ES HK's telemetry the trigger masks are configured properly. 
+--------------------------------------------------------------------------------
+
+> 'CFE_ES', 'SetPerfTriggerMaskCmd', {'TriggerMaskNum': 0, 'TriggerMask': 0}
+> 'CFE_ES', 'SetPerfTriggerMaskCmd', {'TriggerMaskNum': 1, 'TriggerMask': 0}
+> 'CFE_ES', 'SetPerfTriggerMaskCmd', {'TriggerMaskNum': 2, 'TriggerMask': 0}
+> 'CFE_ES', 'SetPerfTriggerMaskCmd', {'TriggerMaskNum': 3, 'TriggerMask': 2147483648} ## 0x80000000 = 2147483648
+
+
+================================================================================
+Step 4 - Collect performance data
+
+  A. Send CFE_ES StartPerfDataCmd to enable the start of data collection. 
+     - Since APP_C_DEMO's 1Hz execution is the trigger then data will be
+       collected within a second
+     - Since BC_SCH_2_SEC_TOPICID, used for FILE_MGR's HK request, has been
+       disabled only FILE_MGR's execution in response to a command will be
+       traced.
+  B. Send the FILE_MGR commands below that you want to trace. Wait a couple of
+     seconds between commands to make it easier to read the CPM plots.
+  
+  C. Send the StopPerfDataCmd to end the data collection and write the data to
+     a file.
+--------------------------------------------------------------------------------
+
+> 'CFE_ES', 'StartPerfDataCmd', {'TriggerMode': 0}
+
+> 'FILE_MGR', 'SendDirTlm', {'IncludeSizeTime': 1, 'DirName': '/cf'}   ## Send entire directory in telemetry using multiple messages if needed 
+> 'FILE_MGR', 'SendDirListTlm', {'IncludeSizeTime': 1, 'DirName': '/cf', 'DirListOffset': 0}   ## Send a single telemetry message containing files starting at specified offset 
+> 'FILE_MGR', 'WriteDirListFile', {'IncludeSizeTime': 1, 'DirName': '/cf', 'Filename': '/cf/cf_dir.dat'}   ## Send a single telemetry message containing files starting at specified offset 
+
+> 'CFE_ES', 'StopPerfDataCmd', {'DataFileName': '/cf/perf_mon.dat'}
+
+
+================================================================================
+Step 5 - Transfer the data file to the ground
+
+  A. Issue the FILE_XFER StartBinFotp command to transfer the data file
+--------------------------------------------------------------------------------
+
+> 'FILE_XFER', 'StartBinFotp', {'DataSegLen': 256, 'DataSegOffset': 0, 'SrcFilename': '/cf/perf_mon.dat'}
+
+
+================================================================================
+Step 6 - Start the cFS Performance Monitor (CPM), load and analyze the data  
+
+  A. From the menu select Tool->Run Perf Monitor to start the CPM
+  B. Perform the following steps to import and view the data in the CPM tool:
+     1. Select the Log Menu item in the top left and then the Read Log drop
+        down menu.
+     2. In the file dialogue box navigate to Basecamp/gnd-sys/flt-file-server
+        directory
+     3. Select perf_mon.dat and click Read.
+     4. You'll see a couple of status dialogue boxes stating the number of IDs
+        traced (should be 3). You may see a dialogue indicating there are
+        inconsistencies in teh data. If the CFE_ES stop command interrupts a
+        an app execution trace then this warning will be issued. It is just a
+        warning.
+
+  C. Analyze the data. There are four rows in the display:
+       CPU Activity - This is a summation of all the traced activity.
+         oxoooooo27 - FILE_MGR Main  
+                    - Wakes up when command received
+         oxoooooo2c - FILE_MGR Child 
+                    - Runs for each command. Notice write directory to file
+                      takes longer than the send directory listing to a
+                      telemetry packet
+         oxoooooo7F - Demo App Main  - Wakes up at 1Hz.
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Step 7. Environment Cleanup
+
+   A. Disable debug messages that were enabled
+   B. Reenable BC_SCH_2_SEC_TOPICID
+--------------------------------------------------------------------------------
+
+> 'CFE_EVS', 'DisableAppEventTypeCmd', {'AppName': 'CFE_ES', 'BitMask': 8}    ## Disable CFE_ES debug events
+> 'CFE_EVS', 'DisableAppEventTypeCmd', {'AppName': 'FILE_MGR', 'BitMask': 8}  ## Disable FILE_MGR debug events
+
+> 'KIT_SCH', 'CfgSchTblEntry', {'Enabled': 1, 'Slot': 0, 'Activity': 2} ## Enable BC_SCH_2_SEC_TOPICID entry

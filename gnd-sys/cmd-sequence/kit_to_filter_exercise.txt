@@ -1,0 +1,86 @@
+################################################################################
+KIT_TO Filter Exercise Summary
+
+Notes:
+  1. This exercise is part of the Basecamp cFS Systems Engineering training
+     module. 
+  2. The Demo App's APP_C_DEMO_STATUS_TLM_TOPICID is used to demonstrate
+     different filtering parameter effects. The Topic ID is hard coded since
+     command sequencer doesn't support variables. The risk of this ID 
+     changing is low since Demo App is delivered with Basecamp's default cFS
+     Target.     
+
+Exercises:
+  1. Demonstrate sequence count filtering
+  2. Demonstrate time-based filtering
+  3. Demonstrate swapping filter tables for different downlink rates
+
+
+"packet": {
+   "name": "APP_C_DEMO_STATUS_TLM_TOPICID",
+   "topic-id-40": 2147,
+   "topic-id": 2147,
+   "forward": false,
+   "priority": 0,
+   "reliability": 0,
+   "buf-limit": 4,
+   "filter": {
+      "type": 2,
+      "X": 1,
+      "N": 1,
+      "O": 0
+   }
+
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+################################################################################
+
+
+================================================================================
+Exercise 1. Sequence count filtering
+
+# The Demo App sends its status telemetry message at 1Hz. The KIT_TO filter
+# commands below change the output rate to one message every 5 seconds. This
+# can be verified looking at the Time field on the telemetry window. The offset
+# changes which sequence count is out that can be verified using the "Seq Cnt"
+# field. 
+# 
+# Note FilterType 2 = Filter by sequence count
+
+
+> 'KIT_TO', 'UpdatePktFilter', {'FilterType': 2, 'MsgId': 2147, 'FilterParam.N': 1, 'FilterParam.X': 5, 'FilterParam.O': 0} ## 1 of 5 messages offset 0. Expect SeqCnt 0 and 5
+> 'KIT_TO', 'UpdatePktFilter', {'FilterType': 2, 'MsgId': 2147, 'FilterParam.N': 1, 'FilterParam.X': 5, 'FilterParam.O': 1} ## 1 of 5 messages offset 1. Expect SeqCnt 1 and 6
+> 'KIT_TO', 'UpdatePktFilter', {'FilterType': 2, 'MsgId': 2147, 'FilterParam.N': 1, 'FilterParam.X': 5, 'FilterParam.O': 2} ## 1 of 5 messages offset 2. Expect SeqCnt 2 and 7
+
+
+================================================================================
+Exercise 2. Time based filtering
+
+# Note FilterType 3 = Filter by time
+# Reset time to zero to make it easier to read
+
+
+> 'CFE_TIME', 'SetMETCmd',  {'Seconds': 0, 'MicroSeconds': 0}
+> 'CFE_TIME', 'SetTimeCmd', {'Seconds': 0, 'MicroSeconds': 0}
+
+> 'KIT_TO', 'UpdatePktFilter', {'FilterType': 3, 'MsgId': 2147, 'FilterParam.N': 4, 'FilterParam.X': 20, 'FilterParam.O': 0} ## 4 messages every 20 seconds offset 0. Expect seoonds 0 and 5
+> 'KIT_TO', 'UpdatePktFilter', {'FilterType': 3, 'MsgId': 2147, 'FilterParam.N': 4, 'FilterParam.X': 20, 'FilterParam.O': 2} ## 4 messages every 20 seconds offset 2. TODO: Expalin why get seconds 4 and 9
+
+================================================================================
+Exercise 3. Swap Filter tables
+
+# KIT_TO's HK telemetry includes PktsPerSec and BytesPerSec that can be used 
+# to visually see the effects of the low rate packet filter table. 
+#
+# The low rate table only changes filter rates for the default basecamp app
+# suite apps.  It halves the rates of all HK messages except for CFE_ES and
+# KIT_TO 
+#
+# ID 0   = PACKET_FILTER table 
+# Type 0 = REPLACE
+#
+
+> 'KIT_TO', 'LoadTbl', {'Id': 0, 'Type': 0, 'Filename': '/cf/kit_to_lo_tbl.json'}  ## Load low rate table
+> 'KIT_TO', 'LoadTbl', {'Id': 0, 'Type': 0, 'Filename': '/cf/kit_to_pkt_tbl.json'} ## Load normal table

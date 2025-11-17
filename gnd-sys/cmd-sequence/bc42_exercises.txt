@@ -1,0 +1,39 @@
+################################################################################
+Multi-pass File Transfer Exercise Summary
+
+Notes:
+  1. This exercise is part of the Basecamp cFS Systems Engineering training
+     module. 
+     
+Exercise:
+  1. Update controller gains defined in a table. Set to unstable values so 
+     erattic 
+  2. Demo File Input Transfer Protocol(FITP) pause/resume transfer
+  
+
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+################################################################################
+
+================================================================================
+Exercise 1. Update Controller Gains
+
+# Steps:
+# 1. Dump current control gains
+# 2. Use File Broswer to transfer t.josn to the ground
+# 
+
+> 'BC42_CTRL', 'DumpTbl', {'Id': 0, 'Filename': '/cf/t.json'}
+> 'BC42_CTRL', 'LoadTbl', {'Id': 0, 'Filename': '/cf/t.json'}
+> 'BC42_CTRL', 'SendCtrlGainsTlm', {}
+
+
+================================================================================
+Exercise 2. TBD
+
+# Steps:
+# TBD
+#
+

@@ -120,7 +120,7 @@ DECLARE_ENUM(Config,APP_CONFIG)
 */
 
 #define FOTP_FILENAME_LEN          (OS_MAX_PATH_LEN)
-#define FOTP_DATA_SEG_MIN_LEN         8   /* Must be an even number since it is used in word-aligned telemetry*/
+#define FOTP_DATA_SEG_MIN_LEN         8   /* Must be an even number since it is used in word-aligned telemetry */
 #define FOTP_DATA_SEG_MAX_LEN      1024   /* Must be an even number since it is used in word-aligned telemetry */
 #define FOTP_DATA_SEGMENT_ID_START    1 
 

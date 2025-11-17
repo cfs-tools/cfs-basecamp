@@ -307,12 +307,16 @@ static void ConstructJsonMessage(JsonMessage_t *JsonMessage, uint16 MsgArrayIdx)
 **        "descr": Not saved,
 **        "id": 101,
 **        "topic-id": 6209,
-**        "seq-seg": 192,
-**        "length": 1792,
-**        "data-words": "0,1,2,3,4,5"  # Optional field
+**        "seq-seg": 49152,
+**        "length": 1,
+**        "data-words": "1,2,3,4"  # Optional field
 **
-**        The data words contain the secondary header if it is present. No
-**        integrity checks are made on the packet.
+**  3. The maximum number of data words is a platform configuration. 
+**  4. The current design does not support loading secondary header fields. If
+**     it's added, separate JSON variables should be added that correspond to 
+**     the CFE_MSG APIs rather than loaded buffers and making assumptions about
+**     structure defintiions.  
+**        
 */
 static bool LoadJsonData(size_t JsonFileLen)
 {
@@ -322,7 +326,8 @@ static bool LoadJsonData(size_t JsonFileLen)
    uint16  i;
    uint16  AttributeCnt;
    uint16  MsgArrayIdx;
-   char*   DataStrPtr;
+   char    *DataStrPtr;
+   uint16  PayloadDataIdx = sizeof(CFE_MSG_CommandHeader_t)/2;
 
    JsonMessage_t   JsonMessage;
    MSGTBL_Entry_t  MsgEntry;
@@ -382,31 +387,51 @@ static bool LoadJsonData(size_t JsonFileLen)
                {
                   if (strlen(JsonMessage.DataWords.Value) > 0)
                   {
-                     i = 3;
+                     i = PayloadDataIdx;
                      /* No protection against malformed data array */
                      DataStrPtr = strtok(JsonMessage.DataWords.Value,",");
                      if (DataStrPtr != NULL)
                      {
-                        MsgEntry.Buffer[i++] = atoi(DataStrPtr);
+                        MsgEntry.Buffer[i] = atoi(DataStrPtr);
                         CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
-                                          "MSGTBL::LoadJsonData data[%d] = 0x%4X, DataStrPtr=%s\n",
-                                          i-1,MsgEntry.Buffer[i-1],DataStrPtr);         
+                                          "MSGTBL::LoadJsonData data[%d] = 0x%04X, DataStrPtr=%s",i,MsgEntry.Buffer[i],DataStrPtr);         
                         while ((DataStrPtr = strtok(NULL,",")) != NULL)
                         {
-                           MsgEntry.Buffer[i++] = atoi(DataStrPtr);
+                           i++;
+                           MsgEntry.Buffer[i] = atoi(DataStrPtr);
                            CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
-                                             "MSGTBL::LoadJsonData data[%d] = 0x%4X, DataStrPtr=%s",i-1,MsgEntry.Buffer[i-1],DataStrPtr);
-                        }
+                                             "MSGTBL::LoadJsonData data[%d] = 0x%04X, DataStrPtr=%s",i,MsgEntry.Buffer[i],DataStrPtr);
+                           if (i >= MSGTBL_MAX_MSG_WORDS)
+                           {
+                              CFE_EVS_SendEvent(MSGTBL_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
+                                                "Message Topic %d: Number of data words exceed platform configuration %d",
+                                                MsgEntry.Buffer[0], MSGTBL_MAX_MSG_PAYLOAD_WORDS);
+                              break;
+                           }
+                        } /* While data word */
                      }
-                     MsgEntry.PayloadWordCnt = 3 - i;
+                     MsgEntry.PayloadWordCnt = i - PayloadDataIdx + 1;
                   } /* End if strlen > 0 */
                } /* End if DataWords */
-               
+         
                memcpy(&TblData.Entry[JsonMessage.Id.Value],&MsgEntry,sizeof(MSGTBL_Entry_t));
-               
                CmdMsg = &MsgTbl->Cmd.Msg[JsonMessage.Id.Value];
                CFE_MSG_Init(CFE_MSG_PTR(CmdMsg->Header),  CFE_SB_ValueToMsgId(MsgEntry.Buffer[0]), sizeof(CmdMsg->Header)+MsgEntry.PayloadWordCnt*2);
-
+               if (MsgEntry.PayloadWordCnt > 0)
+               {
+                  memcpy(&CmdMsg->Payload,&MsgEntry.Buffer[PayloadDataIdx],MsgEntry.PayloadWordCnt*2);
+                  /*
+                  CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+                                    "MsgEntry.PayloadWordCnt = %d",i-1, MsgEntry.PayloadWordCnt);
+                  int WordBufLen = (sizeof(CmdMsg->Header)/2+MsgEntry.PayloadWordCnt);
+                  OS_printf("\n*** MsgEntry.PayloadWordCnt = %d, WordBufLen = %d\n", MsgEntry.PayloadWordCnt, WordBufLen);                  
+                  OS_printf("sizeof(CmdMsg->Header) = %ld\n", sizeof(CmdMsg->Header)); 
+                  for (i=0; i < WordBufLen; i++)
+                  {
+                      OS_printf("MsgEntry.Buffer[%d] = 0x%02X\n", i, MsgEntry.Buffer[i]);
+                  }
+                  */
+               }                
             } /* End if valid attributes */
             else
             {

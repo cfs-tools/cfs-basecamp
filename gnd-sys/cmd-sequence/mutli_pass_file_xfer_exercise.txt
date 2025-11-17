@@ -1,0 +1,59 @@
+################################################################################
+Multi-pass File Transfer Exercise Summary
+
+Notes:
+  1. This exercise is part of the Basecamp cFS Systems Engineering training
+     module.
+  2. File in and out are defined from the FSW's perspective
+     FITP: File input transfer protocol is from ground to flight
+     FOTP: File output transfer protocol is from flight to ground
+  3. Basecamp Issue #123 https://github.com/cfs-tools/cfs-basecamp/issues/123
+     covers 2 file transfer issues that impact this exercise.
+     - The file browser must be open because the groudn file transfer engine
+       is only running when the browser is open
+     - Pausing a file transfer from the ground to the FSW (ie. FITP) is not
+       currently supported. 
+     
+Exercise:
+  1. Demo File Output Transfer Protocol(FOTP) pause/resume transfer
+  2. Demo File Input Transfer Protocol(FITP) pause/resume transfer
+  
+
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+################################################################################
+
+================================================================================
+Exercise 1. FOTP Pause/Resume
+
+# Steps:
+# 1. Open FILE_XFER housekeeping telemetry window
+# 2. Launch the File Broswer (see file prologue for why this is required)
+# 3. In browser's flight pane right click on cfe_es_startup.scr and select 
+#    "Send Text to Ground"
+#    - This will take about 6 seconds using default FILE_XFER settings so
+#      the next step must be done quickly
+# 4. Issue a PauseFotp command
+#    - Observe FILE_XFER state
+#    - Refresh file browser ground side to see cfe_es_startup.scr has been created
+# 5. Issue a ResumeFotp commmand
+#    - Observe FILE_XFER 
+# 
+
+> 'FILE_XFER', 'StartFotp', {'DataSegLen': 128, 'DataSegOffset': 0, 'SrcFilename': '/cf/cfe_es_startup.scr'}
+> 'FILE_XFER', 'PauseFotp', {}  ##
+> 'FILE_XFER', 'ResumeFotp', {} ##
+> 'FILE_XFER', 'CancelFotp', {} ##
+
+
+================================================================================
+Exercise 2. FITP
+
+# Steps:
+# TODO - See prologue
+#
+
+> 'FILE_XFER', 'StartFitp', {'DataSegLen': 128, 'DataSegOffset': 0, 'SrcFilename': '/cf/cfe_es_startup.scr'}
+
