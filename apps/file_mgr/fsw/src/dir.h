@@ -119,9 +119,10 @@ typedef struct
    DIR_ListFilesStats_t  ListFileStats;
    
    /*
-   ** FileMgr State Data
+   ** Directory State Data
    */
 
+   uint32  SendDirTlmDelay;
    uint32  TaskFileStatCnt;
    uint32  TaskFileStatDelay;
    uint32  ChildTaskPerfId;

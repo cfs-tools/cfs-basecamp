@@ -1,0 +1,39 @@
+"""
+42 Simulator Project
+
+Notes:
+  1. These exercises are part of the 42 Simulator project at
+     https://spacesteps.com/TODO
+  2. These exercises require the 42 simulator to have been configured
+     and built in Standalone mode. They also require the BC42 
+     42 "sim case" directory to copied from
+       cfs-basecamp/gnd-sys/projects/42-sim/
+     to
+       42/
+     
+Exercises:
+  1. Run flight software controller with 42
+  2. Change controller gains and observe impact
+  
+
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+"""
+
+================================================================================
+Exercise 1. Run flight software controller with 42
+
+># See prologue for 42 installation requirements 
+># In a separate terminal window start 42: 42 BC42
+> 'BC42_INTF', 'StartSim', {} ## The blank 42 windows becomes active, BC42_INTF Status telemetry SimActive set to TRUE 
+> 'BC42_INTF', 'StopSim', {} ## The 42 windows disappear
+
+================================================================================
+Exercise 2. Change controller gains and observe impact
+
+># ID 0 = Controller, Type 1 = Update
+> 'BC42_CTRL', 'LoadTbl', {'Id': 0, 'Type': 1, 'Filename': '/cf/bc42_ctrl_k.json'}  ## Load bad controller gains
+> 'BC42_CTRL', 'LoadTbl', {'Id': 0, 'Type': 1, 'Filename': '/cf/bc42_ctrl_prm.json'}  ## Restore original gains
+> 'BC42_CTRL', 'SendCtrlGainsTlm', {} ## Controller gains are displayed in BC42_CTRL CONTROL_GAINS telemetry 

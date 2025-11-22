@@ -1,4 +1,4 @@
-################################################################################
+"""
 Data Storage Exercise Summary
 
 Notes:
@@ -12,19 +12,21 @@ License:
     Copyright 2022 bitValence, Inc.
     All Rights Reserved.
 
-################################################################################
-
+"""
 
 ================================================================================
 Exercise 1. Issue noops to generate events that will be saved to a file
 
+># Data Storage commands. FileTableIndex 0 is the event file
+> 'DS', 'DestStateCmd', {'FileTableIndex': 0, 'EnableState': 1} ## Enable event file
+> 'DS', 'DestStateCmd', {'FileTableIndex': 0, 'EnableState': 0} ## Disable event file
+> 'DS', 'CloseFileCmd', {'FileTableIndex': 0, 'Padding': 0}     ## Close the event file
+># Noops commands that can be sent to be written to a file
 > 'CFE_ES', 'NoopCmd', {}     ## Event message sent identifying cFE, OSAL and PSP versions, CFE_ES HK_TLM CommandCounter increments 
 > 'CFE_EVS', 'NoopCmd', {}    ## Event message sent identifying cFE version, CFE_EVS HK_TLM CommandCounter increments
 > 'CFE_SB', 'NoopCmd', {}     ## Event message sent identifying cFE version, CFE_SB HK_TLM CommandCounter increments
 > 'CFE_TBL', 'NoopCmd', {}    ## Event message sent identifying cFE version, CFE_TBL HK_TLM CommandCounter increments
 > 'CFE_TIME', 'NoopCmd', {}   ## Event message sent identifying cFE version, CFE_TIME HK_TLM CommandCounter increments
 
-> 'DS', 'DestStateCmd', {'FileTableIndex': 0, 'EnableState': 1} ## Enable event file
-> 'DS', 'DestStateCmd', {'FileTableIndex': 0, 'EnableState': 0} ## Disable event file
 
-> 'DS', 'CloseFileCmd', {'FileTableIndex': 0, 'Padding': 0} ## Close the event file
+

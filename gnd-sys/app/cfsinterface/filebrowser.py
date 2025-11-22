@@ -125,7 +125,7 @@ class FlightDir():
         self.file_list = []
         self.filename_max_len = 0
         self.cmd_tlm_process.send_cfs_cmd('FILE_MGR', 'SendDirTlm',  {'DirName': self.path, 'IncludeSizeTime': 1})
-        time.sleep(1.5) # Give time for telemetry
+        time.sleep(2.0) # Give time for telemetry (FILE_MGR's SEND_DIR_TLM_DELAY impacts this)
         if len(self.file_list) == 0:
             self.sg_window.update(['Check cFS connection or empty/nonexistent directory'])
 
@@ -182,6 +182,7 @@ class FlightDir():
                 file_text = self.file_list_fmt_str.format(str(entry['Name']), str(entry['Size']), str(entry['Time']))
                 self.file_list.append(file_text)
         #print("file_list: " + str(self.file_list))
+        self.file_list.sort()
         self.sg_window.update(self.file_list)
 
 

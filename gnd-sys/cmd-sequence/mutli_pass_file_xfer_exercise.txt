@@ -1,4 +1,4 @@
-################################################################################
+"""
 Multi-pass File Transfer Exercise Summary
 
 Notes:
@@ -9,7 +9,7 @@ Notes:
      FOTP: File output transfer protocol is from flight to ground
   3. Basecamp Issue #123 https://github.com/cfs-tools/cfs-basecamp/issues/123
      covers 2 file transfer issues that impact this exercise.
-     - The file browser must be open because the groudn file transfer engine
+     - The file browser must be open because the ground file transfer engine
        is only running when the browser is open
      - Pausing a file transfer from the ground to the FSW (ie. FITP) is not
        currently supported. 
@@ -23,7 +23,7 @@ License:
     Copyright 2022 bitValence, Inc.
     All Rights Reserved.
 
-################################################################################
+"""
 
 ================================================================================
 Exercise 1. FOTP Pause/Resume
@@ -40,8 +40,8 @@ Exercise 1. FOTP Pause/Resume
 #    - Refresh file browser ground side to see cfe_es_startup.scr has been created
 # 5. Issue a ResumeFotp commmand
 #    - Observe FILE_XFER 
-# 
-
+#
+># FOTP Pause/Resume
 > 'FILE_XFER', 'StartFotp', {'DataSegLen': 128, 'DataSegOffset': 0, 'SrcFilename': '/cf/cfe_es_startup.scr'}
 > 'FILE_XFER', 'PauseFotp', {}  ##
 > 'FILE_XFER', 'ResumeFotp', {} ##

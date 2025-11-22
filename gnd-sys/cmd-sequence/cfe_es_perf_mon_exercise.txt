@@ -1,4 +1,4 @@
-################################################################################
+"""
 cFE Executive Service Performance Monitor Exercise Summary
 
 Notes:
@@ -54,7 +54,7 @@ Notes:
   2. The tools basecamp/gnd-sys/perf-monitor directory contains the cFS
      Performance Monitor (CPM) User's Guide.
 
-################################################################################
+"""
 
 
 ================================================================================

@@ -1,0 +1,26 @@
+{
+   "title": "42 Simulation",
+   "version": "1.0",
+   "short-descr": "Perform closed-loop control with the 42 Simulator",
+   "description": [
+      "In this project you will install and configure the 42 simulator so it communicates",
+      "with the Basecamp 42 library and app suite. You will gain experience running and",
+      "configuring a controller in a closed-loop environment."
+   ],
+   
+   "doc": "42_sim-project.pdf",
+
+   "popup-instructions": "The Basecamp GUI can be restarted to complete the BC42 app installation.\n However, the 42 simulator must be installed and configured as described\n in the 42 Sim project document before the closed-loop control can be run.",
+   
+   "app-list": "bc42_lib,bc42_intf,bc42_ctrl",
+
+   "support-files":
+      { 
+         "cmd-seq":     "42_sim_project.txt",
+         "file-server": "",
+         "scripts":     "",
+         "templates":   "",
+         "tutorials":   ""
+      }
+}
+

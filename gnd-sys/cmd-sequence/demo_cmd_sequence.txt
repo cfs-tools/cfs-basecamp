@@ -1,34 +1,45 @@
 """
 This demo command sequence serves as a template for user command scripts. Command
-sequences are a list of commands that are individually sent by the user. 
+sequences are a list of commands that are individually sent by the user. They are
+a substitute for command scripts that would send commands and provide mechanisms
+for automated command execution verification using telemetry. 
 
 This demo command sequence serves as a template for user command scripts. Command
 sequences are a list of commands that are individually sent by the user.  Command
 sequences are useful when teaching how to perform an operational function.  The 
 user can control the operational flow and observe the flight software responses.
 The command parameters are hardcoded because sequences are written to support a 
-specific lesson. 
+specific project or lesson. 
 
-This file’s syntax is simple. Lines beginning with a ‘>’ are commands that can be
-sent by the user. These lines are extracted from the file and presented to the user
-in a scrollable window where they send each command. Each command line can have a
-comment that starts with a ‘#’ character.  Command comments are displayed in a second
-window when the command is highlighted. Comments should help the user understand
-expected behavior and which telemetry points to use to verify the command behaved as
-expected. 
+Command sequence file syntax is very simple and the parser is very simple. Lines
+beginning with a ‘>’ are commands that can be sent by the user. These lines are
+extracted from the file and presented to the user in a scrollable window where
+they can send each command. Each command line can have a comment that starts with
+‘##’. This comment is displayed in a second window when the command is selected.
+Comments should be written to help the user understand the expected behavior and
+which telemetry points to use to verify the command behaved as expected. 
 
-Command Line syntax: > App_Name, Command, {dictionary of parameters} ## Comment
+The command window also displays lines starting with '>#'. This allows comments
+between groups of commands. Other conventions can be used to organize information
+in a file like this file using """ as a file prologue delimiter and a === line to
+delineate lessons. This are ignored by the parser.
 
-Only lines starting with ">" are interpreted so all other lines are treated as
-file comments.
+To summarize the command window displays the following items. The dots are needed
+here because to prevent the lines from being interpretted (remember it's simple):
+.. ># Short comments introducing a group of commands that correspond to a lesson
+.. > 'App_Name', 'Command', {dictionary of parameters} ## Comment shown in comment window
+
+Only lines starting with ">" are interpreted as commands
 
 '##' can't be part of a command or contained in a comment. It can only be used to start
-a comment.
+a comment on a command line
 
 """
 
-# cFE Service No Op commands
+================================================================================
+Demo Noop commands
 
+># cFE Service No Op commands
 > 'CFE_ES', 'NoopCmd', {}     ## Event message sent identifying cFE, OSAL and PSP versions, CFE_ES HK_TLM CommandCounter increments 
 > 'CFE_EVS', 'NoopCmd', {}    ## Event message sent identifying cFE version, CFE_EVS HK_TLM CommandCounter increments
 > 'CFE_SB', 'NoopCmd', {}     ## Event message sent identifying cFE version, CFE_SB HK_TLM CommandCounter increments
@@ -36,8 +47,9 @@ a comment.
 > 'CFE_TIME', 'NoopCmd', {}   ## Event message sent identifying cFE version, CFE_TIME HK_TLM CommandCounter increments
 
 
-# Example commands with parameters
+================================================================================
+Demo commands with parameters
 
+># Example commands with parameters
 > 'CFE_ES', 'QueryOneCmd', {'Application': 'APP_C_DEMO'}  ## A CFE_ES APP_TLM message is sent containing APP_C_DEMO information
-
 

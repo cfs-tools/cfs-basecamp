@@ -75,10 +75,11 @@ void DIR_Constructor(DIR_Class_t *DirPtr, const INITBL_Class_t *IniTbl)
    Dir->IniTbl = IniTbl;
 
    /* These are used in loops so save value once */
+   Dir->SendDirTlmDelay   = INITBL_GetIntConfig(Dir->IniTbl, CFG_SEND_DIR_TLM_DELAY);
    Dir->TaskFileStatCnt   = INITBL_GetIntConfig(Dir->IniTbl, CFG_TASK_FILE_STAT_CNT);
    Dir->TaskFileStatDelay = INITBL_GetIntConfig(Dir->IniTbl, CFG_TASK_FILE_STAT_DELAY);
    Dir->ChildTaskPerfId   = INITBL_GetIntConfig(Dir->IniTbl, CFG_CHILD_TASK_PERF_ID);
-
+   
 } /* End DIR_Constructor() */
 
 
@@ -728,7 +729,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
                                              "Send dir list path/file len too long: Dir %s, File %s",
                                              DirWithSep, OS_DIRENTRY_NAME(DirEntry));
                         
-                        } /* End if valid pah/filename length */
+                        } /* End if valid path/filename length */
                      
                      } /* End if in range to fill packet */
                      if (Dir->ListTlm.Payload.PktFileCnt >= FILE_MGR_DIR_LIST_PKT_ENTRIES)
@@ -743,7 +744,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
                            CFE_SB_TimeStampMsg(CFE_MSG_PTR(Dir->ListTlm.TelemetryHeader));
                            CFE_SB_TransmitMsg(CFE_MSG_PTR(Dir->ListTlm.TelemetryHeader), true);
 
-                           CFE_EVS_SendEvent(DIR_SEND_LIST_PKT_EID, CFE_EVS_EventType_INFORMATION,
+                           CFE_EVS_SendEvent(DIR_SEND_LIST_PKT_EID, CFE_EVS_EventType_DEBUG, 
                                              "Send all files for dir %s: offset=%d, pktcnt=%d",
                                              Dir->ListTlm.Payload.DirName,
                                              (int)Dir->ListTlm.Payload.DirListOffset, 
@@ -752,6 +753,8 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
                            Dir->ListTlm.Payload.PktFileCnt = 0;
                            Dir->ListTlm.Payload.DirListOffset += FILE_MGR_DIR_LIST_PKT_ENTRIES;
                            memset(Dir->ListTlm.Payload.FileList, 0, sizeof(Dir->ListTlm.Payload.FileList));                              
+                           
+                           OS_TaskDelay(Dir->SendDirTlmDelay);
                         }
                      } /* End if filled tlm packet */         
                   } /* End while creating telemetry message */
@@ -762,8 +765,8 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
             OS_DirectoryClose(DirId);
 
             /*
-            ** Always send packet if commanded to send one. If sending teh entire directory, only sen
-            ** the last packet if it has entires==ies
+            ** Always send packet if commanded to send one. If sending the entire directory, only send
+            ** the last packet if it has entries
             */
             if ((SendOpt == SEND_ONE_DIR_TLM_PKT) ||
                 ((SendOpt == SEND_ALL_DIR_TLM_PKT) && (Dir->ListTlm.Payload.PktFileCnt != 0)))

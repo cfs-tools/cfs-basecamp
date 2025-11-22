@@ -19,7 +19,7 @@
    
    "support-files":
       { 
-         "cmd-seq":     "",
+         "cmd-seq":     "payload_mgr_project.txt",
          "file-server": "",
          "scripts":     "",
          "templates":   "",

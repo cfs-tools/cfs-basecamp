@@ -17,7 +17,7 @@
       Provide classes to manage command sequence files. 
 
     Notes:
-      1. This makes the assumption that the CMD_SEQ_COMMENT_DELIMITER
+      1. This makes the assumption that the CMD_SEQ_CMD_FIELD_DELIMITER
          is not part of any commands
 
 """
@@ -48,10 +48,11 @@ from tools import crc_32c, compress_abs_path, bin_hex_decode, bin_hex_encode, Te
 
 import PySimpleGUI as sg
 
-CMD_SEQ_FILE_EXT          = 'txt'
-CMD_SEQ_START_CHAR        = '>'
-CMD_SEQ_COMMENT_DELIMITER = '##'
-CMD_SEQ_FIELD_DELIMITER   = ','
+CMD_SEQ_FILE_EXT                = 'txt'
+CMD_SEQ_START_CMD_DELIMITER     = '>'
+CMD_SEQ_START_COMMENT_DELIMITER = '>#'
+CMD_SEQ_CMD_COMMENT_DELIMITER   = '##'
+CMD_SEQ_CMD_FIELD_DELIMITER     = ','
 
 ###############################################################################
 
@@ -59,7 +60,7 @@ class CmdSequenceDir():
     """
     Manage command sequence files. The constructor creates a list of the command
     sequence files. load_file() reads a command sequence file.
-    This class isn't currnetly used. I left it in in case the need arises to 
+    This class isn't currently used. I left it in in case the need arises to 
     present a drop down menu of command sequences contained in the cmd-sequence
     folder.
     """
@@ -91,8 +92,8 @@ class CmdSequenceDir():
         Read a command sequence file and creates a list of dictionaries. Each 
         dictionary contains the command and its comment.
         
-        Command Line syntax: > App_Name, Command, {comma separated parameters} # Comment
-                             > CFE_ES, QueryOneCmd, {APP_C_DEMO}  # CFE_ES APP_TLM populated with APP_C_DEMO information
+        Command Line syntax: > App_Name, Command, {comma separated parameters} ## Comment
+                             > CFE_ES, QueryOneCmd, {APP_C_DEMO}  ## CFE_ES APP_TLM populated with APP_C_DEMO information
         """
 
         self.cmd_seq_file = os.path.join(self.cmd_seq_dir, cmd_seq_file+'.'+CMD_SEQ_FILE_EXT)
@@ -100,14 +101,16 @@ class CmdSequenceDir():
     
         try:
             with open(self.cmd_seq_file) as f:
+                i = 0
                 for line in f:
                     line = line.strip()
-                    if line.startswith(CMD_SEQ_START_CHAR):
-                        tokens = line.split(CMD_SEQ_COMMENT_DELIMITER)
+                    i += 1
+                    if line.startswith(CMD_SEQ_START_CMD_DELIMITER):
+                        tokens = line.split(CMD_SEQ_CMD_COMMENT_DELIMITER)
                         if len <= 2: 
                             self.cmd_seq_list.append(tokens)
                         else:
-                            sg.popup(f'{CMD_SEQ_COMMENT_DELIMITER}' , title="Command Sequence File Error", modal=False)
+                            sg.popup(f'File line {i} has multiple instances of the comment delimeter: "{CMD_SEQ_CMD_FIELD_DELIMITER}"', title="Command Sequence File Error", modal=False)
         except Exception as e:
             sg.popup('Exception:\n'+str(e), title="Command Sequence File Error", modal=False)
 
@@ -149,20 +152,27 @@ class CmdSequenceFile():
     
         try:
             with open(self.cmd_seq_pathfile) as f:
+                i = 0
                 for line in f:
                     line = line.strip()
-                    if line.startswith(CMD_SEQ_START_CHAR):
-                        tokens = line.split(CMD_SEQ_COMMENT_DELIMITER)
+                    print(line)
+                    i += 1
+                    if line.startswith(CMD_SEQ_START_COMMENT_DELIMITER):
+                        self.cmd_seq_commands.append(line)  
+                        self.cmd_seq_comments.append('  ')                        
+                    elif line.startswith(CMD_SEQ_START_CMD_DELIMITER):
+                        tokens = line.split(CMD_SEQ_CMD_COMMENT_DELIMITER)
                         token_len = len(tokens)
+                        print(f'{token_len}: {tokens}')
                         if token_len <= 2: 
-                            self.cmd_seq_commands.append(tokens[0].replace(CMD_SEQ_START_CHAR,"",1).strip())
+                            self.cmd_seq_commands.append(tokens[0].replace(CMD_SEQ_START_CMD_DELIMITER,"",1).strip())
                             if token_len == 2:
                                 self.cmd_seq_comments.append(tokens[1].strip())
                             else:
                                 self.cmd_seq_comments.append('')
                         else:
-                            sg.popup(f'Command line has multiple instances of the comment delimeter: {CMD_SEQ_COMMENT_DELIMITER}' , title="Command Sequence File Error", modal=False)
-                        
+                            sg.popup(f'File line {i} has multiple instances of the command comment delimeter: "{CMD_SEQ_CMD_FIELD_DELIMITER}"' , title="Command Sequence File Error", modal=False)
+                            break
         except Exception as e:
             sg.popup('Exception:\n'+str(e), title="Command Sequence File Error", modal=False)
 
@@ -295,8 +305,11 @@ class CmdSequencer(CmdTlmProcess):
         self.layout = [
             [sg.Menu(menu_layout)],
             [sg.Text('Command File:', font=pri_hdr_font), sg.Text('', font=pri_hdr_font, size=(col_width,1), relief=sg.RELIEF_RAISED, border_width=1, justification='center', key='-COMMAND_FILE-')],
-            
-            [sg.Column(self.command_col, element_justification='c'), sg.VSeperator(), sg.Column(self.comment_col, element_justification='c')],
+            [sg.Text('Commands', font=col_title_font)],
+            [sg.Listbox(values=[], font=list_font, enable_events=True, size=(window_width,10), key='-COMMAND_LIST-', right_click_menu=self.cmd_file_menu)],
+            [sg.Text('Command Comment', font=col_title_font)],
+            [sg.MLine(default_text='', font=log_font, enable_events=True, size=(window_width,5), key='-COMMENT_LIST-')],
+            #[sg.Column(self.command_col, element_justification='c'), sg.VSeperator(), sg.Column(self.comment_col, element_justification='c')],
             [sg.Text('Events', font=pri_hdr_font), sg.Button('Clear', enable_events=True, key='-CLEAR_EVENTS-', pad=(5,1))],
             [sg.MLine(default_text=self.event_history, font=log_font, enable_events=True, size=(window_width, 5), key='-EVENT_TEXT-')]]
             
@@ -325,20 +338,23 @@ class CmdSequencer(CmdTlmProcess):
                     if len(selected_indices) > 0:
                         self.window['-COMMENT_LIST-'].update(self.cmd_seq_comments[selected_indices[0]])
 
-            elif self.event in ('Send Command'):
-                if len(self.values['-COMMAND_LIST-']) > 0:
-                    print(f'{self.values['-COMMAND_LIST-'][0]}')
-                    tokens = self.values['-COMMAND_LIST-'][0].split(CMD_SEQ_FIELD_DELIMITER)
-                    # Crude sanity check 
-                    if len(tokens) >= 3:
-                        cmd_str = f'self.send_cfs_cmd({self.values['-COMMAND_LIST-'][0]})'                        
-                        try:
-                           exec(cmd_str)
-                        except Exception as e:
-                           sg.popup('Error executing command\n'+str(e), title="Send Command Error", modal=False)
+            elif self.event in ('Send'):
+                command_line = self.values['-COMMAND_LIST-'][0]
+                if len(command_line) > 0:
+                    print(f'{command_line}')
+                    if not command_line.startswith(CMD_SEQ_START_COMMENT_DELIMITER):
+                        tokens = command_line.split(CMD_SEQ_CMD_FIELD_DELIMITER)                    
+                        # Crude sanity check 
+                        if len(tokens) >= 3:
+                            cmd_str = f'self.send_cfs_cmd({command_line})'                        
+                            try:
+                               exec(cmd_str)
+                            except Exception as e:
+                               sg.popup('Error executing command\n'+str(e), title="Send Command Error", modal=False)
+                        else:
+                            sg.popup('Command must contain 3 fields separated by commas: App,Command,{Parameters}' , title="Command Sequence Command Error", modal=False)
                     else:
-                        sg.popup('Command must contain 3 fields separated by commas: App,Command,{Parameters}' , title="Command Sequence Command Error", modal=False)
-                    
+                        sg.popup("This is a comment line that can't be sent", title="Command Sequence Command Error", modal=False)                        
                 else:
                     sg.popup("Please select/highlight a command to be sent", title='Send Command Error', grab_anywhere=True, modal=False)
 
