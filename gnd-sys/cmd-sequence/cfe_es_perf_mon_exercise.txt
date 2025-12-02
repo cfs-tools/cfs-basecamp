@@ -31,7 +31,7 @@ The File Manager(FILE_MGR) and Demo App (APP_C_DEMO) apps are used during the
 demo. FILE_MGR uses the BC_SCH_2_SEC_TOPICID message to send its housekeeping
 (HK) telemetry. This is done to reduce FILE_MGR's activities making it easier
 to anaylze the plots. APP_C_DEMO sends a status message at it's 1Hz execution
-rate so nothing is changed in its configuration. In fact APP_C_DEME's 1Hz rate
+rate so nothing is changed in its configuration. In fact APP_C_DEMO's 1Hz rate
 is used as the fundamental periodic event from which to analyze other events.
 
 The cFE Executive Serve (ES) app controls the performance monitor data. The
@@ -66,11 +66,10 @@ Step 1. Environment Setup
    C. Disable BC_SCH_2_SEC_TOPICID to stop FILE_MGR HK request activity
 --------------------------------------------------------------------------------
 
+># Environment Setup
 > 'CFE_EVS', 'EnableAppEventTypeCmd', {'AppName': 'CFE_ES',   'BitMask': 0x0F} ## Enable CFE_ES debug events
 > 'CFE_EVS', 'EnableAppEventTypeCmd', {'AppName': 'FILE_MGR', 'BitMask': 0x0F} ## Enable FILE_MGR debug events
-
-> 'KIT_SCH', 'CfgSchTblEntry', {'Enabled': 0, 'Slot': 0, 'Activity': 2} ## Disable BC_SCH_2_SEC_TOPICID entry
-
+> 'KIT_SCH', 'CfgSchTblEntry', {'Enabled': 0, 'Slot': 0, 'Activity': 2} ## Disable BC_SCH_2_SEC_TOPICID entry (Used for APP_C_DEMO's status telemetry). This allows a clean 1Hz signal to be traced
 
 ================================================================================
 Step 2 - Configure the filter masks
@@ -89,10 +88,11 @@ Step 2 - Configure the filter masks
   B. Confirm in CFE_ES HK's telemetry the trace masks are configured properly. 
 --------------------------------------------------------------------------------
 
+># Configure the filter masks
 > 'CFE_ES', 'SetPerfFilterMaskCmd', {'FilterMaskNum': 0, 'FilterMask': 0}
-> 'CFE_ES', 'SetPerfFilterMaskCmd', {'FilterMaskNum': 1, 'FilterMask': 4224}       ## 0x00001080 = 4224
+> 'CFE_ES', 'SetPerfFilterMaskCmd', {'FilterMaskNum': 1, 'FilterMask': 0x00001080} ## 0x00001080 = 4224
 > 'CFE_ES', 'SetPerfFilterMaskCmd', {'FilterMaskNum': 2, 'FilterMask': 0}
-> 'CFE_ES', 'SetPerfFilterMaskCmd', {'FilterMaskNum': 3, 'FilterMask': 2147483648} ## 0x80000000 = 2147483648
+> 'CFE_ES', 'SetPerfFilterMaskCmd', {'FilterMaskNum': 3, 'FilterMask': 0x80000000} ## 0x80000000 = 2147483648
 
 
 ================================================================================
@@ -109,10 +109,12 @@ Step 3 - Configure the trigger masks
   B. Confirm in CFE_ES HK's telemetry the trigger masks are configured properly. 
 --------------------------------------------------------------------------------
 
+># Configure the trigger masks
+
 > 'CFE_ES', 'SetPerfTriggerMaskCmd', {'TriggerMaskNum': 0, 'TriggerMask': 0}
 > 'CFE_ES', 'SetPerfTriggerMaskCmd', {'TriggerMaskNum': 1, 'TriggerMask': 0}
 > 'CFE_ES', 'SetPerfTriggerMaskCmd', {'TriggerMaskNum': 2, 'TriggerMask': 0}
-> 'CFE_ES', 'SetPerfTriggerMaskCmd', {'TriggerMaskNum': 3, 'TriggerMask': 2147483648} ## 0x80000000 = 2147483648
+> 'CFE_ES', 'SetPerfTriggerMaskCmd', {'TriggerMaskNum': 3, 'TriggerMask': 0x80000000} ## 0x80000000 = 2147483648
 
 
 ================================================================================
@@ -131,12 +133,15 @@ Step 4 - Collect performance data
      a file.
 --------------------------------------------------------------------------------
 
+># Start collecting data
 > 'CFE_ES', 'StartPerfDataCmd', {'TriggerMode': 0}
 
+># Issue file commands that will be traced. Pause between commands
 > 'FILE_MGR', 'SendDirTlm', {'IncludeSizeTime': 1, 'DirName': '/cf'}   ## Send entire directory in telemetry using multiple messages if needed 
 > 'FILE_MGR', 'SendDirListTlm', {'IncludeSizeTime': 1, 'DirName': '/cf', 'DirListOffset': 0}   ## Send a single telemetry message containing files starting at specified offset 
 > 'FILE_MGR', 'WriteDirListFile', {'IncludeSizeTime': 1, 'DirName': '/cf', 'Filename': '/cf/cf_dir.dat'}   ## Send a single telemetry message containing files starting at specified offset 
 
+># Stop collecting data
 > 'CFE_ES', 'StopPerfDataCmd', {'DataFileName': '/cf/perf_mon.dat'}
 
 
@@ -146,6 +151,7 @@ Step 5 - Transfer the data file to the ground
   A. Issue the FILE_XFER StartBinFotp command to transfer the data file
 --------------------------------------------------------------------------------
 
+># Use File Browser instead of command below to transfer /cf/perf_mon.dat
 > 'FILE_XFER', 'StartBinFotp', {'DataSegLen': 256, 'DataSegOffset': 0, 'SrcFilename': '/cf/perf_mon.dat'}
 
 
@@ -184,6 +190,7 @@ Step 7. Environment Cleanup
    B. Reenable BC_SCH_2_SEC_TOPICID
 --------------------------------------------------------------------------------
 
+># Restore environment
 > 'CFE_EVS', 'DisableAppEventTypeCmd', {'AppName': 'CFE_ES', 'BitMask': 8}    ## Disable CFE_ES debug events
 > 'CFE_EVS', 'DisableAppEventTypeCmd', {'AppName': 'FILE_MGR', 'BitMask': 8}  ## Disable FILE_MGR debug events
 

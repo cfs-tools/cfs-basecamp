@@ -229,6 +229,14 @@ bool TBLMGR_LoadTblCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
                               TBLMGR_LoadTypeStr(LoadTblCmd->Type),
                               LoadTblCmd->Id, LoadTblCmd->Filename);
          }
+         else
+         {
+            CFE_EVS_SendEvent(TBLMGR_LOAD_ID_ERR_EID, CFE_EVS_EventType_ERROR,
+                        "Failed to load table %d using file %s",
+                        LoadTblCmd->Id, LoadTblCmd->Filename);
+
+         }
+
       }
    
      TblMgr->Tbl[LoadTblCmd->Id].LastActionStatus = RetStatus ? APP_C_FW_TblActionStatus_VALID : APP_C_FW_TblActionStatus_INVALID;

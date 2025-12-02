@@ -16,11 +16,12 @@
 
    "support-files":
       { 
-         "cmd-seq":     "42_sim_project.txt",
-         "file-server": "",
-         "scripts":     "",
-         "templates":   "",
-         "tutorials":   ""
+         "cmd-seq":        "42_sim_project.txt",
+         "file-server":    "",
+         "scripts":        "",
+         "templates":      "",
+         "tutorials":      "",
+         "install-script": "42_sim_project.sh" 
       }
 }
 

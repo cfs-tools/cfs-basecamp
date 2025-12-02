@@ -366,7 +366,7 @@ static bool LoadJsonData(size_t JsonFileLen)
          else
          {
             CFE_EVS_SendEvent(PKTTBL_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "Packet[%d]'s topic-id %d has an invlaid app-id value of %d. Valid range is 0 to %d",
+                              "Packet[%d]'s topic-id %d has an invalid app-id value of %d. Valid range is 0 to %d",
                               PktArrayIdx, JsonPacket.TopicId.Value, AppIdIdx, (PKTUTIL_MAX_APP_ID-1));
          }
 
@@ -382,6 +382,7 @@ static bool LoadJsonData(size_t JsonFileLen)
    
    if (PktArrayIdx == 0)
    {
+      RetStatus = false;
       CFE_EVS_SendEvent(PKTTBL_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
                         "JSON table file has no message entries");
    }
