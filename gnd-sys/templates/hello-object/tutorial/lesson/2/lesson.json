@@ -54,6 +54,6 @@
           "instructions": "1. Locate the EXOBJ_Execute() function:\n    A. Replace all 'EXOBJ_COUNTER_LO_LIM' occurrences with ExObj->CounterLoLim\n    B. Replace all 'EXOBJ_COUNTER_HI_LIM' occurrences with ExObj->CounterHiLim"
         }
       ]
-    }    
+    }
   ]
 }

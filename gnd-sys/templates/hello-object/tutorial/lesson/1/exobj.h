@@ -64,7 +64,7 @@
 
 typedef struct
 {
-   //EX1
+   //EX1,5,1,
    /*
    ** State Data
    */

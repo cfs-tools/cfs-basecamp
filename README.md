@@ -22,6 +22,7 @@ the [cFS Raspberry Pi LED Control Project](https://spacesteps.com/2024/10/12/cfs
     sudo apt-get install -y python3-dev
     sudo apt-get install -y python3-pip
     sudo apt-get install -y python3-tk
+    sudo apt-get install -y python3-venv
     sudo apt install -y default-jre
    
 Package Notes:
@@ -76,11 +77,4 @@ To stop/exit a virtual environment issue the *deactivate* directive and your com
 
 # Next Steps
 
-## Use Basecamp's Built-in Resources
-![](https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/next-steps.png)
-
-## Watch [Open STEMware's YouTube Videos](https://www.youtube.com/@OpenSTEMware?)
-[![cFS Basecamp Introduction Video](http://img.youtube.com/vi/jwV3_9W8dcY/0.jpg)](https://www.youtube.com/watch?v=jwV3_9W8dcY)
-
-## Create with Basecamp Projects at [Space Steps](https://spacesteps.com/category/projects/)
-[![cFS Basecamp Projects](https://github.com/cfs-tools/cfs-basecamp/blob/main/docs/images/SpaceSteps-Projects.png)](https://spacesteps.com/category/projects/)
+See the [cFS Basecamp Wiki](https://github.com/cfs-tools/cfs-basecamp/wiki) for how Basecamp can be used for learning flight software concepts and for developing cfs-based flight software systems.

@@ -1,17 +1,15 @@
 """
-This demo command sequence serves as a template for user command scripts. Command
-sequences are a list of commands that are individually sent by the user. They are
+This demo command sender file serves as a template for user command files. Command
+files are a list of commands that are individually sent by the user. They are
 a substitute for command scripts that would send commands and provide mechanisms
 for automated command execution verification using telemetry. 
 
-This demo command sequence serves as a template for user command scripts. Command
-sequences are a list of commands that are individually sent by the user.  Command
-sequences are useful when teaching how to perform an operational function.  The 
-user can control the operational flow and observe the flight software responses.
-The command parameters are hardcoded because sequences are written to support a 
-specific project or lesson. 
+Command sender files are useful in lessons when mutiple commands need to be sent
+and when command parameters are set based on the needs of a lesson. The user 
+controls the operational flow and observes the flight software responses. The
+command parameters are hardcoded to support a specific project or lesson. 
 
-Command sequence file syntax is very simple and the parser is very simple. Lines
+Command sender file syntax is very simple and the parser is very simple. Lines
 beginning with a ‘>’ are commands that can be sent by the user. These lines are
 extracted from the file and presented to the user in a scrollable window where
 they can send each command. Each command line can have a comment that starts with
@@ -22,10 +20,10 @@ which telemetry points to use to verify the command behaved as expected.
 The command window also displays lines starting with '>#'. This allows comments
 between groups of commands. Other conventions can be used to organize information
 in a file like this file using """ as a file prologue delimiter and a === line to
-delineate lessons. This are ignored by the parser.
+delineate lessons. These types of lines are ignored by the parser.
 
 To summarize the command window displays the following items. The dots are needed
-here because to prevent the lines from being interpretted (remember it's simple):
+here to prevent the lines from being interpretted (remember it's simple):
 .. ># Short comments introducing a group of commands that correspond to a lesson
 .. > 'App_Name', 'Command', {dictionary of parameters} ## Comment shown in comment window
 

@@ -14,7 +14,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. Add the following entry to StatusTlm_Payload's <EntryList>:\n    Entry name='ExampleParamCmdVal' type='BASE_TYPES/uint16'\n\nNote the GUI needs to be restarted after building the new lesson cFS target."
+          "instructions": "1. Locate the <ContainerDataType> named 'HkTlm_Payload'. Add the following entry to StatusTlm_Payload's <EntryList>:\n    Entry name='ExampleParamCmdVal' type='BASE_TYPES/uint16'\n\nNote the GUI needs to be restarted after building the new lesson cFS target."
         }
       ]
     },

@@ -229,7 +229,7 @@ class ProjectTemplate():
         config.read(os.path.join(gnd_sys_app_path,'basecamp.ini'))
 
         support_dict = {
-            'cmd-seq':     'CMD_SEQUENCE_PATH',
+            'cmd-sender':  'CMD_SENDER_PATH',
             'file-server': 'FLT_SERVER_PATH',
             'scripts':     'SCRIPT_PATH',
             'templates':   'APP_TEMPLATES_PATH',

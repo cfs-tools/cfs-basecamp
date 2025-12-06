@@ -14,11 +14,10 @@
     GNU Affero General Public License for more details.
 
     Purpose:
-      Provide classes to manage command sequence files. 
+      Provide classes to manage command sender files. 
 
     Notes:
-      1. This makes the assumption that the CMD_SEQ_CMD_FIELD_DELIMITER
-         is not part of any commands
+      None
 
 """
 
@@ -48,139 +47,139 @@ from tools import crc_32c, compress_abs_path, bin_hex_decode, bin_hex_encode, Te
 
 import PySimpleGUI as sg
 
-CMD_SEQ_FILE_EXT                = 'txt'
-CMD_SEQ_START_CMD_DELIMITER     = '>'
-CMD_SEQ_START_COMMENT_DELIMITER = '>#'
-CMD_SEQ_CMD_COMMENT_DELIMITER   = '##'
-CMD_SEQ_CMD_FIELD_DELIMITER     = ','
+CMD_SENDER_FILE_EXT                = 'txt'
+CMD_SENDER_START_CMD_DELIMITER     = '>'
+CMD_SENDER_START_COMMENT_DELIMITER = '>#'
+CMD_SENDER_CMD_COMMENT_DELIMITER   = '##'
+CMD_SENDER_CMD_FIELD_DELIMITER     = ','
 
 ###############################################################################
 
-class CmdSequenceDir():
+class CmdSenderDir():
     """
-    Manage command sequence files. The constructor creates a list of the command
-    sequence files. load_file() reads a command sequence file.
+    Manage command sender files. The constructor creates a list of the command
+    sender files. load_file() reads a command sender file.
     This class isn't currently used. I left it in in case the need arises to 
-    present a drop down menu of command sequences contained in the cmd-sequence
+    present a drop down menu of command senders contained in the cmd-sender
     folder.
     """
-    def __init__(self, cmd_seq_dir):
+    def __init__(self, cmd_sender_dir):
         
-        self.cmd_seq_dir   = cmd_seq_dir
-        self.cmd_seq_files = []           # List of files without extension (for GUI)
-        self.cmd_seq_file  = None         # Current sequence file being displayed
-        self.cmd_seq_list  = []           # List of current sequence commands and comments
+        self.cmd_sender_dir   = cmd_sender_dir
+        self.cmd_sender_files = []           # List of files without extension (for GUI)
+        self.cmd_sender_file  = None         # Current sender file being displayed
+        self.cmd_sender_list  = []           # List of current sender commands and comments
         
         try:
-            for file in os.listdir(self.cmd_seq_dir).sort():
+            for file in os.listdir(self.cmd_sender_dir).sort():
                 file_name, file_extension = os.path.splitext(file)
-                if file_extension == CMD_SEQ_FILE_EXT:
-                    self.cmd_seq_files.append(file_name)
+                if file_extension == CMD_SENDER_FILE_EXT:
+                    self.cmd_sender_files.append(file_name)
         except Exception as e:
-            sg.popup('Exception:\n'+str(e), title="Command Sequence Directory Error", modal=False)
+            sg.popup('Exception:\n'+str(e), title="Command Sender Directory Error", modal=False)
 
         if len() == 0:
-            sg.popup(f'No command sequence files found in {cmd_seq_dir}' , title="Command Sequence Directory Warning", modal=False)
+            sg.popup(f'No command sender files found in {cmd_sender_dir}' , title="Command Sender Directory Warning", modal=False)
        
-        print(f'self.cmd_seq_files = {self.cmd_seq_files}')
+        print(f'self.cmd_sender_files = {self.cmd_sender_files}')
 
         
-    def load_file(self, cmd_seq_file):
+    def load_file(self, cmd_sender_file):
         """
-        cmd_seq_file: Basename of file since it came from drop down menu
+        cmd_sender_file: Basename of file since it came from drop down menu
         
-        Read a command sequence file and creates a list of dictionaries. Each 
+        Read a command sender file and creates a list of dictionaries. Each 
         dictionary contains the command and its comment.
         
         Command Line syntax: > App_Name, Command, {comma separated parameters} ## Comment
                              > CFE_ES, QueryOneCmd, {APP_C_DEMO}  ## CFE_ES APP_TLM populated with APP_C_DEMO information
         """
 
-        self.cmd_seq_file = os.path.join(self.cmd_seq_dir, cmd_seq_file+'.'+CMD_SEQ_FILE_EXT)
-        self.cmd_seq_list = []
+        self.cmd_sender_file = os.path.join(self.cmd_sender_dir, cmd_sender_file+'.'+CMD_SENDER_FILE_EXT)
+        self.cmd_sender_list = []
     
         try:
-            with open(self.cmd_seq_file) as f:
+            with open(self.cmd_sender_file) as f:
                 i = 0
                 for line in f:
                     line = line.strip()
                     i += 1
-                    if line.startswith(CMD_SEQ_START_CMD_DELIMITER):
-                        tokens = line.split(CMD_SEQ_CMD_COMMENT_DELIMITER)
+                    if line.startswith(CMD_SENDER_START_CMD_DELIMITER):
+                        tokens = line.split(CMD_SENDER_CMD_COMMENT_DELIMITER)
                         if len <= 2: 
-                            self.cmd_seq_list.append(tokens)
+                            self.cmd_sender_list.append(tokens)
                         else:
-                            sg.popup(f'File line {i} has multiple instances of the comment delimeter: "{CMD_SEQ_CMD_FIELD_DELIMITER}"', title="Command Sequence File Error", modal=False)
+                            sg.popup(f'File line {i} has multiple instances of the comment delimeter: "{CMD_SENDER_CMD_FIELD_DELIMITER}"', title="Command Sender File Error", modal=False)
         except Exception as e:
-            sg.popup('Exception:\n'+str(e), title="Command Sequence File Error", modal=False)
+            sg.popup('Exception:\n'+str(e), title="Command Sender File Error", modal=False)
 
-        print(f'self.cmd_seq_list = {self.cmd_seq_list}')
+        print(f'self.cmd_sender_list = {self.cmd_sender_list}')
 
-    def cmd_sequence(self):
-        return self.cmd_sequence
+    def cmd_sender(self):
+        return self.cmd_sender
 
 
 ###############################################################################
 
-class CmdSequenceFile():
+class CmdSenderFile():
     """
-    Extract commands from a command sequence file.
+    Extract commands from a command sender file.
     """
     def __init__(self):
         
-        self.cmd_seq_pathfile = None   # Current sequence path/file being displayed
-        self.cmd_seq_filename = None   # Current sequence file being displayed
-        self.cmd_seq_commands = []     # List of current sequence commands
-        self.cmd_seq_comments = []     # List of current sequence comments
+        self.cmd_sender_pathfile = None   # Current sender path/file being displayed
+        self.cmd_sender_filename = None   # Current sender file being displayed
+        self.cmd_sender_commands = []     # List of current sender commands
+        self.cmd_sender_comments = []     # List of current sender comments
         
         
-    def load_file(self, cmd_seq_pathfile):
+    def load_file(self, cmd_sender_pathfile):
         """
-        cmd_seq_file: Basename of file since it came from drop down menu
+        cmd_sender_file: Basename of file since it came from drop down menu
         
-        Read a command sequence file and creates a list of dictionaries. Each 
+        Read a command sender file and creates a list of dictionaries. Each 
         dictionary contains the command and its comment.
         
         Command Line syntax: > App_Name, Command, {dictionary of parameters} ## Comment
                              > 'CFE_ES', 'QueryOneCmd', {'Application': 'APP_C_DEMO'}  ## CFE_ES APP_TLM populated with APP_C_DEMO information
         """
 
-        self.cmd_seq_pathfile = cmd_seq_pathfile
-        self.cmd_seq_filename = os.path.basename(cmd_seq_pathfile)
-        self.cmd_seq_commands = []
-        self.cmd_seq_comments = []
+        self.cmd_sender_pathfile = cmd_sender_pathfile
+        self.cmd_sender_filename = os.path.basename(cmd_sender_pathfile)
+        self.cmd_sender_commands = []
+        self.cmd_sender_comments = []
     
         try:
-            with open(self.cmd_seq_pathfile) as f:
+            with open(self.cmd_sender_pathfile) as f:
                 i = 0
                 for line in f:
                     line = line.strip()
                     print(line)
                     i += 1
-                    if line.startswith(CMD_SEQ_START_COMMENT_DELIMITER):
-                        self.cmd_seq_commands.append(line)  
-                        self.cmd_seq_comments.append('  ')                        
-                    elif line.startswith(CMD_SEQ_START_CMD_DELIMITER):
-                        tokens = line.split(CMD_SEQ_CMD_COMMENT_DELIMITER)
+                    if line.startswith(CMD_SENDER_START_COMMENT_DELIMITER):
+                        self.cmd_sender_commands.append(line)  
+                        self.cmd_sender_comments.append('  ')                        
+                    elif line.startswith(CMD_SENDER_START_CMD_DELIMITER):
+                        tokens = line.split(CMD_SENDER_CMD_COMMENT_DELIMITER)
                         token_len = len(tokens)
                         print(f'{token_len}: {tokens}')
                         if token_len <= 2: 
-                            self.cmd_seq_commands.append(tokens[0].replace(CMD_SEQ_START_CMD_DELIMITER,"",1).strip())
+                            self.cmd_sender_commands.append(tokens[0].replace(CMD_SENDER_START_CMD_DELIMITER,"",1).strip())
                             if token_len == 2:
-                                self.cmd_seq_comments.append(tokens[1].strip())
+                                self.cmd_sender_comments.append(tokens[1].strip())
                             else:
-                                self.cmd_seq_comments.append('')
+                                self.cmd_sender_comments.append('')
                         else:
-                            sg.popup(f'File line {i} has multiple instances of the command comment delimeter: "{CMD_SEQ_CMD_FIELD_DELIMITER}"' , title="Command Sequence File Error", modal=False)
+                            sg.popup(f'File line {i} has multiple instances of the command comment delimeter: "{CMD_SENDER_CMD_FIELD_DELIMITER}"' , title="Command Sender File Error", modal=False)
                             break
         except Exception as e:
-            sg.popup('Exception:\n'+str(e), title="Command Sequence File Error", modal=False)
+            sg.popup('Exception:\n'+str(e), title="Command Sender File Error", modal=False)
 
-        return (self.cmd_seq_filename, self.cmd_seq_commands, self.cmd_seq_comments)
+        return (self.cmd_sender_filename, self.cmd_sender_commands, self.cmd_sender_comments)
 
 
-    def cmd_sequence(self):
-        return self.cmd_sequence
+    def cmd_sender(self):
+        return self.cmd_sender
 
 
 ###############################################################################
@@ -191,22 +190,20 @@ class HelpText():
     def __init__(self):
   
         self.text = \
-           ("Command sequencer allows users to load a list of commands from a\n"
-           "command sequence file into the GUI. The user sends commands by right\n"
-           "clicking on the command line and selecting 'Send Command' from the\n"
-           "drop down menu. Comments describing a command's behavior are displayed\n"
-           "in the 'Comments' window. Command sequences are typically designed for the\n"
-           "commands to be sent sequentially but nothing prevents a user from sending\n"
-           "commands in any order they desire.\n")
+           ("Command sender allows users to load a list of commands from a\n"
+           "command sender file into the GUI. The user sends commands by right\n"
+           "clicking on the command line and selecting 'Send' from the drop\n"
+           "down menu. Comments describing a command's behavior are displayed\n"
+           "in the 'Comments' window.\n")
             
     def display(self):
             
-        sg.popup(self.text, line_width=85, font=('Courier',12), title='Command Sequencer Help', grab_anywhere=True)
+        sg.popup(self.text, line_width=85, font=('Courier',12), title='Command Sender Help', grab_anywhere=True)
 
 
 ###############################################################################
 
-class CmdSequencerTelemetryMonitor(TelemetryObserver):
+class CmdSenderTelemetryMonitor(TelemetryObserver):
     """
     callback_functions
        [app_name] : {packet: [item list]} 
@@ -226,7 +223,7 @@ class CmdSequencerTelemetryMonitor(TelemetryObserver):
             if tlm_msg.app_name in self.sys_apps:
                 self.tlm_server.add_msg_observer(tlm_msg, self)        
                 #logger.info("system telemetry adding observer for %s: %s" % (tlm_msg.app_name, tlm_msg.msg_name))
-                print("CmdSequencerTelemetryMonitor adding observer for %s: %s" % (tlm_msg.app_name, tlm_msg.msg_name))
+                print("CmdSenderTelemetryMonitor adding observer for %s: %s" % (tlm_msg.app_name, tlm_msg.msg_name))
         
 
     def update(self, tlm_msg: TelemetryMessage) -> None:
@@ -246,21 +243,21 @@ class CmdSequencerTelemetryMonitor(TelemetryObserver):
 
 ###############################################################################
 
-class CmdSequencer(CmdTlmProcess):
+class CmdSender(CmdTlmProcess):
     """
-    Provide a user interface for issuing commands from a command sequence file.
+    Provide a user interface for issuing commands from a command sender file.
     """
-    def __init__(self, mission_name, cmd_sequence_path, gnd_ip_addr, router_ctrl_port, browser_cmd_port, browser_tlm_port, browser_tlm_timeout):
+    def __init__(self, mission_name, cmd_sender_path, gnd_ip_addr, router_ctrl_port, browser_cmd_port, browser_tlm_port, browser_tlm_timeout):
         super().__init__(mission_name, gnd_ip_addr, router_ctrl_port, browser_cmd_port, browser_tlm_port, browser_tlm_timeout)
 
-        self.cmd_sequence_path = cmd_sequence_path
+        self.cmd_sender_path = cmd_sender_path
         self.event_history = ""
         self.init_cycle = True
         self.help_text = HelpText()
             
-        self.cmd_seq_filename = None
-        self.cmd_seq_commands = []
-        self.cmd_seq_comments = []
+        self.cmd_sender_filename = None
+        self.cmd_sender_commands = []
+        self.cmd_sender_comments = []
             
     def event_callback(self, event_txt):
         self.display_event(event_txt)
@@ -314,10 +311,10 @@ class CmdSequencer(CmdTlmProcess):
             [sg.MLine(default_text=self.event_history, font=log_font, enable_events=True, size=(window_width, 5), key='-EVENT_TEXT-')]]
             
  
-        self.window = sg.Window('Commmand Sequencer', self.layout, resizable=True)
+        self.window = sg.Window('Commmand Sender', self.layout, resizable=True)
         
         self.tlm_monitors = {'CFE_ES': {'HK_TLM': ['Seconds']}, 'FILE_MGR': {'DIR_LIST_TLM': ['Seconds']}}        
-        self.tlm_monitor = CmdSequencerTelemetryMonitor(self.tlm_server, self.tlm_monitors, self.event_callback)
+        self.tlm_monitor = CmdSenderTelemetryMonitor(self.tlm_server, self.tlm_monitors, self.event_callback)
         self.tlm_server.execute()
 
         while True:
@@ -333,17 +330,17 @@ class CmdSequencer(CmdTlmProcess):
             ### Events listed in order of likelihood ###
             
             elif self.event == '-COMMAND_LIST-':
-                if len(self.cmd_seq_comments) > 0:
+                if len(self.cmd_sender_comments) > 0:
                     selected_indices = self.window['-COMMAND_LIST-'].get_indexes()
                     if len(selected_indices) > 0:
-                        self.window['-COMMENT_LIST-'].update(self.cmd_seq_comments[selected_indices[0]])
+                        self.window['-COMMENT_LIST-'].update(self.cmd_sender_comments[selected_indices[0]])
 
             elif self.event in ('Send'):
                 command_line = self.values['-COMMAND_LIST-'][0]
                 if len(command_line) > 0:
                     print(f'{command_line}')
-                    if not command_line.startswith(CMD_SEQ_START_COMMENT_DELIMITER):
-                        tokens = command_line.split(CMD_SEQ_CMD_FIELD_DELIMITER)                    
+                    if not command_line.startswith(CMD_SENDER_START_COMMENT_DELIMITER):
+                        tokens = command_line.split(CMD_SENDER_CMD_FIELD_DELIMITER)                    
                         # Crude sanity check 
                         if len(tokens) >= 3:
                             cmd_str = f'self.send_cfs_cmd({command_line})'                        
@@ -352,19 +349,19 @@ class CmdSequencer(CmdTlmProcess):
                             except Exception as e:
                                sg.popup('Error executing command\n'+str(e), title="Send Command Error", modal=False)
                         else:
-                            sg.popup('Command must contain 3 fields separated by commas: App,Command,{Parameters}' , title="Command Sequence Command Error", modal=False)
+                            sg.popup('Command must contain 3 fields separated by commas: App,Command,{Parameters}' , title="Command Sender Command Error", modal=False)
                     else:
-                        sg.popup("This is a comment line that can't be sent", title="Command Sequence Command Error", modal=False)                        
+                        sg.popup("This is a comment line that can't be sent", title="Command Sender Command Error", modal=False)                        
                 else:
                     sg.popup("Please select/highlight a command to be sent", title='Send Command Error', grab_anywhere=True, modal=False)
 
             elif self.event == 'Open...':
-                cmd_seq_file = sg.popup_get_file('', title='Command Sequence File', no_window=True, default_path=self.cmd_sequence_path, initial_folder=self.cmd_sequence_path, file_types=(("Text Files", "*.txt"),), default_extension=CMD_SEQ_FILE_EXT) # , history=True)
-                if cmd_seq_file is not None:
-                    print(f'file={cmd_seq_file}')
-                    (self.cmd_seq_filename, self.cmd_seq_commands, self.cmd_seq_comments) = CmdSequenceFile().load_file(cmd_seq_file)
-                    self.window['-COMMAND_FILE-'].update(self.cmd_seq_filename)
-                    self.window['-COMMAND_LIST-'].update(self.cmd_seq_commands)
+                cmd_sender_file = sg.popup_get_file('', title='Command Sender File', no_window=True, default_path=self.cmd_sender_path, initial_folder=self.cmd_sender_path, file_types=(("Text Files", "*.txt"),), default_extension=CMD_SENDER_FILE_EXT) # , history=True)
+                if cmd_sender_file is not None:
+                    print(f'file={cmd_sender_file}')
+                    (self.cmd_sender_filename, self.cmd_sender_commands, self.cmd_sender_comments) = CmdSenderFile().load_file(cmd_sender_file)
+                    self.window['-COMMAND_FILE-'].update(self.cmd_sender_filename)
+                    self.window['-COMMAND_LIST-'].update(self.cmd_sender_commands)
                 
             elif self.event == 'Help':
                 self.help_text.display()
@@ -393,15 +390,15 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
 
-    cmd_sequence_path = config.get('PATHS','CMD_SEQUENCE_PATH')
-    cmd_sequence_path = compress_abs_path(os.path.join(os.getcwd(), '..', cmd_sequence_path))
-    print(f'cmd_sequence_path = {cmd_sequence_path}')
+    cmd_sender_path = config.get('PATHS','CMD_SENDER_PATH')
+    cmd_sender_path = compress_abs_path(os.path.join(os.getcwd(), '..', cmd_sender_path))
+    print(f'cmd_sender_path = {cmd_sender_path}')
     cfs_ip_addr = config.get('NETWORK','CFS_IP_ADDR')
     router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
-    sequencer_cmd_port = config.getint('NETWORK','CMD_SEQUENCER_CMD_PORT')
-    sequencer_tlm_port = config.getint('NETWORK','CMD_SEQUENCER_TLM_PORT')
+    sender_cmd_port = config.getint('NETWORK','CMD_SENDER_CMD_PORT')
+    sender_tlm_port = config.getint('NETWORK','CMD_SENDER_TLM_PORT')
     mission_name     = config.get('CFS_TARGET','MISSION_EDS_NAME')
     
-    cmd_sequencer = CmdSequencer(mission_name, cmd_sequence_path, cfs_ip_addr, router_ctrl_port, sequencer_cmd_port, sequencer_tlm_port, 1.0)
-    cmd_sequencer.execute()
+    cmd_sender = CmdSender(mission_name, cmd_sender_path, cfs_ip_addr, router_ctrl_port, sender_cmd_port, sender_tlm_port, 1.0)
+    cmd_sender.execute()
     

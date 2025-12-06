@@ -67,7 +67,7 @@ typedef struct
    
 } EXOBJ_CounterStackEntry_t;
 
-//EX1
+//EX1,18,1,
 typedef struct
 {
 
@@ -100,7 +100,7 @@ typedef struct
 /** Exported Functions **/
 /************************/
 
-//EX2
+//EX2,12,1,
 /******************************************************************************
 ** Function: EXOBJ_Constructor
 **

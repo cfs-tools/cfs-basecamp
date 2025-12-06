@@ -111,7 +111,7 @@ int32 @TEMPLATE@_Init(void)
 
     @TEMPLATE@_Data.RunStatus = CFE_ES_RunStatus_APP_RUN;
 
-    //EX1
+    //EX1,7,
     /*
     ** Initialize app command execution counters
     */
@@ -263,7 +263,7 @@ void @TEMPLATE@_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr)
     }
 }
 
-//EX2
+//EX2,18,4,
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /*  Purpose:                                                                  */
@@ -329,7 +329,7 @@ int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg)
     return CFE_SUCCESS;
 }
 
-//EX3
+//EX3,13,1,
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /*  Purpose:                                                                  */

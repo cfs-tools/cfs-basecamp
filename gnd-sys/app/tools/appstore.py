@@ -54,7 +54,7 @@ import PySimpleGUI as sg
 class GitHubAppRepo():
     """   
     """
-    def __init__(self, git_url, branch_tag, usr_app_rel_path, quiet_ops=False):
+    def __init__(self, git_url, release_tag, usr_app_rel_path, quiet_ops=False):
         """
         usr_app_rel_path  - Relative path to where git repos should be cloned into
         
@@ -62,11 +62,11 @@ class GitHubAppRepo():
         is needed. Error dialogues are still displayed. 
         """
         self.usr_clone_path = usr_app_rel_path
-        self.git_url    = git_url
-        self.branch_tag = branch_tag
-        self.quiet_ops = quiet_ops
-        self.app_repo = None
-        self.app_dict = {}
+        self.git_url     = git_url
+        self.release_tag = release_tag
+        self.quiet_ops   = quiet_ops
+        self.app_repo    = None
+        self.app_dict    = {}
          
          
     def create_dict(self):
@@ -116,7 +116,10 @@ class GitHubAppRepo():
             os.chdir(self.usr_clone_path)
             if display_success_popup:
                 sg.popup_quick_message('Github repo cloning in progress. Please be patient...', auto_close_duration=5)
-            sys_status = os.system(f'git clone --branch {self.branch_tag} {git_url}')
+            if len(self.release_tag) == 0:
+                sys_status = os.system(f'git clone {git_url}')
+            else:
+                sys_status = os.system(f'git clone --branch {self.release_tag} {git_url}')
             if (sys_status == 0):
                 if display_success_popup:
                     sg.popup(f'Successfully cloned {app_name} into {target_dir}', title='AppStore')
@@ -269,13 +272,14 @@ class AppStore():
     them into the user's app directory. 
     """
         
-    def __init__(self, git_url, usr_app_rel_path, git_topic_include, git_topic_exclude):
+    def __init__(self, git_url, usr_app_rel_path, git_topic_include, git_topic_exclude, app_group):
         """
         git_topic_include - List of github topics identifying repos to be included
         git_topic_exclude - List of github topics identifying repos to be excluded
         """
         self.git_topic_include = git_topic_include
         self.git_topic_exclude = git_topic_exclude 
+        self.app_group = app_group
         self.usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(), usr_app_rel_path))
         self.git_app_repo = GitHubAppRepo(git_url, AppStoreDef.BASECAMP_REPO_BRANCH, usr_app_rel_path)
         self.git_app_repo_keys = [] # keys of app repos that pass the include/exclude filters 
@@ -298,7 +302,7 @@ class AppStore():
                 
         layout = [
                   [sg.Text("Select one or more apps to download and click the <Download> button to add them to the usr/app repositories:", font=hdr_label_font, size=(window_width,None))],
-                  [sg.Text("   - Follow the steps in 'File->Add User App to Target' to add the apps/libs to add the cFS target", font=hdr_value_font)],
+                  [sg.Text("   - Follow the steps in 'File->Add App to Target' to add the apps/libs to add the cFS target", font=hdr_value_font)],
                   [sg.Text("   - The Hello World tutorial in 'Tutorials->Create App Tool' describes the steps to add an app to a cFS target", font=hdr_value_font)],
                   [sg.Text("   - An app's JSON spec file has a 'requires' parameter that identifies dependencies that must be installed prior to the app\n", font=hdr_value_font)],
                   [app_layout],
@@ -306,7 +310,7 @@ class AppStore():
                   [sg.Button('Download', font=hdr_label_font, button_color=('SpringGreen4'), pad=(2,0)), sg.Button('Cancel', font=hdr_label_font, pad=(2,0))]
                  ]
 
-        window = sg.Window('Download User App', layout, modal=False)
+        window = sg.Window(f'Download {self.app_group} App', layout, modal=False)
         return window
 
 

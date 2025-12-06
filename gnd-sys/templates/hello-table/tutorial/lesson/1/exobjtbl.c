@@ -54,7 +54,7 @@ static EXOBJTBL_Class_t* ExObjTbl = NULL;
 
 static EXOBJTBL_Data_t TblData; /* Working buffer for loads */
 
-//EX1 
+//EX1,9,3,
 static CJSON_Obj_t JsonTblObjs[] = {
 
    /* Table Data Address       Table Data Length                Updated, Data Type,  float,    JSON string,  core-json query length excludes '\0' */
@@ -146,7 +146,7 @@ bool EXOBJTBL_LoadCmd(TBLMGR_Tbl_t *Tbl, uint8 LoadType, const char *Filename)
 **  1. Function signature must match TBLMGR_DumpTblFuncPtr_t.
 **  2. File is formatted so it can be used as a load file.
 */
-//EX2
+//EX2,10,6,
 bool EXOBJTBL_DumpCmd(TBLMGR_Tbl_t *Tbl, uint8 DumpType, const char *Filename)
 {
 

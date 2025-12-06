@@ -452,12 +452,13 @@ class HelpText():
   
         self.text = \
            ("Code tutorials are organized into lessons that have a specific objective.\n"
-           "A lesson may require one or more files to be edited. Each file may require one or\n"
+           "A lesson may require one or more files to be edited. Each file requires one or\n"
            "more exercises to be completed in order to fulfill the lesson's objective.\n"
-           "The bottom window pane contains the solution for an exercise. You may copy\n"
-           "from the bottom window and paste into the top window which is the app's source\n"
-           "file. You can also hand type solutions into the top window. The top window is\n"
-           "the source file used when the application is built.\n\n"
+           "The top window pane contains the source file that is modified in the lesson and\n"
+           "is compiled as part of the application. The bottom window pane's highlighted text\n"
+           "contains the solution for an exercise. You may copy the highlighted text from the\n"
+           "bottom window and paste into the top window. You can also hand type solutions into\n"
+           "the top window.\n\n"
            "Use Basecamp's main window's 'Build' button to rebuild the app.\n\n"
            "YOU MUST SAVE YOUR FILE BEFORE EXITING! A BUG PREVENTS THE FILE FROM BEING\n"
            "SAVED AFTER THE WINDOW CLOSE PROCESS HAS STARTED.")
@@ -521,27 +522,80 @@ class CodeLessonEditor():
         self.open_user_file(window)
         
     def write_lesson_window(self, window):
+        """
+        start_h_index & stop_h_index are highlighted text indices
+        """
+        h_offset = 0
+        h_length = 0
+        start_h_index = 2
+        stop_h_index  = 2
         window_text = ''
         exercise_id = self.code_lesson.exercise_id()
+        # Check for case when entire file is the lesson
         if exercise_id == self.code_lesson.GUI_EX_IS_FILE_ID:
             in_ex_block = True
         else:
             in_ex_block = False
         if self.lesson_file_valid:
+            ex_line_cnt = 1
             for line in self.lesson_file_text:
                 if in_ex_block:
+                    ex_line_cnt += 1
                     window_text += f'{line}\n'
                     if exercise_id in line:
                         in_ex_block = False
+                        stop_h_index = ex_line_cnt
                 else:
                     if exercise_id in line:
+                        """
+                        Exercise comment lines formats(must end with comma):
+                          EX#,offset,
+                          EX#,offset,length,
+                        
+                        where
+                               #: Exercise number
+                          offset: The number of lines from the 'EX#' comment
+                                  line to the first line of lesson exercise
+                                  code.
+                          length: Optional length of the code segment to be
+                                  highlighted. If not present then the text will
+                                  be highlighted until the ending EX# comment is
+                                  reached.
+                        """
                         in_ex_block = True
-                        window_text += f'{line}\n'
+                        keywords     = line.split(',')
+                        keywords_len = len(keywords)
+                        # Not bullet proof checks, however code tutorials should be tested
+                        try:
+                            if keywords_len > 2:
+                                h_offset    = int(keywords[1])-1
+                                window_text += f'{keywords[0]}\n'
+                            else:
+                                h_offset = 0
+                                window_text += f'{line}\n'
+                            if keywords_len == 4:
+                                h_length = int(keywords[2])
+                        except:
+                            sg.popup(f'Error in {self.lesson_filename} exercise {self.lesson_filename} format spec.', title="Code Lesson Error", modal=False)
+
             self.exercise_text = window_text
+            print(f'start_h_index: {start_h_index}, stop_h_index: {stop_h_index}, h_offset: {h_offset}, h_length: {h_length}')
         else:
             self.exercise_text = f'Lesson file {self.lesson_filename} has not been loaded'
         window['-LESSON_TEXT-'].update(value=self.exercise_text)
         window['-EXERCISE-'].update(value=self.code_lesson.exercise_id())
+        window['-INSTRUCT_TEXT-'].update(value=self.code_lesson.exercise_instructions()) 
+        # Convert indices to Tkinter Text widget format (line.char_index)
+        start_h_index = start_h_index + h_offset
+        start_tk_index = f"{start_h_index}.0"
+        if h_length > 0:
+            end_tk_index = f"{start_h_index+h_length}.0"
+
+        else:
+            end_tk_index = f"{stop_h_index}.0"
+        print(f'start_tk_index: {start_tk_index}, end_tk_index: {end_tk_index}')
+        window['-LESSON_TEXT-'].Widget.tag_add('highlight', start_tk_index, end_tk_index)       
+            
     
     def open_user_file(self, window):
         self.user_file = self.code_lesson.user_path_filename()
@@ -589,8 +643,9 @@ class CodeLessonEditor():
                 ['Edit',['&Copy','Paste']],
             ]
 
-        self.lesson_text = sg.Multiline(default_text='Lesson File', font=self.config.get('font'), enable_events=True, key='-LESSON_TEXT-', size=(window_width,10), expand_x=True, expand_y=True)
-        self.user_text   = sg.Multiline(default_text='User File',   font=self.config.get('font'), enable_events=True, key='-USER_TEXT-',   size=(window_width,20), expand_x=True, expand_y=True)
+        self.instruct_text = sg.Multiline(default_text='Instructions', font=self.config.get('font'), enable_events=True, key='-INSTRUCT_TEXT-', size=(window_width,3),  expand_x=True, expand_y=True)
+        self.lesson_text   = sg.Multiline(default_text='Lesson File',  font=self.config.get('font'), enable_events=True, key='-LESSON_TEXT-',   size=(window_width,10), expand_x=True, expand_y=True)
+        self.user_text     = sg.Multiline(default_text='User File',    font=self.config.get('font'), enable_events=True, key='-USER_TEXT-',     size=(window_width,20), expand_x=True, expand_y=True)
 
         window_layout = [
             [sg.Menu(menu_layout)],
@@ -612,12 +667,16 @@ class CodeLessonEditor():
               sg.InputText(str(self.code_lesson.exercise_idx+1), size=(4,1), key='-EXERCISE_NUM-', justification='center'),
               sg.Text('of '),
               sg.InputText(str(self.code_lesson.exercise_cnt), size=(4,1), key='-EXERCISE_CNT-', justification='center'),
-              sg.Button('Instructions', enable_events=True, key='-INSTRUCTIONS-', pad=(2,0), size=(10,0), tooltip='Exercise instructions')
             ],
-            [self.lesson_text]
+              [sg.Column([[self.instruct_text]], expand_x=True, expand_y=True, key='-LESSON_TOP-')],
+              [sg.HSeparator()],  # The horizontal "bar"
+              [sg.Column([[self.lesson_text]], expand_x=True, expand_y=True, key='-LESSON_BOTTOM-')]
             ]
 
         window = sg.Window(self.title, window_layout, resizable=True, margins=(0,0), return_keyboard_events=True, finalize=True, modal=True)
+        window['-LESSON_TOP-'].expand(True, True)
+        window['-LESSON_BOTTOM-'].expand(True, True)
+        window['-LESSON_TEXT-'].Widget.tag_config('highlight', background='yellow')
         return window
        
                 
@@ -717,11 +776,6 @@ class CodeLessonEditor():
                 self.code_lesson.decrement_exercise()
                 window['-EXERCISE_NUM-'].update(str(self.code_lesson.exercise_idx+1))
                 self.write_lesson_window(window)
-                
-            elif encoded_event in ("b'-INSTRUCTIONS-'",):
-                title = f'{self.code_lesson.user_filename()}: {self.code_lesson.exercise_id()} Instructions' 
-                instructions = sg.popup_no_buttons(self.code_lesson.exercise_instructions(), title=title , line_width=132, font = 'Courier 12', modal=True, non_blocking=True, grab_anywhere=True)
-                            
             prev_encoded_event = encoded_event
 
             
@@ -748,10 +802,11 @@ if __name__ == '__main__':
         #with open('/home/osk/sandbox/cayg/temp.txt','w') as f:
         #    f.write(tutorial_dir)
     else:
-        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../../usr/apps/hello_object/tutorial'))
         tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../templates/hello-world/tutorial'))
-        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../templates/nasa-table/tutorial'))
-    print ("Main: tutorial_dir = " + tutorial_dir)
+        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../../usr/apps/hi_world/tutorial'))
+        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../templates/hello-world/tutorial'))
+        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../templates/nasa-world/tutorial'))
+        print ("Main: tutorial_dir = " + tutorial_dir)
             
     tutorial = CodeTutorial(tools_dir, tutorial_dir)
     tutorial.execute()

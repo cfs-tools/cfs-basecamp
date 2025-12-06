@@ -24,12 +24,11 @@
     as prescribed in CCSDS book 876.0.
 
     Purpose:
-      This describes all interface objects for the Executive Services (CFE_ES)
-      core application
+      This describes all interface objects for the Hello Table app
 
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
-  <Package name="@TEMPLATE@" shortDescription="Sample Application Package">
+  <Package name="@TEMPLATE@" shortDescription="Hello Table Application Package">
 
     <DataTypeSet>
 
@@ -82,6 +81,7 @@
         </ConstraintSet>
       </ContainerDataType>
       
+      <!-- EX1,9, -->
       <!-- Note the type name here must be "ExampleTable" to match the C table definition file -->
       <ContainerDataType name="ExampleTable" shortDescription="Example Table structure">
         <EntryList>
@@ -90,7 +90,6 @@
         </EntryList>
       </ContainerDataType>
 
-      <!-- EX1 -->
       <ContainerDataType name="TblFile_Payload" shortDescription="Proxy telemetry payload">
         <EntryList>
           <Entry name="FileHdr" type="CFE_FS/Header"    shortDescription="cFE standard file header" />
@@ -122,7 +121,7 @@
               <GenericTypeMap name="TelecommandDataType" type="SendHkCmd" />
             </GenericTypeMapSet>
           </Interface>
-          <!-- EX2 -->
+          <!-- EX2,6, -->
           <Interface name="HK_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
@@ -135,7 +134,7 @@
           </Interface>
           <!-- EX2 -->
         </RequiredInterfaceSet>
-      <!-- EX3 -->
+      <!-- EX3,6,8, -->
         <Implementation>
           <VariableSet>
             <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"     initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
@@ -157,7 +156,7 @@
 
   </Package>
 </PackageFile>
-<!-- EX4 -->
+<!-- EX4,1, -->
 These are special target build instructions for this lesson. This lesson is
 unique because the NASA_TABLE app needs to be reinstalled before the target
 is rebuilt. This is achieved by

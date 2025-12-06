@@ -22,7 +22,7 @@
  * Define @TEMPLATE@ table
  */
 
-//EX1
+//EX1,4,
 #ifndef @TEMPLATE@_TABLE_H
 #define @TEMPLATE@_TABLE_H
 
@@ -38,7 +38,7 @@
 #define @TEMPLATE@_EX_TBL_NAME       @TEMPLATE@_APP_NAME##"."##@TEMPLATE@_EX_TBL_CFE_NAME
 //EX1
 
-//EX2
+//EX2,1,
 /*
 ** Table structure
 */

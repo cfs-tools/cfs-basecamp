@@ -35,7 +35,7 @@
 /** Macro Definitions **/
 /***********************/
 
-//EX1
+//EX1,9,
 /*
 ** Events
 */
@@ -126,13 +126,12 @@ void @TEMPLATE@_AppMain(void);
 bool @TEMPLATE@_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
-//EX2
+//EX2,8,
 /******************************************************************************
 ** Function: @TEMPLATE@_ResetAppCmd
 **
 */
 bool @TEMPLATE@_ResetAppCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
-
 
 
 /******************************************************************************

@@ -40,7 +40,7 @@
 
 #define EXOBJ_SET_MODE_CMD_EID (EXOBJ_BASE_EID + 0)
 #define EXOBJ_EXECUTE_EID      (EXOBJ_BASE_EID + 1)
-//EX1
+//EX1,5,2
 /*
 ** Counter Limits
 */
@@ -64,7 +64,7 @@
 
 typedef struct
 {
-   //EX2
+   //EX2,8,2
    /*
    ** State Data
    */

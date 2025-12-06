@@ -2,7 +2,7 @@
   "time-stamp": "",
   "title": "Add a new table parameter",
   "objective": [
-    ""
+    "Learn how JSON table parameters are defined"
   ],
   "current-file": "Undefined",
   "complete": false,
@@ -13,7 +13,7 @@
       "exercise": [
         {
           "id": "~FILE~",
-        "instructions": "1. Add a comma after the 'decrement' object closing bracket '}'\n2. Add the following new line: limit-range-max: 100\n\nNote limit-range-max must be in double quotes."
+          "instructions": "1. Add a comma after the 'decrement' object closing bracket '}'\n2. Add the following new line: limit-range-max: 100\n\nNote limit-range-max must be in double quotes."
         }
       ]
     },

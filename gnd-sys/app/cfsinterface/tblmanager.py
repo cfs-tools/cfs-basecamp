@@ -61,7 +61,7 @@ class HelpText():
             
     def display(self):
             
-        sg.popup(self.text, line_width=85, font=('Courier',12), title='Command Sequencer Help', grab_anywhere=True)
+        sg.popup(self.text, line_width=85, font=('Courier',12), title='Table Manager Help', grab_anywhere=True)
 
 
 ###############################################################################

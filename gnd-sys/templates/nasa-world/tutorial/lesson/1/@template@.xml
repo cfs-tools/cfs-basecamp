@@ -24,16 +24,15 @@
     as prescribed in CCSDS book 876.0.
 
     Purpose:
-      This describes all interface objects for the Executive Services (CFE_ES)
-      core application
+      This describes all interface objects for the Hello World app
 
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
-  <Package name="@TEMPLATE@" shortDescription="Sample Application Package">
+  <Package name="@TEMPLATE@" shortDescription="Hello World Application Package">
 
+    <!-- EX1,3, -->
     <DataTypeSet>
-
-      <!-- EX1 -->
+  
       <ContainerDataType name="ExampleParamCmd_Payload" shortDescription="Payload for the example command with a parameter">
         <EntryList>
           <Entry name="Param" type="BASE_TYPES/uint16" shortDescription="" />
@@ -68,13 +67,13 @@
         </ConstraintSet>
       </ContainerDataType>
 
+      <!-- EX2,7, -->
       <ContainerDataType name="ResetCountersCmd" baseType="CommandBase">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="1" />
         </ConstraintSet>
       </ContainerDataType>
       
-      <!-- EX2 -->
       <ContainerDataType name="ExampleParamCmd" baseType="CommandBase">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="2" />

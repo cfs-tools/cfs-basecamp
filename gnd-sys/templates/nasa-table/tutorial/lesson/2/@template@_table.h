@@ -37,13 +37,12 @@
 #define @TEMPLATE@_EX_TBL_CFE_NAME   "ExampleTable"
 #define @TEMPLATE@_EX_TBL_NAME       @TEMPLATE@_APP_NAME##"."##@TEMPLATE@_EX_TBL_CFE_NAME
 
-//EX1
+//EX1,1,
 /* 
 ** Table Validation Constants 
 */
 #define @TEMPLATE@_TBL_INT1_MAX    20   // Maximum positive value for Int1 element
 #define @TEMPLATE@_TBL_RANGE_ERR   -1   // Return error code if data fails range validation check 
-
 //EX1
 
 /*

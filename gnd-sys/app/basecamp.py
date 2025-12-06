@@ -77,9 +77,10 @@ from cfsinterface import TelemetryMessage, TelemetryObserver, TelemetryQueueServ
 import paho.mqtt.client as mqtt
 import PySimpleGUI as sg
 
-BASECAMP_INI_FILE  = 'basecamp.ini'
-TUTORIAL_JSON_FILE = 'tutorial.json' #TODO - Remove duplicate definitions
-
+BASECAMP_INI_FILE   = 'basecamp.ini'
+TUTORIAL_JSON_FILE  = 'tutorial.json' #TODO - Remove duplicate definitions
+GITHUB_BC_APP_TAG   = 'cfs-basecamp'
+GITHUB_NASA_APP_TAG = 'nasa-proxy'
 
 ###############################################################################
 
@@ -1117,8 +1118,8 @@ class App():
             tutorial_menu += self.manage_tutorials.tutorial_titles
         
         menu_def = [
-                       ['File',       ['Create Project...', '---', 'Create User App', 'Download User App', 'User App Status', '---', 'Add User App to Target', 'Remove User App from Target', '---', 'Exit']], #TODO: 'Certify App'
-                       ['Tools',      ['Browse Files', 'Run Cmd Sequencer', 'Run Script', 'Manage cFS Tables', 'Plot Data', '---', 'Run Perf Monitor', '---', 'Preferences']],
+                       ['File',       ['Create Project...', '---', 'Create App', 'Download Basecamp App', 'Download NASA App', '---', 'Add App to Target', 'Remove App from Target', 'App Target Status', '---', 'Exit']], #TODO: 'Certify App'
+                       ['Tools',      ['Browse Files', 'Run Cmd Sender', 'Run Script', 'Manage cFS Tables', 'Plot Data', '---', 'Run Perf Monitor', '---', 'Preferences']],
                        ['Remote Ops', ['Configure Command Destination', 'Configure Telemetry Source', 'Control Remote Target']],  
                        ['Tutorials',  tutorial_menu],
                        ['Help',       ['Tech Docs...', 'Project Docs...', 'About']]
@@ -1286,16 +1287,32 @@ class App():
                 manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
                 CreateProject(self.PROJECTS_URL, project_path, self.APP_STORE_URL, self.USR_APP_PATH, manage_cfs).execute()
 
-            elif self.event == 'Create User App':
+            elif self.event == 'Create App':
                 self.create_app.execute()
 
-            elif self.event == 'Download User App':
+            elif self.event in ('Download Basecamp App', 'Download NASA App'):
+                git_topic_include = self.ini_config.get('APP','APP_STORE_INCLUDE').split(',')
+                git_topic_exclude = self.ini_config.get('APP','APP_STORE_EXCLUDE').split(',')
+                print(f'git_topic_include: {git_topic_include}')
+                print(f'git_topic_exclude: {git_topic_exclude}')
+                app_group = 'Basecamp'
+                if self.event == 'Download Basecamp App':
+                    git_topic_include.append(GITHUB_BC_APP_TAG)
+                    git_topic_exclude.append(GITHUB_NASA_APP_TAG)
+                else:
+                    app_group = 'NASA'
+                    git_topic_include.append(GITHUB_NASA_APP_TAG)                 
+                    git_topic_exclude.append(GITHUB_BC_APP_TAG)
+                app_store = AppStore(self.APP_STORE_URL, self.USR_APP_PATH,git_topic_include, git_topic_exclude,app_group)
+                app_store.execute()
+ 
+            elif self.event == 'Download App':
                 git_topic_include = self.ini_config.get('APP','APP_STORE_INCLUDE').split(',')
                 git_topic_exclude = self.ini_config.get('APP','APP_STORE_EXCLUDE').split(',')
                 app_store = AppStore(self.APP_STORE_URL, self.USR_APP_PATH,git_topic_include, git_topic_exclude)
                 app_store.execute()
- 
-            elif self.event in ('Add User App to Target','Remove User App from Target', 'User App Status'):
+
+            elif self.event in ('Add App to Target','Remove App from Target', 'App Target Status'):
                 manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
                 manage_cfs.execute(self.event.split(' ')[0]) # First menu word used as execute() command
 
@@ -1309,10 +1326,10 @@ class App():
                 self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','FILE_BROWSER_TLM_PORT'))
                 self.file_browser = sg.execute_py_file("filebrowser.py", cwd=self.cfs_interface_dir)
 
-            elif self.event == 'Run Cmd Sequencer':
-                self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','CMD_SEQUENCER_CMD_PORT'))
-                self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','CMD_SEQUENCER_TLM_PORT'))
-                self.cmd_sequencer = sg.execute_py_file("cmdsequencer.py", cwd=self.cfs_interface_dir)
+            elif self.event == 'Run Cmd Sender':
+                self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','CMD_SENDER_CMD_PORT'))
+                self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','CMD_SENDER_TLM_PORT'))
+                self.cmd_sender = sg.execute_py_file("cmdsender.py", cwd=self.cfs_interface_dir)
         
             elif self.event == 'Run Script':
                 self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_CMD_PORT'))

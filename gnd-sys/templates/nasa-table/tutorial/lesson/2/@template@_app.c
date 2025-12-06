@@ -36,7 +36,7 @@
 */
 @TEMPLATE@_Data_t @TEMPLATE@_Data;
 
-//EX1
+//EX1,5,
 /*
 ** Local functions
 */
@@ -186,7 +186,7 @@ int32 @TEMPLATE@_Init(void)
         return status;
     }
 
-//EX2
+//EX2,5,1,
     /*
     ** Register Table
     */
@@ -319,7 +319,7 @@ int32 @TEMPLATE@_ReportHousekeeping(const CFE_MSG_CommandHeader_t *Msg)
     CFE_SB_TimeStampMsg(CFE_MSG_PTR(@TEMPLATE@_Data.HkTlm.TelemetryHeader));
     CFE_SB_TransmitMsg(CFE_MSG_PTR(@TEMPLATE@_Data.HkTlm.TelemetryHeader), true);
 
-//EX3
+//EX3,1,4,
     /*
     ** Manage any pending table loads, validations, etc.
     */
@@ -462,7 +462,7 @@ static int32 SendTblDataEvent(void)
 } /* End SendTblDataEvent() */
 
 
-//EX4
+//EX4,1,
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /*                                                                 */
 /* Provide an example table validation function. This example      */

@@ -236,15 +236,16 @@ class AppSpec():
 
     def get_real_github_repo(self):
         """
-        Return the URL and and branch-tag of the "real" repo be cloned
+        Return the URL and and release-tag of the "real" repo be cloned
         
         The relevant proxy app spec "proxy" object are:
             
             "proxy": {
                 "url": "URL of real github repo",
-                "branch-tag": "specific tag to be cloned",
+                "release-tag": "specific tag to be cloned",
                 ...
             },
+        If release-tag is an emtpy string then the latest main release is cloned.
         """
         proxy_github_repo = ()
         valid_github_repo = False
@@ -255,16 +256,16 @@ class AppSpec():
             url = self.json_proxy['url']
             print(f'url: {url}')
             try:
-                branch_tag = self.json_proxy['branch-tag']
-                print(f'branch_tag: {branch_tag}')        
+                release_tag = self.json_proxy['release-tag']
+                print(f'release_tag: {release_tag}')        
                 valid_github_repo = True
             except:
-                sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'proxy->branch-tag' object", title='AppStore Error', grab_anywhere=True, modal=False)
+                sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'proxy->release-tag' object", title='AppStore Error', grab_anywhere=True, modal=False)
         except:
             sg.popup(f"The proxy JSON spec file {self.json_file} does not contain the required 'proxy->url' object", title='AppStore Error', grab_anywhere=True, modal=False)
         
         if valid_github_repo:
-            proxy_github_repo = (url,branch_tag) 
+            proxy_github_repo = (url,release_tag) 
         
         return proxy_github_repo
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  ************************************************************************/
 
-//EX1
+//EX1,1,
 #include "cfe_tbl_filedef.h" /* Required to obtain the CFE_TBL_FILEDEF macro definition */
 #include "@template@_table.h"
 

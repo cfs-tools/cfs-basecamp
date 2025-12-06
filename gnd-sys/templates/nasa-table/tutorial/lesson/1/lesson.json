@@ -75,7 +75,7 @@
         },
         {
           "id": "EX2",
-          "instructions": "1. After the global data @TEMPLATE@_Data is declared add\n    static int32 SendTblDataEvent(void);\n\nNote this does not follow the Sample App global function convention. This was doen to show there are options as  described Basecamp's App Dev Guide."
+          "instructions": "1. After the global data @TEMPLATE@_Data is declared add\n    static int32 SendTblDataEvent(void);\n\nNote this does not follow the Sample App global function convention. This was done to show there are options as described in Basecamp's App Dev Guide."
         },
         {
           "id": "EX3",

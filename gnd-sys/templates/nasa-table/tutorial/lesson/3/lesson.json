@@ -6,7 +6,7 @@
     "tools to transfer tables between the flight-ground and to view and modify ",
     "table contents.",
     "After defining the table in EDS and rebuilding the cFS target refer to exercises ",
-    "in the Tutorial Document for how to use Basecamap's tools to manage tables" 
+    "in the Tutorial Document for how to use Basecamap's tools to manage tables"
   ],
   "current-file": "Undefined",
   "complete": false,
@@ -17,7 +17,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. At the end of the <DataTypeSet> add the TblFile_Payload and TblFile_Payload <ContainerDataType> as shown in the exercise window.\n\nRefer to the Tutorial Document for more information."
+          "instructions": "1. At the end of the <DataTypeSet> add the TblFile_Payload and TblFile <ContainerDataType> as shown in the exercise window.\n\nRefer to the Tutorial Document for more information."
         },
         {
           "id": "EX2",

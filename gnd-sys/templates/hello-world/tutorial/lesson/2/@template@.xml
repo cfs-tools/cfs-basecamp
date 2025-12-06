@@ -44,7 +44,7 @@
        </EntryList>
       </ContainerDataType>
 
-      <!-- EX1 -->
+      <!-- EX1,9,1, -->
       <!--*****************************************-->
       <!--**** DataTypeSet: Telemetry Payloads ****-->
       <!--*****************************************-->
@@ -57,8 +57,7 @@
         </EntryList>
       </ContainerDataType>
       <!-- EX1 -->
-      
-      <!-- EX2 -->     
+        
       <!--**************************************-->
       <!--**** DataTypeSet: Command Packets ****-->
       <!--**************************************-->
@@ -86,7 +85,6 @@
           <Entry type="SetParam_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
-      <!-- EX2 -->
 
       <!--****************************************-->
       <!--**** DataTypeSet: Telemetry Packets ****-->

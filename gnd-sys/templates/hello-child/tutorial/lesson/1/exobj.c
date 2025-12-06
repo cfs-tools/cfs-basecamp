@@ -34,7 +34,7 @@
 
 #define MIN_CHILD_DELAY_MS 10  // Minimum child task loop delay to prevent CPU hogging  
 
-//EX1
+//EX1,6,1,
 /*******************************/
 /** Local Function Prototypes **/
 /*******************************/
@@ -51,7 +51,7 @@ static void ManageCounter(void);
 
 static EXOBJ_Class_t *ExObj = NULL;
 
-//EX2
+//EX2,19,1,
 /******************************************************************************
 ** Function: EXOBJ_Constructor
 **
@@ -196,7 +196,7 @@ bool EXOBJ_SetCounterModeCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 
 } /* End EXOBJ_SetCounterModeCmd() */
 
-//EX3
+//EX3,10,8,
 /******************************************************************************
 ** Function: EXOBJ_StackPop
 **
@@ -249,7 +249,7 @@ static const char *CounterModeStr(@TEMPLATE@_CounterMode_Enum_t  CounterMode)
 **      the ground. A reset app command resets the event filter.
 **
 */
-//EX4
+//EX4,34,1,
 static void ManageCounter(void)
 {
 
@@ -296,7 +296,7 @@ static void ManageCounter(void)
 } /* End ManageCounter() */
 //EX4
 
-//EX5
+//EX5,1,
 /******************************************************************************
 ** Function: StackPush
 **

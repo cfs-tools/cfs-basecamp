@@ -41,7 +41,7 @@
 #define  CHILDMGR_OBJ  (&(@Template@.ChildMgr))
 #define  EXOBJ_OBJ     (&(@Template@.ExObj))
 
-//EX1
+//EX1,7,1,
 /*******************************/
 /** Local Function Prototypes **/
 /*******************************/
@@ -257,7 +257,7 @@ static int32 ProcessCommands(void)
       if (SysStatus == CFE_SUCCESS)
       {
 
-         //EX3
+         //EX3,5,4,
          if (CFE_SB_MsgId_Equal(MsgId, @Template@.CmdMid))
          {
             CMDMGR_DispatchFunc(CMDMGR_OBJ, &SbBufPtr->Msg);
@@ -290,7 +290,7 @@ static int32 ProcessCommands(void)
 } /* End ProcessCommands() */
 
 
-//EX2
+//EX2,1,
 /******************************************************************************
 ** Function: ProcessExObjStack
 **

@@ -49,7 +49,7 @@ static void ManageCounter(void);
 
 static EXOBJ_Class_t *ExObj = NULL;
 
-//EX1
+//EX1,6,14
 /******************************************************************************
 ** Function: EXOBJ_Constructor
 **
@@ -58,7 +58,6 @@ void EXOBJ_Constructor(EXOBJ_Class_t *ExObjPtr,
                        const INITBL_Class_t *IniTbl,
                        uint32 ChildExecSemaphore)
 {
-
  
    ExObj = ExObjPtr;
 
@@ -77,7 +76,7 @@ void EXOBJ_Constructor(EXOBJ_Class_t *ExObjPtr,
 } /* End EXOBJ_Constructor */
 //EX1
 
-//EX2
+//EX2,13,1,
 /******************************************************************************
 ** Function: EXOBJ_ChildTask
 **

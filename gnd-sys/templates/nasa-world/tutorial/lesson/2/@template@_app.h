@@ -61,7 +61,7 @@
 typedef struct
 {
 
-    //EX1
+    //EX1,7,
     /*
     ** Command interface counters...
     */

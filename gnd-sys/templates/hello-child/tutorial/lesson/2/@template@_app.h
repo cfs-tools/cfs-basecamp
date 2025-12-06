@@ -63,7 +63,7 @@
 ** - See EDS command definitions in @template@.xml
 */
 
-//EX1
+//EX1,36,1,
 /******************************************************************************
 ** @TEMPLATE@_Class
 */

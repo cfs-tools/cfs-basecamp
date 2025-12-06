@@ -144,7 +144,7 @@ void EXOBJ_Execute(void)
       }
    } /* End if decrement */
    
-   //EX1   
+   //EX1,1,1,
    CFE_EVS_SendEvent (EXOBJ_EXECUTE_EID, CFE_EVS_EventType_INFORMATION,
                       "%s counter mode: Value %d", 
                       CounterModeStr(ExObj->CounterMode), ExObj->CounterValue);

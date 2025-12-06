@@ -136,7 +136,7 @@ bool @TEMPLATE@_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
 } /* End @TEMPLATE@_ResetAppCmd() */
 
-//EX1
+//EX1,19,1,
 /******************************************************************************
 ** Function: @TEMPLATE@_SetParamCmd
 **
@@ -281,7 +281,7 @@ static int32 ProcessCommands(void)
    
 } /* End ProcessCommands() */
 
-//EX2
+//EX2,17,1,
 /******************************************************************************
 ** Function: SendStatusTlm
 **

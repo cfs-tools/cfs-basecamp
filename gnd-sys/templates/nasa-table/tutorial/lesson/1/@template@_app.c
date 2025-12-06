@@ -21,7 +21,7 @@
  *   This file contains the source code for the @TEMPLATE@.
  */
 
-//EX1
+//EX1,7,1,
 /*
 ** Include Files:
 */
@@ -38,7 +38,7 @@
 */
 @TEMPLATE@_Data_t @TEMPLATE@_Data;
 
-//EX2
+//EX2,4,1,
 /*
 ** Local functions
 */
@@ -188,7 +188,7 @@ int32 @TEMPLATE@_Init(void)
         return status;
     }
 
-//EX3
+//EX3,1,15,
     /*
     ** Register Table
     */
@@ -323,7 +323,7 @@ int32 @TEMPLATE@_ReportHousekeeping(const CFE_MSG_CommandHeader_t *Msg)
     return CFE_SUCCESS;
 }
 
-//EX4
+//EX4,13,1,
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /* @TEMPLATE@ NOOP commands                                                   */
@@ -420,7 +420,7 @@ bool @TEMPLATE@_VerifyCmdLength(CFE_MSG_Message_t *MsgPtr, size_t ExpectedLength
     return result;
 }
 
-//EX5
+//EX5,1,
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /*  Purpose:                                                                  */

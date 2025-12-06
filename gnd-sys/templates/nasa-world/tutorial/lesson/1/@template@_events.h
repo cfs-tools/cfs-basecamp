@@ -25,7 +25,7 @@
 #ifndef @TEMPLATE@_EVENTS_H
 #define @TEMPLATE@_EVENTS_H
 
-//EX1
+//EX1,9,1,
 #define @TEMPLATE@_RESERVED_EID          0
 #define @TEMPLATE@_STARTUP_INF_EID       1
 #define @TEMPLATE@_COMMAND_ERR_EID       2

@@ -219,7 +219,7 @@ void @TEMPLATE@_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr)
 
     CFE_MSG_GetFcnCode(&SBBufPtr->Msg, &CommandCode);
 
-//EX1
+//EX1,22,
     /*
     ** Process "known" @TEMPLATE@ ground commands
     */
@@ -317,7 +317,7 @@ int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg)
     return CFE_SUCCESS;
 }
 
-//EX2
+//EX2,1,
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /*  Purpose:                                                                  */

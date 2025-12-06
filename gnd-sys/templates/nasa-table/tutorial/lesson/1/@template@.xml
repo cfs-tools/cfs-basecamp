@@ -24,12 +24,11 @@
     as prescribed in CCSDS book 876.0.
 
     Purpose:
-      This describes all interface objects for the Executive Services (CFE_ES)
-      core application
+      This describes all interface objects for the Hello Table app
 
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
-  <Package name="@TEMPLATE@" shortDescription="Sample Application Package">
+  <Package name="@TEMPLATE@" shortDescription="Hello Table Application Package">
 
     <DataTypeSet>
 
@@ -73,6 +72,7 @@
         </ConstraintSet>
       </ContainerDataType>
 
+      <!-- EX1,10, -->
       <ContainerDataType name="ExampleParamCmd" baseType="CommandBase">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="2" />
@@ -82,7 +82,6 @@
         </ConstraintSet>
       </ContainerDataType>
       
-      <!-- EX1 -->
       <!-- Note the type name here must be "ExampleTable" to match the C table definition file -->
       <ContainerDataType name="ExampleTable" shortDescription="Example Table structure">
         <EntryList>

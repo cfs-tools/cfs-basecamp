@@ -253,7 +253,7 @@ class CreateApp():
         
         layout = [
                   [sg.Text('Create a new app by selecting the application template and clicking the <Create App> button:', font=hdr_label_font, size=(80,None))],
-                  [sg.Text("   - Follow the steps in 'File->Add User App to Target' to add the apps/libs to the cFS target", font=hdr_value_font)],
+                  [sg.Text("   - Follow the steps in 'File->Add App to Target' to add the apps/libs to the cFS target", font=hdr_value_font)],
                   [sg.Text("   - The <Description> button summarizes the app's objectives", font=hdr_value_font)],
                   [sg.Text("   - Each app includes a coding tutorial that is added to the 'Tutorials' menu after the Basecamp GUI is restarted", font=hdr_value_font)],
                   [sg.Text('\nSelect Application Template: ', font=hdr_label_font)],
@@ -264,7 +264,7 @@ class CreateApp():
                   [sg.Button('Create App', button_color=('SpringGreen4'), pad=(2,0)), sg.Button('Description', pad=(2,0)), sg.Button('Cancel', pad=(2,0))]
                  ]
         
-        window = sg.Window('Create User App', layout, modal=False)
+        window = sg.Window('Create App', layout, modal=False)
         return window
 
 
@@ -307,7 +307,7 @@ class CreateApp():
                         app_created, new_app_dir = self.selected_app.create_app(app_name, os.path.join(os.getcwd(),self.usr_app_path))
                         if app_created:
                             status_text = f'Successfully created {app_name} in {new_app_dir}\n'
-                            instruct_text = f"> Use 'File->Add User App to Target' to add {app_name} to the cFS target.\n"
+                            instruct_text = f"> Use 'File->Add App to Target' to add {app_name} to the cFS target.\n"
                             tutorial_text = ''
                             if self.selected_app.has_tutorial:
                                 tutorial_text = "> A coding tutorial will be added to the 'Learn' dropdown menu when Basecanp is restarted.\n"

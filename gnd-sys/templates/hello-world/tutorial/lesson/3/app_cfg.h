@@ -95,7 +95,7 @@
 **    ConfigEnum GetConfigVal(const char *str);
 **
 */
-//EX1
+//EX1,5,11,
 #define CFG_APP_CFE_NAME  APP_CFE_NAME
 #define CFG_APP_PERF_ID   APP_PERF_ID
 
@@ -105,7 +105,6 @@
 #define CFG_@TEMPLATE@_CMD_TOPICID      @TEMPLATE@_CMD_TOPICID
 #define CFG_@TEMPLATE@_SEND_HK_TOPICID  BC_SCH_4_SEC_TOPICID
 #define CFG_@TEMPLATE@_HK_TLM_TOPICID   @TEMPLATE@_HK_TLM_TOPICID
-
 
 #define APP_CONFIG(XX) \
    XX(APP_CFE_NAME,char*) \

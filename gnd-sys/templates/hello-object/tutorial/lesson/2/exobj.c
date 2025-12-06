@@ -57,7 +57,7 @@ void EXOBJ_Constructor(EXOBJ_Class_t *ExObjPtr,
    ExObj = ExObjPtr;
 
    CFE_PSP_MemSet((void*)ExObj, 0, sizeof(EXOBJ_Class_t));
-   //EX1    
+   //EX1,2,2,
    ExObj->CounterMode  = @TEMPLATE@_CounterMode_Increment;
    ExObj->CounterLoLim = INITBL_GetIntConfig(IniTbl, CFG_EXOBJ_COUNTER_LO_LIM);
    ExObj->CounterHiLim = INITBL_GetIntConfig(IniTbl, CFG_EXOBJ_COUNTER_HI_LIM);
@@ -121,7 +121,7 @@ bool EXOBJ_SetModeCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 */
 void EXOBJ_Execute(void)
 {
-   //EX2
+   //EX2,1,
    if (ExObj->CounterMode == @TEMPLATE@_CounterMode_Increment)
    {
       if (ExObj->CounterValue < ExObj->CounterHiLim)

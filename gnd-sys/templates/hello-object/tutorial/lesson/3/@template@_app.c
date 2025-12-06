@@ -49,7 +49,7 @@ static int32 InitApp(void);
 static int32 ProcessCommands(void);
 static void SendStatusTlm(void);
 
-//EX1
+//EX1,11,5,
 /**********************/
 /** File Global Data **/
 /**********************/
@@ -74,7 +74,7 @@ static CFE_EVS_BinFilter_t  EventFilters[] =
 @TEMPLATE@_Class_t  @Template@;
 
 
-//EX2
+//EX2,10,
 /******************************************************************************
 ** Function: @TEMPLATE@_AppMain
 **
@@ -129,7 +129,7 @@ bool @TEMPLATE@_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 } /* End @TEMPLATE@_NoOpCmd() */
 
 
-//EX3
+//EX3,12,1,
 /******************************************************************************
 ** Function: @TEMPLATE@_ResetAppCmd
 **

@@ -189,7 +189,7 @@ static bool AcceptNewTable(const EXOBJTBL_Data_t *TblData)
    }
    else
    {
-      //EX1
+      //EX1,1,
       if ((TblData->IncrLimit.High - TblData->IncrLimit.Low) > TblData->LimitRangeMax ||
           (TblData->DecrLimit.High - TblData->DecrLimit.Low) > TblData->LimitRangeMax )
       {

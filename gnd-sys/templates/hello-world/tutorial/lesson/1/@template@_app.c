@@ -119,7 +119,7 @@ bool @TEMPLATE@_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 } /* End @TEMPLATE@_NoOpCmd() */
 
 
-//EX1
+//EX1,18,
 /******************************************************************************
 ** Function: @TEMPLATE@_ResetAppCmd
 **
@@ -198,7 +198,7 @@ static int32 InitApp(void)
       CFE_SB_Subscribe(@Template@.CmdMid,        @Template@.CmdPipe);
       CFE_SB_Subscribe(@Template@.SendStatusMid, @Template@.CmdPipe);
 
-      //EX2
+      //EX2,4,
       CMDMGR_Constructor(CMDMGR_OBJ);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_NOOP_CC,      NULL, @TEMPLATE@_NoOpCmd,     0);
       CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_RESET_CC,     NULL, @TEMPLATE@_ResetAppCmd, 0);

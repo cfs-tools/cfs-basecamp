@@ -60,6 +60,6 @@
           "instructions": "1. Locate the ProcessCommands() function:\n    Add a call to 'ProcessExObjStack();' in the '@Template@.ExecuteMid' conditional block"
         }
       ]
-    }    
+    }
   ]
 }

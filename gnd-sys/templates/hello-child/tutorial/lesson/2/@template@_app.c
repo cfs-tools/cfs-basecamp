@@ -178,7 +178,7 @@ static int32 InitApp(void)
       @Template@.ExecuteMid    = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_EXE_TOPICID));
       @Template@.SendStatusMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_@TEMPLATE@_SEND_STATUS_TOPICID));
        
-      //EX1
+      //EX1,5,1,
       /*
       ** Constuct app's contained objects
       */
@@ -256,7 +256,7 @@ static int32 ProcessCommands(void)
    {
       SysStatus = CFE_MSG_GetMsgId(&SbBufPtr->Msg, &MsgId);
 
-      //EX2
+      //EX2,11,5,
       if (SysStatus == CFE_SUCCESS)
       {
 

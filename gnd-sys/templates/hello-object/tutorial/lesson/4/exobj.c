@@ -65,7 +65,7 @@ void EXOBJ_Constructor(EXOBJ_Class_t *ExObjPtr,
 
 } /* End EXOBJ_Constructor */
 
-//EX1
+//EX1,8,8,
 /******************************************************************************
 ** Function:  EXOBJ_ResetStatus
 **
@@ -154,7 +154,7 @@ void EXOBJ_Execute(void)
       }
    } /* End if decrement */
    
-   //EX2   
+   //EX2,1,1,
    CFE_EVS_SendEvent (EXOBJ_EXECUTE_EID, CFE_EVS_EventType_DEBUG,
                       "%s counter mode: Value %d", 
                       CounterModeStr(ExObj->CounterMode), ExObj->CounterValue);

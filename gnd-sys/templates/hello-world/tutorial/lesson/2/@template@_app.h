@@ -87,7 +87,7 @@ typedef struct
    
    @TEMPLATE@_StatusTlm_t  StatusTlm;
    
-   //EX1
+   //EX1,5,1,
    /*
    ** @TEMPLATE@ State & Contained Objects
    */ 

@@ -79,7 +79,7 @@ typedef struct
     */
     CFE_SB_PipeId_t CommandPipe;
 
-//EX1
+//EX1,7,5,
     /*
     ** Initialization data (not reported in housekeeping)...
     */

@@ -195,7 +195,7 @@ static int32 InitApp(void)
       /*
       ** Initialize app level interfaces
       */
-      //EX1      
+      //EX1,1,1,
       CFE_SB_CreatePipe(&@Template@.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_MAX), INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_NAME));  
       CFE_SB_Subscribe(@Template@.CmdMid,        @Template@.CmdPipe);
       CFE_SB_Subscribe(@Template@.SendStatusMid, @Template@.CmdPipe);

@@ -307,7 +307,7 @@ class ManageCfs():
                   [sg.Text('', size=self.b_size), sg.Button('Restart', size=(6,1), button_color=('SpringGreen4'), font=self.b_font, pad=self.b_pad, enable_events=True, key='-4_AUTO-')],
                  ]
         # sg.Button('Exit', enable_events=True, key='-EXIT-')
-        window = sg.Window('Add User App to Target', layout, resizable=True, finalize=True) # modal=True)
+        window = sg.Window('Add App to Target', layout, resizable=True, finalize=True) # modal=True)
 
         restart_main_window = False
         while True:
@@ -450,7 +450,7 @@ class ManageCfs():
                   [sg.Button('Remove App', button_color=('SpringGreen4'), pad=(2,0)), sg.Cancel(button_color=('gray'), pad=(2,0))]
                  ]
         
-        window = sg.Window('Remove User App from Target', layout, resizable=True, finalize=True)
+        window = sg.Window('Remove App from Target', layout, resizable=True, finalize=True)
         while True: # Event Loop
             self.event, self.values = window.read()
             if self.event in (sg.WIN_CLOSED, 'Cancel') or self.event is None:       
@@ -497,7 +497,7 @@ class ManageCfs():
                    [sg.Button('Done', button_color=('gray'), key=f'-DONE-')]
                  ]
 
-        window = sg.Window(f'User App Status', layout, resizable=True, finalize=True)
+        window = sg.Window(f'App Target Status', layout, resizable=True, finalize=True)
         while True: # Event Loop
             self.event, self.values = window.read()
             if self.event in (sg.WIN_CLOSED, '-DONE-') or self.event is None:       
@@ -547,7 +547,7 @@ class ManageCfs():
                 self.add_usr_app_gui(usr_app_list)
             elif action == 'Remove':
                 self.remove_usr_app_gui(usr_app_list)
-            elif action == 'User':
+            elif action == 'App':
                 self.usr_app_status_gui(usr_app_list)
         else:
             sg.popup('Your usr/apps directory is empty', title=f'{action} App', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)

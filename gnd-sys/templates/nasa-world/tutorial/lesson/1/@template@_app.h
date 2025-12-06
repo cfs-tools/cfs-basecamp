@@ -34,7 +34,7 @@
 #include "cfe_sb.h"
 #include "cfe_es.h"
 
-//EX1
+//EX1,1,
 /*
 ** There are no code changes in this exercise. The point of the exercise
 ** is to make you aware that @template@_msg.h has been commented out and
@@ -100,7 +100,7 @@ typedef struct
 } @TEMPLATE@_Data_t;
 
 /****************************************************************************/
-//EX2
+//EX2,14,1,
 /*
 ** Local function prototypes.
 **
