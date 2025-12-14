@@ -58,7 +58,7 @@
       },
       {
          "path": "tutorial/lesson/4",
-         "files": ["lesson.json", "exobj.c"]
+         "files": ["lesson.json", "@template@.xml", "@template@_app.c", "exobj.c"]
       }
    ]
 }

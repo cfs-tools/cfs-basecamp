@@ -57,7 +57,7 @@ void EXOBJ_Constructor(EXOBJ_Class_t *ExObjPtr,
    ExObj = ExObjPtr;
 
    CFE_PSP_MemSet((void*)ExObj, 0, sizeof(EXOBJ_Class_t));
-   //EX1,2,2,
+   //EX1,2,
    ExObj->CounterMode  = @TEMPLATE@_CounterMode_Increment;
    ExObj->CounterLoLim = INITBL_GetIntConfig(IniTbl, CFG_EXOBJ_COUNTER_LO_LIM);
    ExObj->CounterHiLim = INITBL_GetIntConfig(IniTbl, CFG_EXOBJ_COUNTER_HI_LIM);

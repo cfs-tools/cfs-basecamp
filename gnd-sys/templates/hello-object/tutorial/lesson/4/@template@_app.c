@@ -49,7 +49,7 @@ static int32 InitApp(void);
 static int32 ProcessCommands(void);
 static void SendStatusTlm(void);
 
-//EX1,11,5,
+
 /**********************/
 /** File Global Data **/
 /**********************/
@@ -65,7 +65,7 @@ static CFE_EVS_BinFilter_t  EventFilters[] =
    /* Event ID                  Mask */
    {EXOBJ_EXECUTE_EID,  CFE_EVS_FIRST_8_STOP}, // Use CFE_EVS_NO_FILTER to remove the filter
 };
-//EX1
+
 
 /*****************/
 /** Global Data **/
@@ -74,7 +74,6 @@ static CFE_EVS_BinFilter_t  EventFilters[] =
 @TEMPLATE@_Class_t  @Template@;
 
 
-//EX2,10,
 /******************************************************************************
 ** Function: @TEMPLATE@_AppMain
 **
@@ -86,7 +85,6 @@ void @TEMPLATE@_AppMain(void)
    
    CFE_EVS_Register(EventFilters, sizeof(EventFilters)/sizeof(CFE_EVS_BinFilter_t),
                     CFE_EVS_EventFilter_BINARY);
-//EX2
 
    if (InitApp() == CFE_SUCCESS)      /* Performs initial CFE_ES_PerfLogEntry() call */
    {
@@ -129,7 +127,6 @@ bool @TEMPLATE@_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 } /* End @TEMPLATE@_NoOpCmd() */
 
 
-//EX3,12,1,
 /******************************************************************************
 ** Function: @TEMPLATE@_ResetAppCmd
 **
@@ -147,7 +144,6 @@ bool @TEMPLATE@_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    return true;
 
 } /* End @TEMPLATE@_ResetAppCmd() */
-//EX3
 
 
 /******************************************************************************
@@ -291,13 +287,17 @@ static void SendStatusTlm(void)
    Payload->ValidCmdCnt   = @Template@.CmdMgr.ValidCmdCnt;
    Payload->InvalidCmdCnt = @Template@.CmdMgr.InvalidCmdCnt;
    
+   //EX1,7,
    /*
    ** Example Object Data
    */
 
    Payload->CounterMode  = @Template@.ExObj.CounterMode;
    Payload->CounterValue = @Template@.ExObj.CounterValue;
-
+   Payload->CounterLoLim = @Template@.ExObj.CounterLoLim;
+   Payload->CounterHiLim = @Template@.ExObj.CounterHiLim;
+   //EX1
+   
    CFE_SB_TimeStampMsg(CFE_MSG_PTR(@Template@.StatusTlm.TelemetryHeader));
    CFE_SB_TransmitMsg(CFE_MSG_PTR(@Template@.StatusTlm.TelemetryHeader), true);
 

@@ -20,6 +20,26 @@
           "instructions": "1. Locate the CFE_EVS_SendEvent() call in the EXOBJ_Execute() function:\n    Change the event type from 'CFE_EVS_EventType_INFORMATION' to 'CFE_EVS_EventType_DEBUG'"
         }
       ]
+    },
+    {
+      "path": "eds",
+      "name": "@template@.xml",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. In 'StatusTlm_Payload':\n    Change CounterMode type from 'BASE_TYPES/uint16' to 'CounterMode'\n\nNote the GUI needs to be restarted after building the new lesson cFS target."
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_app.c",
+      "exercise": [
+        {
+          "id": "EX1",
+          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. In 'StatusTlm_Payload':\n    Change CounterMode type from 'BASE_TYPES/uint16' to 'CounterMode'\n\nNote the GUI needs to be restarted after building the new lesson cFS target."
+        }
+      ]
     }
   ]
 }
