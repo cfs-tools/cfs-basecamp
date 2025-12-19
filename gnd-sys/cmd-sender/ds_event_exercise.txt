@@ -3,7 +3,7 @@ Data Storage Exercise Summary
 
 Notes:
   1. This exercise is part of the Basecamp cFS Systems Engineering training
-     module. refer to the Data Storage exercise slides for details.
+     module. Refer to the Data Storage exercise slides for details.
     
 Exercises:
   1. Issue events that will be stored in an events data file
@@ -21,6 +21,7 @@ Exercise 1. Issue noops to generate events that will be saved to a file
 > 'DS', 'DestStateCmd', {'FileTableIndex': 0, 'EnableState': 1} ## Enable event file
 > 'DS', 'DestStateCmd', {'FileTableIndex': 0, 'EnableState': 0} ## Disable event file
 > 'DS', 'CloseFileCmd', {'FileTableIndex': 0, 'Padding': 0}     ## Close the event file
+
 ># Noops commands that can be sent to be written to a file
 > 'CFE_ES', 'NoopCmd', {}     ## Event message sent identifying cFE, OSAL and PSP versions, CFE_ES HK_TLM CommandCounter increments 
 > 'CFE_EVS', 'NoopCmd', {}    ## Event message sent identifying cFE version, CFE_EVS HK_TLM CommandCounter increments

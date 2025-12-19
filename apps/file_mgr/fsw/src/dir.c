@@ -16,9 +16,7 @@
 **    Implement the DIR_Class methods
 **
 **  Notes:
-**    1. TODO: Complete EDS integration. EDS is used for cmd & tlm but not files
-**       so the LoadFileEntry(), used during telemetry and file generation, uses
-**       a dir.h typedef and not an EDS generated typedef.
+**    None
 **
 */
 
@@ -50,7 +48,7 @@ typedef enum
 /*******************************/
 
 static bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeTime, SendDirListOpt_t SendDirListOpt);
-static void LoadFileEntry(const char *PathFilename, DIR_FileEntry_t *FileEntry, uint16 *TaskBlockCount, bool IncludeSizeTime);
+static void LoadFileEntry(const char *PathFilename, FILE_MGR_DirFileEntry_t *FileEntry, uint16 *TaskBlockCount, bool IncludeSizeTime);
 static bool WriteDirListToFile(const char *DirNameWithSep, osal_id_t DirId, int32 FileHandle, bool IncludeSizeTime);
 
 
@@ -99,7 +97,7 @@ bool DIR_CreateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 
    FileInfo = FileUtil_GetFileInfo(CreateCmd->DirName, OS_MAX_PATH_LEN, false);
 
-   if (FileInfo.State == FILEUTIL_FILE_NONEXISTENT)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_NONEXISTENT)
    {
       
       SysStatus = OS_mkdir(CreateCmd->DirName, 0);
@@ -155,7 +153,7 @@ bool DIR_DeleteAllCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 
    FileInfo = FileUtil_GetFileInfo(DeleteAllCmd->DirName, OS_MAX_PATH_LEN, false);
 
-   if (FileInfo.State == FILEUTIL_FILE_IS_DIR)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_IS_DIR)
    {
       
       strcpy(DirWithSep, DeleteAllCmd->DirName);
@@ -190,7 +188,7 @@ bool DIR_DeleteAllCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
                      switch (FileInfo.State)
                      {
                               
-                        case FILEUTIL_FILE_CLOSED:                   
+                        case APP_C_FW_FileState_FILE_CLOSED:                   
                         
                            if ((SysStatus = OS_remove(Filename)) == OS_SUCCESS)
                            {
@@ -207,14 +205,14 @@ bool DIR_DeleteAllCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
                            }
                            break;
                         
-                        case FILEUTIL_FILE_IS_DIR:
+                        case APP_C_FW_FileState_FILE_IS_DIR:
                         
                            ++DirSkippedCount;
                            break;
          
-                        case FILEUTIL_FILENAME_INVALID:
-                        case FILEUTIL_FILE_NONEXISTENT:
-                        case FILEUTIL_FILE_OPEN:
+                        case APP_C_FW_FileState_FILENAME_INVALID:
+                        case APP_C_FW_FileState_FILE_NONEXISTENT:
+                        case APP_C_FW_FileState_FILE_OPEN:
                         default:
                            ++FileNotDeletedCount;
                            break;
@@ -306,7 +304,7 @@ bool DIR_DeleteCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
    
    FileInfo = FileUtil_GetFileInfo(DeleteCmd->DirName, OS_MAX_PATH_LEN, false);
 
-   if (FileInfo.State == FILEUTIL_FILE_IS_DIR)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_IS_DIR)
    {
       
       SysStatus = OS_DirectoryOpen(&DirId, DeleteCmd->DirName);  /* Open the dir so we can see if it is empty */ 
@@ -458,7 +456,7 @@ bool DIR_WriteListFileCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
    
    FileInfo = FileUtil_GetFileInfo(WriteDirListFileCmd->DirName, OS_MAX_PATH_LEN, false);
 
-   if (FileInfo.State == FILEUTIL_FILE_IS_DIR)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_IS_DIR)
    {
       
       if (WriteDirListFileCmd->Filename[0] == '\0')
@@ -473,8 +471,8 @@ bool DIR_WriteListFileCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
       
       FileInfo = FileUtil_GetFileInfo(Filename, OS_MAX_PATH_LEN, false);
 
-      if ((FileInfo.State == FILEUTIL_FILE_CLOSED) ||
-          (FileInfo.State == FILEUTIL_FILE_NONEXISTENT))
+      if ((FileInfo.State == APP_C_FW_FileState_FILE_CLOSED) ||
+          (FileInfo.State == APP_C_FW_FileState_FILE_NONEXISTENT))
       {
               
          strcpy(DirNameWithSep, WriteDirListFileCmd->DirName);
@@ -566,7 +564,7 @@ bool DIR_WriteListFileCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 **      periodically suspended to prevent CPU hogging.
 ** 
 */
-static void LoadFileEntry(const char *PathFilename, DIR_FileEntry_t *FileEntry, 
+static void LoadFileEntry(const char *PathFilename, FILE_MGR_DirFileEntry_t *FileEntry, 
                           uint16 *TaskBlockCount, bool IncludeSizeTime)
 {
    
@@ -634,7 +632,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
    osal_id_t           DirId;
    os_dirent_t         DirEntry;
    FileUtil_FileInfo_t FileInfo;
-   DIR_FileEntry_t     DirFileEntry;
+   FILE_MGR_DirFileEntry_t     DirFileEntry;
    
    bool   ReadingDir     = true;
    bool   CreatingTlmPkt = true;
@@ -651,7 +649,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
 
    FileInfo = FileUtil_GetFileInfo(DirName, OS_MAX_PATH_LEN, false);
                           
-   if (FileInfo.State == FILEUTIL_FILE_IS_DIR)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_IS_DIR)
    {
       
       /* Clears counters and nulls strings */
@@ -732,7 +730,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
                         } /* End if valid path/filename length */
                      
                      } /* End if in range to fill packet */
-                     if (Dir->ListTlm.Payload.PktFileCnt >= FILE_MGR_DIR_LIST_PKT_ENTRIES)
+                     if (Dir->ListTlm.Payload.PktFileCnt >= FILE_MGR_DIR_LIST_FILE_ENTRIES)
                      {
                         /* If sending one pkt, continue counting directory entries and send pkt when done */
                         if (SendOpt == SEND_ONE_DIR_TLM_PKT)
@@ -751,7 +749,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
                                              (int)Dir->ListTlm.Payload.PktFileCnt);
                         
                            Dir->ListTlm.Payload.PktFileCnt = 0;
-                           Dir->ListTlm.Payload.DirListOffset += FILE_MGR_DIR_LIST_PKT_ENTRIES;
+                           Dir->ListTlm.Payload.DirListOffset += FILE_MGR_DIR_LIST_FILE_ENTRIES;
                            memset(Dir->ListTlm.Payload.FileList, 0, sizeof(Dir->ListTlm.Payload.FileList));                              
                            
                            OS_TaskDelay(Dir->SendDirTlmDelay);
@@ -863,8 +861,8 @@ static bool WriteDirListToFile(const char *DirNameWithSep, osal_id_t DirId,
    CFE_FS_Header_t  FileHeader;
    os_dirent_t      DirEntry;
    uint16           DirFileStatsLen = sizeof(DIR_ListFilesStats_t);
-   uint16           DirFileEntryLen = sizeof(DIR_FileEntry_t);
-   DIR_FileEntry_t  DirFileEntry;
+   uint16           DirFileEntryLen = sizeof(FILE_MGR_DirFileEntry_t);
+   FILE_MGR_DirFileEntry_t  DirFileEntry;
    
    /*
    ** Create and write standard cFE file header

@@ -589,7 +589,7 @@ static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferC
             
       /* FileUtil_GetFileInfo() validates the filename */
       FileInfo = FileUtil_GetFileInfo(StartTransferCmd->SrcFilename, FOTP_FILENAME_LEN, true);
-      if (FILEUTIL_FILE_EXISTS(FileInfo.State) && FileInfo.State == FILEUTIL_FILE_CLOSED)
+      if (FILEUTIL_FILE_EXISTS(FileInfo.State) && FileInfo.State == APP_C_FW_FileState_FILE_CLOSED)
       {
          
          if ((StartTransferCmd->DataSegLen >= FOTP_DATA_SEG_MIN_LEN) &&

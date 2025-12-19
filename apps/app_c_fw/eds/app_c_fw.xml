@@ -111,7 +111,7 @@
       <!-- APP_C_FW::FileUtil -->
 
       <EnumeratedDataType name="FileState" shortDescription="Define file state possibilities" >
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
         <EnumerationList>
           <Enumeration label="FILENAME_INVALID" value="1" shortDescription="" />
           <Enumeration label="FILE_NONEXISTENT" value="2" shortDescription="" />
@@ -185,7 +185,7 @@
 
       <!-- This is an example TblId definition. Apps define their own TblId and they must also define -->
       <!-- LoadTbl_CmdPayload and DumpTbl_CmdPayload. Use app_c_demo.xmlas an example. EDS does not   -->
-      <!-- support parameterization, te,plates, etc. so cut 'n paste is the best we got.              -->
+      <!-- support parameterization, templates, etc. so cut 'n paste is the best we got.              -->
       <!-- TBLMGR's API has the following constraints:                                                -->
       <!--   1. TblId is used as an indice so the values must start at zero.                          -->
       <!--   2. The enumeration order must match the TBLMGR_RegisterTblWithDef() call order           -->

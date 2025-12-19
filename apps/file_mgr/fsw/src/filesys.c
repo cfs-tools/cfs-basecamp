@@ -58,11 +58,11 @@ void FILESYS_Constructor(FILESYS_Class_t *FileSysPtr, const INITBL_Class_t *IniT
    CFE_PSP_MemSet((void*)FileSys, 0, sizeof(FILESYS_Class_t));
    
    FileSys->IniTbl         = IniTbl;
-   FileSys->CfeTbl.DataPtr = (FILESYS_TblData_t *) NULL;
+   FileSys->CfeTbl.DataPtr = (FILE_MGR_FileSysTbl_t *) NULL;
    FileSys->CfeTblName     = INITBL_GetStrConfig(FileSys->IniTbl, CFG_TBL_CFE_NAME);
 
    FileSys->CfeTbl.Status = CFE_TBL_Register(&FileSys->CfeTbl.Handle, FileSys->CfeTblName,
-                                             sizeof(FILESYS_TblData_t), CFE_TBL_OPT_DEFAULT, 
+                                             sizeof(FILE_MGR_FileSysTbl_t), CFE_TBL_OPT_DEFAULT, 
                                              (CFE_TBL_CallbackFuncPtr_t)ValidateTbl);
     
    FileSys->CfeTbl.Registered = (FileSys->CfeTbl.Status == CFE_SUCCESS);
@@ -115,7 +115,7 @@ void FILESYS_ManageTbl(void)
       if (FileSys->CfeTbl.Status == CFE_TBL_ERR_NEVER_LOADED)
       {
 
-         FileSys->CfeTbl.DataPtr = (FILESYS_TblData_t *) NULL;
+         FileSys->CfeTbl.DataPtr = (FILE_MGR_FileSysTbl_t *) NULL;
       
       }
       
@@ -188,7 +188,7 @@ bool FILESYS_SendTblTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
    OS_statvfs_t  FileSysStats;
    
    
-   if (FileSys->CfeTbl.DataPtr == (FILESYS_TblData_t *) NULL)
+   if (FileSys->CfeTbl.DataPtr == (FILE_MGR_FileSysTbl_t *) NULL)
    {
       CFE_EVS_SendEvent(FILESYS_SEND_TLM_ERR_EID, CFE_EVS_EventType_ERROR,
                        "Send %s table packet command error: File system free space table is not loaded",
@@ -202,7 +202,7 @@ bool FILESYS_SendTblTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
       for (i=0; i < FILE_MGR_FILESYS_TBL_VOL_CNT; i++)
       {
 
-         if (FileSys->CfeTbl.DataPtr->Volume[i].State == FILESYS_TBL_ENTRY_ENABLED)
+         if (FileSys->CfeTbl.DataPtr->Volume[i].State == FILE_MGR_FileSysTblEntryState_ENABLED)
          {
 
             strcpy(FileSys->TblTlm.Payload[i].Name, FileSys->CfeTbl.DataPtr->Volume[i].Name);
@@ -216,8 +216,7 @@ bool FILESYS_SendTblTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
              
                /* TODO - Fix this */  
                FreeSpace64 = (uint64)FileSysStats.blocks_free;
-               CFE_PSP_MemCpy(&FileSys->TblTlm.Payload[i].FreeSpace_A,
-                              &FreeSpace64, sizeof(uint64));
+               CFE_PSP_MemCpy(&FileSys->TblTlm.Payload[i].FreeSpace_A, &FreeSpace64, sizeof(uint64));
             }
             else
             { 
@@ -257,7 +256,7 @@ bool FILESYS_SetTblStateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
    uint16 CmdVolumeIndex = SetFileSysTblStateCmd->TblVolumeIndex;
    uint16 CmdVolumeState = SetFileSysTblStateCmd->TblVolumeState;
 
-   if (FileSys->CfeTbl.DataPtr == (FILESYS_TblData_t *) NULL)
+   if (FileSys->CfeTbl.DataPtr == (FILE_MGR_FileSysTbl_t *) NULL)
    {
 
       CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
@@ -273,16 +272,16 @@ bool FILESYS_SetTblStateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
          FileSys->CfeTblName, CmdVolumeIndex, (FILE_MGR_FILESYS_TBL_VOL_CNT-1));
         
    }
-   else if ((CmdVolumeState != FILESYS_TBL_ENTRY_ENABLED) &&
-            (CmdVolumeState != FILESYS_TBL_ENTRY_DISABLED))
+   else if ((CmdVolumeState != FILE_MGR_FileSysTblEntryState_ENABLED) &&
+            (CmdVolumeState != FILE_MGR_FileSysTblEntryState_DISABLED))
    {
                
       CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_ARG_ERR_EID, CFE_EVS_EventType_ERROR,
          "Set %s Table State Command Error: Commanded state %d is not in (%d=Enabled, %d=Disabled)",
-         FileSys->CfeTblName, CmdVolumeState, FILESYS_TBL_ENTRY_ENABLED, FILESYS_TBL_ENTRY_DISABLED);
+         FileSys->CfeTblName, CmdVolumeState, FILE_MGR_FileSysTblEntryState_ENABLED, FILE_MGR_FileSysTblEntryState_DISABLED);
 
    }
-   else if (FileSys->CfeTbl.DataPtr->Volume[CmdVolumeIndex].State == FILESYS_TBL_ENTRY_UNUSED)
+   else if (FileSys->CfeTbl.DataPtr->Volume[CmdVolumeIndex].State == FILE_MGR_FileSysTblEntryState_UNUSED)
    {
       
       CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_UNUSED_ERR_EID, CFE_EVS_EventType_ERROR,
@@ -299,7 +298,7 @@ bool FILESYS_SetTblStateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 
       CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_CMD_EID, CFE_EVS_EventType_INFORMATION,
          "Set %s Table State Command: Set table index %d state to %d (%d=Enabled,%d=Disabled)",
-         FileSys->CfeTblName, CmdVolumeIndex, CmdVolumeState, FILESYS_TBL_ENTRY_ENABLED, FILESYS_TBL_ENTRY_DISABLED);
+         FileSys->CfeTblName, CmdVolumeIndex, CmdVolumeState, FILE_MGR_FileSysTblEntryState_ENABLED, FILE_MGR_FileSysTblEntryState_DISABLED);
    } 
 
    return RetStatus;
@@ -319,7 +318,7 @@ bool FILESYS_SetTblStateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 static int32 ValidateTbl(void *VoidTblPtr) 
 {
    
-   FILESYS_TblData_t* Tbl = (FILESYS_TblData_t *) VoidTblPtr;
+   FILE_MGR_FileSysTbl_t* Tbl = (FILE_MGR_FileSysTbl_t *) VoidTblPtr;
 
    int32   RetStatus = INITBL_GetIntConfig(FileSys->IniTbl, CFG_TBL_ERR_CODE);
    uint16  NameLength;
@@ -345,8 +344,8 @@ static int32 ValidateTbl(void *VoidTblPtr)
 
       /* Validate file system name if state is enabled or disabled */
       
-      if ((Tbl->Volume[i].State == FILESYS_TBL_ENTRY_ENABLED) ||
-          (Tbl->Volume[i].State == FILESYS_TBL_ENTRY_DISABLED))
+      if ((Tbl->Volume[i].State == FILE_MGR_FileSysTblEntryState_ENABLED) ||
+          (Tbl->Volume[i].State == FILE_MGR_FileSysTblEntryState_DISABLED))
       {
 
          /* Search file system name buffer for a string terminator */
@@ -409,7 +408,7 @@ static int32 ValidateTbl(void *VoidTblPtr)
          } /* End NameLength checks */
      
       } /* End ENABLED/DISABLED checcks */ 
-      else if (Tbl->Volume[i].State == FILESYS_TBL_ENTRY_UNUSED)
+      else if (Tbl->Volume[i].State == FILE_MGR_FileSysTblEntryState_UNUSED)
       {
 
          /* Ignore (but count) unused table entries */

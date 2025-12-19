@@ -48,48 +48,37 @@
       "KIT_TO_HK_TLM_TOPICID"             : "topic-id-33",
       "KIT_TO_DATA_TYPES_TOPICID"         : "topic-id-34",
       "KIT_TO_PKT_TBL_TOPICID"            : "topic-id-35",
-      "KIT_TO_PKT_PLBK_TOPICID"           : "topic-id-36",
+      "KIT_TO_EVENT_PLBK_TLM_TOPICID"     : "topic-id-36",
       "KIT_TO_SUB_WRAPPED_TLM_TOPICID"    : "topic-id-37",
+      "KIT_TO_PUB_WRAPPED_TLM_TOPICID"    : "topic-id-38",
       
       "APP_C_DEMO_STATUS_TLM_TOPICID"     : "topic-id-40",
       "APP_C_DEMO_BIN_PLAYBK_TLM_TOPICID" : "topic-id-41",
       "APP_DEV_HK_TLM_TOPICID"            : "topic-id-42",
       "SAMPLE_APP_HK_TLM_TOPICID"         : "topic-id-43",
       "TEST_HK_TLM_TOPICID"               : "topic-id-44",
-      
-      "BERRY_IMU_HK_TLM_TOPICID"    : "topic-id-50",
-      "BERRY_IMU_RATE_TLM_TOPICID"  : "topic-id-51",
-      "GPIO_DEMO_HK_TLM_TOPICID"    : "topic-id-52",
-      "MQTT_GW_HK_TLM_TOPICID"      : "topic-id-53",
-      "MQTT_GW_TOPIC_1_TLM_TOPICID" : "topic-id-54",
-      "MQTT_GW_TOPIC_2_TLM_TOPICID" : "topic-id-55",
-      "MQTT_GW_TOPIC_3_TLM_TOPICID" : "topic-id-56",
-      "MQTT_GW_TOPIC_4_TLM_TOPICID" : "topic-id-57",
-      "MQTT_GW_TOPIC_5_TLM_TOPICID" : "topic-id-58",
-      "PL_MGR_STATUS_TLM_TOPICID"   : "topic-id-59",
-      "PL_SIM_STATUS_TLM_TOPICID"   : "topic-id-60",
-
-      "SPARE_70_TOPICID": "topic-id-70",
-      "SPARE_71_TOPICID": "topic-id-71",
-      "SPARE_72_TOPICID": "topic-id-72",
-      "SPARE_73_TOPICID": "topic-id-73",
-      "SPARE_74_TOPICID": "topic-id-74",
-      "SPARE_75_TOPICID": "topic-id-75",
-      "SPARE_76_TOPICID": "topic-id-76",
-      "SPARE_77_TOPICID": "topic-id-77",
-      "SPARE_78_TOPICID": "topic-id-78",
-      "SPARE_79_TOPICID": "topic-id-79",
             
-      "SPARE_80_TOPICID": "topic-id-80",
-      "SPARE_81_TOPICID": "topic-id-81",
-      "SPARE_82_TOPICID": "topic-id-82",
-      "SPARE_83_TOPICID": "topic-id-83",
-      "SPARE_84_TOPICID": "topic-id-84",
-      "SPARE_85_TOPICID": "topic-id-85",
-      "SPARE_86_TOPICID": "topic-id-86",
-      "SPARE_87_TOPICID": "topic-id-87",
-      "SPARE_88_TOPICID": "topic-id-88",
-      "SPARE_89_TOPICID": "topic-id-89",
+      "USER_50_TOPICID": "topic-id-50",
+      "USER_51_TOPICID": "topic-id-51",
+      "USER_52_TOPICID": "topic-id-52",
+      "USER_53_TOPICID": "topic-id-53",
+      "USER_54_TOPICID": "topic-id-54",
+      "USER_55_TOPICID": "topic-id-55",
+      "USER_56_TOPICID": "topic-id-56",
+      "USER_57_TOPICID": "topic-id-57",
+      "USER_58_TOPICID": "topic-id-58",
+      "USER_59_TOPICID": "topic-id-59",
+            
+      "USER_60_TOPICID": "topic-id-60",
+      "USER_61_TOPICID": "topic-id-61",
+      "USER_62_TOPICID": "topic-id-62",
+      "USER_63_TOPICID": "topic-id-63",
+      "USER_64_TOPICID": "topic-id-64",
+      "USER_65_TOPICID": "topic-id-65",
+      "USER_66_TOPICID": "topic-id-66",
+      "USER_67_TOPICID": "topic-id-67",
+      "USER_68_TOPICID": "topic-id-68",
+      "USER_69_TOPICID": "topic-id-69",
 
       "end": true
       
@@ -441,7 +430,7 @@
       }},
 
       {"packet": {
-         "name": "KIT_TO_PKT_PLBK_TOPICID",
+         "name": "KIT_TO_EVENT_PLBK_TLM_TOPICID",
          "topic-id-36": 0,
          "topic-id": 0,
          "forward": false,
@@ -454,6 +443,17 @@
       {"packet": {
          "name": "KIT_TO_SUB_WRAPPED_TLM_TOPICID",
          "topic-id-37": 0,
+         "topic-id": 0,
+         "forward": false,
+         "priority": 0,
+         "reliability": 0,
+         "buf-limit": 10,
+         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
+      }},
+
+      {"packet": {
+         "name": "KIT_TO_PUB_WRAPPED_TLM_TOPICID",
+         "topic-id-38": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -518,106 +518,106 @@
       }},
 
       {"packet": {
-         "name": "BERRY_IMU_HK_TLM_TOPICID",
+         "name": "USER_TOPICID",
          "topic-id-50": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
          "reliability": 0,
-         "buf-limit": 2,
+         "buf-limit": 4,
          "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
       }},
 
       {"packet": {
-         "name": "BERRY_IMU_RATE_TLM_TOPICID",
+         "name": "USER_TOPICID",
          "topic-id-51": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
          "reliability": 0,
-         "buf-limit": 8,
+         "buf-limit": 4,
          "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
       }},
 
       {"packet": {
-         "name": "GPIO_DEMO_HK_TLM_TOPICID",
+         "name": "USER_TOPICID",
          "topic-id-52": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
          "reliability": 0,
-         "buf-limit": 2,
+         "buf-limit": 4,
          "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
       }},
-      
+
       {"packet": {
-         "name": "MQTT_GW_HK_TLM_TOPICID",
+         "name": "USER_TOPICID",
          "topic-id-53": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
          "reliability": 0,
-         "buf-limit": 2,
+         "buf-limit": 4,
          "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
       }},
 
       {"packet": {
-         "name": "MQTT_GW_TOPIC_1_TLM_TOPICID",
+         "name": "USER_TOPICID",
          "topic-id-54": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
          "reliability": 0,
-         "buf-limit": 2,
+         "buf-limit": 4,
          "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
       }},
 
       {"packet": {
-         "name": "MQTT_GW_TOPIC_2_TLM_TOPICID",
+         "name": "USER_TOPICID",
          "topic-id-55": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
          "reliability": 0,
-         "buf-limit": 2,
+         "buf-limit": 4,
          "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
       }},
 
       {"packet": {
-         "name": "MQTT_GW_TOPIC_3_TLM_TOPICID",
+         "name": "USER_TOPICID",
          "topic-id-56": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
          "reliability": 0,
-         "buf-limit": 2,
+         "buf-limit": 4,
          "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
       }},
 
       {"packet": {
-         "name": "MQTT_GW_TOPIC_4_TLM_TOPICID",
+         "name": "USER_TOPICID",
          "topic-id-57": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
          "reliability": 0,
-         "buf-limit": 2,
+         "buf-limit": 4,
          "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
       }},
 
       {"packet": {
-         "name": "MQTT_GW_TOPIC_5_TLM_TOPICID",
+         "name": "USER_TOPICID",
          "topic-id-58": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
          "reliability": 0,
-         "buf-limit": 2,
+         "buf-limit": 4,
          "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
       }},
 
-     {"packet": {
-         "name": "PL_MGR_STATUS_TLM_TOPICID",
+      {"packet": {
+         "name": "USER_TOPICID",
          "topic-id-59": 0,
          "topic-id": 0,
          "forward": false,
@@ -627,130 +627,9 @@
          "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
       }},
 
-      {"packet": {
-         "name": "PL_SIM_STATUS_TLM_TOPICID",
-         "topic-id-60": 2159,
-         "topic-id": 2159,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
-      {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-70": 0,
-         "topic-id": 0,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
-      {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-71": 0,
-         "topic-id": 0,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
-      {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-72": 0,
-         "topic-id": 0,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
-      {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-73": 0,
-         "topic-id": 0,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
-      {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-74": 0,
-         "topic-id": 0,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
-      {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-75": 0,
-         "topic-id": 0,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
-      {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-76": 0,
-         "topic-id": 0,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
-      {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-77": 0,
-         "topic-id": 0,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
-      {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-78": 0,
-         "topic-id": 0,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
-      {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-79": 0,
-         "topic-id": 0,
-         "forward": false,
-         "priority": 0,
-         "reliability": 0,
-         "buf-limit": 4,
-         "filter": { "type": 2, "X": 1, "N": 1, "O": 0}
-      }},
-
        {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-80": 0,
+         "name": "USER_TOPICID",
+         "topic-id-60": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -760,8 +639,8 @@
       }},
 
       {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-81": 0,
+         "name": "USER_TOPICID",
+         "topic-id-61": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -771,8 +650,8 @@
       }},
 
       {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-82": 0,
+         "name": "USER_TOPICID",
+         "topic-id-62": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -782,8 +661,8 @@
       }},
 
       {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-83": 0,
+         "name": "USER_TOPICID",
+         "topic-id-63": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -793,8 +672,8 @@
       }},
 
       {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-84": 0,
+         "name": "USER_TOPICID",
+         "topic-id-64": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -804,8 +683,8 @@
       }},
 
       {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-85": 0,
+         "name": "USER_TOPICID",
+         "topic-id-65": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -815,8 +694,8 @@
       }},
 
       {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-86": 0,
+         "name": "USER_TOPICID",
+         "topic-id-66": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -826,8 +705,8 @@
       }},
 
       {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-87": 0,
+         "name": "USER_TOPICID",
+         "topic-id-67": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -837,8 +716,8 @@
       }},
 
       {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-88": 0,
+         "name": "USER_TOPICID",
+         "topic-id-68": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,
@@ -848,8 +727,8 @@
       }},
 
       {"packet": {
-         "name": "SPARE_TOPICID",
-         "topic-id-89": 0,
+         "name": "USER_TOPICID",
+         "topic-id-69": 0,
          "topic-id": 0,
          "forward": false,
          "priority": 0,

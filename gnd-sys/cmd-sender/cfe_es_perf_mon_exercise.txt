@@ -151,8 +151,8 @@ Step 5 - Transfer the data file to the ground
   A. Issue the FILE_XFER StartBinFotp command to transfer the data file
 --------------------------------------------------------------------------------
 
-># Use File Browser instead of command below to transfer /cf/perf_mon.dat
-> 'FILE_XFER', 'StartBinFotp', {'DataSegLen': 256, 'DataSegOffset': 0, 'SrcFilename': '/cf/perf_mon.dat'}
+># Use File Browser instead of command below to transfer /cf/perf_mon.dat. See issue #123
+># 'FILE_XFER', 'StartBinFotp', {'DataSegLen': 256, 'DataSegOffset': 0, 'SrcFilename': '/cf/perf_mon.dat'}
 
 
 ================================================================================

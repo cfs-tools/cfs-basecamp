@@ -1,13 +1,13 @@
 {
-   "title": "Scheduler",
+   "title": "Kit Scheduler",
    "description": ["Define runtime configurations. See kit_sch::app_cfg.h for definitions"],
    "config": {
       
       "APP_CFE_NAME":      "KIT_SCH",
       "APP_PERF_ID":       91,
            
-      "KIT_SCH_CMD_TOPICID": 6232,
-      "BC_SCH_4_SEC_TOPICID": 6233,
+      "KIT_SCH_CMD_TOPICID": 0,
+      "BC_SCH_4_SEC_TOPICID": 0,
       "KIT_SCH_HK_TLM_TOPICID": 2137,
       "KIT_SCH_DIAG_TLM_TOPICID": 2138,
       "KIT_SCH_TBL_ENTRY_TLM_TOPICID": 2139,

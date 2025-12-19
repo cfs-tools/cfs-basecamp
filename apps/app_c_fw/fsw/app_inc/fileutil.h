@@ -56,21 +56,11 @@
 /**********************/
 
 /*
-** If the state is (FILEUTIL_FILE_OPEN or FILEUTIL_FILE_CLOSED) then the
+** If the state is (APP_C_FW_FileState_FILE_OPEN or APP_C_FW_FileState_FILE_CLOSED) then the
 ** file exists and is not a directory
 */
-typedef enum
-{
-   
-   FILEUTIL_FILENAME_INVALID  = 1,
-   FILEUTIL_FILE_NONEXISTENT  = 2,
-   FILEUTIL_FILE_OPEN         = 3,
-   FILEUTIL_FILE_CLOSED       = 4,
-   FILEUTIL_FILE_IS_DIR       = 5
 
-} FileUtil_FileState_t;
-
-#define FILEUTIL_FILE_EXISTS(state) ((state==FILEUTIL_FILE_OPEN) || (state==FILEUTIL_FILE_CLOSED))
+#define FILEUTIL_FILE_EXISTS(state) ((state==APP_C_FW_FileState_FILE_OPEN) || (state==APP_C_FW_FileState_FILE_CLOSED))
 
 /*
 ** File Information
@@ -83,7 +73,7 @@ typedef struct
    uint32  Size;
    uint32  Time;
    uint32  Mode;
-   FileUtil_FileState_t State;
+   APP_C_FW_FileState_Enum_t State;
 
 } FileUtil_FileInfo_t;
 
@@ -142,7 +132,7 @@ bool FileUtil_AppendPathSep(char *DirName, uint16 BufferLen);
 **
 ** Return a string describing the FileUtil_FileState enumeration.
 */
-const char *FileUtil_FileStateStr(FileUtil_FileState_t  FileState);
+const char *FileUtil_FileStateStr(APP_C_FW_FileState_Enum_t  FileState);
 
 
 /******************************************************************************

@@ -44,12 +44,6 @@
 /** Macro Definitions **/
 /***********************/
 
-
-#define FILESYS_TBL_ENTRY_DISABLED     0
-#define FILESYS_TBL_ENTRY_ENABLED      1
-#define FILESYS_TBL_ENTRY_UNUSED       2
-
-
 #define FILESYS_TBL_REGISTER_ERR_EID         (FILESYS_BASE_EID + 0)
 #define FILESYS_TBL_VERIFY_ERR_EID           (FILESYS_BASE_EID + 1)
 #define FILESYS_TBL_VERIFIED_EID             (FILESYS_BASE_EID + 2)
@@ -68,36 +62,16 @@
 
 
 /******************************************************************************
-** Table Struture
-*/
-
-typedef struct
-{
-   
-   uint32  State; 
-   char    Name[OS_MAX_PATH_LEN];
-
-} FILESYS_Volume_t;
-
-
-typedef struct{
-   
-   FILESYS_Volume_t Volume[FILE_MGR_FILESYS_TBL_VOL_CNT];
-
-} FILESYS_TblData_t;
-
-
-/******************************************************************************
 ** Class Struture
 */
 
 typedef struct
 {
 
-   bool                Registered;
-   int32               Status;        /* Status of last cFE Table service call */
-   CFE_TBL_Handle_t    Handle;
-   FILESYS_TblData_t   *DataPtr;
+   bool                  Registered;
+   int32                 Status;        /* Status of last cFE Table service call */
+   CFE_TBL_Handle_t      Handle;
+   FILE_MGR_FileSysTbl_t *DataPtr;
 
 } FILESYS_CfeTbl_t;
 

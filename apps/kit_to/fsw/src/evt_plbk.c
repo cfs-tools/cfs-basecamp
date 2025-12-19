@@ -214,7 +214,7 @@ bool EVT_PLBK_StartCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
    FileInfo = FileUtil_GetFileInfo(EvtPlbk->EventLogFile, OS_MAX_PATH_LEN, false);
 
-   if (FileInfo.State == FILEUTIL_FILE_CLOSED)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_CLOSED)
    {
       OS_remove(EvtPlbk->EventLogFile);
    }

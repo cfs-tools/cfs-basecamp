@@ -52,8 +52,8 @@ Exercise 1. FOTP Pause/Resume
 Exercise 2. FITP
 
 # Steps:
-# TODO - See prologue
+# TODO - See prologue for issue that prevents this exercise from being run
 #
 
-> 'FILE_XFER', 'StartFitp', {'DataSegLen': 128, 'DataSegOffset': 0, 'SrcFilename': '/cf/cfe_es_startup.scr'}
+>#TODO 'FILE_XFER', 'StartFitp', {'DataSegLen': 128, 'DataSegOffset': 0, 'SrcFilename': '/cf/cfe_es_startup.scr'}
 

@@ -91,23 +91,23 @@ bool FileUtil_AppendPathSep(char *DirName, uint16 BufferLen)
 **
 ** Type checking should enforce valid parameter but check just to be safe.
 */
-const char *FileUtil_FileStateStr(FileUtil_FileState_t  FileState)
+const char *FileUtil_FileStateStr(APP_C_FW_FileState_Enum_t  FileState)
 {
 
    static const char *FileStateStr[] = 
    {
       "Undefined", 
-      "Invalid Filename",    /* FILEUTIL_FILENAME_INVALID */
-      "Nonexistent File",    /* FILEUTIL_FILE_NONEXISTENT */
-      "File Open",           /* FILEUTIL_FILE_OPEN        */
-      "File Closed",         /* FILEUTIL_FILE_OPEN        */
-      "File is a Directory"  /* FILEUTIL_FILE_IS_DIR      */
+      "Invalid Filename",    /* APP_C_FW_FileState_FILENAME_INVALID */
+      "Nonexistent File",    /* APP_C_FW_FileState_FILE_NONEXISTENT */
+      "File Open",           /* APP_C_FW_FileState_FILE_OPEN        */
+      "File Closed",         /* APP_C_FW_FileState_FILE_CLOSED      */
+      "File is a Directory"  /* APP_C_FW_FileState_FILE_IS_DIR      */
    };
 
    uint8 i = 0;
    
-   if ( FileState >= FILEUTIL_FILENAME_INVALID &&
-        FileState <= FILEUTIL_FILE_IS_DIR)
+   if ( FileState >= APP_C_FW_FileState_FILENAME_INVALID &&
+        FileState <= APP_C_FW_FileState_FILE_IS_DIR)
    {
    
       i =  FileState;
@@ -135,7 +135,7 @@ FileUtil_FileInfo_t FileUtil_GetFileInfo(const char *Filename, uint16 FilenameBu
    FileInfo.Size  = 0;
    FileInfo.Time  = 0;
    FileInfo.Mode  = 0;
-   FileInfo.State = FILEUTIL_FILENAME_INVALID;
+   FileInfo.State = APP_C_FW_FileState_FILENAME_INVALID;
 
    /* TODO - Fix all file utilities to accept a length parameter with a OS_MAX_PATH_LEN check */
    if (FilenameBufLen != OS_MAX_PATH_LEN)
@@ -157,16 +157,16 @@ FileUtil_FileInfo_t FileUtil_GetFileInfo(const char *Filename, uint16 FilenameBu
          if (OS_FILESTAT_ISDIR(FileStatus))
          {
             
-            FileInfo.State = FILEUTIL_FILE_IS_DIR;
+            FileInfo.State = APP_C_FW_FileState_FILE_IS_DIR;
          
          }
          else
          {
 
-            FileInfo.State = FILEUTIL_FILE_CLOSED;
+            FileInfo.State = APP_C_FW_FileState_FILE_CLOSED;
             if (OS_FileOpenCheck(Filename) == OS_SUCCESS)
             {
-               FileInfo.State = FILEUTIL_FILE_OPEN;
+               FileInfo.State = APP_C_FW_FileState_FILE_OPEN;
             }
 
             if (IncludeSizeTime)
@@ -182,7 +182,7 @@ FileUtil_FileInfo_t FileUtil_GetFileInfo(const char *Filename, uint16 FilenameBu
       else
       {
          
-         FileInfo.State = FILEUTIL_FILE_NONEXISTENT;
+         FileInfo.State = APP_C_FW_FileState_FILE_NONEXISTENT;
 
       } /* End if file doesn't exist */
       

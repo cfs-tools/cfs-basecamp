@@ -18,7 +18,7 @@
 **  Notes:
 **    1. The sprintf() event message strategy uses buffers that are longer than 
 **       CFE_MISSION_EVS_MAX_MESSAGE_LENGTH and relies on CFE_EVS_SendEvent() to
-**       truncate long messages. TODO - Improve this.
+**       truncate long messages.
 **    2. When get FileUtil_GetFileInfo() is used to verify whether a target file
 **       exists it does not verify the directory path is valid so an operation
 **       could still get an error when it tries to use the target path/file.
@@ -96,7 +96,7 @@ bool FILE_ConcatenateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
    */
    
    FileInfo = FileUtil_GetFileInfo(ConcatenateCmd->Source1Filename, OS_MAX_PATH_LEN, false);
-   if (FileInfo.State == FILEUTIL_FILE_CLOSED)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_CLOSED)
    {
       
       Source1Valid = true;
@@ -108,7 +108,7 @@ bool FILE_ConcatenateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
    }
    
    FileInfo = FileUtil_GetFileInfo(ConcatenateCmd->Source2Filename, OS_MAX_PATH_LEN, false);
-   if (FileInfo.State == FILEUTIL_FILE_CLOSED)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_CLOSED)
    {
       Source2Valid = true;
    }
@@ -118,7 +118,7 @@ bool FILE_ConcatenateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
               ConcatenateCmd->Source2Filename, FileUtil_FileStateStr(FileInfo.State));
    }
    FileInfo = FileUtil_GetFileInfo(ConcatenateCmd->TargetFilename, OS_MAX_PATH_LEN, false);
-   if (FileInfo.State == FILEUTIL_FILE_NONEXISTENT)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_NONEXISTENT)
    {
       TargetValid = true;
    }
@@ -183,7 +183,7 @@ bool FILE_CopyCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
          if (CopyCmd->Overwrite == true)
          {
             
-            if (FileInfo.State == FILEUTIL_FILE_CLOSED)
+            if (FileInfo.State == APP_C_FW_FileState_FILE_CLOSED)
             {
                
                PerformCopy = true;
@@ -201,7 +201,7 @@ bool FILE_CopyCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
          else
          {
          
-            if (FileInfo.State == FILEUTIL_FILE_NONEXISTENT)
+            if (FileInfo.State == APP_C_FW_FileState_FILE_NONEXISTENT)
             {
                
                PerformCopy = true;
@@ -273,7 +273,6 @@ bool FILE_CopyCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 bool FILE_DecompressCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   /* Can't uses const because CFE_PSP_Decompress() */
    const FILE_MGR_DecompressFile_CmdPayload_t *DecompressCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_DecompressFile_t);
    bool   RetStatus = false;
 
@@ -283,15 +282,18 @@ bool FILE_DecompressCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
    
    FileInfo = FileUtil_GetFileInfo(DecompressCmd->SourceFilename, OS_MAX_PATH_LEN, false);
    
-   if (FileInfo.State == FILEUTIL_FILE_CLOSED)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_CLOSED)
    {
    
       FileInfo = FileUtil_GetFileInfo(DecompressCmd->TargetFilename, OS_MAX_PATH_LEN, false);
    
-      if (FileInfo.State == FILEUTIL_FILE_NONEXISTENT)
+      if (FileInfo.State == APP_C_FW_FileState_FILE_NONEXISTENT)
       {
-          
-         //todo: CfeStatus = CFE_FS_Decompress(DecompressCmd->SourceFilename, DecompressCmd->TargetFilename); 
+         //TODO: CFE_PSP_Decompress() doesn't use const so had to do this copy hack
+         char SourceFilename[OS_MAX_PATH_LEN], TargetFilename[OS_MAX_PATH_LEN];
+         strncpy(SourceFilename,DecompressCmd->SourceFilename,OS_MAX_PATH_LEN);
+         strncpy(TargetFilename,DecompressCmd->TargetFilename,OS_MAX_PATH_LEN);         
+         //TODO: Decompress doesn't exist: CfeStatus = CFE_PSP_Decompress(SourceFilename, TargetFilename); 
          CfeStatus = CFE_SUCCESS;
 
          if (CfeStatus == CFE_SUCCESS)
@@ -353,7 +355,7 @@ bool FILE_DeleteCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
    
    FileInfo = FileUtil_GetFileInfo(DeleteCmd->Filename, OS_MAX_PATH_LEN, false);
 
-   if (FileInfo.State == FILEUTIL_FILE_CLOSED)
+   if (FileInfo.State == APP_C_FW_FileState_FILE_CLOSED)
    {
  
          SysStatus = OS_remove(DeleteCmd->Filename);
@@ -418,7 +420,7 @@ bool FILE_MoveCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
          if (MoveCmd->Overwrite == true)
          {
             
-            if (FileInfo.State == FILEUTIL_FILE_CLOSED)
+            if (FileInfo.State == APP_C_FW_FileState_FILE_CLOSED)
             {
                
                PerformMove = true;
@@ -436,7 +438,7 @@ bool FILE_MoveCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
          else
          {
          
-            if (FileInfo.State == FILEUTIL_FILE_NONEXISTENT)
+            if (FileInfo.State == APP_C_FW_FileState_FILE_NONEXISTENT)
             {
                
                PerformMove = true;
@@ -522,7 +524,7 @@ bool FILE_RenameCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
    
       FileInfo = FileUtil_GetFileInfo(RenameCmd->TargetFilename, OS_MAX_PATH_LEN, false);
    
-      if (FileInfo.State == FILEUTIL_FILE_NONEXISTENT)
+      if (FileInfo.State == APP_C_FW_FileState_FILE_NONEXISTENT)
       {
       
          SysStatus = OS_rename(RenameCmd->SourceFilename, RenameCmd->TargetFilename);

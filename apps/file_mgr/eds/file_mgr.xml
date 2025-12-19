@@ -36,25 +36,31 @@
       <!--***********************************-->
     
       <EnumeratedDataType name="FileSysTblEntryState" shortDescription="" >
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
         <EnumerationList>
-          <Enumeration label="DISABLE" value="0" shortDescription="" />
-          <Enumeration label="ENABLE"  value="1" shortDescription="" />
+          <Enumeration label="DISABLED" value="0" shortDescription="" />
+          <Enumeration label="ENABLED"  value="1" shortDescription="" />
+          <Enumeration label="UNUSED"   value="2" shortDescription="" />
         </EnumerationList>
       </EnumeratedDataType>
 
-
+      <ContainerDataType name="DirFileEntry" shortDescription="">
+        <EntryList>
+          <Entry name="Name" type="BASE_TYPES/PathName" shortDescription="Filename" />
+          <Entry name="Size" type="BASE_TYPES/uint32"   shortDescription="File size in bytes" />
+          <Entry name="Time" type="BASE_TYPES/uint32"   shortDescription="File's Last Modification Times" />
+          <Entry name="Mode" type="BASE_TYPES/uint32"   shortDescription="Mode of the file (Permissions)" />
+        </EntryList>
+      </ContainerDataType>
+      
       <!--**********************************-->
       <!--**** DataTypeSet: Table Files ****-->
       <!--**********************************-->
 
-
-      <!-- TODO: Orginal def used by code. If table manager proxy tlm works, this needs to be merged and/or code updated to use new definitions -->
-      
       <ContainerDataType name="FileSysTblEntry" shortDescription="">
         <EntryList>
-          <Entry name="VolumeState" type="BASE_TYPES/uint32" shortDescription="todo" />
-          <Entry name="VolumeName" type="BASE_TYPES/PathName" shortDescription="Name of file system volume" />
+          <Entry name="State" type="FileSysTblEntryState" shortDescription="" />
+          <Entry name="Name"  type="BASE_TYPES/PathName"  shortDescription="Name of file system volume" />
         </EntryList>
       </ContainerDataType>
       
@@ -66,11 +72,10 @@
       
       <ContainerDataType name="FileSysTbl" shortDescription="FILE_MGR file system table">
         <EntryList>
-          <Entry name="Config" type="FileSysTblEntries" />
+          <Entry name="Volume" type="FileSysTblEntries" />
         </EntryList>
       </ContainerDataType>
       
-      <!-- TODO: New types will need to be merged if table manager works -->
       <ArrayDataType name="FileSysTblData" dataTypeRef="FileSysTblEntry">
         <DimensionList>
            <Dimension size="${FILE_MGR/FILESYS_TBL_VOL_CNT}"/>
@@ -256,13 +261,13 @@
 
       <ContainerDataType name="FileInfoTlm_Payload" shortDescription="">
         <EntryList>
-          <Entry name="State"        type="BASE_TYPES/uint8"      shortDescription="See FileUtil_FileState definitions. TODO: Add enum" />
+          <Entry name="State"        type="APP_C_FW/FileState"    shortDescription="See FileUtil_FileState definitions" />
           <Entry name="CrcComputed"  type="APP_C_FW/BooleanUint8" shortDescription="Flag indicating whether a CRC was computed" />
           <Entry name="Spare"        type="BASE_TYPES/uint16"     shortDescription="Double word aligment padding" />
           <Entry name="Crc"          type="BASE_TYPES/uint32"     shortDescription="CRC value if computed" />
           <Entry name="Size"         type="BASE_TYPES/uint32"     shortDescription="File Size in bytes" />
           <Entry name="Time"         type="BASE_TYPES/uint32"     shortDescription="Time of last file modification" />
-          <Entry name="Mode"         type="BASE_TYPES/uint32"     shortDescription="Permissions as received by call to TODO" />
+          <Entry name="Mode"         type="BASE_TYPES/uint32"     shortDescription="Permissions as received by call to OS_FILESTAT_MODE()" />
           <Entry name="Filename"     type="BASE_TYPES/PathName"   shortDescription="" />
         </EntryList>
       </ContainerDataType>

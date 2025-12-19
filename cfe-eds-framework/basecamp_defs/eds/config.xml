@@ -73,9 +73,10 @@
   </Package>
   
   <Package name="FILE_MGR" shortDescription="FILE_MGR configurable items">
-    <Define name="FILESYS_TBL_VOL_CNT" value="4" />
-    <Define name="OS_MAX_NUM_OPEN_FILES" value="8"  shortDescription="Placeholder until find the correct way to define it"/>
-    <Define name="DIR_LIST_FILE_ENTRIES" value="20" shortDescription="Number of files in each directory listing telemetry packet" />
+    <Define name="FILESYS_TBL_VOL_CNT"   value="4" />
+    <Define name="OS_MAX_NUM_OPEN_FILES" value="8"    shortDescription="Placeholder until find the correct way to define it"/>
+    <Define name="DIR_LIST_FILE_ENTRIES" value="20"   shortDescription="Number of files in each directory listing telemetry packet" />
+    <Define name="TASK_FILE_BLOCK_SIZE"  value="2048" shortDescription="Chunk of file to work with for one iteration of a task like computing a CRC" />
   </Package>
 
   <Package name="FILE_XFER" shortDescription="FILE_XFER configurable items">

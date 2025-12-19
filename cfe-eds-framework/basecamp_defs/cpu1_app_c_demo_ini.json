@@ -1,6 +1,7 @@
 {
    "title": "App C Demo initialization file",
-   "description": ["Define runtime configurations"],
+   "description": ["Define deployment configurations",
+                   "Device data range: 0 <= data < DEVICE_DATA_MODULO"],
    
    "config": {
       

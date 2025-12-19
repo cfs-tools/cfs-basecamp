@@ -15,6 +15,7 @@
 #include "app_cfg.h"
 #include "filesys.h"
 
+
 /*
 ** Table header
 */
@@ -33,24 +34,24 @@
 **
 ** -- the file system name for unused entries is ignored
 */
-FILESYS_TblData_t FILESYS_Tbl =
+FILE_MGR_FileSysTbl_t FILESYS_Tbl =
 {
   {
-    {                                   /* - 0 - */
-        FILESYS_TBL_ENTRY_ENABLED,      /* Entry state (enabled, disabled, unused) */
-        "/ram",                         /* File system name (logical mount point) */
+    {                                           /* - 0 - */
+        FILE_MGR_FileSysTblEntryState_ENABLED,  /* Entry state (enabled, disabled, unused) */
+        "/ram",                                 /* File system name (logical mount point) */
     },
-    {                                   /* - 1 - */
-        FILESYS_TBL_ENTRY_DISABLED,     /* Entry state (enabled, disabled, unused) */
-        "/boot",                        /* File system name (logical mount point) */
+    {                                           /* - 1 - */
+        FILE_MGR_FileSysTblEntryState_DISABLED, /* Entry state (enabled, disabled, unused) */
+        "/boot",                                /* File system name (logical mount point) */
     },
-    {                                   /* - 2 - */
-        FILESYS_TBL_ENTRY_DISABLED,     /* Entry state (enabled, disabled, unused) */
-        "/alt",                         /* File system name (logical mount point) */
+    {                                           /* - 2 - */
+        FILE_MGR_FileSysTblEntryState_DISABLED, /* Entry state (enabled, disabled, unused) */
+        "/alt",                                 /* File system name (logical mount point) */
     },
-    {                                   /* - 3 - */
-        FILESYS_TBL_ENTRY_UNUSED,       /* Entry state (enabled, disabled, unused) */
-        "",                             /* File system name (logical mount point) */
+    {                                           /* - 3 - */
+        FILE_MGR_FileSysTblEntryState_UNUSED,   /* Entry state (enabled, disabled, unused) */
+        "",                                     /* File system name (logical mount point) */
     }
   }
 };
@@ -58,16 +59,5 @@ FILESYS_TblData_t FILESYS_Tbl =
 /*
 ** cFE Table header
 */
-CFE_TBL_FILEDEF(FILESYS_Tbl, FILE_MGR.FileSysTbl, File system volumes, filesys_tbl.tbl)
 
-/*
-static CFE_TBL_FileDef_t CFE_TBL_FileDef __attribute__((__used__)) =
-{
-    "FILESYS_Tbl", FILEMGR_APP_CFE_NAME "." FILEMGR_TBL_CFE_NAME,
-    "File System Free Space", "filesys_tbl.tbl", sizeof(FILESYS_TblData_t)
-};
-*/
-/* TODO - Macro chokes on FILESYS_* macro lengths 
-#define FILESYS_TBL_NAME  (FILEMGR_INI_APP_NAME "." FILEMGR_INI_TBL_CFE_NAME)
-CFE_TBL_FILEDEF(FILESYS_Tbl, FILEMGR_TBL_NAME, FILEMGR_INI_TBL_DEF_DESC, FILEMGR_INI_TBL_FILENAME)
-*/
+CFE_TBL_FILEDEF(FILESYS_Tbl, FILE_MGR.FileSysTbl, File system volumes, filesys_tbl.tbl)
