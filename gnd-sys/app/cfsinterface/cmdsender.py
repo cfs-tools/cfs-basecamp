@@ -277,6 +277,18 @@ class CmdSender(CmdTlmProcess):
         start with the filename followed by a space.
         """
         return gui_filename.split(' ')[0]
+
+    def send_command(self, command_line):
+        tokens = command_line.split(CMD_SENDER_CMD_FIELD_DELIMITER)                    
+        # Crude sanity check 
+        if len(tokens) >= 3:
+            cmd_str = f'self.send_cfs_cmd({command_line})'                        
+            try:
+               exec(cmd_str)
+            except Exception as e:
+               sg.popup('Error executing command\n'+str(e), title="Send Command Error", modal=False)
+        else:
+            sg.popup('Command must contain 3 fields separated by commas: App,Command,{Parameters}' , title="Command Sender Command Error", modal=False)
         
     def gui(self):
         
@@ -289,7 +301,7 @@ class CmdSender(CmdTlmProcess):
         pri_hdr_font   = ('Arial bold',14)
         list_font      = ('Courier',11)
         log_font       = ('Courier',11)
-        self.cmd_file_menu = ['_', ['Send']]
+        self.cmd_file_menu = ['_', ['Edit->Send','Send']]
         self.command_col = [
             [sg.Text('Commands', font=col_title_font)],
             [sg.Listbox(values=[], font=list_font, enable_events=True, size=(col_width,col_height), key='-COMMAND_LIST-', right_click_menu=self.cmd_file_menu)]]
@@ -303,7 +315,7 @@ class CmdSender(CmdTlmProcess):
             [sg.Menu(menu_layout)],
             [sg.Text('Command File:', font=pri_hdr_font), sg.Text('', font=pri_hdr_font, size=(col_width,1), relief=sg.RELIEF_RAISED, border_width=1, justification='center', key='-COMMAND_FILE-')],
             [sg.Text('Commands', font=col_title_font)],
-            [sg.Listbox(values=[], font=list_font, enable_events=True, size=(window_width,10), key='-COMMAND_LIST-', right_click_menu=self.cmd_file_menu)],
+            [sg.Listbox(values=[], font=list_font, enable_events=True, size=(window_width,10), key='-COMMAND_LIST-', right_click_menu=self.cmd_file_menu,horizontal_scroll=True)],
             [sg.Text('Command Comment', font=col_title_font)],
             [sg.MLine(default_text='', font=log_font, enable_events=True, size=(window_width,5), key='-COMMENT_LIST-')],
             #[sg.Column(self.command_col, element_justification='c'), sg.VSeperator(), sg.Column(self.comment_col, element_justification='c')],
@@ -335,21 +347,18 @@ class CmdSender(CmdTlmProcess):
                     if len(selected_indices) > 0:
                         self.window['-COMMENT_LIST-'].update(self.cmd_sender_comments[selected_indices[0]])
 
-            elif self.event in ('Send'):
-                command_line = self.values['-COMMAND_LIST-'][0]
-                if len(command_line) > 0:
+            elif self.event in ('Edit->Send','Send'):
+                if len(self.values['-COMMAND_LIST-']) > 0:
+                    command_line = self.values['-COMMAND_LIST-'][0]
                     print(f'{command_line}')
                     if not command_line.startswith(CMD_SENDER_START_COMMENT_DELIMITER):
-                        tokens = command_line.split(CMD_SENDER_CMD_FIELD_DELIMITER)                    
-                        # Crude sanity check 
-                        if len(tokens) >= 3:
-                            cmd_str = f'self.send_cfs_cmd({command_line})'                        
-                            try:
-                               exec(cmd_str)
-                            except Exception as e:
-                               sg.popup('Error executing command\n'+str(e), title="Send Command Error", modal=False)
+                        if self.event == 'Send':
+                            self.send_command(command_line)
                         else:
-                            sg.popup('Command must contain 3 fields separated by commas: App,Command,{Parameters}' , title="Command Sender Command Error", modal=False)
+                            print(f'len(command_line) = {len(command_line)}')
+                            command_line = sg.popup_get_text('Edit the command and hit <Ok> to send:', title='Edit Command', default_text=command_line, size=(100,1))
+                            if command_line is not None:
+                                self.send_command(command_line)
                     else:
                         sg.popup("This is a comment line that can't be sent", title="Command Sender Command Error", modal=False)                        
                 else:

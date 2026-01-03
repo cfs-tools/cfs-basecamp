@@ -310,7 +310,7 @@ class CreateApp():
                             instruct_text = f"> Use 'File->Add App to Target' to add {app_name} to the cFS target.\n"
                             tutorial_text = ''
                             if self.selected_app.has_tutorial:
-                                tutorial_text = "> A coding tutorial will be added to the 'Learn' dropdown menu when Basecanp is restarted.\n"
+                                tutorial_text = "> A coding tutorial will be added to the 'Tutorials' dropdown menu when Basecamp is restarted.\n"
                             popup_text = f'{status_text}{instruct_text}{tutorial_text}\n'
                             sg.popup(popup_text, line_width=100, title="Create Application", modal=False)
                             break                

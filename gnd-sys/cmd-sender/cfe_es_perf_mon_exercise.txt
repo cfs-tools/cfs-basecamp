@@ -1,38 +1,34 @@
 """
 cFE Executive Service Performance Monitor Exercise Summary
 
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
 Notes:
   1. This exercise is part of the Basecamp cFS Framework Executive Services
      training module. 
   2. Debug events are enabled for the apps used during the exercise to
      provide more information about what's going on
-
-Exercise Steps:
-  1. Environment setup
-  2. Configure the filter masks
-  3. Configure the trigger masks
-  4. Collect the data
-  5. Transfer file from flight to ground
-  6. Start the cFS Performance Monitor (CPM),
-     load and analyze the data  
-  7. Environment cleanup
-
-License:
-    Copyright 2022 bitValence, Inc.
-    All Rights Reserved.
-
-
+  3. ES configuration parameter CFE_PLATFORM_ES_PERF_DATA_BUFFER_SIZE defines
+     amount of memory available to capture execution markers. 
+  4. The tools basecamp/gnd-sys/perf-monitor directory contains the cFS
+     Performance Monitor (CPM) User's Guide.
+     
 Detailed Description:
   
 The Performance Monitor utility contains a flight and ground component that
 allows a user to trace and display the execution of the flight software.
 
-The File Manager(FILE_MGR) and Demo App (APP_C_DEMO) apps are used during the
-demo. FILE_MGR uses the BC_SCH_2_SEC_TOPICID message to send its housekeeping
-(HK) telemetry. This is done to reduce FILE_MGR's activities making it easier
-to anaylze the plots. APP_C_DEMO sends a status message at it's 1Hz execution
-rate so nothing is changed in its configuration. In fact APP_C_DEMO's 1Hz rate
-is used as the fundamental periodic event from which to analyze other events.
+The flight component is used to trace the execution of file File Manager(FILE_MGR)
+commands. The Demo App (APP_C_DEMO) app’s execution is used as the trigger and is
+also traced to provide a 1Hz signal that can be used as a reference signal. The
+KIT_SCH app's BC_SCH_2_SEC_TOPICID message is disabled because FILE_MGR uses it
+to send its housekeeping (HK) telemetry. Tracing this execution would clutter
+the trace. The goal is to only trace FILE_MGR's command executions. APP_C_DEMO
+sends its status message during its 1Hz execution so its 1Hz execution will be
+the only activity traced. APP_C_DEMO's 1Hz rate is used as the periodic event
+from which to analyze other events.
 
 The cFE Executive Serve (ES) app controls the performance monitor data. The
 operational steps are
@@ -48,12 +44,16 @@ operational steps are
   6. Transfer the data file to the ground
   7. Analyse the data using the cFS Performance Monitor tool.
 
-Notes:
-  1. ES configuration parameter CFE_PLATFORM_ES_PERF_DATA_BUFFER_SIZE defines
-     amount of memory available to capture execution markers. 
-  2. The tools basecamp/gnd-sys/perf-monitor directory contains the cFS
-     Performance Monitor (CPM) User's Guide.
-
+Exercise Steps:
+  1. Environment setup
+  2. Configure the filter masks
+  3. Configure the trigger masks
+  4. Collect the data
+  5. Transfer file from flight to ground
+  6. Start the cFS Performance Monitor (CPM),
+     load and analyze the data  
+  7. Environment cleanup
+  
 """
 
 

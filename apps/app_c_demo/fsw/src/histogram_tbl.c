@@ -225,7 +225,7 @@ static bool LoadJsonData(size_t JsonFileLen)
          RetStatus = true;
       }
       
-   } /* End if valid JOSN obj count */
+   } /* End if valid JSON obj count */
    
    return RetStatus;
    

@@ -40,30 +40,48 @@ void ram_notimpl_Init(uint32 PspModuleId)
 
 int32 CFE_PSP_MemRead8(cpuaddr MemoryAddress, uint8 *ByteValue)
 {
-    return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
+    uint8 *DataPtr = (uint8 *)MemoryAddress;  //bc
+    *ByteValue = *DataPtr;                    //bc
+    return(CFE_PSP_SUCCESS);                  //bc
+    //bc return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
 }
 
 int32 CFE_PSP_MemWrite8(cpuaddr MemoryAddress, uint8 ByteValue)
 {
-    return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
+    uint8 *DataPtr = (uint8 *)MemoryAddress;  //bc
+    *DataPtr = ByteValue;                     //bc
+    return(CFE_PSP_SUCCESS);                  //bc
+    //bc return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
 }
 
 int32 CFE_PSP_MemRead16(cpuaddr MemoryAddress, uint16 *uint16Value)
 {
-    return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
+    uint16 *DataPtr = (uint16 *)MemoryAddress; //bc
+    *uint16Value = *DataPtr;                   //bc
+    return(CFE_PSP_SUCCESS);                   //bc
+    //bc return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
 }
 
 int32 CFE_PSP_MemWrite16(cpuaddr MemoryAddress, uint16 uint16Value)
 {
-    return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
+    uint16 *DataPtr = (uint16 *)MemoryAddress;  //bc
+    *DataPtr = uint16Value;                     //bc
+    return(CFE_PSP_SUCCESS);                    //bc
+    //bc return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
 }
 
 int32 CFE_PSP_MemRead32(cpuaddr MemoryAddress, uint32 *uint32Value)
 {
-    return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
+    uint32 *DataPtr = (uint32 *)MemoryAddress;  //bc
+    *uint32Value = *DataPtr;                    //bc
+    return(CFE_PSP_SUCCESS);                    //bc
+    //bc return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
 }
 
 int32 CFE_PSP_MemWrite32(cpuaddr MemoryAddress, uint32 uint32Value)
 {
-    return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
+    uint32 *DataPtr = (uint32 *)MemoryAddress;  //bc
+    *DataPtr = uint32Value;                     //bc
+    return(CFE_PSP_SUCCESS);                    //bc
+    //bc return (CFE_PSP_ERROR_NOT_IMPLEMENTED);
 }

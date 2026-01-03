@@ -16,7 +16,9 @@
 **    Entry point function for Application C framework library
 **
 **  Notes:
-**    None
+**    1. The global memory buffer APP_C_FW_Sandbox is provided for
+**       maintenance demos and exercises that need a safe globally 
+**       accessible memory space to play in. 
 **
 */
 
@@ -26,6 +28,13 @@
 
 #include "app_c_fw_cfg.h"
 #include "app_c_fw_ver.h"
+#include "membuf.h"
+
+/*
+** Global Data
+*/
+
+MEM_BUF_ByteArray_t  APP_C_FW_Sandbox;
 
 /*
 ** Exported Functions

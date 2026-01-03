@@ -37,6 +37,11 @@
 #include "app_c_fw_eds_typedefs.h"
 #include "app_c_fw_eds_defines.h"
 
+//TODO: Remove this once the EDS issue in app_c_fw.xml is resolved
+#if APP_C_FW_CRC_16 != CFE_MISSION_ES_CRC_16
+#error APP_C_FW_CrcUint8_CRC_16 definition must match CFE_MISSION_ES_CRC_16
+#endif
+
 /******************************************************************************
 ** Command Manager (CMDMGR)
 */

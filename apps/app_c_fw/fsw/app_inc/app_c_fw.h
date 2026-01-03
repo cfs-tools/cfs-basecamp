@@ -38,6 +38,7 @@
 #include "pktutil.h"
 #include "childmgr.h"
 #include "crc.h"
+#include "membuf.h"
 
 #endif /* _app_c_fw_ */
 

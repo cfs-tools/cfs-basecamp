@@ -63,48 +63,59 @@
       <!--**** DataTypeSet:  Entry Types ****-->
       <!--***********************************-->
 
-      <!-- cFS Extension -->
-
-      <EnumeratedDataType name="CrcUint8" shortDescription="8-bit CRC algorithm selection" >
+      <Define name="CRC_16" value="2" />
+      <EnumeratedDataType name="CrcUint8" shortDescription="8-bit CRC algorithm selection for commands/telemetry" >
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
         <EnumerationList>
-          <Enumeration label="CRC_16" value="${CFE_MISSION/ES_CRC_16}" shortDescription="Only CRC supported by cFE ES" />
+          <Enumeration label="CRC_16" value="${CRC_16}" shortDescription="TODO: Use CFE_MISSION if I can figure out how to get it to resolve" />
         </EnumerationList>
       </EnumeratedDataType>
-
+    
       <!-- General -->
 
       <StringDataType name="IPv4Address" length="16" />
       
+      <Define name="FALSE" value="0" />
+      <Define name="TRUE"  value="1" />
       <EnumeratedDataType name="BooleanUint8" shortDescription="8-bit Boolean" >
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
         <EnumerationList>
-          <Enumeration label="FALSE" value="0" shortDescription="" />
-          <Enumeration label="TRUE"  value="1" shortDescription="" />
+          <Enumeration label="FALSE" value="${FALSE}" shortDescription="" />
+          <Enumeration label="TRUE"  value="${TRUE}"  shortDescription="" />
         </EnumerationList>
       </EnumeratedDataType>
 
       <EnumeratedDataType name="BooleanUint16" shortDescription="16-bit Boolean" >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
-          <Enumeration label="FALSE" value="0" shortDescription="" />
-          <Enumeration label="TRUE"  value="1" shortDescription="" />
+          <Enumeration label="FALSE" value="${FALSE}" shortDescription="" />
+          <Enumeration label="TRUE"  value="${TRUE}" shortDescription="" />
         </EnumerationList>
       </EnumeratedDataType>
-    
-      <EnumeratedDataType name="ConfigEnaAction" shortDescription="Common terminology for enable/disable configuration" >
+      
+      <Define name="ENABLE"  value="1" />
+      <Define name="DISABLE" value="2" />
+      <EnumeratedDataType name="ConfigEnaAction" shortDescription="Common terminology for enable/disable configuration in commands" >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
-          <Enumeration label="ENABLE"  value="1" shortDescription="" />
-          <Enumeration label="DISABLE" value="2" shortDescription="" />
+          <Enumeration label="ENABLE"  value="${ENABLE}"  shortDescription="" />
+          <Enumeration label="DISABLE" value="${DISABLE}" shortDescription="" />
+        </EnumerationList>
+      </EnumeratedDataType>
+
+      <EnumeratedDataType name="ConfigEnaState" shortDescription="Common terminology for enable/disable configuration in telemetry" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="ENABLED"  value="${ENABLE}"  shortDescription="" />
+          <Enumeration label="DISABLED" value="${DISABLE}" shortDescription="" />
         </EnumerationList>
       </EnumeratedDataType>
 
       <EnumeratedDataType name="ConfigExeAction" shortDescription="Common terminaology for execution configuration" >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
-          <Enumeration label="START"  value="1" shortDescription="" />
-          <Enumeration label="STOP" value="2" shortDescription="" />
+          <Enumeration label="START" value="1" shortDescription="" />
+          <Enumeration label="STOP"  value="2" shortDescription="" />
         </EnumerationList>
       </EnumeratedDataType>
 
@@ -193,8 +204,8 @@
       <EnumeratedDataType name="TblId" shortDescription="Identifies different app tables." >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
-          <Enumeration label="TABLE_1" value="0" shortDescription="Generic table name" />
-          <Enumeration label="TABLE_2" value="1" shortDescription="Generic table name" />
+          <Enumeration label="_1" value="0" shortDescription="Generic table name" />
+          <Enumeration label="_2" value="1" shortDescription="Generic table name" />
         </EnumerationList>
       </EnumeratedDataType>
     

@@ -1293,8 +1293,6 @@ class App():
             elif self.event in ('Download Basecamp App', 'Download NASA App'):
                 git_topic_include = self.ini_config.get('APP','APP_STORE_INCLUDE').split(',')
                 git_topic_exclude = self.ini_config.get('APP','APP_STORE_EXCLUDE').split(',')
-                print(f'git_topic_include: {git_topic_include}')
-                print(f'git_topic_exclude: {git_topic_exclude}')
                 app_group = 'Basecamp'
                 if self.event == 'Download Basecamp App':
                     git_topic_include.append(GITHUB_BC_APP_TAG)

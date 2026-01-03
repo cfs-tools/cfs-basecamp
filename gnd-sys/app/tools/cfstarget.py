@@ -614,42 +614,48 @@ class ManageCfs():
         copy_passed = True
         popup_text = 'Undefined'
         table_list = self.get_app_table_list()
-        if len(table_list) == 0:
-            if cfe_obj_type == AppSpec.CFE_TYPE_LIB:
-                popup_text = "No tables copied since it's a library"
-            else:
-                if app_framework == AppSpec.APP_FRAMEWORK_CFS:
-                    popup_text = "No JSON tables copied since it's a cFS app with binary tables"
+        table_count = len(table_list)
+        if app_framework == AppSpec.APP_FRAMEWORK_CFS:
+            popup_text = "No JSON tables copied since it's a cFS app with binary tables"
+        else:
+            if table_count == 0:
+                if cfe_obj_type == AppSpec.CFE_TYPE_LIB:
+                    popup_text = "No tables copied since it's a library"
                 else:
                     popup_text = "Error in Basecamp app spec, no JSON tables listed."
                     copy_passed = False
-        else:
-            app_table_path = os.path.join(self.usr_app_path, self.selected_app, 'fsw', 'tables')
-            if auto_copy:
-                target_equals_default = (DEFAULT_TARGET_NAME == self.cfs_target)
-                try:
-                    src=''   # Init for exception
-                    dst=''
-                    target_prefix = DEFAULT_TARGET_NAME+'_'
-                    for table in os.listdir(app_table_path):
-                        print(f'### {self.selected_app} table: {table}')
-                        src_table = table.replace(target_prefix,'')
-                        if src_table in table_list:
-                            src = os.path.join(app_table_path, table)
-                            #print('##src: ' + src)
-                            if target_equals_default:
-                                dst_table = table
-                            else:
-                                dst_table = self.cfs_target + '_' + src_table
-                            dst = os.path.join(self.cfs_abs_defs_path, dst_table)
-                            #print('##dst: ' + dst)
-                            shutil.copyfile(src, dst)
-                    popup_text = f"Copied table files '{table_list}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
-                except IOError:
-                    popup_text = f'Error copying table file\nFROM\n  {src}\nTO\n  {dst}\n'
             else:
-                popup_text = f"Copy table files '{table_list}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
-                sg.popup(popup_text, title='Copy table files', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                app_table_path = os.path.join(self.usr_app_path, self.selected_app, 'fsw', 'tables')
+                if auto_copy:
+                    target_equals_default = (DEFAULT_TARGET_NAME == self.cfs_target)
+                    try:
+                        src=''   # Init for exception
+                        dst=''
+                        target_prefix = DEFAULT_TARGET_NAME+'_'
+                        tables_copied = 0
+                        for table in os.listdir(app_table_path):
+                            print(f'### {self.selected_app} table: {table}')
+                            src_table = table.replace(target_prefix,'')
+                            if src_table in table_list:
+                                src = os.path.join(app_table_path, table)
+                                #print('##src: ' + src)
+                                if target_equals_default:
+                                    dst_table = table
+                                else:
+                                    dst_table = self.cfs_target + '_' + src_table
+                                dst = os.path.join(self.cfs_abs_defs_path, dst_table)
+                                #print('##dst: ' + dst)
+                                shutil.copyfile(src, dst)
+                                tables_copied += 1
+                        if tables_copied == table_count:
+                            popup_text = f"Copied table files '{table_list}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
+                        else:
+                            popup_text = f"Failed to copy {table_count-tables_copied} file(s) from'{table_list}'. Source file(s) not found.\n"
+                    except IOError:
+                        popup_text = f'Error copying table file\nFROM\n  {src}\nTO\n  {dst}\n'
+                else:
+                    popup_text = f"Copy table files '{table_list}'\n\nFROM {app_table_path}\n\nTO {self.cfs_abs_defs_path}\n"
+                    sg.popup(popup_text, title='Copy table files', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         return copy_passed, popup_text
         
     def remove_app_tables(self):

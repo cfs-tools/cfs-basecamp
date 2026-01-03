@@ -1,0 +1,80 @@
+"""
+Memory App Feature Demo 
+     
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+Notes:
+  1. This exercise is part of the Basecamp cFS Systems Engineering training
+     module. 
+  2. Illustrates basic memory management features using the Memory Management(MM)
+     app to peek/load and poke/dump memory and the Memory Dwell(MD) app to 
+     autonomously monitor and telemeter memory locations being modified.
+  3. A memory operation that fails with a status of 0xFFFFFFE5 means a memory
+     feature has not been implemented in the PSP. 0xFFFFFFE5 = -27 which is
+     defined as CFE_PSP_ERROR_NOT_IMPLEMENTED.
+     
+Detailed Description:
+  See the cFS Systems Engineering training module Sustaining Engineerings
+  exercise for details  
+
+Exercise Steps:
+  1. Lookup symbol to be used as demo base address
+  2. Jam & start memory dwell
+  3. Poke, Peek, and dump in event 
+  4. Dump memory to a file, transfer to ground, and display it
+  5. Fill memory with pattern from command
+  6. Load memory from dump file to restore values
+  
+"""
+
+># Setup
+> 'CFE_EVS','EnableAppEventTypeCmd', {'AppName': 'MEM_MGR', 'BitMask': 0x01} ## Enable Memory Manager debug events
+
+
+># Step 1 - Lookup symbol to be used as demo base address
+> 'MEM_MGR','LookupSymbol', {'Name': 'APP_C_FW_Sandbox'} ## Address will be displayed in an event message
+
+
+># Step 2 - Jam Memory Dwell Table and start dwell
+Osk::flight.send_cmd("MD","JAM_DWELL with TABLE_ID 1, ENTRY_ID 1, FIELD_LEN 4, DELAY 1, ADDR_OFFSET #{MMD_OFFSET_W0}, ADDR_SYMBOL_NAME #{MMD_SYMBOL}")
+Osk::flight.send_cmd("MD","JAM_DWELL with TABLE_ID 1, ENTRY_ID 2, FIELD_LEN 4, DELAY 1, ADDR_OFFSET #{MMD_OFFSET_W1}, ADDR_SYMBOL_NAME #{MMD_SYMBOL}")
+Osk::flight.send_cmd("MD","JAM_DWELL with TABLE_ID 1, ENTRY_ID 3, FIELD_LEN 4, DELAY 1, ADDR_OFFSET #{MMD_OFFSET_W2}, ADDR_SYMBOL_NAME #{MMD_SYMBOL}")
+Osk::flight.send_cmd("MD","JAM_DWELL with TABLE_ID 1, ENTRY_ID 4, FIELD_LEN 4, DELAY 1, ADDR_OFFSET #{MMD_OFFSET_W3}, ADDR_SYMBOL_NAME #{MMD_SYMBOL}")
+Osk::flight.send_cmd("MD","SET_SIGNATURE with TABLE_ID 1, PAD_16 0, SIGNATURE 'Memory Management Demo'")
+Osk::flight.send_cmd("MD","START_DWELL with TABLE_MASK 0x0001")
+
+
+># Step 3 - Poke, Peek, and dump in event
+># Dump treats memory as an array of bytes. Peek and MD telemetry use unsigned integer data widths
+
+> 'MEM_MGR','Poke', {'MemType': 'RAM', 'MemSize': '32', 'SymbolAddr.Offset':  0, 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'Data': 0x01020304}
+> 'MEM_MGR','Poke', {'MemType': 'RAM', 'MemSize': '32', 'SymbolAddr.Offset':  4, 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'Data': 0x05060708}
+> 'MEM_MGR','Poke', {'MemType': 'RAM', 'MemSize': '32', 'SymbolAddr.Offset':  8, 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'Data': 0x090A0B0C}
+> 'MEM_MGR','Poke', {'MemType': 'RAM', 'MemSize': '32', 'SymbolAddr.Offset': 12, 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'Data': 0x0D0E0F10}
+
+> 'MEM_MGR','Peek', {'MemType': 'RAM', 'MemSize':  '8', 'SymbolAddr.Offset':  0, 'SymbolAddr.Name': 'APP_C_FW_Sandbox'}
+> 'MEM_MGR','Peek', {'MemType': 'RAM', 'MemSize': '16', 'SymbolAddr.Offset':  0, 'SymbolAddr.Name': 'APP_C_FW_Sandbox'}
+> 'MEM_MGR','Peek', {'MemType': 'RAM', 'MemSize': '32', 'SymbolAddr.Offset':  0, 'SymbolAddr.Name': 'APP_C_FW_Sandbox'}
+
+> 'MEM_MGR','DumpToEvent', {'MemType': 'RAM', 'MemSize': '8', 'SymbolAddr.Offset':  0, 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'ByteCnt': 8}
+
+
+># Step 4 - Dump memory to a file, transfer to ground, and display it
+># Dump treats memory as an array of bytes.
+> 'MEM_MGR','DumpToFile', {'MemType': 'RAM', 'MemSize': '8', 'SymbolAddr.Offset':  0, 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'ByteCnt': 16, 'Filename': '/cf/mm_dump.dat' }
+
+
+># Step 5 - Fill memory with pattern from command
+># Middle two rows of the dwell packet contain the fill pattern
+> 'MEM_MGR','Fill', {'MemType': 'RAM', 'MemSize': '8', 'SymbolAddr.Offset': 4, 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'ByteCnt': 8, 'Data': 0x0A}
+
+
+># Step 6 = Load memory from dump file to restore values
+># The middle two rows in the dwell packet show that memory was restored
+> 'MEM_MGR','LoadFromFile', {'Filename': '/cf/mm_dump.dat'}
+
+
+># Cleanup
+> 'CFE_EVS','DisableAppEventTypeCmd', {'AppName': 'MEM_MGR', 'BitMask': 0x01} ## Disable Memory Manager debug events

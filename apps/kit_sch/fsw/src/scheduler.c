@@ -191,12 +191,13 @@ bool SCHEDULER_CfgSchTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgP
       /* 
       ** Scheduler table is critical so don't assume anything about commanded
       ** values. If enabling an entry also verify the entry is valid because
-      ** en invalid entry coudl crash the system.
+      ** an invalid entry could crash the system.
       */
       if (CMDMGR_ValidBoolArg(CfgSchTblEntry->Enabled))
       {
         
-         if (CfgSchTblEntry->Enabled == true) {
+         if (CfgSchTblEntry->Enabled == true)
+         {
             
             SCHTBL_Entry_t *Entry = &(Scheduler->SchTbl.Data.Entry[Index]);
             

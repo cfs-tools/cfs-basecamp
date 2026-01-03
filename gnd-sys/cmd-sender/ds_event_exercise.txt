@@ -1,6 +1,10 @@
 """
 Data Storage Exercise Summary
 
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
 Notes:
   1. This exercise is part of the Basecamp cFS Systems Engineering training
      module. Refer to the Data Storage exercise slides for details.
@@ -8,10 +12,6 @@ Notes:
 Exercises:
   1. Issue events that will be stored in an events data file
   
-License:
-    Copyright 2022 bitValence, Inc.
-    All Rights Reserved.
-
 """
 
 ================================================================================

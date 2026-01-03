@@ -22,7 +22,7 @@
 **   2. Compile-time configurations that are applied to each platform
 **      deployment of this app.
 **   3. These definitions should minimal and only contain parameters that
-**      need to be configurable at compile time that allows users to tuned
+**      need to be configurable at compile time that allow users to tune
 **      the app for a particular platform. Use @template@_mission_cfg.h
 **      for compile-time parameters that need to be tuned at the mission
 **      level across all platform deployments. Use app_cfg.h for compile-time

@@ -9,11 +9,11 @@
       "  The 'No Operation(NOOP)' command sends an event message with the app's version number.",
       "  The Reset Counters command resets the app's command counters.\n",
       "The app outputs one housekeeping telemetry message every 4 seconds that is sent in response to an",
-      "onboard scheduling message sent by the Scheduler App(kit_sch).",
+      "onboard scheduling message sent by the Scheduler App(KIT_SCH).",
       "  Includes command valid and invalid counters.\n",
       "This app follows the NASA app design style that is described in the tutorial's document. This initial",
       "hello app is a pared down version of NASA's Sample App https://github.com/nasa/sample_app and the",
-      "sample app coding tutorials will augment this app to implement the features of the Sample App."
+      "sample app coding tutorials augment this app to implement the features of the Sample App."
    ],
 
    "dir": [

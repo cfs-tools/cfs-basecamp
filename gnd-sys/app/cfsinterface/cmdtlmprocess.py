@@ -51,9 +51,10 @@ class CmdProcess():
        
     def send_cfs_cmd(self, app_name, cmd_name, cmd_payload):
         (cmd_sent, cmd_text, cmd_status) = self.cmd_script.send_cfs_cmd(app_name, cmd_name, cmd_payload)
-        datagram = self.cfs_cmd_queue.get()
-        print(f'CmdTlmProcess sending {app_name}:{cmd_name} to router {self.router_cmd_socket_addr}')
-        self.router_cmd_socket.sendto(datagram, self.router_cmd_socket_addr)
+        if 'Error' not in cmd_status:
+            datagram = self.cfs_cmd_queue.get()
+            print(f'CmdTlmProcess sending {app_name}:{cmd_name} to router {self.router_cmd_socket_addr}')
+            self.router_cmd_socket.sendto(datagram, self.router_cmd_socket_addr)
 
    
 ###############################################################################

@@ -52,10 +52,10 @@ class AppSpec():
     """
     The access methods are defined according to the activities a developer
     needs to do to integrate an app.
+    
     This design supports topic IDs being defined in multiple EDS files per
-    lib/app.
-    Only one JSON spec per lib/app is allowed and using the <app name>.json
-    naming convention.    
+    lib/app. Only one JSON spec per lib/app is allowed using the <app name>.json
+    naming convention.
     """
     CFE_TYPE_APP   = 'CFE_APP'
     CFE_TYPE_LIB   = 'CFE_LIB'
@@ -194,11 +194,14 @@ class AppSpec():
         The targets.cmake file needs
            1. The app's object file name for the 'cpu1_APPLIST'
            2. The names of all the tables that need to be copied from the app's tables directory into
-              the cFS '_defs' directory 
+              the cFS '_defs' directory. This only applies to basecamp app json tables.
         """
         files = {}
         files['obj-file'] = self.json_cfs['obj-file']
-        files['tables']   = self.json_cfs['tables']
+        if self.json_cfs['app-framework'] == self.APP_FRAMEWORK_OSK:
+            files['tables'] = self.json_cfs['tables']
+        else:
+            files['tables'] = []
         return files
 
     def get_startup_scr_entry(self):
