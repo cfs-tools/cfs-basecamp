@@ -106,7 +106,7 @@ class CmdSenderDir():
                     i += 1
                     if line.startswith(CMD_SENDER_START_CMD_DELIMITER):
                         tokens = line.split(CMD_SENDER_CMD_COMMENT_DELIMITER)
-                        if len <= 2: 
+                        if len(tokens) <= 2: 
                             self.cmd_sender_list.append(tokens)
                         else:
                             sg.popup(f'File line {i} has multiple instances of the comment delimeter: "{CMD_SENDER_CMD_FIELD_DELIMITER}"', title="Command Sender File Error", modal=False)
@@ -157,7 +157,7 @@ class CmdSenderFile():
                     print(line)
                     i += 1
                     if line.startswith(CMD_SENDER_START_COMMENT_DELIMITER):
-                        self.cmd_sender_commands.append(line)  
+                        self.cmd_sender_commands.append(line.replace(CMD_SENDER_START_COMMENT_DELIMITER,'#'))
                         self.cmd_sender_comments.append('  ')                        
                     elif line.startswith(CMD_SENDER_START_CMD_DELIMITER):
                         tokens = line.split(CMD_SENDER_CMD_COMMENT_DELIMITER)

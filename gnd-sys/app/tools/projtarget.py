@@ -58,8 +58,8 @@ PROJECT_JSON_FILE = 'project.json'
 class ProjectTemplateJson(JsonFile):
     """
     Provide a functional interface to project template JSON files. Ideally all
-    JSON objects are present. However, only app-list is required so the others
-    trying to access the others may generate an exception.
+    JSON objects are present. However, only app-list is required so trying to
+    access the other objects may generate an exception.
     """
     def __init__(self, json_file):
         super().__init__(json_file)
@@ -68,7 +68,18 @@ class ProjectTemplateJson(JsonFile):
         
     def version(self):
         return self.json['version']
-
+    
+    def released(self):
+        """
+        A released project will be displayed in available projects window. The criteria
+        for determining whether a project is released may change so it is encapsulated
+        in this function.         
+        """
+        released = True
+        if "alpha" in self.json['release']:
+            released = False
+        return released
+        
     def reset_child(self):
         pass
         
@@ -258,7 +269,7 @@ class ProjectTemplate():
 class CreateProject():
     """
     Create a database of projects and a display for a user to select
-    one.  Project titles defined in the JSON files are used as template
+    one. Project titles defined in the JSON files are used as template
     identifiers for screen displays and as dictionary keys 
     """
     def __init__(self, projects_url, projects_path, git_url, usr_app_rel_path, manage_cfs):
@@ -292,8 +303,9 @@ class CreateProject():
         project_template_layout = []
         for project_title, project_meta_data in self.project_template_lookup.items():
             logger.debug(f'self.project_template_lookup[{project_title}] => {str(project_meta_data)}')
-            project_template_layout.append([sg.Radio(project_title, "PROJECT_TEMPLATES", default=False, font=hdr_value_font, size=(25,0), key=project_title, enable_events=True),
-                                            sg.Text(project_meta_data.json.short_description(), font=hdr_value_font, size=(50,1))])
+            if project_meta_data.json.released():
+                project_template_layout.append([sg.Radio(project_title, "PROJECT_TEMPLATES", default=False, font=hdr_value_font, size=(25,0), key=project_title, enable_events=True),
+                                                sg.Text(project_meta_data.json.short_description(), font=hdr_value_font, size=(50,1))])
         
         layout = [
                   [sg.Text(f'Create a new cFS project target by selecting the project and clicking the <Create Project> button:', font=hdr_label_font, size=(80,None))],

@@ -1,6 +1,7 @@
 {
    "title": "42 Simulation",
    "version": "1.0",
+   "release": "beta",
    "short-descr": "Perform closed-loop control with the 42 Simulator",
    "description": [
       "In this project you will install and configure the 42 simulator so it communicates",

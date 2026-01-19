@@ -98,13 +98,13 @@ class TlmScreen():
         hdr_label_font = ('Arial bold',12)
         hdr_value_font = ('Arial',12)
         sg.theme('LightGreen')
-        layout = [[sg.Text('App ID: ', font=hdr_label_font),  sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-APP_ID-'), 
-                   sg.Text('Length: ', font=hdr_label_font),  sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-LENGTH-'),
-                   sg.Text('Seq Cnt: ', font=hdr_label_font), sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-SEQ_CNT-'),
-                   sg.Text('Time: ', font=hdr_label_font),    sg.Text(self.NULL_STR, font=hdr_value_font, size=(12,1), key='-TIME-')],
+        layout = [[sg.Text('App ID: ', font=hdr_label_font),  sg.Text(self.NULL_STR, font=hdr_value_font, size=(8,1), key='-APP_ID-'), 
+                   sg.Text('Length: ', font=hdr_label_font),  sg.Text(self.NULL_STR, font=hdr_value_font, size=(8,1), key='-LENGTH-'),
+                   sg.Text('Seq Cnt: ', font=hdr_label_font), sg.Text(self.NULL_STR, font=hdr_value_font, size=(8,1), key='-SEQ_CNT-'),
+                   sg.Text('Time: ', font=hdr_label_font),    sg.Text(self.NULL_STR, font=hdr_value_font, size=(8,1), key='-TIME-')],
                   [sg.Text('')], 
                   [sg.Text('Payload', font = ('Arial bold',14)), sg.Text('', font=hdr_value_font, key='-PAUSED-', pad=(10,0))],
-                  [sg.MLine(default_text='-- No Messages Received --', font = ('Courier',12), enable_events=True, size=(65, 30), key='-PAYLOAD_TEXT-')],
+                  [sg.MLine(default_text='-- No Messages Received --', font = ('Courier',12), enable_events=True, size=(65, 20), key='-PAYLOAD_TEXT-')],
                   [sg.Button('Pause'), sg.Button('Resume'), sg.Button('Close'), sg.Button('', key='-TLM_UPDATE-', visible=False)]]
 
         window = sg.Window(title, layout, resizable=True, grab_anywhere=True)

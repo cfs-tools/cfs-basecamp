@@ -1,6 +1,7 @@
 {
    "title": "Payload Manager",
    "version": "1.0",
+   "release": "production",
    "short-descr": "Use a payload manager app to operate a simulated payload",
    "description": [
       "This project helps answer the common cFS question, 'How should I design a cFS app to manage",

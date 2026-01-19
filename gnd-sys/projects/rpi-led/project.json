@@ -1,6 +1,7 @@
 {
    "title": "Raspberry Pi LED Control",
    "version": "1.0",
+   "release": "production",
    "short-descr": "Control an LED on a Raspeberry Pi",
    "description": [
       "In this project you will connect an LED to a Raspberry Pi’s General-Purpose Input/Output",

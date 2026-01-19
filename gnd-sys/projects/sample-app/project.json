@@ -1,6 +1,7 @@
 {
    "title": "Sample App",
    "version": "1.0",
+   "release": "production",
    "short-descr": "Install NASA's Sample App and Library",
    "description": [
       "This project installs NASA's Sample App and Library. It uses Basecamp's proxy repo",
