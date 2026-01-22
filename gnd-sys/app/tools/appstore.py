@@ -302,8 +302,8 @@ class AppStore():
                 
         layout = [
                   [sg.Text("Select one or more apps to download and click the <Download> button to add them to the usr/app repositories:", font=hdr_label_font, size=(window_width,None))],
-                  [sg.Text("   - Follow the steps in 'File->Add App to Target' to add the apps/libs to add the cFS target", font=hdr_value_font)],
-                  [sg.Text("   - The Hello World tutorial in 'Tutorials->Create App Tool' describes the steps to add an app to a cFS target", font=hdr_value_font)],
+                  [sg.Text("   - Follow the steps in 'File->Add App to Target' to add the apps/libs to the cFS target", font=hdr_value_font)],
+                  [sg.Text("   - The 'Tutorials->Create and Code Apps' describes the steps to add an app to a cFS target", font=hdr_value_font)],
                   [sg.Text("   - An app's JSON spec file has a 'requires' parameter that identifies dependencies that must be installed prior to the app\n", font=hdr_value_font)],
                   [app_layout],
                   [sg.Text("")],
