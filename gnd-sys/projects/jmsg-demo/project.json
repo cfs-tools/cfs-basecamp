@@ -19,7 +19,7 @@
 
    "support-files":
       { 
-         "cmd-seq":     "",
+         "cmd-sender":  "",
          "file-server": "",
          "scripts":     "",
          "templates":   "",

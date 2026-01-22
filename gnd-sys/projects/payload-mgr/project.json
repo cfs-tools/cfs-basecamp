@@ -22,7 +22,7 @@
    
    "support-files":
       { 
-         "cmd-seq":     "payload_mgr_project.txt",
+         "cmd-sender":  "payload_mgr_project.txt",
          "file-server": "",
          "scripts":     "",
          "templates":   "",

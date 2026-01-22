@@ -18,7 +18,7 @@
    
    "support-files":
       { 
-         "cmd-seq":     "sample_app_tbl_mgmt.txt",
+         "cmd-sender":  "sample_app_tbl_mgmt.txt",
          "file-server": "sample_app_tbl.tbl",
          "scripts":     "",
          "templates":   "",
