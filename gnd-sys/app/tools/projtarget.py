@@ -33,6 +33,7 @@ import shutil
 from datetime import datetime
 from time import sleep
 import requests
+import subprocess
 
 import logging
 logger = logging.getLogger(__name__)
@@ -52,6 +53,7 @@ from tools import PySimpleGUI_License
 import PySimpleGUI as sg
 
 PROJECT_JSON_FILE = 'project.json'
+PROJECT_SHELL_ERR = 42
 
 ###############################################################################
 
@@ -68,7 +70,10 @@ class ProjectTemplateJson(JsonFile):
         
     def version(self):
         return self.json['version']
-    
+
+    def doc(self):
+        return self.json['doc']
+        
     def released(self):
         """
         A released project will be displayed in available projects window. The criteria
@@ -86,13 +91,42 @@ class ProjectTemplateJson(JsonFile):
     def app_list(self):
         return self.json['app-list'].split(',')
 
-    def popup_instructions(self):
+    def install_script(self):
+        """
+        The JSON "install-script" object contains one of the following:
+            ""              - Empty string indicating no script file
+            "filename"      - Script filename executed with user privileges
+            "filename,sudo" - Script filename executed with elevated privileges
+        
+        This functions returns a tuple
+            (script name, sudo boolean flag) 
+        """
+        script = ''
+        sudo = False
+        file_list = self.get_support_file('install-script')
+        list_len = len(file_list)
+        if list_len > 0:
+            script = file_list[0]
+            if list_len == 2:
+                sudo = (file_list[1] == 'sudo')
+            
+        return (script,sudo)
+
+    def script_instructions(self):
         instructions = ''
         try:
-           instructions = self.json['popup-instructions']
+           instructions = self.json['script-instructions']
         except:
            pass
-        return  instructions
+        return instructions
+
+    def post_install_instructions(self):
+        instructions = ''
+        try:
+           instructions = self.json['post-install-instructions']
+        except:
+           pass
+        return instructions
 
     def load_support_files(self):
         self.support_files = {}
@@ -102,7 +136,7 @@ class ProjectTemplateJson(JsonFile):
                self.support_files_valid = True
         except:
            pass
-        return  self.support_files
+        return self.support_files
 
     def get_support_file(self, support_file_key):
         """
@@ -123,6 +157,104 @@ class ProjectTemplateJson(JsonFile):
                 pass
         
         return support_file_list
+
+###############################################################################
+
+class ProjectInstallScript():
+    """
+    This class creates a GUI that let's the user manage the project
+    installation.      
+    """
+    def __init__(self,project_path,project_json):
+        self.json = project_json
+        self.path = project_path
+        (self.install_script,self.sudo) = self.json.install_script()
+        
+        self.b_size  = (4,1)
+        self.b_pad   = ((0,2),(2,2))
+        self.b_font  = ('Arial bold', 12)
+        self.b_color = 'black on LightSkyBlue3'
+        self.t_size  = (2,1)
+        self.t_font  = ('Arial', 12)
+        self.title_font  = ('Arial bold', 14)
+        
+    def create_window(self):
+        """ 
+        """
+        notes_layout = []
+        script_instructions = self.json.script_instructions()
+        if len(script_instructions) > 0:
+           notes_layout = [[sg.Text('Notes:', font=self.title_font)],
+                           [sg.Text(f'{script_instructions}', font=self.t_font)]
+                          ]
+
+        password_layout = [[sg.Text('', size=self.b_size)]]
+        if self.sudo:
+            password_layout = [[sg.Text('', size=self.b_size)], 
+                               [sg.Text('Script requires elevated privileges. Enter password before selecting <Run Script>', font=self.t_font)],
+                               [sg.InputText(password_char='*', size=(15,1), font=self.t_font, pad=self.b_pad, key='-PASSWORD-')],
+                               [sg.Text('', size=self.b_size)]]
+        
+        layout = [
+                  [sg.Text(f"This project requires an installation script to be executed. You may want to skip\nthe automated installation if", font=self.title_font)],
+                  [sg.Text(f" - You've aleady performed the installation and just want the project apps installed\n - You prefer to do a manual installation as described in {self.json.doc()}\n", font=self.t_font)],
+                  notes_layout,
+                  password_layout,
+                  [sg.Button('Run Script', button_color=('SpringGreen4'), pad=(2,0)), sg.Button('Skip', button_color=('gray'), pad=(2,0))]
+                 ]
+  
+        window = sg.Window('Run Project Installation Script', layout, resizable=True, finalize=True) # modal=True)
+        
+        return window
+                
+    def execute(self):
+        """
+        """
+        if len(self.install_script) == 0:
+            return
+            
+        self.window = self.create_window()
+        
+        while True:
+        
+            self.event, self.values = self.window.read()
+        
+            if self.event in (sg.WIN_CLOSED, 'Exit', '-EXIT-') or self.event is None:
+                break
+
+            elif self.event == 'Run Script':
+                password = ''
+                if self.sudo:
+                    password = self.values['-PASSWORD-']
+                self.run_install_script(password)
+                break
+
+            elif self.event == 'Skip':
+                break
+        
+        self.window.close()
+        
+    def run_install_script(self,password):
+        """
+        """
+        script_complete = True
+        if len(self.install_script) > 0:
+            script_complete = False
+            install_sh  = os.path.join(self.path, self.install_script)
+            process_str = f'{install_sh} {password}'
+            try:    
+                shell_status = subprocess.run(process_str, cwd=self.path, shell=True, check=True, capture_output=True)
+                script_complete = True
+            except subprocess.CalledProcessError as e:
+                #TODO: Need a convention to capture internal script errors. Script coding standards?
+                if (e.returncode == PROJECT_SHELL_ERR):
+                   # Error code indicating a command didn't execute as expected
+                   sg.popup(f'Script {self.install_script} completed with errors.\n{e.stderr}', title="Project Install Script Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)                
+                else:
+                   sg.popup(f'Error running {install_script}.\n{e.stderr}', title="Project Install Script Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+            except FileNotFoundError as e:
+                sg.popup(f'Error running {install_script}.\nException: {e}', title="Project Install Script Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+        return script_complete
 
 
 ###############################################################################
@@ -158,9 +290,12 @@ class ProjectTemplate():
 
         self.progress_txt.update(text)
         self.progress_bar.update_bar(self.cur_progress)
+
         
     def create_project(self, project_name):
-        
+        """
+        """
+        ProjectInstallScript(self.path,self.json).execute()     
         github_txt = 'Downloading apps from github\n'
         layout = [[sg.Text(github_txt, key='-PROGRESS_TEXT-', size=(50,2))],
                   [sg.ProgressBar(max_value=self.max_progress, orientation='h', size=(50, 20), key='-PROGRESS-', bar_color=('green', 'white'))]]
@@ -193,7 +328,7 @@ class ProjectTemplate():
             copied_support_files = True
         except Exception as e:
             sg.popup(f'Failed to copy {project_name} support files.\nException: {e}\nWill attempt to create cFS target next.', title="Create Project Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
-        
+
         # 3. Add apps to cFS target
         added_apps_to_target = False
         try:
@@ -225,7 +360,7 @@ class ProjectTemplate():
                 window.read(timeout=delay_factor)
         
         window.close()
-        self.manage_cfs.restart_main_gui(self.json.popup_instructions())
+        self.manage_cfs.restart_main_gui(self.json.post_install_instructions())
       
         return True
  
@@ -235,7 +370,7 @@ class ProjectTemplate():
         """
         
         gnd_sys_app_path = compress_abs_path(os.path.join(self.path, '../../app'))
-        print(f'gnd_sys_app_path: {gnd_sys_app_path}')
+        #print(f'gnd_sys_app_path: {gnd_sys_app_path}')
         config = configparser.ConfigParser()
         config.read(os.path.join(gnd_sys_app_path,'basecamp.ini'))
 
@@ -247,7 +382,7 @@ class ProjectTemplate():
             'tutorials':   'TUTORIALS_PATH'
             }
 
-        for support_file in support_dict:
+        for support_file in support_dict:           
             file_list = self.json.get_support_file(support_file)
             if file_list != None:
                 config_param = support_dict[support_file]
@@ -342,7 +477,7 @@ class CreateProject():
                             try:
                                 self.selected_project.create_project(project_name)
                             except Exception as e:
-                                sg.popup(f'Failed to create {project_name}.\nException: {e}', title="Create Project Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                                sg.popup(f'Failed to create {project_name}.\nException: {e}', title="Create Project Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)                            
                         break
                     else:
                         description = ""

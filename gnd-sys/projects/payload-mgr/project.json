@@ -14,6 +14,8 @@
       "error paths. See https://spacesteps.com/2024/10/12/cfs-payload-manager-app/ for details."
    ],
    
+   "doc": "pl_mgr-project.pdf",
+   
    "popup-instructions": "",
 
    "app-list": "pl_sim_lib,pl_mgr,pl_sim",

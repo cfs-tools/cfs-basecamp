@@ -10,19 +10,20 @@
    ],
    
    "doc": "42_sim-project.pdf",
-
-   "popup-instructions": "The Basecamp GUI can be restarted to complete the BC42 app installation.\n However, the 42 simulator must be installed and configured as described\n in the 42 Sim project document before the closed-loop control can be run.",
+   
+   "script-instructions": " - This script installs Linux packages required by 42",
+   "post-install-instructions": "The Basecamp GUI must be restarted to complete the BC42 app installation.\nThe 42 project doc describes how to start 42 in a\nseparate terminal window.",
    
    "app-list": "bc42_lib,bc42_intf,bc42_ctrl",
 
    "support-files":
       { 
-         "cmd-seq":        "42_sim_project.txt",
+         "cmd-sender":     "42_sim_project.txt",
          "file-server":    "",
          "scripts":        "",
          "templates":      "",
          "tutorials":      "",
-         "install-script": "42_sim_project.sh" 
+         "install-script": "42_sim_project.sh,sudo" 
       }
 }
 

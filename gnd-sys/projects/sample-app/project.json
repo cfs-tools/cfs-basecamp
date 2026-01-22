@@ -10,6 +10,8 @@
       "proxy app repo specs contain Sample App augmentation details."
    ],
 
+   "doc": "",
+   
    "popup-instructions": "",
    
    "app-list": "proxy_sample_lib,proxy_sample_app",

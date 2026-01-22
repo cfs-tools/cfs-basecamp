@@ -6,12 +6,11 @@ Notes:
      https://spacesteps.com/TODO
   2. These exercises require the 42 simulator to have been configured
      and built in Standalone mode. They also require the BC42 
-     42 "sim case" directory to copied from
+     "sim case" directory to copied from
        cfs-basecamp/gnd-sys/projects/42-sim/
      to
-       42/
-  TODO: Add Performance Monitor exercise (need PerfMon ID scheme)
-   
+       cfs-basecamp/gnd-sys/tools/42/
+        
 Exercises:
   1. Run flight software controller with 42
   2. Change controller gains and observe impact

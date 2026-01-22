@@ -206,7 +206,7 @@ class AppSpec():
 
     def get_startup_scr_entry(self):
         '''
-        Create an cfe_es_startup.scr entry string that contains the following fields:
+        Create a CFE_STARTUP_SCR entry string that contains the following fields:
         
         1. Object Type      -- CFE_APP for an Application, or CFE_LIB for a library.
         2. Filename         -- This is a cFE Virtual filename, not a vxWorks device/pathname

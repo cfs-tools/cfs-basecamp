@@ -56,6 +56,7 @@ import PySimpleGUI as sg
 DEFAULT_TARGET_NAME = 'cpu1'                # TODO: Parameterize
 CFS_DEFS_FOLDER     = 'basecamp_defs'
 INSERT_KEYWORD      = '!BASECAMP-INSERT!'
+CFE_STARTUP_SCR     = 'cfe_es_startup.scr'
 
 # Basecamp's default configuration supports these apps so they can't be removed
 # like other app store apps
@@ -98,9 +99,9 @@ class AppTargetStatus():
         self.app_in_applist        = {'state': True, 'descr': 'Valid'}  # App defined in targets.cmake APPLIST
         self.tbl_in_filelist       = {'state': True, 'descr': 'Valid'}  # Tables defined in targets.cmake FILELIST
         self.tbl_files_in_defs     = {'state': True, 'descr': 'Valid'}  # Tables in basecamp_defs folder
-        self.app_in_startup_scr    = {'state': True, 'descr': 'Valid'}  # App defined in cfe_es_startup.scr
+        self.app_in_startup_scr    = {'state': True, 'descr': 'Valid'}  # App defined in CFE_STARTUP_SCR
         self.depend_in_applist     = {'state': True, 'descr': 'Valid'}  # Dependencies in targets.cmake APPLIST
-        self.depend_in_startup_scr = {'state': True, 'descr': 'Valid'}  # Dependencies in cfe_es_startup.scr prior to app
+        self.depend_in_startup_scr = {'state': True, 'descr': 'Valid'}  # Dependencies in CFE_STARTUP_SCR prior to app
     def print(self):
         print('\nAppTargetStatus:')
         print(f"app_in_applist:        {self.app_in_applist['state']}, {self.app_in_applist['descr']}")
@@ -240,7 +241,7 @@ class ManageCfs():
         self.usr_app_path           = compress_abs_path(os.path.join(basecamp_abs_path, usr_app_rel_path))
         self.main_window            = main_window
         self.cfs_target             = cfs_target
-        self.startup_scr_filename   = cfs_target + '_' + 'cfe_es_startup.scr'
+        self.startup_scr_filename   = cfs_target + '_' + CFE_STARTUP_SCR
         self.startup_scr_file       = os.path.join(self.cfs_abs_defs_path, self.startup_scr_filename)
         self.targets_cmake_filename = 'targets.cmake'
         self.targets_cmake_file     = os.path.join(self.cfs_abs_defs_path, self.targets_cmake_filename)
@@ -275,7 +276,7 @@ class ManageCfs():
         #TODO - Use a loop to construct the layout
 
         layout = [
-                  [sg.Text("Perform the following steps to add one or more apps to the cFS target. For step 1, choose 'Auto' to automatically\nperform all of the steps or 'Man' to manually perform each step. Libraries MUST be added prior\nto the apps that depend upon it.\n", font=self.t_font)],
+                  [sg.Text("Perform the following steps to add one or more apps to the cFS target. For step 1, choose 'Auto' to automatically\nperform all of the steps or 'Man' to manually perform each step. Libraries MUST be added prior\nto the apps that depend upon them.\n", font=self.t_font)],
                   
                   [sg.Text('1. Add app to the cFS build configuration', font=self.step_font, pad=self.b_pad)],
                   [sg.Text('', size=self.b_size), sg.Combo(usr_app_list, pad=self.b_pad, font=self.b_font, enable_events=True, key="-USR_APP-", default_value=usr_app_list[0]),
@@ -287,7 +288,7 @@ class ManageCfs():
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1B_MAN-'),
                    sg.Text("Update targets.cmake's %s and %s" % (self.cmake_app_list, self.cmake_file_list), font=self.t_font)],
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1C_MAN-'),
-                   sg.Text('Update cpu1_cfe_es_startup.scr', font=self.t_font)],
+                   sg.Text(f'Update cpu1_{CFE_STARTUP_SCR}', font=self.t_font)],
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1D_MAN-'),
                    sg.Text('Update EDS cfe-topicids.xml', font=self.t_font)], 
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1E_MAN-'),
@@ -513,11 +514,11 @@ class ManageCfs():
                     f"   {target_status.tbl_in_filelist['state']}, {target_status.tbl_in_filelist['descr']}\n"
                     f"Table files in basecamp_defs?\n"
                     f"   {target_status.tbl_files_in_defs['state']}, {target_status.tbl_files_in_defs['descr']}\n"
-                    f"App in cfe_es_startup.scr?\n"
+                    f"App in {CFE_STARTUP_SCR}?\n"
                     f"   {target_status.app_in_startup_scr['state']}, {target_status.app_in_startup_scr['descr']}\n"
                     f"App dependencies in {self.cmake_app_list}?\n"
                     f"   {target_status.depend_in_applist['state']}, {target_status.depend_in_applist['descr']}\n"
-                    f"App dependencies in cfe_es_startup.scr?\n"
+                    f"App dependencies in {CFE_STARTUP_SCR}?\n"
                     f"   {target_status.depend_in_startup_scr['state']}, {target_status.depend_in_startup_scr['descr']}\n"
                     f"App ini table topic IDs in {self.cfe_topic_id_filename}?\n"
                     f"   {topic_ids_status.ini_topics_defined['state']}, {topic_ids_status.ini_topics_defined['descr']}\n"
@@ -990,7 +991,7 @@ class ManageCfs():
                         target_status.tbl_in_filelist['state'] = False
                         target_status.tbl_in_filelist['descr'] = f"Not all tables {app_cmake_files['tables']} found in {self.targets_cmake_filename}'s {self.cmake_file_list}"
 
-        # 2. Verify cfe_es_startup.scr
+        # 2. Verify CFE_STARTUP_SCR
         
         # Create list of startup script apps 
         startup_app_list = []
