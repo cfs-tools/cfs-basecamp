@@ -40,12 +40,14 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     from jsonfile   import JsonFile
-    from utils      import AppStoreDef, compress_abs_path
+    from utils      import compress_abs_path
+    from usrapps    import AppStoreSpec
     from appstore   import GitHubAppRepo
     from cfstarget  import ManageCfs
 else:
     from .jsonfile  import JsonFile
-    from .utils     import AppStoreDef, compress_abs_path
+    from .utils     import compress_abs_path
+    from .usrapps   import AppStoreSpec
     from .appstore  import GitHubAppRepo
     from .cfstarget import ManageCfs
 
@@ -262,12 +264,13 @@ class ProjectInstallScript():
 class ProjectTemplate():
     """
     """
-    def __init__(self, template_path, git_url, usr_app_rel_path, manage_cfs):
+    def __init__(self, template_path, git_url, app_repo_branch, usr_app_rel_path, manage_cfs):
 
         self.path = template_path
         self.json = ProjectTemplateJson(os.path.join(template_path, PROJECT_JSON_FILE))
  
         self.git_url = git_url
+        self.app_repo_branch  = app_repo_branch
         self.usr_app_rel_path = usr_app_rel_path
         
         self.manage_cfs = manage_cfs
@@ -309,12 +312,12 @@ class ProjectTemplate():
         build_delta  = 1
         # Build gets half progress bar 
         # 1. Download github apps
-        git_app_repo = GitHubAppRepo(self.git_url, AppStoreDef.BASECAMP_REPO_BRANCH, self.usr_app_rel_path, quiet_ops=True)
+        git_app_repo = GitHubAppRepo(self.git_url, self.app_repo_branch, AppStoreSpec.BC_APP_SPEC_VER, self.usr_app_rel_path, quiet_ops=True)
         git_app_repo.create_dict()
         for app in self.json.app_list():
             self.update_progress(github_txt, github_delta)
             # Clone functions report status to user via popups
-            if app.startswith(AppStoreDef.PROXY_APP_PREFIX):
+            if app.startswith(AppStoreSpec.PROXY_APP_PREFIX):
                 ret_status = git_app_repo.clone_proxy_repo(app)
             else:
                 ret_status = git_app_repo.clone_basecamp_repo(app) 
@@ -334,7 +337,7 @@ class ProjectTemplate():
         try:
             self.update_progress('Adding apps to cFS target\n', 1)
             # Convert any proxy names to their real counterpart name by removing proxy prefix
-            app_list = [app_name.replace(AppStoreDef.PROXY_APP_PREFIX, '') for app_name in self.json.app_list()]
+            app_list = [app_name.replace(AppStoreSpec.PROXY_APP_PREFIX, '') for app_name in self.json.app_list()]
             self.manage_cfs.add_usr_app_list(app_list)
             sleep(4) # Allow user to see change 
             added_apps_to_target = True
@@ -407,10 +410,11 @@ class CreateProject():
     one. Project titles defined in the JSON files are used as template
     identifiers for screen displays and as dictionary keys 
     """
-    def __init__(self, projects_url, projects_path, git_url, usr_app_rel_path, manage_cfs):
+    def __init__(self, projects_url, projects_path, git_url, app_repo_branch, usr_app_rel_path, manage_cfs):
 
-        self.projects_url  = projects_url
-        self.projects_path = projects_path
+        self.projects_url    = projects_url
+        self.projects_path   = projects_path
+        self.app_repo_branch = app_repo_branch
         self.manage_cfs = manage_cfs
         
         self.project_template_titles = []
@@ -420,7 +424,7 @@ class CreateProject():
             #todo: ProjectTemplate constructor could raise exception if JSON doesn't exist or is malformed
             project_template_json_file = os.path.join(projects_path, project_template_folder, PROJECT_JSON_FILE)
             if os.path.exists(project_template_json_file):
-                project_template = ProjectTemplate(os.path.join(projects_path, project_template_folder), git_url, usr_app_rel_path, self.manage_cfs)
+                project_template = ProjectTemplate(os.path.join(projects_path, project_template_folder), git_url, self.app_repo_branch, usr_app_rel_path, self.manage_cfs)
                 self.project_template_titles.append(project_template.json.title())
                 self.project_template_lookup[project_template.json.title()] = project_template                    
         logger.debug("Project Template Lookup " + str(self.project_template_lookup))
@@ -497,17 +501,19 @@ class CreateProject():
 
 if __name__ == '__main__':
 
+    #TODO: If possible run from main. ManageCfs() dependency may prevent it
     config = configparser.ConfigParser()
     config.read('../basecamp.ini')
 
-    PROJECTS_PATH    = config.get('PATHS','PROJECTS_PATH')
+    APP_REPO_BRANCH  = config.get('APP','APP_REPO_BRANCH')
     GIT_URL          = config.get('APP','APP_STORE_URL')
+    PROJECTS_PATH    = config.get('PATHS','PROJECTS_PATH')
     USR_APP_REL_PATH = config.get('PATHS', 'USR_APP_PATH')
     
     projects_dir = os.path.join(os.getcwd(),'..', PROJECTS_PATH) 
     usr_app_dir  = os.path.join(os.getcwd(),'..', USR_APP_REL_PATH) 
     print (f'projects_dir: {projects_dir}')
-    CreateProject(projects_dir,GIT_URL,usr_app_dir).execute()
+    CreateProject(projects_dir,APP_REPO_BRANCH,GIT_URL,usr_app_dir).execute()
     
     
 

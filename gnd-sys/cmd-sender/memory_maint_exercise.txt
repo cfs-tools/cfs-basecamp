@@ -44,12 +44,13 @@ Exercise Steps:
 ># Step 2 - Load Memory Dwell Table entries and start dwell
 ># The default MEM_MGR dwell table is configured for this exercise so
 ># the LoadDwellEntry and SetDwellName commands are not needed
-> 'MEM_MGR','LoadDwellEntry',{'DwellId':'_1', 'MemSize':'16', 'EntryIndex':0, 'SymbolAddr.Name':'APP_C_FW_Sandbox', 'SymbolAddr.Offset': 0}
-> 'MEM_MGR','LoadDwellEntry',{'DwellId':'_1', 'MemSize':'16', 'EntryIndex':1, 'SymbolAddr.Name':'APP_C_FW_Sandbox', 'SymbolAddr.Offset': 4}
-> 'MEM_MGR','LoadDwellEntry',{'DwellId':'_1', 'MemSize':'16', 'EntryIndex':2, 'SymbolAddr.Name':'APP_C_FW_Sandbox', 'SymbolAddr.Offset': 8}
-> 'MEM_MGR','LoadDwellEntry',{'DwellId':'_1', 'MemSize':'16', 'EntryIndex':3, 'SymbolAddr.Name':'APP_C_FW_Sandbox', 'SymbolAddr.Offset':12}
-> 'MEM_MGR','SetDwellName', {'DwellId':'_1', 'Name':'Maintenance Demo'}
-> 'MEM_MGR','StartDwell', {'DwellId':'_1'}
+> 'MEM_MGR','LoadDwellEntry',{'DwellId':'1', 'Delay':0, 'EntryIndex':0, 'MemSize':'16', 'SymbolAddr.Name':'APP_C_FW_Sandbox', 'SymbolAddr.Offset': 0}
+> 'MEM_MGR','LoadDwellEntry',{'DwellId':'1', 'Delay':0, 'EntryIndex':1, 'MemSize':'16', 'SymbolAddr.Name':'APP_C_FW_Sandbox', 'SymbolAddr.Offset': 4}
+> 'MEM_MGR','LoadDwellEntry',{'DwellId':'1', 'Delay':0, 'EntryIndex':2, 'MemSize':'16', 'SymbolAddr.Name':'APP_C_FW_Sandbox', 'SymbolAddr.Offset': 8}
+> 'MEM_MGR','LoadDwellEntry',{'DwellId':'1', 'Delay':1, 'EntryIndex':3, 'MemSize':'16', 'SymbolAddr.Name':'APP_C_FW_Sandbox', 'SymbolAddr.Offset':12}
+> 'MEM_MGR','StartDwell',    {'DwellId':'1'}
+> 'MEM_MGR','StopDwell',     {'DwellId':'1'}
+
 
 >#
 ># Step 3 - Poke, Peek, and dump in event
@@ -63,14 +64,19 @@ Exercise Steps:
 > 'MEM_MGR','Peek', {'MemType': 'RAM', 'MemSize':  '8', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset':  0}
 > 'MEM_MGR','Peek', {'MemType': 'RAM', 'MemSize': '16', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset':  0}
 > 'MEM_MGR','Peek', {'MemType': 'RAM', 'MemSize': '32', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset':  0}
+> 'MEM_MGR','Peek', {'MemType': 'RAM', 'MemSize': '32', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset':  4}
+> 'MEM_MGR','Peek', {'MemType': 'RAM', 'MemSize': '32', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset':  8}
+> 'MEM_MGR','Peek', {'MemType': 'RAM', 'MemSize': '32', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset': 12}
 >#
 > 'MEM_MGR','DumpToEvent', {'MemType': 'RAM', 'MemSize': '8', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset':  0, 'ByteCnt': 8}
+
 
 >#
 ># Step 4 - Dump memory to a file, transfer to ground, and display it
 ># Dump treats memory as an array of bytes.
 >#
-> 'MEM_MGR','DumpToFile', {'MemType': 'RAM', 'MemSize': '8', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset':  0, 'ByteCnt': 16, 'Filename': '/cf/mm_dump.dat' }
+> 'MEM_MGR','DumpToFile', {'MemType': 'RAM', 'MemSize': '8', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset':  0, 'ByteCnt': 16, 'Filename': '/cf/mm_dump.dat'}
+
 
 >#
 ># Step 5 - Fill memory with pattern from command
@@ -78,12 +84,25 @@ Exercise Steps:
 >#
 > 'MEM_MGR','Fill', {'MemType': 'RAM', 'MemSize': '8', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset': 4, 'ByteCnt': 8, 'Data': 0x0A}
 
+
 >#
 ># Step 6 = Load memory from dump file to restore values
 ># The middle two rows in the dwell packet show that memory was restored
 >#
 > 'MEM_MGR','LoadFromFile', {'Filename': '/cf/mm_dump.dat'}
 
+
 >#
 ># Cleanup
 > 'CFE_EVS','DisableAppEventTypeCmd', {'AppName': 'MEM_MGR', 'BitMask': 0x01} ## Disable Memory Manager debug events
+
+
+>#
+># Extra MEM_MGR commands for experimenting
+> 'MEM_MGR','LoadWithIntDis', {'MemType': 'RAM', 'MemSize': '8', 'CrcType': 'CRC_16', 'SymbolAddr.Name': 'APP_C_FW_Sandbox', 'SymbolAddr.Offset': 4, 'ByteCnt': 4, 'Data': 0x0A0B0C0D, 'Crc': 0xFFFFE5FC}
+> 'MEM_MGR','DumpSymTblToFile', {'Filename': '/cf/sym_tbl_dump.dat'}
+> 'MEM_MGR','SetDwellName', {'DwellId':'1', 'Name':'Hello'}
+> 'MEM_MGR','DumpTbl', {'Id':'MEM_DWELL', 'Filename':'/cf/mm_dwell.json'}
+> 'MEM_MGR','LoadTbl', {'Id':'MEM_DWELL', 'Type':'UPDATE', 'Filename':'/cf/mm_dwell.json'}
+> 'MEM_MGR','Noop', {}
+> 'MEM_MGR','Reset', {}

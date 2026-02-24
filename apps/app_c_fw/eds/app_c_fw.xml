@@ -93,8 +93,8 @@
         </EnumerationList>
       </EnumeratedDataType>
       
-      <Define name="ENABLE"  value="1" />
-      <Define name="DISABLE" value="2" />
+      <Define name="ENABLE"  value="${TRUE}" />
+      <Define name="DISABLE" value="${FALSE}" />
       <EnumeratedDataType name="ConfigEnaAction" shortDescription="Common terminology for enable/disable configuration in commands" >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>

@@ -17,10 +17,15 @@
         Provide classes for managing user apps
         
     Notes:    
-        Assumes the exact same app name is used for
-        - App directory
-        - App Electronic Data Sheet (EDS) file
-        - App cFS spec JSON file 
+      1. Assumes the exact same app name is used for
+         - App directory
+         - App Electronic Data Sheet (EDS) file
+         - App cFS spec JSON file 
+      2. The AppStoreSpec class is defined in this file as a opposed to
+         appstore.py to prevent a cirular import issue. It also fits
+         logically because this file defines the all aspects of the
+         user app spec. 
+
 """
 
 import sys
@@ -37,13 +42,37 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     from eds      import AppEds
-    from utils    import AppStoreDef, compress_abs_path
+    from utils    import compress_abs_path 
 else:
     from .eds      import AppEds
-    from .utils    import AppStoreDef, compress_abs_path
+    from .utils    import compress_abs_path
 
 from tools import PySimpleGUI_License
 import PySimpleGUI as sg
+
+###############################################################################
+
+class AppStoreSpec():
+    """
+    See prologue for why this class defined in this file.
+    
+    Define constants used in app specifications. If a constant change impacts
+    the app store app integration API then APP_STORE_VER must be updated. Apps
+    in the app store may become incompatible. Apps should be updated/verified
+    as needed and new versions tagged with APP_STORE_VER.
+    
+    APP_STORE_VER is used identify which version of Basecamp an app is 
+    compatable with. Compatability is determined by many integration interfaces
+    including the cFS, EDS, and Basecamp app store. 
+    """
+    
+    BC_APP_SPEC_VER = 'bc-app-spec-v3.0'
+
+    PROXY_APP_PREFIX      = 'proxy_'
+    PROXY_FILE_COPY_TOKEN = '>>'
+    
+    APP_REPO_MAIN_BRANCH  = 'main'
+    APP_REPO_DEV_BRANCH   = 'develop'
 
 
 ###############################################################################
@@ -318,7 +347,7 @@ class ManageUsrApps():
         usr_app_list.sort()
         # Assumes app directory name equals app name
         for app_name in usr_app_list:
-            if not app_name.startswith(AppStoreDef.PROXY_APP_PREFIX):
+            if not app_name.startswith(AppStoreSpec.PROXY_APP_PREFIX):
                 app_path = os.path.join(usr_app_abs_path, app_name)
                 if os.path.isdir(os.path.join(usr_app_abs_path, app_name)):
                     # AppSpec manages exceptions so caller can simply check 'is_valid'

@@ -21,7 +21,7 @@
          - App directory
          - App Electronic Data Sheet (EDS) file
          - App cFS spec JSON file 
-         - Proxy app name following AppStoreDef.PROXY_APP_PREFIX
+         - Proxy app name following AppStoreSpec.PROXY_APP_PREFIX
       2. Proxy apps are not removed when the 'real' app is removed.
 """
 

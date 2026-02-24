@@ -36,6 +36,6 @@ from .pdfviewer import PdfViewer
 from .projtarget import CreateProject
 from .tutorial import ManageTutorials
 from .texteditor import TextEditor
-from .usrapps import AppSpec, ManageUsrApps
+from .usrapps import AppStoreSpec, AppSpec, ManageUsrApps
 from .utils import *
 

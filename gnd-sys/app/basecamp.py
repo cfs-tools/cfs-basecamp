@@ -755,9 +755,10 @@ class App():
         self.cfs_interface_dir = os.path.join(self.path, "cfsinterface")
         self.ini_config = IniConfig(ini_file)
 
-        self.APP_VERSION   = self.ini_config.get('APP','VERSION')
-        self.APP_STORE_URL = self.ini_config.get('APP','APP_STORE_URL')
-        self.PROJECTS_URL  = self.ini_config.get('APP','PROJECTS_URL')
+        self.APP_VERSION     = self.ini_config.get('APP','VERSION')
+        self.APP_STORE_URL   = self.ini_config.get('APP','APP_STORE_URL')
+        self.APP_REPO_BRANCH = self.ini_config.get('APP','APP_REPO_BRANCH')
+        self.PROJECTS_URL    = self.ini_config.get('APP','PROJECTS_URL')
 
         self.USR_APP_PATH       = self.ini_config.get('PATHS','USR_APP_PATH')
         self.APP_TEMPLATES_PATH = self.ini_config.get('PATHS', 'APP_TEMPLATES_PATH')
@@ -1285,7 +1286,7 @@ class App():
             if self.event == 'Create Project...':
                 project_path = os.path.join(self.path,self.PROJECTS_PATH)
                 manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
-                CreateProject(self.PROJECTS_URL, project_path, self.APP_STORE_URL, self.USR_APP_PATH, manage_cfs).execute()
+                CreateProject(self.PROJECTS_URL, project_path, self.APP_STORE_URL, self.APP_REPO_BRANCH, self.USR_APP_PATH, manage_cfs).execute()
 
             elif self.event == 'Create App':
                 self.create_app.execute()
@@ -1301,13 +1302,13 @@ class App():
                     app_group = 'NASA'
                     git_topic_include.append(GITHUB_NASA_APP_TAG)                 
                     git_topic_exclude.append(GITHUB_BC_APP_TAG)
-                app_store = AppStore(self.APP_STORE_URL, self.USR_APP_PATH,git_topic_include, git_topic_exclude,app_group)
+                app_store = AppStore(self.APP_STORE_URL, self.APP_REPO_BRANCH, self.USR_APP_PATH,git_topic_include, git_topic_exclude,app_group)
                 app_store.execute()
  
             elif self.event == 'Download App':
                 git_topic_include = self.ini_config.get('APP','APP_STORE_INCLUDE').split(',')
                 git_topic_exclude = self.ini_config.get('APP','APP_STORE_EXCLUDE').split(',')
-                app_store = AppStore(self.APP_STORE_URL, self.USR_APP_PATH,git_topic_include, git_topic_exclude)
+                app_store = AppStore(self.APP_STORE_URL, self.APP_REPO_BRANCH, self.USR_APP_PATH,git_topic_include, git_topic_exclude)
                 app_store.execute()
 
             elif self.event in ('Add App to Target','Remove App from Target', 'App Target Status'):

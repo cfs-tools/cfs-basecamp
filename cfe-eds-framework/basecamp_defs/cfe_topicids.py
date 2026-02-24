@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 
 class CfeTopicIds():
 
+    VERBOSE = False  # Output print messages
 
     # EDS Element & Attribute keywords
     EDS_TOPIC_ID_ELEMENT = 'Define'
@@ -64,6 +65,10 @@ class CfeTopicIds():
         
         logging.basicConfig(filename=self.config.get('APP','LOG_FILE'), filemode='w', level=logging.DEBUG)
         logging.info("***** cFE Topic IDs %s *****\n" % datetime.now().strftime("%m/%d/%y-%H:%M"))
+                
+    def debug_msg(self, message, verbose=VERBOSE):
+        if verbose:
+            print(message)
         
     def create_topic_dictionary(self):
         """
@@ -82,18 +87,18 @@ class CfeTopicIds():
                 topic_offset = val[1].strip()
                 if topic_type == self.EDS_CMD_TOPIC_ID_MISSION_REF:
                     if topic_offset.isnumeric():
-                        self.topic_ids[name] = self.cmd_topic_base + int(topic_offset)
+                         self.topic_ids[name] = self.cmd_topic_base + int(topic_offset)
                 elif topic_type == self.EDS_TLM_TOPIC_ID_MISSION_REF:
                     if topic_offset.isnumeric():
                         self.topic_ids[name] = self.tlm_topic_base + int(topic_offset)
                     
-        print(str(self.topic_ids))
+        self.debug_msg(str(self.topic_ids))
                     
     def update_json_topicids(self):
         dir_list   = os.listdir(os.getcwd())
         json_files = [filename for filename in dir_list if ".json" in filename]
         for file in json_files:
-            print('\n*** Processing File ' + file)
+            self.debug_msg('\n*** Processing File ' + file)
             self.update_json_file(file)
        
     def update_json_file(self, filename):
@@ -124,24 +129,24 @@ class CfeTopicIds():
                 if ':' in line:
                     keyword = line.split(':')
                     keyword_str = keyword[0].strip().strip('"')
-                    print('Keyword: ' + keyword_str)
+                    self.debug_msg('Keyword: ' + keyword_str)
                     if not topic_id_map_start:
                         topic_id_map_start = (keyword_str == self.JSON_TOPIC_ID_MAP)
                     if topic_id_map_start:
-                        print("Map start")
+                        self.debug_msg("Map start")
                         if keyword_str == self.JSON_TOPIC_ID_MAP_END:
-                            print("***MAP END***")
+                            self.debug_msg("***MAP END***")
                             topic_id_map = True
                             topic_id_map_start = False
-                            print(str(topic_id_lookup))
+                            self.debug_msg(str(topic_id_lookup))
                         elif keyword_str in self.topic_ids:
                             topic_id_str = keyword[1].strip().strip(' ",')
-                            print('Adding ' + topic_id_str)
+                            self.debug_msg('Adding ' + topic_id_str)
                             topic_id_lookup[topic_id_str] = [keyword_str, self.topic_ids[keyword_str]]
                     else:
                         line_suffix = ',\n' if ',' in line else '\n' 
                         if topic_id_map:
-                            print('>>> Mapping in progress <<<')
+                            self.debug_msg('>>> Mapping in progress <<<')
                             if topic_id_pair:
                                 line = '%s: %s,\n' % (keyword[0], topic_id_value) # Value preserved from previous iteration                           
                                 topic_id_pair = False
@@ -152,14 +157,15 @@ class CfeTopicIds():
                                     line = '%s: %s' % (keyword[0], topic_id_value) + line_suffix
                                     file_modified = True
                                     topic_id_updates.append('    %s : %d (mapped to %s)' % (keyword_str, topic_id_value, topic_id_name))
-                                    print('Modified mapped line: ' + line)
+                                    self.debug_msg(f'Modified mapped line: {line.lstrip(' ').rstrip('\n')}', True)
+                                    self.debug_msg(f'Modified mapped line: topic_id_name: {topic_id_name}, topic_id_value: {topic_id_value}\n', True)
                                     topic_id_pair = True
                         else:
                             if keyword_str in self.topic_ids:
                                 line = '%s: %d' % (keyword[0], self.topic_ids[keyword_str]) + line_suffix
                                 file_modified = True
                                 topic_id_updates.append('    %s : %d' % (keyword_str, self.topic_ids[keyword_str]))
-                                print('Modified unmapped line: ' + line)
+                                self.debug_msg(f'Modified unmapped line: {line.lstrip(' ')}',True)
                 instantiated_text += line
         
         if file_modified:

@@ -23,15 +23,6 @@ import struct
 
 ###############################################################################
 
-class AppStoreDef():
-
-    PROXY_APP_PREFIX = 'proxy_'
-    PROXY_FILE_COPY_TOKEN = '>>'
-    BASECAMP_REPO_BRANCH = 'main'
-
-
-###############################################################################
-
 def compress_abs_path(path):
     """
     Remove '../' entries from a path
