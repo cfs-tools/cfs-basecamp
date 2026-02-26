@@ -1456,7 +1456,8 @@ class App():
                              'build/runtime tools, and a lightweight GUI that\n'
                              'simplify creating, integrating, testing, and\n'
                              'deploying cFS applications.\n\n'
-                             f'Version {self.APP_VERSION}')
+                             f'Basecamp Version {self.APP_VERSION}\n'
+                             f'PySimpleGUI Version {sg.version}\n')
                 sg.popup(about_msg,
                          title='About Basecamp', font='Courier 12', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 

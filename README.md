@@ -44,16 +44,16 @@ Perform the following steps to create and activate a Python virtual environment 
 
     source env/bin/activate
     
-Your command line prompt should now begin with (env) to indicate you are running in the virtual environment. Next, use PIP to install the packages required by Basecamp.
+Your command line prompt should now begin with (env) to indicate you are running in the virtual environment. Next, use PIP to install the packages required by Basecamp. Note PysimpleGUI is installed after Basecamp is cloned from github.
 
     pip3 install rsa requests paho-mqtt numpy pymupdf
-    python3 -m pip install -i https://PySimpleGUI.net/install PySimpleGUI
 
 # Install and Run Basecamp
 Begin these steps in *'your_project'* directory created during the Python Prerequisite steps.
 
 ## Clone Basecamp Repository
     git clone https://github.com/cfs-tools/cfs-basecamp.git
+    python -m pip install ./cfs-basecamp/ gnd-sys/app/PySimpleGUI-5.0.2026.0-py3-none-any.whl
     
 ## Build the core Flight System Target
 This must be done prior to running the Python ground system because it creates Python libraries that define the cFS app interfaces.

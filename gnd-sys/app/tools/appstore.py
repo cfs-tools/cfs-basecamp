@@ -213,7 +213,7 @@ class GitHubAppRepo():
                         ret_status = False
 
         if ret_status:
-            sg.popup(f'Successfully cloned and populated {real_app_name} from {proxy_app_name}', title='AppStore')
+            sg.popup(f'Successfully cloned and populated {real_app_name} from {proxy_app_name}\n', title='AppStore')
         else:
             sg.popup(f'Error cloning and populating {real_app_name} from {proxy_app_name}', title='AppStore Error')
 
@@ -283,7 +283,7 @@ class GitHubAppRepo():
                         ret_status = self.clone_proxy_app(target_dir, app_name)
                     else:
                         if success_popup:
-                            sg.popup(f'Successfully cloned {app_name} into {target_dir}', title='AppStore')
+                            sg.popup(f'Successfully cloned {app_name} into {target_dir}\n', title='AppStore')
                 else:
                     sg.popup(f'Error cloning {app_name} into {target_dir}', title='AppStore Error')
                     ret_status = False

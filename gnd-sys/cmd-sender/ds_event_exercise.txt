@@ -10,17 +10,19 @@ Notes:
      module. Refer to the Data Storage exercise slides for details.
     
 Exercises:
-  1. Issue events that will be stored in an events data file
+  1. Configure & enable file entry zero that logs event messages
   
 """
 
 ================================================================================
-Exercise 1. Issue noops to generate events that will be saved to a file
+Exercise 1. Configure & enable file entry zero that logs event messages
 
 ># Data Storage commands. FileTableIndex 0 is the event file
-> 'DS', 'DestStateCmd', {'FileTableIndex': 0, 'EnableState': 1} ## Enable event file
-> 'DS', 'DestStateCmd', {'FileTableIndex': 0, 'EnableState': 0} ## Disable event file
-> 'DS', 'CloseFileCmd', {'FileTableIndex': 0, 'Padding': 0}     ## Close the event file
+> 'DS', 'DestPathCmd',   {'FileTableIndex': 0, 'Padding': 0, 'Pathname': '/cf'} ## Set the pathname prefixed to the filename
+> 'DS', 'DestStateCmd',  {'FileTableIndex': 0, 'EnableState': 1} ## Enable event file
+> 'DS', 'GetFileInfoCmd',{} ## Open the FILE_INFO_TLM page prior to sendng the command to view the results 
+> 'DS', 'DestStateCmd',  {'FileTableIndex': 0, 'EnableState': 0} ## Disable event file
+> 'DS', 'CloseFileCmd',  {'FileTableIndex': 0, 'Padding': 0}     ## Close the event file
 
 ># Noops commands that can be sent to be written to a file
 > 'CFE_ES', 'NoopCmd', {}     ## Event message sent identifying cFE, OSAL and PSP versions, CFE_ES HK_TLM CommandCounter increments 
