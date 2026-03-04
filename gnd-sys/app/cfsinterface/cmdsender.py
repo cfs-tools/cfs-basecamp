@@ -43,9 +43,9 @@ else:
     from .telecommand   import TelecommandScript
     from .telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
     from .cmdtlmprocess import CmdTlmProcess
-from tools import crc_32c, compress_abs_path, bin_hex_decode, bin_hex_encode, TextEditor, PySimpleGUI_License
+from tools import crc_32c, compress_abs_path, bin_hex_decode, bin_hex_encode, TextEditor
 
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 
 CMD_SENDER_FILE_EXT                = 'txt'
 CMD_SENDER_START_CMD_DELIMITER     = '>'

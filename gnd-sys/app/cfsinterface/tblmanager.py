@@ -36,8 +36,8 @@ if __name__ == '__main__':
 else:
     from .cfeconstants  import Cfe
     from .cfefile       import CfeFile
-from tools import crc_32c, compress_abs_path, TextEditor, PySimpleGUI_License
-import PySimpleGUI as sg
+from tools import crc_32c, compress_abs_path, TextEditor
+import FreeSimpleGUI as sg
 
 WINDOW_TITLE  = 'cFS Table Manager'
 TBL_FILE_EXT  = 'tbl'

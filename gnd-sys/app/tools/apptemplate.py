@@ -40,8 +40,7 @@ else:
     from .jsonfile import JsonFile
     from .utils    import compress_abs_path
 
-from tools import PySimpleGUI_License
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 
 TEMPLATE_JSON_FILE = 'app_template.json'
 TEMPLATE_VAR_UPPER = "@TEMPLATE@"

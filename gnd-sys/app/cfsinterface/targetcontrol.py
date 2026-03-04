@@ -39,9 +39,9 @@ else:
     from .cmdtlmprocess import CmdProcess
     from .cmdtlmrouter  import RouterCmd
 from remoteops import mqttconst as mc
-from tools import get_ip_addr, PySimpleGUI_License
+from tools import get_ip_addr
 
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 import paho.mqtt.client as mqtt
 
 ###############################################################################

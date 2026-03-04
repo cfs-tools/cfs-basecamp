@@ -57,7 +57,7 @@ else:
     from .edsmission   import CfeEdsTarget
     from .cmdtlmrouter import RouterCmd
 from tools import hex_string
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
     
 ###############################################################################
 

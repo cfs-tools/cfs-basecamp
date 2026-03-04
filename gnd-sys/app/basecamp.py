@@ -65,7 +65,9 @@ logger = logging.getLogger(__name__)
 
 import EdsLib
 import CFE_MissionLib
-from tools import PySimpleGUI_License
+import FreeSimpleGUI as sg
+import paho.mqtt.client as mqtt
+
 from tools import CreateApp, ManageTutorials, crc_32c, datagram_to_str, compress_abs_path, TextEditor
 from tools import CreateProject, AppStore, ManageCodeTutorials
 from tools import AppTargetStatus, AppTopicIdStatus, Cfs, CfsStdout, ManageCfs, build_cfs_target
@@ -74,8 +76,7 @@ from cfsinterface import Cfe, EdsMission
 from cfsinterface import TelecommandInterface, TelecommandScript
 from cfsinterface import TelemetryMessage, TelemetryObserver, TelemetryQueueServer
 
-import paho.mqtt.client as mqtt
-import PySimpleGUI as sg
+
 
 BASECAMP_INI_FILE   = 'basecamp.ini'
 TUTORIAL_JSON_FILE  = 'tutorial.json' #TODO - Remove duplicate definitions

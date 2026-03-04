@@ -29,8 +29,7 @@ from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
-from tools import PySimpleGUI_License
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 
 
 ###############################################################################

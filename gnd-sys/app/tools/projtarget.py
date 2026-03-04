@@ -51,8 +51,7 @@ else:
     from .appstore  import GitHubAppRepo
     from .cfstarget import ManageCfs
 
-from tools import PySimpleGUI_License
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 
 PROJECT_JSON_FILE = 'project.json'
 PROJECT_SHELL_ERR = 42

@@ -42,8 +42,8 @@ else:
     from .telecommand   import TelecommandScript
     from .telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
     from .cmdtlmprocess import CmdTlmProcess
-from tools import crc_32c, compress_abs_path, TextEditor, PySimpleGUI_License
-import PySimpleGUI as sg
+from tools import crc_32c, compress_abs_path, TextEditor
+import FreeSimpleGUI as sg
 
 CCSDS   = 0
 TIME    = 1
