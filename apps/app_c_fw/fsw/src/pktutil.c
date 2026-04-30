@@ -215,22 +215,23 @@ bool PktUtil_IsPacketFiltered(const CFE_MSG_Message_t *MsgPtr, const PktUtil_Fil
 int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCnt)
 {
    
-   bool   ValidCsv = true;
-   char   *Token, *ErrCheck;
-   int    TokenIdx=0, EntryIdx=0, Len;
-   int    IntValue;
-   float  FltValue;
+   bool    ValidCsv = true;
+   char    *Token, *ErrCheck;
+   uint16  ValidParamCnt=0;
+   uint16  TokenIdx=0, EntryIdx=0, Len;
+   int     IntValue;
+   float   FltValue;
 
    
    Token = strtok(CsvStr, ","); 
    while (Token != NULL && TokenIdx < (ParamCnt+1)*2)
    {
-      OS_printf("[%d]%s\t", TokenIdx, Token); 
-      //TODO: Consider keyword string check fro even indices
+      OS_printf("[%d]%s\t\t", TokenIdx, Token); 
+      //TODO: Consider keyword string check for even indices
       if (TokenIdx%2 == 1)
       {
          EntryIdx = TokenIdx/2;
-         OS_printf("[EntryIdx = %d]",EntryIdx);
+         OS_printf("[EntryIdx:%2d]",EntryIdx);
          switch(CsvEntry[EntryIdx].Type)
          {
             case PKTUTIL_CSV_STRING:
@@ -252,7 +253,7 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
                IntValue = (int)strtol(Token, &ErrCheck, 10);
                if (ErrCheck != Token)
                {
-                  OS_printf("[IntValue = %d]",IntValue);
+                  OS_printf("[IntValue: %d]\n",IntValue);
                   memcpy(CsvEntry[EntryIdx].Data, &IntValue, sizeof(int));
                }
                else
@@ -268,7 +269,7 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
                FltValue = (float)strtod(Token, &ErrCheck);
                if (ErrCheck != Token)
                {
-                  OS_printf("[FltValue = %f]",FltValue);
+                  OS_printf("[FltValue: %f]\n",FltValue);
                   memcpy(CsvEntry[EntryIdx].Data, &FltValue, sizeof(float));
                }               
                else
@@ -288,6 +289,7 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
                break;            
 
          } 
+         if (ValidCsv) ValidParamCnt++;
       } /* End if data token */
       
       if (ValidCsv)
@@ -297,6 +299,7 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
       }
       else
       {
+         OS_printf("\n");
          Token = NULL;
       }
       
@@ -304,7 +307,7 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
    
    OS_printf("\n");
       
-   return EntryIdx;  
+   return ValidParamCnt;  
    
 } /* End PktUtil_ParseCsvStr() */ 
 
