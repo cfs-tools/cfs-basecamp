@@ -1,7 +1,7 @@
 {
    "title": "JMSG Demo",
    "version": "1.0",
-   "release": "alpha",
+   "release": "beta",
    "short-descr": "Demonstrate JSON Message Facility",
    "description": [
       "In this project you will use the JMSG_DEMO app to learn how Basecamp's JSON",
@@ -19,7 +19,7 @@
 
    "support-files":
       { 
-         "cmd-sender":  "",
+         "cmd-sender":  "jmsg_demo_project.txt",
          "file-server": "",
          "scripts":     "",
          "templates":   "",
