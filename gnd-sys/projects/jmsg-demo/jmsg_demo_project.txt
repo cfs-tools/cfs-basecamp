@@ -1,0 +1,101 @@
+"""
+JSON Message (JMSG) Project
+
+Notes:
+  1. These exercises are part of the JSON Message (JMSG) project at
+     https://spacesteps.com/TODO
+
+        
+Demos:
+  1. Execute Python Script
+  2. 
+
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+"""
+
+>#================================================================================
+># Demo 1. Execute Python Script
+>#
+># The UDP_SCRIPT use case demonstrates how to control python script
+># execution over a UDP connection. The demo alternates between:
+># - Sending a python script embedded in the JMSG to be executed
+># - Send a command to execute a command on the python system
+>#
+># STEPS
+># 1. Open a terminal window and navigate to cfs-basecamp\usr\apps\jmsg_lib\scripts
+>#    - Edit jmsg_demo.ini and set USE_CASE = SCRIPT_CMD
+>#    - Issue the follow command 'python3 jmsg_demo.py' (without quotes)
+>#
+># 2. From Basecamp open telemetry window JMSG_LIB/Application/TOPIC_SCRIPT_CMD
+>#
+># 3. Send the StartUseCase command and observe outputs in jmsg_demo.py terminal
+># 4. Send StopUseCase command to end the demo
+>#
+> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'UDP_SCRIPT'} ## jmsg_demo.py will print script outputs
+> 'JMSG_DEMO', 'StopUseCase', {} 
+
+>#================================================================================
+># Demo 2. Command python app to run scripts using JMSG/UDP connection
+>#
+># The UDP_SCRIPT use case demonstrates how to control python script
+># execution over a UDP connection. The demo alternates between:
+># - Sending a python script embedded in the JMSG to be executed
+># - Send a command to execute a command on the python system
+>#
+># STEPS
+># 1. Open a terminal window and navigate to cfs-basecamp\usr\apps\jmsg_lib\scripts
+>#    - Edit jmsg_demo.ini and set USE_CASE = SCRIPT_CMD
+>#    - Issue the follow command 'python3 jmsg_demo.py' (without quotes)
+>#
+># 2. From Basecamp open telemetry window JMSG_LIB/Application/TOPIC_SCRIPT_CMD
+>#
+># 3. Send the StartUseCase command and observe outputs in jmsg_demo.py terminal
+># 4. Send StopUseCase command to end the demo
+>#
+> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'UDP_RPI'} ## 
+> 'JMSG_DEMO', 'StopUseCase', {} 
+
+>#================================================================================
+># JMSG_DEMO Commands 
+>#
+> 'JMSG_DEMO', 'Noop', {} ## Event message issued & JMSG_APP/Application/STATUS_TLM valid command counter increment 
+> 'JMSG_DEMO', 'Reset', {} ## Handy way to reset event message filters
+> 'CFE_EVS', 'EnableAppEventTypeCmd',  {'AppName':'JMSG_DEMO', 'BitMask':0b1111} ## Enable debug events
+> 'CFE_EVS', 'DisableAppEventTypeCmd', {'AppName':'JMSG_DEMO', 'BitMask':0b0001} ## Disable debug events
+
+>#================================================================================
+># JMSG_UDP Commands 
+># - Debug events trace message activity
+>#
+> 'JMSG_UDP', 'Noop', {} ## Event message issued & JMSG_UDP/Application/STATUS_TLM valid command counter increment
+> 'CFE_EVS', 'EnableAppEventTypeCmd',  {'AppName':'JMSG_UDP', 'BitMask':0b1111} ## Enable debug events
+> 'CFE_EVS', 'DisableAppEventTypeCmd', {'AppName':'JMSG_UDP', 'BitMask':0b0001} ## Disable debug events
+
+>#================================================================================
+># JMSG_MQTT Commands 
+># - Debug events trace message activity
+>#
+> 'JMSG_MQTT', 'Noop', {} ## Event message issued & JMSG_MQTT/Application/STATUS_TLM valid command counter increment
+> 'CFE_EVS', 'EnableAppEventTypeCmd',  {'AppName':'JMSG_MQTT', 'BitMask':0b1111} ## Enable debug events
+> 'CFE_EVS', 'DisableAppEventTypeCmd', {'AppName':'JMSG_MQTT', 'BitMask':0b0001} ## Disable debug events
+
+>#================================================================================
+># JMSG_APP Commands 
+>#
+> 'JMSG_APP', 'Noop', {} ## Event message issued & JMSG_APP/Application/STATUS_TLM valid command counter increment
+> 'JMSG_APP', 'Reset', {} 
+>#
+># Topic command
+>#   'Id' options:     CSV_CMD, CSV_TLM, SCR_CMD, USR_1
+>#   'Action' options: Enable, Disable
+>#
+> 'JMSG_APP', 'SendTopicTblTlm', {} ## Sends topic table parameters in JMSG_LIB/Application/TOPIC_TBL_TLM
+> 'JMSG_APP', 'StartTopicTest', {'Id': 'CSV_CMD'}
+> 'JMSG_APP', 'StopTopicTest', {}
+> 'JMSG_APP', 'ConfigTopicTest', {'Id': 'CMD', 'Action':'Enable'}
+> 'JMSG_APP', 'ConfigTopicPlugin', {'Id': 'CMD', 'Action':'Enable'}
+> 'JMSG_APP', 'SendAllTopicSubscribeReq', {} ## This command is for development 
+> 'JMSG_APP', 'SendTopicSubscribeReq', {'Id': 'CMD'} ## This command is for development 
