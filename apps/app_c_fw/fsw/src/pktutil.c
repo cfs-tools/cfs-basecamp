@@ -254,7 +254,7 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
                if (ErrCheck != Token)
                {
                   OS_printf("[IntValue: %d]\n",IntValue);
-                  memcpy(CsvEntry[EntryIdx].Data, &IntValue, sizeof(int));
+                  memcpy(CsvEntry[EntryIdx].Data, &IntValue, PKTUTIL_CSV_INT_LEN);
                }
                else
                {
@@ -270,7 +270,7 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
                if (ErrCheck != Token)
                {
                   OS_printf("[FltValue: %f]\n",FltValue);
-                  memcpy(CsvEntry[EntryIdx].Data, &FltValue, sizeof(float));
+                  memcpy(CsvEntry[EntryIdx].Data, &FltValue, PKTUTIL_CSV_FLT_LEN);
                }               
                else
                {

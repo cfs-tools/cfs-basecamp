@@ -103,11 +103,15 @@ class IniConfig():
         else:
             self.config.read(self.ini_file)
             self.ini_file_in_use = self.ini_file
-
+        
+        # This strategy requires each parameter to be a unique string
+        # If a new entry is added, ensure the App class uses this class
+        # to access the current configuration.
         self.modifiable = {
             'SUDO_START_CFS':    'CFS_TARGET',
             'PASSWORD':          'APP',
             'APP_STORE_URL':     'APP',
+            'APP_REPO_BRANCH':   'APP',
             'APP_STORE_INCLUDE': 'APP',
             'APP_STORE_EXCLUDE': 'APP',
             }
@@ -120,7 +124,7 @@ class IniConfig():
 
     def getint(self, section, param):
         return self.config.getint(section,param)
-
+        
     def create_window(self):
         """
         """
@@ -137,9 +141,9 @@ class IniConfig():
         layout = [
                   [sg.Text('\nSelect and enter new values for the Basecamp configuration parameters you want to update:\n',font=hdr_value_font)],
                   rows, 
-                  [sg.Text(f'\n"Update" updates the selected parameters for the current session', font=hdr_value_font)],
-                  [sg.Text(f'"Save"     updates the selected parameters and if needed creates {self.usr_ini_file} for', font=hdr_value_font, size=(65,1))],
-                  [sg.Text(f'                for future sessions. The current parameter file is {self.ini_file_in_use}\n', font=hdr_value_font, size=(65,1))],
+                  [sg.Text(f'\n<Update> Update the selected parameters for the current session', font=hdr_value_font)],
+                  [sg.Text(f'<Save>     Update the selected parameters for the current session and save them for future', font=hdr_value_font)],
+                  [sg.Text(f'                   sessions in {self.usr_ini_file}', font=hdr_value_font, size=(65,1))],
                   [sg.Button('Update', font=hdr_label_font, pad=butt_pad, button_color=('SpringGreen4')), 
                    sg.Button('Save',   font=hdr_label_font, pad=butt_pad, button_color=('SpringGreen4')),
                    sg.Button('Cancel', font=hdr_label_font, pad=butt_pad)]
@@ -156,13 +160,8 @@ class IniConfig():
             event, values = window.read()
             if event in [sg.WIN_CLOSED, 'Cancel']:
                 break
-            if event == 'Update':
-                update_str = self.modify_params('Updated', values)
-                break
-            if event == 'Save':
-                update_str = self.modify_params('Saved', values)
-                with open(self.usr_ini_file, 'w') as configfile:
-                    self.config.write(configfile)
+            if event in ['Update', 'Save']:
+                update_str = self.modify_params(event, values)
                 break
         window.close()
         
@@ -183,8 +182,13 @@ class IniConfig():
                 prefix_str = ', '
         
         if len(param_str) > 0:
-            update_str = f'{modify_type} config parameters: {param_str}'
-            
+            update_str = f'{modify_type}d config parameters: {param_str}'
+        
+        if modify_type == 'Save':
+            with open(self.usr_ini_file, 'w') as configfile:
+                self.config.write(configfile)
+
+        print(update_str)            
         return update_str
         
         
@@ -756,9 +760,10 @@ class App():
         self.cfs_interface_dir = os.path.join(self.path, "cfsinterface")
         self.ini_config = IniConfig(ini_file)
 
+        # See IniConfig class self.modifiable{} for config parameters that
+        # can be changed during runtime and can't be set here
+
         self.APP_VERSION     = self.ini_config.get('APP','VERSION')
-        self.APP_STORE_URL   = self.ini_config.get('APP','APP_STORE_URL')
-        self.APP_REPO_BRANCH = self.ini_config.get('APP','APP_REPO_BRANCH')
         self.PROJECTS_URL    = self.ini_config.get('APP','PROJECTS_URL')
 
         self.USR_APP_PATH       = self.ini_config.get('PATHS','USR_APP_PATH')
@@ -767,7 +772,6 @@ class App():
 
         self.EDS_MISSION_NAME    = self.ini_config.get('CFS_TARGET','MISSION_EDS_NAME')
         self.EDS_CFS_TARGET_NAME = self.ini_config.get('CFS_TARGET','CPU_EDS_NAME')
-        self.SUDO_START_CFS      = self.ini_config.getboolean('CFS_TARGET','SUDO_START_CFS')
 
         self.CMD_GUI_PAYLOAD_ROW_COUNT = self.ini_config.getint('GUI','CMD_PAYLOAD_ROW_COUNT')
         self.CMD_GUI_PAYLOAD_ROW_INPUT = self.ini_config.getint('GUI','CMD_PAYLOAD_ROW_INPUT')
@@ -1287,7 +1291,7 @@ class App():
             if self.event == 'Create Project...':
                 project_path = os.path.join(self.path,self.PROJECTS_PATH)
                 manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
-                CreateProject(self.PROJECTS_URL, project_path, self.APP_STORE_URL, self.APP_REPO_BRANCH, self.USR_APP_PATH, manage_cfs).execute()
+                CreateProject(self.PROJECTS_URL, project_path, self.ini_config.get('APP','APP_STORE_URL'), self.ini_config.get('APP','APP_REPO_BRANCH'), self.USR_APP_PATH, manage_cfs).execute()
 
             elif self.event == 'Create App':
                 self.create_app.execute()
@@ -1303,15 +1307,9 @@ class App():
                     app_group = 'NASA'
                     git_topic_include.append(GITHUB_NASA_APP_TAG)                 
                     git_topic_exclude.append(GITHUB_BC_APP_TAG)
-                app_store = AppStore(self.APP_STORE_URL, self.APP_REPO_BRANCH, self.USR_APP_PATH,git_topic_include, git_topic_exclude,app_group)
+                app_store = AppStore(self.ini_config.get('APP','APP_STORE_URL'), self.ini_config.get('APP','APP_REPO_BRANCH'), self.USR_APP_PATH, git_topic_include, git_topic_exclude,app_group)
                 app_store.execute()
  
-            elif self.event == 'Download App':
-                git_topic_include = self.ini_config.get('APP','APP_STORE_INCLUDE').split(',')
-                git_topic_exclude = self.ini_config.get('APP','APP_STORE_EXCLUDE').split(',')
-                app_store = AppStore(self.APP_STORE_URL, self.APP_REPO_BRANCH, self.USR_APP_PATH,git_topic_include, git_topic_exclude)
-                app_store.execute()
-
             elif self.event in ('Add App to Target','Remove App from Target', 'App Target Status'):
                 manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
                 manage_cfs.execute(self.event.split(' ')[0]) # First menu word used as execute() command
@@ -1458,7 +1456,7 @@ class App():
                              'simplify creating, integrating, testing, and\n'
                              'deploying cFS applications.\n\n'
                              f'Basecamp Version {self.APP_VERSION}\n'
-                             f'PySimpleGUI Version {sg.version}\n')
+                             f'FreeSimpleGUI Version {sg.version}\n')
                 sg.popup(about_msg,
                          title='About Basecamp', font='Courier 12', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
@@ -1488,7 +1486,7 @@ class App():
                 
                 """
                 cfs_abs_exe_path = os.path.join(self.cfs_abs_base_path, self.cfs_exe_rel_path) 
-                if self.SUDO_START_CFS:
+                if self.ini_config.getboolean('CFS_TARGET','SUDO_START_CFS'):
                    start_sh  = os.path.join(self.path, Cfs.SH_SUDO_START_CFS)
                    password  = self.ini_config.get('APP','PASSWORD')
                    popen_str = f'{start_sh} {cfs_abs_exe_path} {self.cfs_exe_file} {password}'

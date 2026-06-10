@@ -36,7 +36,8 @@
 /** Macro Definitions **/
 /***********************/
 
-#define PKTUTIL_MAX_APP_ID    (0x0800)  /* Maximum CCSDS v1 ApId */
+#define PKTUTIL_UNUSED_MSG_ID  CFE_SB_INVALID_MSG_ID
+#define PKTUTIL_MAX_APP_ID     (0x0800)  /* Maximum CCSDS v1 ApId */
 
 #define PKTUTIL_CMD_HDR_BYTES (sizeof(CFE_MSG_CommandHeader_t))
 #define PKTUTIL_CMD_HDR_WORDS (sizeof(CFE_MSG_CommandHeader_t)/2)
@@ -97,8 +98,8 @@ typedef enum
 typedef enum
 {
    PKTUTIL_CSV_STR_LEN = APP_C_FW_PKTUTIL_CSV_PARAM_NAME_MAX_LEN,
-   PKTUTIL_CSV_INT_LEN = 4,
-   PKTUTIL_CSV_FLT_LEN = 4
+   PKTUTIL_CSV_INT_LEN = sizeof(int),
+   PKTUTIL_CSV_FLT_LEN = sizeof(float)
 
 } PKTUTIL_CSV_Size_t;
 

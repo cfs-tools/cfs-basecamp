@@ -20,7 +20,7 @@
 **
 */
 
-#ifndef _app_C_fw_
+#ifndef _app_c_fw_
 #define _app_c_fw_
 
 /*
@@ -28,12 +28,12 @@
 */
 
 #include "app_c_fw_cfg.h"
+#include "cjson.h"
 #include "inilib.h"
 #include "initbl.h"
 #include "fileutil.h"
 #include "cmdmgr.h"
 #include "tblmgr.h"
-#include "cjson.h"
 #include "staterep.h"
 #include "pktutil.h"
 #include "childmgr.h"
