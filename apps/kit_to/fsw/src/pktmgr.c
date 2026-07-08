@@ -337,7 +337,7 @@ uint16 PKTMGR_OutputTelemetry(void)
                   if (PktMgr->TlmSource == KIT_TO_TlmSource_LOCAL)
                   {
                      
-                     // If it's not a wrapped message then sent it
+                     // If it's not a wrapped message then send it
                      if (!CFE_SB_MsgId_Equal(MsgId, PktMgr->SubWrappedTlmMid))
                      {
                         SendMsg = true;
