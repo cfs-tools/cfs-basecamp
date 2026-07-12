@@ -70,7 +70,8 @@ License:
 ># JMSG_UDP Commands 
 ># - Debug events trace message activity
 >#
-> 'JMSG_UDP', 'Noop', {} ## Event message issued & JMSG_UDP/Application/STATUS_TLM valid command counter increment
+> 'JMSG_UDP', 'Noop',  {} ## Event message issued & JMSG_UDP/Application/STATUS_TLM valid command counter increment
+> 'JMSG_UDP', 'Reset', {} ## JMSG_UDP/Application/STATUS_TLM command counters reset (valid set to 1), event filters reset 
 > 'CFE_EVS', 'EnableAppEventTypeCmd',  {'AppName':'JMSG_UDP', 'BitMask':0b1111} ## Enable debug events
 > 'CFE_EVS', 'DisableAppEventTypeCmd', {'AppName':'JMSG_UDP', 'BitMask':0b0001} ## Disable debug events
 
@@ -78,7 +79,8 @@ License:
 ># JMSG_MQTT Commands 
 ># - Debug events trace message activity
 >#
-> 'JMSG_MQTT', 'Noop', {} ## Event message issued & JMSG_MQTT/Application/STATUS_TLM valid command counter increment
+> 'JMSG_MQTT', 'Noop',  {} ## Event message issued & JMSG_MQTT/Application/STATUS_TLM valid command counter increment
+> 'JMSG_MQTT', 'Reset', {} ## JMSG_UDP/Application/STATUS_TLM command counters reset (valid set to 1), event filters reset 
 > 'CFE_EVS', 'EnableAppEventTypeCmd',  {'AppName':'JMSG_MQTT', 'BitMask':0b1111} ## Enable debug events
 > 'CFE_EVS', 'DisableAppEventTypeCmd', {'AppName':'JMSG_MQTT', 'BitMask':0b0001} ## Disable debug events
 
@@ -88,14 +90,20 @@ License:
 > 'JMSG_APP', 'Noop', {} ## Event message issued & JMSG_APP/Application/STATUS_TLM valid command counter increment
 > 'JMSG_APP', 'Reset', {} 
 >#
-># Topic command
->#   'Id' options:     CSV_CMD, CSV_TLM, SCR_CMD, USR_1
->#   'Action' options: Enable, Disable
->#
+># Topic 'Id' options: 
+>#    CMD, TLM            - Hex text encoded messages 
+>#    CSV_CMD, CSV_TLM    - Payloads contain comma separated variable
+>#    SCR_CMD             - Command a script to be executed
+>#    USR_1, USR_2, USR_3 - User defined plugins
+># 
 > 'JMSG_APP', 'SendTopicTblTlm', {} ## Sends topic table parameters in JMSG_LIB/Application/TOPIC_TBL_TLM
-> 'JMSG_APP', 'StartTopicTest', {'Id': 'CSV_CMD'}
+> 'JMSG_APP', 'StartTopicTest', {'Id': 'CMD'}
+> 'JMSG_APP', 'StartTopicTest', {'Id': 'TLM'}
+> 'JMSG_APP', 'StartTopicTest', {'Id': 'CSV_CMD'} ## View packet in JMSG_LIB/Application/TOPIC_CSV_CMD 
+> 'JMSG_APP', 'StartTopicTest', {'Id': 'CSV_TLM'} ## View packet in JMSG_LIB/Application/TOPIC_CSV_TLM
+> 'JMSG_APP', 'StartTopicTest', {'Id': 'SCR_CMD'}
+> 'JMSG_APP', 'StartTopicTest', {'Id': 'USR_1'}
 > 'JMSG_APP', 'StopTopicTest', {}
-> 'JMSG_APP', 'ConfigTopicTest', {'Id': 'CMD', 'Action':'Enable'}
-> 'JMSG_APP', 'ConfigTopicPlugin', {'Id': 'CMD', 'Action':'Enable'}
+> 'JMSG_APP', 'ConfigTopicPlugin', {'Id': 'CMD', 'Action':'Enable'} ## 'Action' options: Enable, Disable
 > 'JMSG_APP', 'SendAllTopicSubscribeReq', {} ## This command is for development 
 > 'JMSG_APP', 'SendTopicSubscribeReq', {'Id': 'CMD'} ## This command is for development 

@@ -96,11 +96,16 @@ class GitHubAppRepo():
         try:
             self.app_repo = requests.get(self.git_url)
             if self.app_repo.status_code == 200:
-                app_repo_list = self.app_repo.json()
-                # Create a dictionary with app names as the key
-                for repo in app_repo_list:
-                    self.app_dict[repo['name']] = repo
-                ret_status = True
+                try:
+                    app_repo_list = self.app_repo.json()
+                    sg.popup(f'{app_repo_list}', title='AppStore Error')
+                    # Create a dictionary with app names as the key
+                    for repo in app_repo_list:
+                        self.app_dict[repo['name']] = repo
+                    ret_status = True
+                except Exception as e:     
+                    sg.popup(f'Error processing {self.git_url} Response Object JSON\n{e}', title='AppStore Error')
+
         except requests.exceptions.ConnectionError as e:
             pass
             
