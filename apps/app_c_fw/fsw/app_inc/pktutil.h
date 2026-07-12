@@ -97,7 +97,7 @@ typedef enum
 
 typedef enum
 {
-   PKTUTIL_CSV_STR_LEN = APP_C_FW_PKTUTIL_CSV_PARAM_NAME_MAX_LEN,
+   PKTUTIL_CSV_STR_LEN = APP_C_FW_PKTUTIL_CSV_PARAM_STR_MAX_LEN,
    PKTUTIL_CSV_INT_LEN = sizeof(int),
    PKTUTIL_CSV_FLT_LEN = sizeof(float)
 

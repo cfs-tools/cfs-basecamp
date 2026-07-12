@@ -57,7 +57,8 @@
 
       <!-- APP_C_FW::PktUtil -->
       
-      <Define name="PKTUTIL_CSV_PARAM_NAME_MAX_LEN"  value="20" />
+      <Define name="PKTUTIL_CSV_PARAM_NAME_MAX_LEN"  value="32" />
+      <Define name="PKTUTIL_CSV_PARAM_STR_MAX_LEN"   value="64" />
 
       <!--***********************************-->
       <!--**** DataTypeSet:  Entry Types ****-->

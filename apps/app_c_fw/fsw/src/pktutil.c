@@ -226,18 +226,19 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
    Token = strtok(CsvStr, ","); 
    while (Token != NULL && TokenIdx < (ParamCnt+1)*2)
    {
-      OS_printf("[%d]%s\t\t", TokenIdx, Token); 
+//OS_printf("[%d]%s\t\t", TokenIdx, Token); 
       //TODO: Consider keyword string check for even indices
       if (TokenIdx%2 == 1)
       {
          EntryIdx = TokenIdx/2;
-         OS_printf("[EntryIdx:%2d]",EntryIdx);
+//OS_printf("[EntryIdx:%2d]",EntryIdx);
          switch(CsvEntry[EntryIdx].Type)
          {
             case PKTUTIL_CSV_STRING:
                Len = strlen(Token);
                if (Len <= PKTUTIL_CSV_STR_LEN)
-               {                  
+               {             
+                  memset(CsvEntry[EntryIdx].Data,0,PKTUTIL_CSV_STR_LEN);            
                   memcpy(CsvEntry[EntryIdx].Data,Token,Len);
                }
                else
@@ -253,7 +254,7 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
                IntValue = (int)strtol(Token, &ErrCheck, 10);
                if (ErrCheck != Token)
                {
-                  OS_printf("[IntValue: %d]\n",IntValue);
+//OS_printf("[IntValue: %d]\n",IntValue);
                   memcpy(CsvEntry[EntryIdx].Data, &IntValue, PKTUTIL_CSV_INT_LEN);
                }
                else
@@ -269,7 +270,7 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
                FltValue = (float)strtod(Token, &ErrCheck);
                if (ErrCheck != Token)
                {
-                  OS_printf("[FltValue: %f]\n",FltValue);
+//OS_printf("[FltValue: %f]\n",FltValue);
                   memcpy(CsvEntry[EntryIdx].Data, &FltValue, PKTUTIL_CSV_FLT_LEN);
                }               
                else
@@ -299,13 +300,13 @@ int PktUtil_ParseCsvStr(char *CsvStr, PKTUTIL_CSV_Entry_t *CsvEntry, int ParamCn
       }
       else
       {
-         OS_printf("\n");
+//OS_printf("\n");
          Token = NULL;
       }
       
    } /* End Token loop */  
    
-   OS_printf("\n");
+//OS_printf("\n");
       
    return ValidParamCnt;  
    
