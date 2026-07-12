@@ -98,7 +98,8 @@ class GitHubAppRepo():
             if self.app_repo.status_code == 200:
                 try:
                     app_repo_list = self.app_repo.json()
-                    sg.popup(f'{app_repo_list}', title='AppStore Error')
+                    #with open("appstore_debug.txt", "w", encoding="utf-8") as file:
+                    #    file.write(f"{app_repo_list}")
                     # Create a dictionary with app names as the key
                     for repo in app_repo_list:
                         self.app_dict[repo['name']] = repo
