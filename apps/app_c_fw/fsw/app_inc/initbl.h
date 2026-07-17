@@ -26,7 +26,7 @@
 /*
 ** Include Files
 */
-
+#include "cjson.h"
 #include "app_c_fw.h" /* Needs JSON with FW config so just include everything */
 
 

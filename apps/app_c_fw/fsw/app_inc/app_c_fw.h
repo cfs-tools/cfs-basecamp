@@ -20,7 +20,7 @@
 **
 */
 
-#ifndef _app_C_fw_
+#ifndef _app_c_fw_
 #define _app_c_fw_
 
 /*
@@ -40,7 +40,7 @@
 #include "crc.h"
 #include "membuf.h"
 
-#endif /* _app_c_fw_ */
+#endif /* _app_C_fw_ */
 
 
 
