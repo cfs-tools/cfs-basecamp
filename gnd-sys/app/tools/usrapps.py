@@ -65,7 +65,8 @@ class AppStoreSpec():
     including the cFS, EDS, and Basecamp app store. 
     """
     
-    BC_APP_SPEC_VER = 'bc-app-spec-v3.0'
+    BC_APP_SPEC_PREFIX = 'bc-app-spec'
+    BC_APP_SPEC_VER    = f'{BC_APP_SPEC_PREFIX}-v3'
 
     PROXY_APP_PREFIX      = 'proxy_'
     PROXY_FILE_COPY_TOKEN = '>>'

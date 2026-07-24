@@ -7,8 +7,9 @@ Notes:
 
         
 Demos:
-  1. Execute Python Script
-  2. 
+  1. Execute Python Scripts
+  2. Transfer CSV Commands and Telemetry JMSGs
+  3. Display JMSGs on MQTT server
 
 License:
     Copyright 2022 bitValence, Inc.
@@ -17,46 +18,76 @@ License:
 """
 
 >#================================================================================
-># Demo 1. Execute Python Script
+># Demo 1. Execute Python Scripts
 >#
-># The UDP_SCRIPT use case demonstrates how to control python script
-># execution over a UDP connection. The demo alternates between:
-># - Sending a python script embedded in the JMSG to be executed
-># - Send a command to execute a command on the python system
+># The UDP_SCRIPT use case demonstrates how to control Python script
+># execution over a UDP connection. A JMSG command is sent from the 
+># cFS JMSG_DEMO app to the Python jmsg_demo script. The demo alternates
+># bewteen teh following JMSG commands:
+># - Embed a Python script in the JMSG that is executed
+># - Specify the filename of a Python script that is executed
 >#
 ># STEPS
-># 1. Open a terminal window and navigate to cfs-basecamp\usr\apps\jmsg_lib\scripts
->#    - Edit jmsg_demo.ini and set USE_CASE = SCRIPT_CMD
+># 1. Open a terminal window and navigate to cfs-basecamp/usr/apps/jmsg_lib/scripts
 >#    - Issue the follow command 'python3 jmsg_demo.py' (without quotes)
+>#    - Select use case SCRIPT_CMD
 >#
-># 2. From Basecamp open telemetry window JMSG_LIB/Application/TOPIC_SCRIPT_CMD
+># 2. From Basecamp GUI open telemetry window JMSG_LIB/Application/TOPIC_SCRIPT_CMD
 >#
-># 3. Send the StartUseCase command and observe outputs in jmsg_demo.py terminal
+># 3. Send the StartUseCase command below and observe outputs in jmsg_demo.py terminal
 ># 4. Send StopUseCase command to end the demo
 >#
 > 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'UDP_SCRIPT'} ## jmsg_demo.py will print script outputs
 > 'JMSG_DEMO', 'StopUseCase', {} 
 
 >#================================================================================
-># Demo 2. Command python app to run scripts using JMSG/UDP connection
+># Demo 2. Transfer CSV Commands and Telemetry JMSGs
 >#
-># The UDP_SCRIPT use case demonstrates how to control python script
-># execution over a UDP connection. The demo alternates between:
-># - Sending a python script embedded in the JMSG to be executed
-># - Send a command to execute a command on the python system
+># The UDP_RPI use case demonstrates how command and telemetry JMSGs with Comma
+># Separated Variable (CSV) parameters are used. Separate CSV_CMD and CSV_TLM 
+># demos can be run, however the Raspberry Pi (RPI) use case is used because it 
+># exercises both commands & telemetry.
 >#
 ># STEPS
 ># 1. Open a terminal window and navigate to cfs-basecamp\usr\apps\jmsg_lib\scripts
->#    - Edit jmsg_demo.ini and set USE_CASE = SCRIPT_CMD
 >#    - Issue the follow command 'python3 jmsg_demo.py' (without quotes)
+>#    - Select use case UDP_RPI
 >#
-># 2. From Basecamp open telemetry window JMSG_LIB/Application/TOPIC_SCRIPT_CMD
+># 2. From Basecamp GUI open the followng telemetry windows
+>#    - JMSG_LIB/Application/TOPIC_CSV_CMD
+>#    - JMSG_LIB/Application/TOPIC_CSV_TLM
+>#    - JMSG_DEMO/Application/UDP_RPI_TLM
 >#
-># 3. Send the StartUseCase command and observe outputs in jmsg_demo.py terminal
+># 3. Send the StartUseCase command below and observe outputs in jmsg_demo.py terminal
 ># 4. Send StopUseCase command to end the demo
 >#
 > 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'UDP_RPI'} ## 
 > 'JMSG_DEMO', 'StopUseCase', {} 
+
+>#================================================================================
+># Demo 3. MQTT: Send Commands & Receive Telemetry
+>#
+># The UDP_RPI use case demonstrates how command and telemetry JMSGs with Comma
+># Separated Variable (CSV) parameters are used. Separate CSV_CMD and CSV_TLM 
+># demos can be run, however the Raspberry Pi (RPI) use case is used because it 
+># exercises both commands & telemetry.
+>#
+># STEPS
+># 1. Open a terminal window and navigate to cfs-basecamp\usr\apps\jmsg_lib\scripts
+>#    - Issue the follow command 'python3 jmsg_demo.py' (without quotes)
+>#    - Select use case UDP_RPI
+>#
+># 2. From Basecamp GUI open the followng telemetry windows
+>#    - JMSG_LIB/Application/TOPIC_CSV_CMD
+>#    - JMSG_LIB/Application/TOPIC_CSV_TLM
+>#    - JMSG_DEMO/Application/UDP_RPI_TLM
+>#
+># 3. Send the StartUseCase command below and observe outputs in jmsg_demo.py terminal
+># 4. Send StopUseCase command to end the demo
+>#
+> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'MQTT_DISCRETE'} ##
+> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'MQTT_RATE'} ##
+> 'JMSG_DEMO', 'StopUseCase', {}
 
 >#================================================================================
 ># JMSG_DEMO Commands 
@@ -80,7 +111,11 @@ License:
 ># - Debug events trace message activity
 >#
 > 'JMSG_MQTT', 'Noop',  {} ## Event message issued & JMSG_MQTT/Application/STATUS_TLM valid command counter increment
-> 'JMSG_MQTT', 'Reset', {} ## JMSG_UDP/Application/STATUS_TLM command counters reset (valid set to 1), event filters reset 
+> 'JMSG_MQTT', 'Reset', {} ## JMSG_UDP/Application/STATUS_TLM command counters reset (valid set to 1), event filters reset
+> 'JMSG_MQTT', 'ConnectToMqttBroker', {'BrokerAddress':'broker.emqx.io', 'BrokerPort': 1883, 'ClientName': 'temp'}
+> 'JMSG_MQTT', 'ConnectToMqttBroker', {'BrokerAddress':'broker.hivemq.com', 'BrokerPort': 1883, 'ClientName': 'temp'}
+> 'JMSG_MQTT', 'ReconnectToMqttBroker', {}
+> 'JMSG_MQTT', 'SendConnectionInfo', {}
 > 'CFE_EVS', 'EnableAppEventTypeCmd',  {'AppName':'JMSG_MQTT', 'BitMask':0b1111} ## Enable debug events
 > 'CFE_EVS', 'DisableAppEventTypeCmd', {'AppName':'JMSG_MQTT', 'BitMask':0b0001} ## Disable debug events
 
@@ -104,6 +139,6 @@ License:
 > 'JMSG_APP', 'StartTopicTest', {'Id': 'SCR_CMD'}
 > 'JMSG_APP', 'StartTopicTest', {'Id': 'USR_1'}
 > 'JMSG_APP', 'StopTopicTest', {}
-> 'JMSG_APP', 'ConfigTopicPlugin', {'Id': 'CMD', 'Action':'Enable'} ## 'Action' options: Enable, Disable
+> 'JMSG_APP', 'ConfigTopicPlugin', {'Id': 'CMD', 'Action':'ENABLE'} ## 'Action' options: Enable, Disable
 > 'JMSG_APP', 'SendAllTopicSubscribeReq', {} ## This command is for development 
 > 'JMSG_APP', 'SendTopicSubscribeReq', {'Id': 'CMD'} ## This command is for development 

@@ -15,7 +15,7 @@
 #  NO ARTEFACTS FROM THIS BUILD SHOULD EVER INTERMINGLE WITH THE REAL TARGET BUILD
 #
 
-cmake_minimum_required(VERSION 2.6.4)
+cmake_minimum_required(VERSION 3.10)
 project(OSALCOVERAGE C)
 
 # Ask to generate a "make test" target

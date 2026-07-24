@@ -33,8 +33,27 @@ add_compile_options(
     -Wwrite-strings         # Warn if not treating string literals as "const"
     -Wpointer-arith         # Warn about suspicious pointer operations
     -Wcast-align            # Warn about casts that increase alignment requirements
-    -Werror                 # Treat warnings as errors (code should be clean)
     -Wno-format-truncation   # Many false positives/non-issues
     -Wno-stringop-truncation # Many false positives/non-issues
 )
 
+#
+# Ideally system should always be built with -Werror option. However, until
+# basecamp is updated to use cFS version 7.x a work around is required if
+# the platform is using Python 3.13 or greater. In 3.13 PyWeakref_GetObject
+# was deprecated and it is used in the EDS toolchain C code that produces
+# the Python libraries. This logic adds the 
+#
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.12)
+   find_package(Python3 REQUIRED COMPONENTS Interpreter)
+   if(Python3_VERSION VERSION_LESS "3.13")
+      message(STATUS "Compiling with '-Werror' option")
+      add_compile_options(
+          -Werror  # Treat warnings as errors (code should be clean)
+      )
+   else()
+      message(STATUS "Compiling without '-Werror' option due to Python version and PyWeakref_GetObject deprecation")   
+   endif()
+else()
+   message(STATUS "Compiling without '-Werror' option because Python version could not be determined")
+endif()

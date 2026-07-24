@@ -83,8 +83,7 @@ class GitHubAppRepo():
         self.quiet_ops = quiet_ops
         self.app_repo  = None
         self.app_dict  = {}
-         
-         
+                 
     def create_dict(self):
         """
         Queries git URL to a list of apps. A dictionary is created using app
@@ -129,7 +128,18 @@ class GitHubAppRepo():
             if len(self.git_branch_arg) == 0:
                 git_branch_txt = ''
             else:
-                git_branch_txt = f'--branch {self.git_branch_arg}'
+                if self.git_branch_arg.startswith(AppStoreSpec.BC_APP_SPEC_PREFIX):
+                    # Use the highest repo version starts with BC_APP_SPEC_VER 
+                    git_tags = self.get_tags(app_name)
+                    tag_list = sorted([tag for tag in git_tags if tag.startswith(AppStoreSpec.BC_APP_SPEC_VER)], reverse=True)
+                    if len(tag_list) > 0:
+                        git_branch_txt = f'--branch {tag_list[0]}'
+                    else:
+                        sg.popup(f"{app_name} does not have a tag compatible with\n{AppStoreSpec.BC_APP_SPEC_VER}", title='AppStore Error')
+                        clone_repo = False
+                        ret_status = False                        
+                else:
+                    git_branch_txt = f'--branch {self.git_branch_arg}'
         elif self.repo_branch_select == AppStoreSpec.APP_REPO_DEV_BRANCH:
             git_branch_txt = f'--branch {AppStoreSpec.APP_REPO_DEV_BRANCH}'
         else:
@@ -295,7 +305,25 @@ class GitHubAppRepo():
                 os.chdir(saved_cwd)
         return ret_status
 
-              
+    def get_tags(self, app_name):
+        # GitHub REST API endpoint for repository tags
+        tags_url = self.app_dict[app_name]['tags_url']
+        # Optional: Add headers if you hit rate limits (Requires a personal access token)
+        # headers = {"Authorization": "token YOUR_PERSONAL_ACCESS_TOKEN"}
+        # response = requests.get(tags_url, headers=headers)
+        
+        response = requests.get(tags_url)
+        
+        if response.status_code == 200:
+            tags_data = response.json()
+            # Extract only the name of each tag
+            tags = [tag['name'] for tag in tags_data]
+            return tags
+        else:
+            sg.popup(f'Error code {response.status_code} when fetching tags from\n\n{tags_url}', title='AppStore Error')
+            return []
+
+
 ###############################################################################
 
 class AppStore():

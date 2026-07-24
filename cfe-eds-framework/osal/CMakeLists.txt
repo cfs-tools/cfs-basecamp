@@ -40,7 +40,15 @@
 # OSAL resources.
 #
 ######################################################################
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.10)
+
+# Set the policy dictating use of target_link_libraries across directories
+# Either OLD or NEW should work here but setting it to something avoids a
+# warning when using newer versions of the tool.
+if (CMAKE_VERSION VERSION_GREATER 3.13)
+    cmake_policy(SET CMP0079 NEW)
+endif()
+
 project(OSAL C)
 
 # The "OSAL_EXT_SOURCE_DIR" cache variable may be set to a path
