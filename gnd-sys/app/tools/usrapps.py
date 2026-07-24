@@ -53,14 +53,15 @@ import FreeSimpleGUI as sg
 
 class AppStoreSpec():
     """
-    See prologue for why this class defined in this file.
+    See prologue for why this class is defined in this file.
     
-    Define constants used in app specifications. If a constant change impacts
-    the app store app integration API then APP_STORE_VER must be updated. Apps
+    Define constants used in app specifications. If a change impacts
+    the app store app integration API then BC_APP_SPEC_VER must be updated. Apps
     in the app store may become incompatible. Apps should be updated/verified
-    as needed and new versions tagged with APP_STORE_VER.
+    as needed and new versions tagged with BC_APP_SPEC_VER.x  where 'x' starts at
+    0 and each subsequent app release increments x.
     
-    APP_STORE_VER is used identify which version of Basecamp an app is 
+    BC_APP_SPEC_VER is used identify which version of Basecamp an app is 
     compatable with. Compatability is determined by many integration interfaces
     including the cFS, EDS, and Basecamp app store. 
     """
