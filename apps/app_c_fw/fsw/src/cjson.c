@@ -97,37 +97,6 @@ static const char *JsonTypeStr[] = {
   
 };
 
-static const char *BoolStr[] = {
-   "false",
-   "true",
-   "UNDEF"
-};
-
-
-/******************************************************************************
-** Function: CJSON_BoolStr
-**
-** Purpose: Return a pointer to a boolean string
-**
-** Notes:
-**   Assumes false=0 and true=1
-*/
-const char *CJSON_BoolStr(bool BoolArg)
-{
-   
-   uint8 i = 2;
-   
-   if ( BoolArg == true || BoolArg == false)
-   {
-   
-      i = BoolArg;
-   
-   }
-        
-   return BoolStr[i];
-
-} /* End CJSON_BoolStr() */
-
 
 /******************************************************************************
 ** Function: CJSON_FltObjConstructor

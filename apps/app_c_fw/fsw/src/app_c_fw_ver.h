@@ -23,6 +23,7 @@
 **    4.0.0 - New baseline for OSK app repo compatible with cFE Caelum
 **    4.2.0 - Table improvements, see issues 32
 **    4.3.0 - EDS defined event IDs
+**    5.0.0 - Updated to cFS 7.0 (Basecamp 4.0 release)
 */
 
 #ifndef _app_c_fw_ver_h_

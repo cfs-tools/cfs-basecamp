@@ -67,6 +67,44 @@ void TBLMGR_Constructor(TBLMGR_Class_t *TblMgr, const char *AppName)
 
 
 /******************************************************************************
+** Function: TBLMGR_CreateAppTblName
+**
+** Notes:
+**   1. Caller's responsibility to ensure the AppTblName buffer can hold a 
+**      string of length TBLMGR_APP_TBL_NAME_MAX_LEN
+**   2. Didn't use an existing constant like OS_MAX_API_NAME because this
+**      name is usually in a JSON fille and doesn't need to be as constrained.
+**
+*/
+char *TBLMGR_CreateAppTblName(char *AppTblName, const char *AppName,
+                              const char *TblName)
+
+{
+
+   uint16 AppTblNameLen;
+   char *RetStrPtr = NULL;
+   
+   
+   AppTblNameLen = strlen(AppName) + strlen(TBLMGR_APP_TBL_NAME_SEP) + strlen(TblName);
+   
+   if (AppTblNameLen < TBLMGR_APP_TBL_NAME_MAX_LEN)
+   {
+      snprintf(AppTblName, TBLMGR_APP_TBL_NAME_MAX_LEN, "%s%s%s", AppName, TBLMGR_APP_TBL_NAME_SEP, TblName);
+      RetStrPtr = AppTblName;
+   }
+   else
+   {
+      CFE_EVS_SendEvent(TBLMGR_CREATE_NAME_ERR_EID, CFE_EVS_EventType_ERROR, 
+                        "Failed to create app table name. Length %d is greater than allowed max length of %d",
+                        AppTblNameLen, TBLMGR_APP_TBL_NAME_MAX_LEN-1);
+   }
+   
+   return RetStrPtr;
+
+} /* End TBLMGR_CreateAppTblName() */
+
+
+/******************************************************************************
 ** Function: TBLMGR_DumpTblCmd
 **
 ** Note:
@@ -89,7 +127,6 @@ bool TBLMGR_DumpTblCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    char DumpRecord[256];
    char SysTimeStr[128];
    
-      
    if (DumpTblCmd->Id < TblMgr->NextAvailableId)
    {
       TblMgr->Tbl[DumpTblCmd->Id].LastAction = APP_C_FW_TblActions_DUMP;

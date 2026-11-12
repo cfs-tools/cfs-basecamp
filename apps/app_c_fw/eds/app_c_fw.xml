@@ -19,9 +19,12 @@
       Framework (app_c_fw) library. 
       
     Notes:
-      1. This document adheres to the Electronic Data Sheet (EDS) XML schema 
-         as prescribed in CCSDS book 876.0. 
+      1. This document adheres to the Electronic Data Sheet (EDS) XML 
+         schema as prescribed in CCSDS book 876.0. 
       2. These definitions help with consistent app coding conventions
+      3. Changes should be made with care since this serve as base types
+         often used in commands and telemetry. Basecamp app EDS files
+         should be searched to find dependencies.
       
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
@@ -43,17 +46,19 @@
       <!-- automated checks to ensure an EIDs don't overlap.              -->
       <!-- TODO: A scalable scheme for multiple libraries is required.    --> 
 
-      <Define name="INIT_INFO_EID"     value="0" />
-      <Define name="INITBL_BASE_EID"   value="1" />            1 
-      <Define name="CMDMGR_BASE_EID"   value="10" />
-      <Define name="TBLMGR_BASE_EID"   value="20" />
-      <Define name="CJSON_BASE_EID"    value="30" />
-      <Define name="CHILDMGR_BASE_EID" value="50" />
-      <Define name="STATEREP_BASE_EID" value="60" />
-      <Define name="FILEUTIL_BASE_EID" value="80" />
-      <Define name="PKTUTIL_BASE_EID"  value="90" />
-      <Define name="APP_BASE_EID"      value="100"  shortDescription="Starting ID for Apps using the framework"/>
-      <Define name="LIB_BASE_EID"      value="1000" shortDescription="Starting ID for Libs using the framework"/>
+      <Define name="INIT_INFO_EID"      value="0" />
+      <Define name="INITBL_BASE_EID"    value="1" />            1 
+      <Define name="CMDMGR_BASE_EID"    value="10" />
+      <Define name="TBLMGR_BASE_EID"    value="20" />
+      <Define name="CJSON_BASE_EID"     value="30" />
+      <Define name="CHILDMGR_BASE_EID"  value="50" />
+      <Define name="STATEREP_BASE_EID"  value="60" />
+      <Define name="FILEUTIL_BASE_EID"  value="80" />
+      <Define name="PKTUTIL_BASE_EID"   value="90" />
+      <Define name="APP_BASE_EID"       value="100"  shortDescription="Starting ID for Apps using the framework"/>
+      <Define name="APP_INIT_DEBUG_EID"      value="998"  shortDescription="ID used for initialization debug events"/>
+      <Define name="APP_LOW_FREQ_DEBUG_EID"  value="999"  shortDescription="ID used for low frequency debug events like commands"/>
+      <Define name="LIB_BASE_EID"            value="1000" shortDescription="Starting ID for Libs using the framework"/>
 
       <!-- APP_C_FW::PktUtil -->
       
@@ -94,8 +99,9 @@
         </EnumerationList>
       </EnumeratedDataType>
       
-      <Define name="ENABLE"  value="${TRUE}" />
-      <Define name="DISABLE" value="${FALSE}" />
+      <Define name="DISABLE" value="${FALSE}"  />
+      <Define name="ENABLE"  value="${TRUE}"   />
+      <Define name="IDLE"    value="${TRUE+1}" />
       <EnumeratedDataType name="ConfigEnaAction" shortDescription="Common terminology for enable/disable configuration in commands" >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
@@ -109,6 +115,15 @@
         <EnumerationList>
           <Enumeration label="ENABLED"  value="${ENABLE}"  shortDescription="" />
           <Enumeration label="DISABLED" value="${DISABLE}" shortDescription="" />
+        </EnumerationList>
+      </EnumeratedDataType>
+
+      <EnumeratedDataType name="ConfigEnaTriState" shortDescription="Common terminology for enable/disable/unused configuration in telemetry" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="ENABLED"  value="${ENABLE}"  shortDescription="" />
+          <Enumeration label="DISABLED" value="${DISABLE}" shortDescription="" />
+          <Enumeration label="UNUSED"   value="${IDLE}"    shortDescription="" />
         </EnumerationList>
       </EnumeratedDataType>
 
@@ -132,7 +147,32 @@
           <Enumeration label="FILE_IS_DIR"      value="5" shortDescription="" />
         </EnumerationList>
       </EnumeratedDataType>
-    
+
+      <!-- Open file list contains file information from the cFE's   -->
+      <!-- perspective which means the information is based on app's -->
+      <!-- that have used the cFE's file API.                        -->
+
+      <ContainerDataType name="OpenFileEntry" shortDescription="Data provided for each open file">
+        <EntryList>
+          <Entry name="Filename" type="BASE_TYPES/PathName" shortDescription="" />
+          <Entry name="AppName"  type="BASE_TYPES/ApiName"  shortDescription="Application that opened the file using the OSAL" />
+       </EntryList>
+      </ContainerDataType>
+      
+      <ArrayDataType name="OpenFiles" dataTypeRef="OpenFileEntry" shortDescription="" >
+        <DimensionList>
+           <Dimension size="${CFE_MISSION/MAX_NUM_FILES}"/>
+        </DimensionList>
+      </ArrayDataType>
+      
+      <!-- Warning: This must match OSAL's API structure definition! -->
+      <ContainerDataType name="OpenFileList" shortDescription="Data provided for each open file">
+        <EntryList>
+          <Entry name="Count" type="BASE_TYPES/uint16" shortDescription="" />
+          <Entry name="Entry" type="OpenFiles"         shortDescription="" />
+       </EntryList>
+      </ContainerDataType>
+
       <!-- APP_C_FW::PktUtil -->
 
       <EnumeratedDataType name="PktFilterOptions" shortDescription="" >

@@ -44,12 +44,10 @@
 ** Event Message IDs
 */
 
-#define FILEUTIL_INVLD_FILENAME_LEN_EID     (APP_C_FW_FILEUTIL_BASE_EID + 0)
-#define FILEUTIL_INVLD_FILENAME_STR_EID     (APP_C_FW_FILEUTIL_BASE_EID + 1)
-#define FILEUTIL_INVLD_FILENAME_CHR_EID     (APP_C_FW_FILEUTIL_BASE_EID + 2)
-#define FILEUTIL_FILE_READ_OPEN_ERR_EID     (APP_C_FW_FILEUTIL_BASE_EID + 3)
-#define FILEUTIL_MAX_PATH_LEN_CONFLICT_EID  (APP_C_FW_FILEUTIL_BASE_EID + 4)
-#define FILEUTIL_MAX_OPEN_FILE_LIST_EID     (APP_C_FW_FILEUTIL_BASE_EID + 5)
+#define FILEUTIL_INVALID_FILENAME_EID       (EdsParam_APP_C_FW_FILEUTIL_BASE_EID + 0)
+#define FILEUTIL_FILE_READ_OPEN_ERR_EID     (EdsParam_APP_C_FW_FILEUTIL_BASE_EID + 1)
+#define FILEUTIL_MAX_PATH_LEN_CONFLICT_EID  (EdsParam_APP_C_FW_FILEUTIL_BASE_EID + 2)
+#define FILEUTIL_MAX_OPEN_FILE_LIST_EID     (EdsParam_APP_C_FW_FILEUTIL_BASE_EID + 3)
 
 /**********************/
 /** Type Definitions **/
@@ -83,30 +81,6 @@ typedef struct
    const char  *Name;
 
 } FileUtil_CheckFileState_t;
-
-
-/* 
-** Contains file information from the cFE's perspective which means 
-** the information is based on app's that have used the cFE's file
-** API.
-*/
-typedef struct
-{
-
-   char  Filename[OS_MAX_PATH_LEN];
-   char  AppName[OS_MAX_API_NAME];
-
-
-} FileUtil_OpenFileEntry_t;
-
-
-typedef struct
-{
-
-   uint16   OpenCount;
-   FileUtil_OpenFileEntry_t Entry[OS_MAX_NUM_OPEN_FILES];
-
-} FileUtil_OpenFileList_t;
 
 
 /************************/
@@ -162,7 +136,18 @@ uint16 FileUtil_GetOpenFileCount(void);
 ** Returns the number of open files as a convenience even though it's contained
 ** in the OpenFileList data struture.
 */
-uint16 FileUtil_GetOpenFileList(FileUtil_OpenFileList_t *OpenFileList);
+uint16 FileUtil_GetOpenFileList(APP_C_FW_OpenFileList_t *OpenFileList);
+
+
+/******************************************************************************
+** Function: FileUtil_GetFilenameLen
+**
+** Notes:
+**  1. Does not issue an event message which can be useful in cases when a zero
+**     length string is not considered an error. FileUtil_VerifyFilenameStr()
+**     can be called net for non-zero string lengths. 
+*/
+uint16 FileUtil_GetFilenameLen(const char *Filename);
 
 
 /******************************************************************************
@@ -193,7 +178,9 @@ bool FileUtil_VerifyFileForRead(const char *Filename);
 /******************************************************************************
 ** Function: FileUtil_VerifyFilenameStr
 **
-**  Verify file name len, termination, and characters are valid.
+** Verifies the filename is properly terminated, length of path/filename 
+** length of filename length, and allowable filename characters.
+** 
 */
 bool FileUtil_VerifyFilenameStr(const char *Filename);
 

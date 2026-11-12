@@ -28,7 +28,6 @@
 /*
 ** Includes
 */
-
 #include "app_c_fw_cfg.h"
 
 
@@ -36,11 +35,12 @@
 /** Macro Definitions **/
 /***********************/
 
-#define PKTUTIL_UNUSED_MSG_ID  CFE_SB_INVALID_MSG_ID
+#define PKTUTIL_UNUSED_MSG_ID  CFE_SB_MsgIdToValue(CFE_SB_INVALID_MSG_ID)
 #define PKTUTIL_MAX_APP_ID     (0x0800)  /* Maximum CCSDS v1 ApId */
 
 #define PKTUTIL_CMD_HDR_BYTES (sizeof(CFE_MSG_CommandHeader_t))
 #define PKTUTIL_CMD_HDR_WORDS (sizeof(CFE_MSG_CommandHeader_t)/2)
+#define PKTUTIL_CMD_SEC_HDR_BYTES (2) // TODO: Use sizeof(CFE_MSG_CommandSecondaryHeader_t) but not accessible
 
 #define PKTUTIL_TLM_HDR_BYTES (sizeof(CFE_MSG_TelemetryHeader_t))
 #define PKTUTIL_TLM_HDR_WORDS (sizeof(CFE_MSG_TelemetryHeader_t)/2)
@@ -76,12 +76,24 @@
 ** Event Message IDs
 */
 
-#define PKTUTIL_CSV_PARSE_ERR_EID  (APP_C_FW_PKTUTIL_BASE_EID + 0)
+#define PKTUTIL_CSV_PARSE_ERR_EID  (EdsParam_APP_C_FW_PKTUTIL_BASE_EID + 0)
 
 
 /**********************/
 /** Type Definitions **/
 /**********************/
+
+
+/*
+** String Case Options
+*/
+typedef enum 
+{
+   PKTUTIL_UPPER_CASE  = 0,
+   PKTUTIL_LOWER_CASE  = 1,
+   PKTUTIL_MIXED_CASE  = 2
+   
+} PKTUTIL_STR_CASE_Type_t;
 
 /*
 ** CSV string parsing utility
@@ -97,7 +109,7 @@ typedef enum
 
 typedef enum
 {
-   PKTUTIL_CSV_STR_LEN = APP_C_FW_PKTUTIL_CSV_PARAM_STR_MAX_LEN,
+   PKTUTIL_CSV_STR_LEN = EdsParam_APP_C_FW_PKTUTIL_CSV_PARAM_STR_MAX_LEN,
    PKTUTIL_CSV_INT_LEN = sizeof(int),
    PKTUTIL_CSV_FLT_LEN = sizeof(float)
 
@@ -154,6 +166,39 @@ typedef struct
 /************************/
 /** Exported Functions **/
 /************************/
+
+/******************************************************************************
+** Function: PktUtil_BoolStr
+**
+** Purpose: Return a pointer to a string describing the enumerated type
+**
+** Notes:
+**   None
+*/
+const char *PktUtil_BoolStr(bool BoolArg, PKTUTIL_STR_CASE_Type_t StrCase);
+
+
+/******************************************************************************
+** Function: PktUtil_ConfigStateStr
+**
+** Purpose: Return a pointer to a string describing a configuration setting
+**
+** Notes:
+**   Assumes diabled=0, enabled=1
+*/
+const char *PktUtil_ConfigStateStr(APP_C_FW_ConfigEnaState_Enum_t ConfigArg);
+
+
+/******************************************************************************
+** Function: PktUtil_ConfigTriStateStr
+**
+** Purpose: Return a pointer to a string describing a tri-state configuration
+**          setting
+**
+** Notes:
+**   Assumes diabled=0, enabled=1, unused=2
+*/
+const char *PktUtil_ConfigTriStateStr(APP_C_FW_ConfigEnaTriState_Enum_t ConfigArg);
 
 
 /******************************************************************************

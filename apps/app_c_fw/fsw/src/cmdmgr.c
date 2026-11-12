@@ -38,12 +38,6 @@
 /** Global File Data **/
 /**********************/
 
-static const char *BoolStr[] = {
-   "FALSE",
-   "TRUE",
-   "UNDEF"
-};
-
 
 /******************************/
 /** File Function Prototypes **/
@@ -75,31 +69,6 @@ void CMDMGR_Constructor(CMDMGR_Class_t *CmdMgr)
    }
 
 } /* End CMDMGR_Constructor() */
-
-
-/******************************************************************************
-** Function: CMDMGR_BoolStr
-**
-** Purpose: Return a pointer to a string describing a boolean
-**
-** Notes:
-**   Assumes false=0 and true=1
-*/
-const char *CMDMGR_BoolStr(bool BoolArg)
-{
-   
-   uint8 i = 2;
-   
-   if ( BoolArg == true || BoolArg == false)
-   {
-   
-      i = BoolArg;
-   
-   }
-        
-   return BoolStr[i];
-
-} /* End CMDMGR_BoolStr() */
 
 
 /******************************************************************************

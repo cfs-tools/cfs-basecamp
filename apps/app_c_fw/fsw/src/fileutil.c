@@ -30,14 +30,29 @@
 #include "cfe.h"
 #include "fileutil.h"
 
-/*********************/
-/** Local Functions **/
-/*********************/
+/***********************/
+/** Macro Definitions **/
+/***********************/
+
+#define EVENT_ERR_STR_LEN 132
+
+
+/*******************************/
+/** Local Function Prototypes **/
+/*******************************/
 
 static void CountOpenFiles(osal_id_t ObjId, void *CallbackArg);
-static bool IsValidFilename(const char *Filename, uint32 Length);
 static void LoadOpenFileData(osal_id_t ObjId, void *CallbackArg);
 static CFE_ES_TaskId_t TaskId_FromOSAL(osal_id_t id);
+static bool ValidPathFilename(const char *PathFilename, uint32 Length, char *EventErrStr);
+
+
+/**********************/
+/** Global File Data **/
+/**********************/
+
+static const char InvalidFileNameChars[] = {"`!@#$^&+=\0"};
+
 
 /************************/
 /** Exported Functions **/
@@ -195,6 +210,31 @@ FileUtil_FileInfo_t FileUtil_GetFileInfo(const char *Filename, uint16 FilenameBu
 
 
 /******************************************************************************
+** Function: FileUtil_GetFilenameLen
+**
+** Notes:
+**  1. Does not issue an event message which can be useful in cases when a zero
+**     length string is not considered an error. FileUtil_VerifyFilenameStr()
+**     can be called for non-zero string lengths. 
+*/
+uint16 FileUtil_GetFilenameLen(const char *Filename)
+{
+
+   int16  Len = 0;
+
+   /* Search file system name buffer for a string terminator */
+   while (Len < OS_MAX_PATH_LEN)
+   {
+      if (Filename[Len] == '\0') break;
+      Len++;
+   }
+   
+   return Len;
+
+} /* End FileUtil_GetFilenameLen() */
+
+
+/******************************************************************************
 ** Function: FileUtil_GetOpenFileCount
 **
 */
@@ -216,13 +256,13 @@ uint16 FileUtil_GetOpenFileCount(void)
 ** Type checking should enforce valid parameter but check just to be safe.
 */
 
-uint16 FileUtil_GetOpenFileList(FileUtil_OpenFileList_t *OpenFileList)
+uint16 FileUtil_GetOpenFileList(APP_C_FW_OpenFileList_t *OpenFileList)
 {
-    OpenFileList->OpenCount = 0;
+    OpenFileList->Count = 0;
     
     OS_ForEachObject(OS_OBJECT_CREATOR_ANY, LoadOpenFileData, (void*)OpenFileList);
 
-    return (OpenFileList->OpenCount);
+    return (OpenFileList->Count);
 
 } /* End FileUtil_GetOpenFileList() */
 
@@ -335,46 +375,43 @@ bool FileUtil_VerifyFileForRead(const char *Filename)
 ** Function: FileUtil_VerifyFilenameStr
 **
 ** Notes:
-**  1. Verify file name len, termination, and characters are valid.
+**  1. Verifies the filename is properly terminated, length of path/filename 
+**     length of filename length, and allowable filename characters
 */
 bool FileUtil_VerifyFilenameStr(const char *Filename)
 {
 
-   int16  Len = 0;
-   bool   RetStatus = false;
-   
-   /* Search file system name buffer for a string terminator */
-   while (Len < OS_MAX_PATH_LEN)
-   {
-      if (Filename[Len] == '\0') break;
-      Len++;
-   }
-
+   int16   Len;
+   bool    RetStatus=false;
+   char    EventErrStr[EVENT_ERR_STR_LEN];
+ 
+   Len = FileUtil_GetFilenameLen(Filename);
    if (Len == 0)
    {
-      /* TODO - Could allow a default filename to be used when no file specified */
-      CFE_EVS_SendEvent(FILEUTIL_INVLD_FILENAME_LEN_EID, CFE_EVS_EventType_ERROR, "Invalid filename string: Length is 0");
+      CFE_EVS_SendEvent(FILEUTIL_INVALID_FILENAME_EID, CFE_EVS_EventType_ERROR,
+                        "Invalid path/filename: Length is 0");
    } 
    else if (Len == OS_MAX_PATH_LEN)
    {
-      CFE_EVS_SendEvent(FILEUTIL_INVLD_FILENAME_STR_EID, CFE_EVS_EventType_ERROR, "Invalid filename string: No NUL termintaion character");     
+      CFE_EVS_SendEvent(FILEUTIL_INVALID_FILENAME_EID, CFE_EVS_EventType_ERROR, 
+                        "Invalid path/filename: No NUL termination character within max len of %d",OS_MAX_PATH_LEN);     
    }
    else
    {
-   
-      /* Verify characters in string name */
-      if (IsValidFilename(Filename, Len))
+      
+      if (ValidPathFilename(Filename, Len, EventErrStr))
       {  
          RetStatus = true;  
       }
       else
-      {   
-         CFE_EVS_SendEvent(FILEUTIL_INVLD_FILENAME_CHR_EID, CFE_EVS_EventType_ERROR, "Invalid characters in filename %s",Filename);     
+      {
+         CFE_EVS_SendEvent(FILEUTIL_INVALID_FILENAME_EID, CFE_EVS_EventType_ERROR,
+                           "Invalid path/filename: %s", EventErrStr);     
       }
-      
+
    } /* End if valid length */
    
-  return RetStatus;
+   return RetStatus;
 
 } /* End FileUtil_VerifyFilenameStr() */
 
@@ -401,63 +438,6 @@ static void CountOpenFiles(osal_id_t ObjId, void *CallbackArg)
 
 
 /******************************************************************************
-** Function: IsValidFilename
-**
-** See file prologue notes. 
-**
-*/
-static bool IsValidFilename(const char *Filename, uint32 Length)
-{
-   
-   bool   Valid = true;
-   int32  i;
-   
-   /* Test for a NUL string */
-   if (Filename[0] == '\0')
-   { 
-      Valid = false;
-   }
-   else
-   {
-      
-      /* Scan string for disallowed characters */
-      
-      for (i=0; i < Length; i++)
-      {
-          
-         if ( !(isalnum((int)Filename[i]) ||
-               (Filename[i] == '`')       ||
-               (Filename[i] == '~')       ||
-               (Filename[i] == '!')       ||
-               (Filename[i] == '@')       ||
-               (Filename[i] == '#')       ||
-               (Filename[i] == '$')       ||
-               (Filename[i] == '^')       ||
-               (Filename[i] == '&')       ||
-               (Filename[i] == '_')       ||
-               (Filename[i] == '-')       ||
-               (Filename[i] == '/')       ||
-               (Filename[i] == '.')       ||
-               (Filename[i] == '+')       ||
-               (Filename[i] == '=')       ||
-               (Filename[i] == '\0')) )
-         {
-
-            Valid = false;
-            break;
-         
-         }
-      
-      } /* End for */
-   
-   } /* End if not null */
-   
-   return (Valid);
-   
-} /* End IsValidFilename */
-
-
-/******************************************************************************
 ** Function: LoadOpenFileData
 **
 ** Notes:
@@ -466,23 +446,23 @@ static bool IsValidFilename(const char *Filename, uint32 Length)
 static void LoadOpenFileData(osal_id_t ObjId, void *CallbackArg)
 {
 
-   FileUtil_OpenFileList_t* OpenFileList = (FileUtil_OpenFileList_t*)CallbackArg;
-   CFE_ES_TaskInfo_t        TaskInfo;
-   OS_file_prop_t           FdProp;
+   APP_C_FW_OpenFileList_t  *OpenFileList = (APP_C_FW_OpenFileList_t*)CallbackArg;
+   CFE_ES_TaskInfo_t  TaskInfo;
+   OS_file_prop_t     FdProp;
 
 
    if (OS_IdentifyObject(ObjId) == OS_OBJECT_TYPE_OS_STREAM)
    {
    
-      if (OpenFileList != (FileUtil_OpenFileList_t*) NULL) 
+      if (OpenFileList != (APP_C_FW_OpenFileList_t*) NULL) 
       {
          
          if (OS_FDGetInfo(ObjId, &FdProp) == OS_SUCCESS)
          {
             
-            if (OpenFileList->OpenCount < OS_MAX_NUM_OPEN_FILES)
+            if (OpenFileList->Count < OS_MAX_NUM_OPEN_FILES)
             {
-               strncpy(OpenFileList->Entry[OpenFileList->OpenCount].Filename,
+               strncpy(OpenFileList->Entry[OpenFileList->Count].Filename,
                        FdProp.Path, OS_MAX_PATH_LEN);
 
                // Get the name of the application that opened the file
@@ -490,11 +470,11 @@ static void LoadOpenFileData(osal_id_t ObjId, void *CallbackArg)
 
                if (CFE_ES_GetTaskInfo(&TaskInfo, TaskId_FromOSAL(FdProp.User)) == CFE_SUCCESS)
                {
-                  strncpy(OpenFileList->Entry[OpenFileList->OpenCount].AppName,
+                  strncpy(OpenFileList->Entry[OpenFileList->Count].AppName,
                           (char*)TaskInfo.AppName, OS_MAX_API_NAME);
                }
             
-               ++OpenFileList->OpenCount;
+               ++OpenFileList->Count;
             }
             else
             {
@@ -531,5 +511,65 @@ static CFE_ES_TaskId_t TaskId_FromOSAL(osal_id_t id)
     return CFE_ES_TASKID_C(Result);
 
 } /* End TaskId_FromOSAL() */
- 
 
+
+/******************************************************************************
+** Function: ValidPathFilename
+**
+** Notes:
+**  1. 
+**
+*/
+static bool ValidPathFilename(const char *PathFilename, uint32 Length, char *EventErrStr)
+{
+   
+   bool        Valid = true;
+   int32       i;
+   const char  *StrPtr;
+   
+   /* Test for zero length */
+   if (PathFilename[0] == '\0')
+   { 
+      Valid = false;
+   }
+   else
+   {
+      
+      /* checks to see if there is a '/' somewhere in the path */
+      StrPtr = strrchr(PathFilename, FILEUTIL_DIR_SEP_CHAR);
+      if (StrPtr == NULL)
+      {
+         sprintf(EventErrStr,"Path does not contain directory separator character '%s'",FILEUTIL_DIR_SEP_STR);
+         return false;
+      }
+
+      /* strrchr returns a pointer to the last '/' char, so we advance one char */
+      StrPtr += 1;
+      if (memchr(StrPtr, 0, OS_MAX_FILE_NAME) == NULL)
+      {
+         sprintf(EventErrStr,"Filename length (excluding path & including NUL char) exceeds max filename length %d",OS_MAX_FILE_NAME);
+         return false;
+      }
+      
+      /*
+      ** Scan string for disallowed/discouraged characters
+      ** - This doesn't guarantee a well formed path/filename but
+      **   enforces naming conventions
+      */
+      for (i=0; i < Length; i++)
+      {
+         if ( !isalnum((int)PathFilename[i]) && 
+              strchr(InvalidFileNameChars, PathFilename[i]) != NULL)
+         {
+            sprintf(EventErrStr,"Invalid character %c at filename position %d", PathFilename[i], i);
+            Valid = false;
+            break;
+         }
+      
+      } /* End for */
+   
+   } /* End if not null */
+
+   return (Valid);
+   
+} /* End ValidPathFilename */

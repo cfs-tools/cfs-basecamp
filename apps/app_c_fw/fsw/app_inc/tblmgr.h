@@ -40,17 +40,23 @@
 ** Event Message IDs
 */
 
-#define TBLMGR_REG_EXCEEDED_MAX_EID  (APP_C_FW_TBLMGR_BASE_EID + 0)
-#define TBLMGR_LOAD_ID_ERR_EID       (APP_C_FW_TBLMGR_BASE_EID + 1)
-#define TBLMGR_DUMP_ID_ERR_EID       (APP_C_FW_TBLMGR_BASE_EID + 2)
-#define TBLMGR_LOAD_STUB_ERR_EID     (APP_C_FW_TBLMGR_BASE_EID + 3)
-#define TBLMGR_DUMP_STUB_ERR_EID     (APP_C_FW_TBLMGR_BASE_EID + 4)
-#define TBLMGR_LOAD_SUCCESS_EID      (APP_C_FW_TBLMGR_BASE_EID + 5)
-#define TBLMGR_DUMP_SUCCESS_EID      (APP_C_FW_TBLMGR_BASE_EID + 6)
+#define TBLMGR_REG_EXCEEDED_MAX_EID  (EdsParam_APP_C_FW_TBLMGR_BASE_EID + 0)
+#define TBLMGR_LOAD_ID_ERR_EID       (EdsParam_APP_C_FW_TBLMGR_BASE_EID + 1)
+#define TBLMGR_DUMP_ID_ERR_EID       (EdsParam_APP_C_FW_TBLMGR_BASE_EID + 2)
+#define TBLMGR_LOAD_STUB_ERR_EID     (EdsParam_APP_C_FW_TBLMGR_BASE_EID + 3)
+#define TBLMGR_DUMP_STUB_ERR_EID     (EdsParam_APP_C_FW_TBLMGR_BASE_EID + 4)
+#define TBLMGR_LOAD_SUCCESS_EID      (EdsParam_APP_C_FW_TBLMGR_BASE_EID + 5)
+#define TBLMGR_DUMP_SUCCESS_EID      (EdsParam_APP_C_FW_TBLMGR_BASE_EID + 6)
+#define TBLMGR_CREATE_NAME_ERR_EID   (EdsParam_APP_C_FW_TBLMGR_BASE_EID + 7)
 
 
-#define TBLMGR_UNDEF_STR  "Undefined"
+// Use common string in situation when a string is undefinned and may telemetered  
+#define TBLMGR_UNDEF_STR  "Undefined"  
  
+// Separator used between an app name and table name in a full app table name
+#define TBLMGR_APP_TBL_NAME_SEP "."
+
+
 /**********************/
 /** Type Definitions **/
 /**********************/
@@ -113,6 +119,20 @@ typedef struct
 **       called using the same tblmgr instance.
 */
 void TBLMGR_Constructor(TBLMGR_Class_t *TblMgr, const char *AppName);
+
+
+/******************************************************************************
+** Function: TBLMGR_CreateAppTblName
+**
+** Notes:
+**   1. Caller's responsibility to ensure the AppTblName buffer can hold a 
+**      string of length TBLMGR_APP_TBL_NAME_MAX_LEN.
+**   2. Didn't use an existing constant like OS_MAX_API_NAME because this
+**      name is usually in a JSON fille and doesn't need to be as constrained.
+**
+*/
+char *TBLMGR_CreateAppTblName(char *AppTblName, const char *AppName,
+                              const char *TblName);
 
 
 /******************************************************************************

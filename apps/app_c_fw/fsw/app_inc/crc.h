@@ -37,16 +37,18 @@
 
 
 /******************************************************************************
-** Function: CRC_32c
+** Function: CRC_32Bitwise
 **
-**   Compute 32-bit CRC using iSCSI polynomial
+**   Compute standard 32-bit CRC (Ethernet, ZIP, etc.)
 **
 **   Notes:
-**      1. Crc should be et to zero for the initial call in a running
+**      1. Crc should be set to zero for the initial call in a running
 **         computational scenario.
+**      2. Returns a new CRC that should be passed in as th.e PrevCrc when
+**         computing a CRC on a large buffer that is done in multiple 
+**         segments
 ** 
 */
-uint32 CRC_32c(uint32 Crc, const uint8 *Buf, size_t BufLen);
-
+uint32 CRC_32Bitwise(const uint8 *Buf, size_t BufLen, uint32 PrevCrc);
 
 #endif /* _crc_ */

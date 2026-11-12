@@ -50,20 +50,10 @@
 ** Defines maximum number of command function codes (FC) an app can have. FCs
 ** must start at zero. The standard codes range from 0..9 so the number of 
 ** app-specific commands is CMDMGR_CMD_FUNC_TOTAL-10.
-** 
-** Note EDS duplicates the standard app FC definitions. The definiitons are 
-** here for backwards compatibility with apps that don't use EDS.
 */
 
 #define CMDMGR_CMD_FUNC_TOTAL  32
 
-/* Standard function definitions for every app */
-
-#define CMDMGR_NOOP_CMD_FC      0  
-#define CMDMGR_RESET_CMD_FC     1
-#define CMDMGR_LOAD_TBL_CMD_FC  2
-#define CMDMGR_DUMP_TBL_CMD_FC  3
-#define CMDMGR_APP_START_FC    10  /* First FC available for app */
 
 /* 
 ** Uncomment CMDMGR_DISABLE_CHECKSUM_VALIDATION to disable checksum
@@ -74,6 +64,11 @@
 */
 #define CMDMGR_DISABLE_CHECKSUM_VALIDATION
 
+/*
+** Maximum length of a string that contains the app name concatenated
+** with the string name. See TBLMGR_CreateAppTblName() for details.
+*/
+#define TBLMGR_APP_TBL_NAME_MAX_LEN  32
 
 /******************************************************************************
 ** Debug macros

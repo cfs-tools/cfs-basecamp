@@ -54,28 +54,40 @@
 ** Event Message IDs
 */
 
-#define CJSON_OBJ_CONSTRUCT_ERR_EID  (APP_C_FW_CJSON_BASE_EID + 0)
-#define CJSON_PROCESS_FILE_ERR_EID   (APP_C_FW_CJSON_BASE_EID + 1)
-#define CJSON_LOAD_OBJ_EID           (APP_C_FW_CJSON_BASE_EID + 2)
-#define CJSON_LOAD_OBJ_ERR_EID       (APP_C_FW_CJSON_BASE_EID + 3)
-#define CJSON_INTERNAL_ERR_EID       (APP_C_FW_CJSON_BASE_EID + 4)
+#define CJSON_OBJ_CONSTRUCT_ERR_EID  (EdsParam_APP_C_FW_CJSON_BASE_EID + 0)
+#define CJSON_PROCESS_FILE_ERR_EID   (EdsParam_APP_C_FW_CJSON_BASE_EID + 1)
+#define CJSON_LOAD_OBJ_EID           (EdsParam_APP_C_FW_CJSON_BASE_EID + 2)
+#define CJSON_LOAD_OBJ_ERR_EID       (EdsParam_APP_C_FW_CJSON_BASE_EID + 3)
+#define CJSON_INTERNAL_ERR_EID       (EdsParam_APP_C_FW_CJSON_BASE_EID + 4)
 
 /**********************/
 /** Type Definitions **/
 /**********************/
 
-/* 
-** TODO - Consider refactor into 2 structures so one can be passed as a const 
-** TODO - Every table manager object defines the following data. A CJSON struct
-** TODO   with a pointer to app's buffer could be created. Think about user
-** TODO   read/write with the structure.
-** TODO       bool         Loaded;   
-** TODO       uint16       LastLoadCnt;
-** TODO       size_t       JsonObjCnt;
-** TODO       char         JsonBuf[HISTOGRAM_TBL_JSON_FILE_MAX_CHAR];   
-** TODO       size_t       JsonFileLen;
+/*
+** Macro used to define an app's CJSON state data structure
+**
+** Loaded      - Has the entire table been loaded?
+** LastLoadCnt - Number of JSON objects last loaded
+** JsonObjCnt  - Number of JSON objects in the table
 */
+#define CJSON_STATE_STRUCT(TBL, JSON_FILE_MAX_CHAR) \
+typedef struct \
+{ \
+   bool         Loaded; \
+   uint16       LastLoadCnt; \
+   size_t       ObjCnt; \
+   char         Buf[JSON_FILE_MAX_CHAR]; \
+   size_t       FileLen; \
+} CJSON_##TBL##_t
 
+
+/*
+** I considered refactoring this into 2 structures based on whether the data
+** could be modified. This would allow the fixed data to be passed as a const.
+** Decided against it because keeping all of the fields together makes the
+** data self-documenting and easy to maintain. 
+*/
 typedef struct
 {
 
@@ -126,23 +138,13 @@ typedef bool (*CJSON_LoadJsonDataAlt_t)(size_t JsonFileLen, void *UserDataPtr);
 /** Exported Functions **/
 /************************/
 
-/******************************************************************************
-** Function: CJSON_BoolStr
-**
-** Purpose: Return a pointer to a boolean string
-**
-** Notes:
-**   Assumes false=0 and true=1
-*/
-const char *CJSON_BoolStr(bool BoolArg);
-
 
 /******************************************************************************
 ** Function: CJSON_FltObjConstructor
 **
 ** Notes:
 **    1. Float support was added much later than initial release so in order
-**       to preserve the API and since float objects are the exception, a 
+**       to preserve the API and since float objects are the less common, a 
 **       separate constructor was added.
 */
 void CJSON_FltObjConstructor(CJSON_Obj_t *Obj, const char *QueryKey, 

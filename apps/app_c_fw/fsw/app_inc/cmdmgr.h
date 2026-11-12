@@ -56,11 +56,11 @@
 ** Event Message IDs
 */
 
-#define CMDMGR_REG_INVALID_FUNC_CODE_ERR_EID       (APP_C_FW_CMDMGR_BASE_EID + 0)
-#define CMDMGR_DISPATCH_UNUSED_FUNC_CODE_ERR_EID   (APP_C_FW_CMDMGR_BASE_EID + 1)
-#define CMDMGR_DISPATCH_INVALID_CHECKSUM_ERR_EID   (APP_C_FW_CMDMGR_BASE_EID + 2)
-#define CMDMGR_DISPATCH_INVALID_LEN_ERR_EID        (APP_C_FW_CMDMGR_BASE_EID + 3)
-#define CMDMGR_DISPATCH_INVALID_FUNC_CODE_ERR_EID  (APP_C_FW_CMDMGR_BASE_EID + 4)
+#define CMDMGR_REG_INVALID_FUNC_CODE_ERR_EID       (EdsParam_APP_C_FW_CMDMGR_BASE_EID + 0)
+#define CMDMGR_DISPATCH_UNUSED_FUNC_CODE_ERR_EID   (EdsParam_APP_C_FW_CMDMGR_BASE_EID + 1)
+#define CMDMGR_DISPATCH_INVALID_CHECKSUM_ERR_EID   (EdsParam_APP_C_FW_CMDMGR_BASE_EID + 2)
+#define CMDMGR_DISPATCH_INVALID_LEN_ERR_EID        (EdsParam_APP_C_FW_CMDMGR_BASE_EID + 3)
+#define CMDMGR_DISPATCH_INVALID_FUNC_CODE_ERR_EID  (EdsParam_APP_C_FW_CMDMGR_BASE_EID + 4)
 #define CMDMGR_TOTAL_EID  5
 
 /**********************/
@@ -137,17 +137,6 @@ typedef struct
 **       called using the same cmdmgr instance.
 */
 void CMDMGR_Constructor(CMDMGR_Class_t *CmdMgr);
-
-
-/******************************************************************************
-** Function: CMDMGR_BoolStr
-**
-** Purpose: Return a pointer to a string describing the enumerated type
-**
-** Notes:
-**   None
-*/
-const char *CMDMGR_BoolStr(bool BoolArg);
 
 
 /******************************************************************************

@@ -38,6 +38,108 @@
 static int HexChar2Bin(char *ValOut, const char HexIn);
 
 
+/**********************/
+/** Global File Data **/
+/**********************/
+
+static const char *BoolUpperStr[] = {
+   "FALSE",
+   "TRUE",
+   "UNDEF"
+};
+
+static const char *BoolLowerStr[] = {
+   "false",
+   "true",
+   "undef"
+};
+
+static const char *ConfigStateStr[] = {
+   "FALSE",
+   "TRUE",
+   "UNDEF"
+};
+
+static const char *ConfigTriStateStr[] = {
+   "FALSE",
+   "TRUE",
+   "UNUSED",
+   "UNDEF"
+};
+
+
+/************************/
+/** Exported Functions **/
+/************************/
+
+
+/******************************************************************************
+** Function: PktUtil_BoolStr
+**
+** Purpose: Return a pointer to a string describing a boolean
+**
+** Notes:
+**   Assumes false=0 and true=1
+*/
+const char *PktUtil_BoolStr(bool BoolArg, PKTUTIL_STR_CASE_Type_t StrCase)
+{
+   
+   uint8 i = 2;
+
+   const char **BoolStr = (StrCase == PKTUTIL_LOWER_CASE)? BoolLowerStr : BoolUpperStr;
+
+   if (BoolArg == false) i = 0;
+   if (BoolArg == true)  i = 1;
+   
+   return BoolStr[i];
+
+} /* End PktUtil_BoolStr() */
+
+
+/******************************************************************************
+** Function: PktUtil_ConfigStateStr
+**
+** Purpose: Return a pointer to a string describing a configuration setting
+**
+** Notes:
+**   Assumes diabled=0, enabled=1
+*/
+const char *PktUtil_ConfigStateStr(APP_C_FW_ConfigEnaState_Enum_t ConfigArg)
+{
+   
+   uint8 i = 2;
+
+   if (ConfigArg == APP_C_FW_ConfigEnaTriState_DISABLED) i = 0;
+   if (ConfigArg == APP_C_FW_ConfigEnaTriState_ENABLED)  i = 1;
+   
+   return ConfigStateStr[i];
+
+} /* End PktUtil_ConfigStateStr() */
+
+
+/******************************************************************************
+** Function: PktUtil_ConfigTriStateStr
+**
+** Purpose: Return a pointer to a string describing a tri-state configuration
+**          setting
+**
+** Notes:
+**   Assumes diabled=0, enabled=1, unused=2
+*/
+const char *PktUtil_ConfigTriStateStr(APP_C_FW_ConfigEnaTriState_Enum_t ConfigArg)
+{
+   
+   uint8 i = 3;
+
+   if (ConfigArg == APP_C_FW_ConfigEnaTriState_DISABLED) i = 0;
+   if (ConfigArg == APP_C_FW_ConfigEnaTriState_ENABLED)  i = 1;
+   if (ConfigArg == APP_C_FW_ConfigEnaTriState_UNUSED)   i = 2;
+   
+   return ConfigTriStateStr[i];
+
+} /* End PktUtil_ConfigTriStateStr() */
+
+
 /******************************************************************************
 ** Function: PktUtil_HexDecode
 **
