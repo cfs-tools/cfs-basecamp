@@ -100,7 +100,7 @@ typedef struct
 
    uint16  CmdWarningCnt;
 
-   char FileTaskBuf[FILE_MGR_TASK_FILE_BLOCK_SIZE];
+   char FileTaskBuf[EdsParam_FILE_MGR_TASK_FILE_BLOCK_SIZE];
    
 } FILE_Class_t;
 

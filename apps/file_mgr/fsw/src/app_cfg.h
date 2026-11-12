@@ -47,9 +47,11 @@
 ** 1.1 - Moved childmgr utility into app_c_fw, Moved perf & msg ids to ini file
 ** 3.0 - New baseline for separate OSK app repo compatible with cFE Bootes
 ** 4.0 - New baseline for separate OSK app repo compatible with cFE Caelum
+** 5.0 - Upgrade to cFS Draco (v7.0.1) and changed filesys table from cFE binary
+**       to Basecamp JSON
 */
 
-#define  FILE_MGR_MAJOR_VER      4
+#define  FILE_MGR_MAJOR_VER      5
 #define  FILE_MGR_MINOR_VER      0
 
 
@@ -66,23 +68,22 @@
 #define CFG_CMD_PIPE_DEPTH      APP_CMD_PIPE_DEPTH
 #define CFG_CMD_PIPE_NAME       APP_CMD_PIPE_NAME
       
-#define CFG_FILE_MGR_CMD_TOPICID              FILE_MGR_CMD_TOPICID
-#define CFG_FILE_MGR_SEND_HK_TOPICID          BC_SCH_2_SEC_TOPICID
+#define CFG_FILE_MGR_CMD_TOPICID            FILE_MGR_CMD_TOPICID
+#define CFG_FILE_MGR_SEND_HK_TOPICID        BC_SCH_2_SEC_TOPICID
 
-#define CFG_FILE_MGR_HK_TLM_TOPICID           FILE_MGR_HK_TLM_TOPICID
-#define CFG_FILE_MGR_FILE_INFO_TLM_TOPICID    FILE_MGR_FILE_INFO_TLM_TOPICID
-#define CFG_FILE_MGR_DIR_LIST_TLM_TOPICID     FILE_MGR_DIR_LIST_TLM_TOPICID
-#define CFG_FILE_MGR_OPEN_FILE_TLM_TOPICID    FILE_MGR_OPEN_FILE_TLM_TOPICID
-#define CFG_FILE_MGR_FILE_SYS_TBL_TLM_TOPICID FILE_MGR_FILE_SYS_TBL_TLM_TOPICID
+#define CFG_FILE_MGR_HK_TLM_TOPICID         FILE_MGR_HK_TLM_TOPICID
+#define CFG_FILE_MGR_FILE_INFO_TLM_TOPICID  FILE_MGR_FILE_INFO_TLM_TOPICID
+#define CFG_FILE_MGR_DIR_LIST_TLM_TOPICID   FILE_MGR_DIR_LIST_TLM_TOPICID
+#define CFG_FILE_MGR_OPEN_FILE_TLM_TOPICID  FILE_MGR_OPEN_FILE_TLM_TOPICID
+#define CFG_FILE_MGR_FILE_SYS_EST_SPACE_TLM_TOPICID FILE_MGR_FILE_SYS_EST_SPACE_TLM_TOPICID
+        
+#define CFG_FILESYS_TBL_NAME       FILESYS_TBL_NAME
+#define CFG_FILESYS_TBL_LOAD_FILE  FILESYS_TBL_LOAD_FILE
 
-#define CFG_TBL_CFE_NAME           TBL_CFE_NAME
-#define CFG_TBL_DEF_FILENAME       TBL_DEF_FILENAME
-#define CFG_TBL_ERR_CODE           TBL_ERR_CODE
-      
-#define CFG_DIR_LIST_FILE_DEFNAME  DIR_LIST_FILE_DEFNAME
-#define CFG_DIR_LIST_FILE_SUBTYPE  DIR_LIST_FILE_SUBTYPE
-#define CFG_DIR_LIST_FILE_ENTRIES  DIR_LIST_FILE_ENTRIES
-#define CFG_SEND_DIR_TLM_DELAY     SEND_DIR_TLM_DELAY
+#define CFG_DIR_LIST_FILE_DEFNAME    DIR_LIST_FILE_DEFNAME
+#define CFG_DIR_LIST_FILE_SUBTYPE    DIR_LIST_FILE_SUBTYPE
+#define CFG_DIR_LIST_FILE_ENTRY_MAX  DIR_LIST_FILE_ENTRY_MAX
+#define CFG_SEND_DIR_TLM_DELAY       SEND_DIR_TLM_DELAY
 
 #define CFG_CHILD_NAME             CHILD_NAME
 #define CFG_CHILD_STACK_SIZE       CHILD_STACK_SIZE
@@ -106,13 +107,12 @@
    XX(FILE_MGR_FILE_INFO_TLM_TOPICID,uint32) \
    XX(FILE_MGR_DIR_LIST_TLM_TOPICID,uint32) \
    XX(FILE_MGR_OPEN_FILE_TLM_TOPICID,uint32) \
-   XX(FILE_MGR_FILE_SYS_TBL_TLM_TOPICID,uint32) \
-   XX(TBL_CFE_NAME,char*) \
-   XX(TBL_DEF_FILENAME,char*) \
-   XX(TBL_ERR_CODE,uint32) \
+   XX(FILE_MGR_FILE_SYS_EST_SPACE_TLM_TOPICID,uint32) \
+   XX(FILESYS_TBL_NAME,char*) \
+   XX(FILESYS_TBL_LOAD_FILE,char*) \
    XX(DIR_LIST_FILE_DEFNAME,char*) \
    XX(DIR_LIST_FILE_SUBTYPE,uint32) \
-   XX(DIR_LIST_FILE_ENTRIES,uint32) \
+   XX(DIR_LIST_FILE_ENTRY_MAX,uint32) \
    XX(SEND_DIR_TLM_DELAY,uint32) \
    XX(CHILD_NAME,char*) \
    XX(CHILD_STACK_SIZE,uint32) \
@@ -126,18 +126,6 @@ DECLARE_ENUM(Config,APP_CONFIG)
 
 
 /******************************************************************************
-** Command Macros
-** - Commands implemented by child task are annotated with a comment
-** - Load/dump table definitions are placeholders for JSON table
-** - v4.0-beta: Other function codes defined in EDS. These will be added
-**   after app_c_fw EDS is updated 
-*/
-
-#define FILE_MGR_TBL_LOAD_CMD_FC            (CMDMGR_APP_START_FC +  0)
-#define FILE_MGR_TBL_DUMP_CMD_FC            (CMDMGR_APP_START_FC +  1)
-
-
-/******************************************************************************
 ** Event Macros
 **
 ** Define the base event message IDs used by each object/component used by the
@@ -145,10 +133,19 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define FILE_MGR_BASE_EID  (APP_C_FW_APP_BASE_EID +  0)
-#define DIR_BASE_EID       (APP_C_FW_APP_BASE_EID + 20)
-#define FILE_BASE_EID      (APP_C_FW_APP_BASE_EID + 40)
-#define FILESYS_BASE_EID   (APP_C_FW_APP_BASE_EID + 60)
+#define FILE_MGR_BASE_EID    (EdsParam_APP_C_FW_APP_BASE_EID +  0)
+#define DIR_BASE_EID         (EdsParam_APP_C_FW_APP_BASE_EID + 20)
+#define FILE_BASE_EID        (EdsParam_APP_C_FW_APP_BASE_EID + 40)
+#define FILESYS_BASE_EID     (EdsParam_APP_C_FW_APP_BASE_EID + 60)
+#define FILESYS_TBL_BASE_EID (EdsParam_APP_C_FW_APP_BASE_EID + 80)
+
+
+/******************************************************************************
+** File System Table Macros
+*/
+
+#define FILESYS_TBL_JSON_MAX_OBJ          10
+#define FILESYS_TBL_JSON_FILE_MAX_CHAR  4090 
 
 
 #endif /* _app_cfg_ */

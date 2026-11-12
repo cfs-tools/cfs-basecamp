@@ -17,8 +17,8 @@
 **
 **  Notes:
 **    1. This is a refactor of NASA's File Manager (FM) app. The refactor includes
-**       adaptation to the app C framework and prootyping the usage of an app 
-**       init JSON file. The idea is to rethink whcih configuration paarameters
+**       adaptation to Basecamp's app C framework and prototyping the usage of an
+**       app init JSON file. The idea is to rethink which configuration parameters
 **       should be compile time and which should be runtime.
 **    2. Command and telemetry packets are defined in EDS file file_mgr.xml.
 **
@@ -85,9 +85,7 @@ typedef struct
    TBLMGR_Class_t   TblMgr;
    
    CHILDMGR_Class_t ChildMgr;
-   
-   FileUtil_OpenFileList_t OpenFileList;
-   
+      
    /*
    ** Telemetry Packets
    */

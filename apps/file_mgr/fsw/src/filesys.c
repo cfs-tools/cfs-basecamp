@@ -13,10 +13,7 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Implement the File System Table
-**
-**  Notes:
-**    1. Refactored from NASA's FM FreeSpace table.
+**    Provide file system services for FILE_MGR
 **
 */
 
@@ -35,8 +32,9 @@
 /** Local Function Prototypes **/
 /*******************************/
 
-static int32 ValidateTbl(void* TblPtr);
-
+static bool FileSysTblLoadCallback(FILESYS_TBL_Data_t *TblPtr);
+static CFE_Status_t GetDirUsedSpace(const char *Directory, uint64 *BlockCount, uint64 *ByteCount);
+static CFE_Status_t GetVolFreeSpace(const char *FileSys, uint64 *BlockCount, uint64 *ByteCount);
 
 /**********************/
 /** File Global Data **/
@@ -49,45 +47,26 @@ static FILESYS_Class_t  *FileSys = NULL;
 ** Function: FILESYS_Constructor
 **
 */
-void FILESYS_Constructor(FILESYS_Class_t *FileSysPtr, const INITBL_Class_t *IniTbl)
+void FILESYS_Constructor(FILESYS_Class_t *FileSysPtr, const INITBL_Class_t *IniTbl,
+                         TBLMGR_Class_t  *TblMgr)
 {
  
    FileSys = FileSysPtr;
-   const char *DefTblFilename = INITBL_GetStrConfig(IniTbl, CFG_TBL_DEF_FILENAME);
 
    CFE_PSP_MemSet((void*)FileSys, 0, sizeof(FILESYS_Class_t));
    
-   FileSys->IniTbl         = IniTbl;
-   FileSys->CfeTbl.DataPtr = (FILE_MGR_FileSysTbl_t *) NULL;
-   FileSys->CfeTblName     = INITBL_GetStrConfig(FileSys->IniTbl, CFG_TBL_CFE_NAME);
+   FileSys->IniTbl  = IniTbl;
+   FileSys->TblName = INITBL_GetStrConfig(FileSys->IniTbl, CFG_FILESYS_TBL_NAME);
 
-   FileSys->CfeTbl.Status = CFE_TBL_Register(&FileSys->CfeTbl.Handle, FileSys->CfeTblName,
-                                             sizeof(FILE_MGR_FileSysTbl_t), CFE_TBL_OPT_DEFAULT, 
-                                             (CFE_TBL_CallbackFuncPtr_t)ValidateTbl);
-    
-   FileSys->CfeTbl.Registered = (FileSys->CfeTbl.Status == CFE_SUCCESS);
-   
-   /* DataPtr will remain NULL if data not loaded. */
-   if (FileSys->CfeTbl.Registered)
-   {
-   
-      FileSys->CfeTbl.Status = CFE_TBL_Load(FileSys->CfeTbl.Handle, CFE_TBL_SRC_FILE, DefTblFilename);
-      if (FileSys->CfeTbl.Status == CFE_SUCCESS)
-      {
-         CFE_TBL_GetAddress((void **)&(FileSys->CfeTbl.DataPtr), FileSys->CfeTbl.Handle);
-      }
-   }
-   else
-   {
-      
-      CFE_EVS_SendEvent(FILESYS_TBL_REGISTER_ERR_EID, CFE_EVS_EventType_ERROR,
-                        "Error registering table %s, CFE_TBL_Register() status = 0x%08X",
-                        DefTblFilename, FileSys->CfeTbl.Status);                        
-   }
+   FILESYS_TBL_Constructor(&FileSys->Tbl, FileSysTblLoadCallback);
 
-   CFE_MSG_Init(CFE_MSG_PTR(FileSys->TblTlm.TelemetryHeader), 
-                CFE_SB_ValueToMsgId(INITBL_GetIntConfig(FileSys->IniTbl, CFG_FILE_MGR_FILE_SYS_TBL_TLM_TOPICID)),
-                sizeof(FILE_MGR_FileSysTblTlm_t));
+   TBLMGR_RegisterTblWithDef(TblMgr, FileSys->TblName,
+                             FILESYS_TBL_LoadCmd, FILESYS_TBL_DumpCmd,  
+                             INITBL_GetStrConfig(IniTbl, CFG_FILESYS_TBL_LOAD_FILE));
+                             
+   CFE_MSG_Init(CFE_MSG_PTR(FileSys->EstSpaceTlm.TelemetryHeader), 
+                CFE_SB_ValueToMsgId(INITBL_GetIntConfig(FileSys->IniTbl, CFG_FILE_MGR_FILE_SYS_EST_SPACE_TLM_TOPICID)),
+                sizeof(FILE_MGR_FileSysEstSpaceTlm_t));
    
    CFE_MSG_Init(CFE_MSG_PTR(FileSys->OpenFileTlm.TelemetryHeader),
                 CFE_SB_ValueToMsgId(INITBL_GetIntConfig(FileSys->IniTbl, CFG_FILE_MGR_OPEN_FILE_TLM_TOPICID)),
@@ -97,41 +76,13 @@ void FILESYS_Constructor(FILESYS_Class_t *FileSysPtr, const INITBL_Class_t *IniT
 
 
 /******************************************************************************
-** Function: FILESYS_ManageTbl
-**
-*/
-void FILESYS_ManageTbl(void)
-{
-
-   if (FileSys->CfeTbl.Registered)
-   {
-
-      FileSys->CfeTbl.Status = CFE_TBL_ReleaseAddress(FileSys->CfeTbl.Handle);
-      
-      CFE_TBL_Manage(FileSys->CfeTbl.Handle);
-      
-      FileSys->CfeTbl.Status = CFE_TBL_GetAddress((void **)&(FileSys->CfeTbl.DataPtr), FileSys->CfeTbl.Handle);
-
-      if (FileSys->CfeTbl.Status == CFE_TBL_ERR_NEVER_LOADED)
-      {
-
-         FileSys->CfeTbl.DataPtr = (FILE_MGR_FileSysTbl_t *) NULL;
-      
-      }
-      
-   } /* End if table registered */
-   
-} /* End FILESYS_ManageTbl() */
-
-
-/******************************************************************************
 ** Function:  FILESYSTBL_ResetStatus
 **
 */
-void FILESYS_ResetStatus()
+void FILESYS_ResetStatus(void)
 {
 
-   /* Nothing to do */
+   FILESYS_TBL_ResetStatus();
 
 } /* End FILESYSTBL_ResetStatus() */
 
@@ -146,18 +97,16 @@ bool FILESYS_SendOpenFileTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPt
 {
 
    uint16 i;
-   FileUtil_OpenFileList_t  OpenFileList;
 
    /* Don't assume utility will null char strings */
    memset(&FileSys->OpenFileTlm.Payload,0,sizeof(FILE_MGR_OpenFileTlm_Payload_t));
    
-   /* EDS is not coupled with FileUtil, so kept it safe an didn't cast */
-   FileUtil_GetOpenFileList(&OpenFileList);
-   FileSys->OpenFileTlm.Payload.OpenCount = OpenFileList.OpenCount;
-   for (i=0; i < FILE_MGR_OS_MAX_NUM_OPEN_FILES; i++)
+   FileUtil_GetOpenFileList(&FileSys->OpenFileList);
+   FileSys->OpenFileTlm.Payload.File.Count = FileSys->OpenFileList.Count;
+   for (i=0; i < EdsParam_FILE_MGR_OS_MAX_NUM_OPEN_FILES; i++)
    {
-       strncpy(FileSys->OpenFileTlm.Payload.OpenFile[i].AppName,  OpenFileList.Entry[i].AppName,  OS_MAX_API_NAME);
-       strncpy(FileSys->OpenFileTlm.Payload.OpenFile[i].Filename, OpenFileList.Entry[i].Filename, OS_MAX_API_NAME);
+       strncpy(FileSys->OpenFileTlm.Payload.File.Entry[i].AppName,  FileSys->OpenFileList.Entry[i].AppName,  OS_MAX_API_NAME);
+       strncpy(FileSys->OpenFileTlm.Payload.File.Entry[i].Filename, FileSys->OpenFileList.Entry[i].Filename, OS_MAX_PATH_LEN);
    }
 
    CFE_SB_TimeStampMsg(CFE_MSG_PTR(FileSys->OpenFileTlm.TelemetryHeader));
@@ -165,7 +114,7 @@ bool FILESYS_SendOpenFileTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPt
    
    CFE_EVS_SendEvent(FILESYS_SEND_OPEN_FILES_CMD_EID, CFE_EVS_EventType_DEBUG,
                      "Sent open files telemetry packets with %d file reported as open", 
-                     FileSys->OpenFileTlm.Payload.OpenCount);
+                     FileSys->OpenFileTlm.Payload.File.Count);
    
    return true;
    
@@ -173,73 +122,82 @@ bool FILESYS_SendOpenFileTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPt
 
 
 /******************************************************************************
-** Function: FILESYS_SendTblTlmCmd
+** Function: FILESYS_SendEstSpaceTlmCmd
 **
 ** Note:
-**  1. This function must comply with the CMDMGR_CmdFuncPtr_t definition
+**  1. FileSys table determines what will be reported in telemetry.
+**  2. A false return status indicates there were errors retrieving the
+**     file system data. The telemetry message is always sent.
 */
-bool FILESYS_SendTblTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
+bool FILESYS_SendEstSpaceTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
-   bool    RetStatus = true;
-   int32   SysStatus;
-   uint16  i;
-   uint64  FreeSpace64;
-   OS_statvfs_t  FileSysStats;
-   
-   
-   if (FileSys->CfeTbl.DataPtr == (FILE_MGR_FileSysTbl_t *) NULL)
-   {
-      CFE_EVS_SendEvent(FILESYS_SEND_TLM_ERR_EID, CFE_EVS_EventType_ERROR,
-                       "Send %s table packet command error: File system free space table is not loaded",
-                       FileSys->CfeTblName);
-   }
-   else
-   {
+   bool  RetStatus = true;
+   CFE_Status_t GetSpaceStatus;
 
-      memset (FileSys->TblTlm.Payload, 0, sizeof(FileSys->TblTlm.Payload));
+   const FILE_MGR_FileSysTblEntry_t *FileSysTbl;
+   FILE_MGR_FileSysEstSpaceEntry_t  *FileSysEstSpaceTlm;
+
+   if (FileSys->Tbl.Json.Loaded)
+   {
+      memset(&FileSys->EstSpaceTlm.Payload, 0, sizeof(FileSys->EstSpaceTlm.Payload));
       
-      for (i=0; i < FILE_MGR_FILESYS_TBL_VOL_CNT; i++)
+      for (uint8 i=0; i < EdsParam_FILE_MGR_FILESYS_TBL_ENTRY_CNT; i++)
       {
+         FileSysTbl         = &FileSys->Tbl.Data.Entry[i];
+         FileSysEstSpaceTlm = &FileSys->EstSpaceTlm.Payload.Entry[i];
 
-         if (FileSys->CfeTbl.DataPtr->Volume[i].State == FILE_MGR_FileSysTblEntryState_ENABLED)
+         FileSysEstSpaceTlm->State = FileSysTbl->State;
+
+         if (FileSysTbl->State == APP_C_FW_ConfigEnaTriState_ENABLED)
          {
-
-            strcpy(FileSys->TblTlm.Payload[i].Name, FileSys->CfeTbl.DataPtr->Volume[i].Name);
-
-            /* Get file system free space */
-            FreeSpace64 = 0;
-            SysStatus = OS_FileSysStatVolume(FileSys->TblTlm.Payload[i].Name, &FileSysStats);
-              
-            if (SysStatus == OS_SUCCESS)
+            
+            FileSysEstSpaceTlm->Type = FileSysTbl->Type;
+            CFE_SB_MessageStringSet(FileSysEstSpaceTlm->Name, FileSysTbl->Name,
+                                    sizeof(FileSysEstSpaceTlm->Name), sizeof(FileSysTbl->Name));
+            
+            // Get<VolFree|DirUsed>Space() send error events 
+            if (FileSysTbl->Type == FILE_MGR_FileSysTblEntryType_VOLUME_FREE_SPACE)
             {
-             
-               /* TODO - Fix this */  
-               FreeSpace64 = (uint64)FileSysStats.blocks_free;
-               CFE_PSP_MemCpy(&FileSys->TblTlm.Payload[i].FreeSpace_A, &FreeSpace64, sizeof(uint64));
+               GetSpaceStatus = GetVolFreeSpace(FileSysTbl->Name, &FileSysEstSpaceTlm->Blocks, &FileSysEstSpaceTlm->Bytes);
             }
-            else
-            { 
-               CFE_EVS_SendEvent(FILESYS_SEND_TLM_ERR_EID, CFE_EVS_EventType_ERROR,
-                                 "Send %s table packet command error: Error retreiving free space data, status=%d",
-                                 FileSys->CfeTblName, SysStatus); 
+            else if (FileSysTbl->Type == FILE_MGR_FileSysTblEntryType_DIRECTORY_ESTIMATE)
+            {
+               GetSpaceStatus = GetDirUsedSpace(FileSysTbl->Name, &FileSysEstSpaceTlm->Blocks, &FileSysEstSpaceTlm->Bytes);
             }
-              
-         } /* Entry enabled */
-      } /* File system loop */
+            if (GetSpaceStatus != CFE_SUCCESS)
+            {
+               RetStatus = false;
+            }
+         } /* End if enabled */
+         else if (FileSysTbl->State == APP_C_FW_ConfigEnaTriState_DISABLED)
+         {
+            FileSysEstSpaceTlm->Type = FileSysTbl->Type;
+            CFE_SB_MessageStringSet(FileSysEstSpaceTlm->Name, FileSysTbl->Name,
+                                    sizeof(FileSysEstSpaceTlm->Name), sizeof(FileSysTbl->Name));
+         }
+      } /* End entry loop */
 
-      CFE_SB_TimeStampMsg(CFE_MSG_PTR(FileSys->TblTlm.TelemetryHeader));
-      CFE_SB_TransmitMsg(CFE_MSG_PTR(FileSys->TblTlm.TelemetryHeader), true);
+      CFE_SB_TimeStampMsg(CFE_MSG_PTR(FileSys->EstSpaceTlm.TelemetryHeader));
+      CFE_SB_TransmitMsg(CFE_MSG_PTR(FileSys->EstSpaceTlm.TelemetryHeader), true);
       
       CFE_EVS_SendEvent(FILESYS_SEND_TLM_CMD_EID, CFE_EVS_EventType_DEBUG,
-                       "Sent %s table telemetry packet", FileSys->CfeTblName);
+                       "Sent file system estimated space telemetry message using %s table entries",
+                       FileSys->TblName);
    
    } /* End if table loaded */
+   else
+   {
+      
+      CFE_EVS_SendEvent(FILESYS_SEND_TLM_CMD_EID, CFE_EVS_EventType_ERROR,
+                        "Send FileSys table telemetry error: %s has never been loaded",
+                        FileSys->TblName);
+                        
+   } /* End if table not loaded */
 
    return RetStatus;
 
-
-} /* End FILESYS_SendTblTlmCmd() */
+} /* End FILESYS_SendEstSpaceTlmCmd() */
 
 
 /******************************************************************************
@@ -253,53 +211,66 @@ bool FILESYS_SetTblStateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
    
    const FILE_MGR_SetFileSysTblState_CmdPayload_t *SetFileSysTblStateCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_SetFileSysTblState_t);   
    bool   RetStatus = false;
-   uint16 CmdVolumeIndex = SetFileSysTblStateCmd->TblVolumeIndex;
-   uint16 CmdVolumeState = SetFileSysTblStateCmd->TblVolumeState;
+   uint16 CmdEntryIndex = SetFileSysTblStateCmd->TblEntryIndex;
+   uint16 CmdEntryState = SetFileSysTblStateCmd->TblEntryState;
 
-   if (FileSys->CfeTbl.DataPtr == (FILE_MGR_FileSysTbl_t *) NULL)
+   if (FileSys->Tbl.Json.Loaded)
    {
+      if (CmdEntryIndex >= EdsParam_FILE_MGR_FILESYS_TBL_ENTRY_CNT)
+      {
+         
+         CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_CMD_EID, CFE_EVS_EventType_ERROR,
+            "Set %s Table State Command Error: Commanded index %d is not in valid range of 0..%d",
+            FileSys->TblName, CmdEntryIndex, (EdsParam_FILE_MGR_FILESYS_TBL_ENTRY_CNT-1));
+           
+      }
+      else if ((CmdEntryState != APP_C_FW_ConfigEnaTriState_ENABLED) &&
+               (CmdEntryState != APP_C_FW_ConfigEnaTriState_DISABLED))
+      {
+                  
+         CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_CMD_EID, CFE_EVS_EventType_ERROR,
+            "Set %s Table State Command Error: Commanded state %d is not in (%d=Enabled, %d=Disabled)",
+            FileSys->TblName, CmdEntryState,
+            APP_C_FW_ConfigEnaTriState_DISABLED, APP_C_FW_ConfigEnaTriState_ENABLED);
 
-      CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
-         "Set %s Table State Command Error: File system free space table is not loaded",
-         FileSys->CfeTblName);
-   
-   }
-   else if (CmdVolumeIndex >= FILE_MGR_FILESYS_TBL_VOL_CNT)
-   {
+      }
+      else if (FileSys->Tbl.Data.Entry[CmdEntryIndex].State == APP_C_FW_ConfigEnaTriState_UNUSED)
+      {
+         
+         CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_CMD_EID, CFE_EVS_EventType_ERROR,
+            "Set %s Table State Command Error: Attempt to change state of unused table entry at index %d",
+            FileSys->TblName, CmdEntryIndex);
+           
+      }
+      else
+      {
+         if (CmdEntryState == APP_C_FW_ConfigEnaTriState_ENABLED &&
+             !FileSys->Tbl.Data.Entry[CmdEntryIndex].Valid)
+         {
+            CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_CMD_EID, CFE_EVS_EventType_INFORMATION,
+               "Rejected Set %s Table State Command: Attempted to enabled entry %d that was flagged invalid during the table load",
+               FileSys->TblName, CmdEntryIndex);            
+         }
+         else
+         {
+            FileSys->Tbl.Data.Entry[CmdEntryIndex].State = CmdEntryState;
+
+            CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_CMD_EID, CFE_EVS_EventType_INFORMATION,
+               "Set %s Table State Command: Set table index %d state to %s",
+               FileSys->TblName, CmdEntryIndex, PktUtil_ConfigTriStateStr(CmdEntryState));
+         }
+      } 
       
-      CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_ARG_ERR_EID, CFE_EVS_EventType_ERROR,
-         "Set %s Table State Command Error: Commanded index %d is not in valid range of 0..%d",
-         FileSys->CfeTblName, CmdVolumeIndex, (FILE_MGR_FILESYS_TBL_VOL_CNT-1));
-        
-   }
-   else if ((CmdVolumeState != FILE_MGR_FileSysTblEntryState_ENABLED) &&
-            (CmdVolumeState != FILE_MGR_FileSysTblEntryState_DISABLED))
-   {
-               
-      CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_ARG_ERR_EID, CFE_EVS_EventType_ERROR,
-         "Set %s Table State Command Error: Commanded state %d is not in (%d=Enabled, %d=Disabled)",
-         FileSys->CfeTblName, CmdVolumeState, FILE_MGR_FileSysTblEntryState_ENABLED, FILE_MGR_FileSysTblEntryState_DISABLED);
-
-   }
-   else if (FileSys->CfeTbl.DataPtr->Volume[CmdVolumeIndex].State == FILE_MGR_FileSysTblEntryState_UNUSED)
-   {
-      
-      CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_UNUSED_ERR_EID, CFE_EVS_EventType_ERROR,
-         "Set %s Table State Command Error: Attempt to change state of unused table entry at index %d",
-         FileSys->CfeTblName, CmdVolumeIndex);
-        
-   }
+   } /* End if table loaded */
    else
    {
+      
+      CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_CMD_EID, CFE_EVS_EventType_ERROR,
+                  "Set file system table state error: %s has never been loaded",
+                  FileSys->TblName);
+                  
+   } /* End if table not loaded */
 
-      FileSys->CfeTbl.DataPtr->Volume[CmdVolumeIndex].State = CmdVolumeState;
-
-      CFE_TBL_Modified(FileSys->CfeTbl.Handle);
-
-      CFE_EVS_SendEvent(FILESYS_SET_TBL_STATE_CMD_EID, CFE_EVS_EventType_INFORMATION,
-         "Set %s Table State Command: Set table index %d state to %d (%d=Enabled,%d=Disabled)",
-         FileSys->CfeTblName, CmdVolumeIndex, CmdVolumeState, FILE_MGR_FileSysTblEntryState_ENABLED, FILE_MGR_FileSysTblEntryState_DISABLED);
-   } 
 
    return RetStatus;
 
@@ -307,141 +278,149 @@ bool FILESYS_SetTblStateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 
 
 /******************************************************************************
-** Function: ValidateTbl
+** Function: FileSysTblLoadCallback
 **
-** Callback function used by CFE Table service to allow a table to be validated
-** prior to being committed.
+** Callback function used by App Framework's TBL_MGR.
 **
-** Function signature must match CFE_TBL_CallbackFuncPtr_t
+** Note:
+**  1. Function signature must match FILESYS_TBL_LoadFunc_t
+**  2. The purpose of this function is to perform processing that needs 
+**     to be done when the FileSys table is loaded. It may also include
+**     validation that is performed within the FileSys context that is 
+**     broader than the table-specific validation context.   
 **
 */
-static int32 ValidateTbl(void *VoidTblPtr) 
+static bool FileSysTblLoadCallback(FILESYS_TBL_Data_t *TblPtr) 
 {
    
-   FILE_MGR_FileSysTbl_t* Tbl = (FILE_MGR_FileSysTbl_t *) VoidTblPtr;
+   return true;
+  
+} /* End FileSysTblLoadCallback() */
 
-   int32   RetStatus = INITBL_GetIntConfig(FileSys->IniTbl, CFG_TBL_ERR_CODE);
-   uint16  NameLength;
-   uint16  i;
 
-   uint16 ValidEntries   = 0;
-   uint16 InvalidEntries = 0;
-   uint16 UnusedEntries  = 0;
+/******************************************************************************
+** Function: GetDirUsedSpace
+**
+*/
+static CFE_Status_t GetDirUsedSpace(const char *Directory, uint64 *BlockCount, 
+                                    uint64 *ByteCount)
+{
+   osal_id_t     DirId;
+   os_dirent_t   DirEntry;
+   os_fstat_t    FileStat;
+   osal_status_t OsStatus;
+   CFE_Status_t  RetStatus;
+   char          FullPath[CFE_MISSION_MAX_PATH_LEN];
+   uint64        TotalBytes;
+   size_t        DirLen;
 
-   /*
-   ** Verification criteria
-   **
-   **  1. Table volume state must be enabled or disabled or unused
-   **  2. Enabled or disabled entries must have a valid file system name
-   **  3. File system name for unused entries is ignored
-   **
-   ** FileUtil_VerifyFilenameStr() checks for null string. A null string test is 
-   ** done first to separate it from an invalid character error. 
-   */
+   TotalBytes = 0;
 
-   for (i = 0; i < FILE_MGR_FILESYS_TBL_VOL_CNT; i++)
+   memset(&DirEntry, 0, sizeof(DirEntry));
+   snprintf(FullPath, sizeof(FullPath), "%s", Directory);
+   DirLen = OS_strnlen(FullPath, CFE_MISSION_MAX_PATH_LEN);
+   
+   if (DirLen < (sizeof(FullPath) - 2))
    {
-
-      /* Validate file system name if state is enabled or disabled */
       
-      if ((Tbl->Volume[i].State == FILE_MGR_FileSysTblEntryState_ENABLED) ||
-          (Tbl->Volume[i].State == FILE_MGR_FileSysTblEntryState_DISABLED))
-      {
+      FullPath[DirLen] = '/';
+      DirLen++;
+      FullPath[DirLen] = 0;
 
-         /* Search file system name buffer for a string terminator */
+      /* Open directory so that we can read from it */
+      OsStatus = OS_DirectoryOpen(&DirId, Directory);
+    
+   }
+   else
+   {
+      OsStatus = OS_ERR_NAME_TOO_LONG;
+   }
+
+   if (OsStatus == OS_SUCCESS)
+   {
+   
+      /* Read each directory entry and stat the files */
+      while (OS_DirectoryRead(DirId, &DirEntry) == OS_SUCCESS)
+      {
+           
+         snprintf(&FullPath[DirLen], sizeof(FullPath) - DirLen, "%s", OS_DIRENTRY_NAME(DirEntry));
          
-         for (NameLength = 0; NameLength < OS_MAX_PATH_LEN; NameLength++)
+         CFE_EVS_SendEvent(FILESYS_GET_DIR_USED_SPACE_EID, CFE_EVS_EventType_DEBUG,
+                           "FullPath[DirLen]: %s", FullPath);
+         
+         if ((strcmp(OS_DIRENTRY_NAME(DirEntry), FILEUTIL_CURRENT_DIR) != 0) &&
+             (strcmp(OS_DIRENTRY_NAME(DirEntry), FILEUTIL_PARENT_DIR)  != 0))
          {
-
-            if (Tbl->Volume[i].Name[NameLength] == '\0') break;
-              
-         }
-
-         /* 
-         ** Valid file system names must be: non-zero length, terminated and valid characters  
-         ** Only send event on first error occurence 
-         */
-         if (NameLength == 0)
-         {
-
-            ++InvalidEntries;
-
-            if (InvalidEntries == 1)
+            OsStatus = OS_stat(FullPath, &FileStat);
+            if (OsStatus != OS_SUCCESS)
             {
-
-               CFE_EVS_SendEvent(FILESYS_TBL_VERIFY_ERR_EID, CFE_EVS_EventType_ERROR,
-                                 "%s Table error: index = %d, empty name string",
-                                 FileSys->CfeTblName, i);
+               CFE_EVS_SendEvent(FILESYS_GET_DIR_USED_SPACE_EID, CFE_EVS_EventType_ERROR,
+                                 "Err computing used space. OS_stat()=%d,path=%s",
+                                 (int)OsStatus, FullPath);
             }
-
-         }
-         else if (NameLength == OS_MAX_PATH_LEN)
-         {
-
-            InvalidEntries++;
-
-            if (InvalidEntries == 1) {
-                    
-               CFE_EVS_SendEvent(FILESYS_TBL_VERIFY_ERR_EID, CFE_EVS_EventType_ERROR,
-                                 "%s table error: index = %d, non-terminated name string",
-                                 FileSys->CfeTblName, i);
-            }
-            
-         }
-         else if (!FileUtil_VerifyFilenameStr(Tbl->Volume[i].Name))
-         {
-
-            InvalidEntries++;
-
-            if (InvalidEntries == 1)
+            else if (!OS_FILESTAT_ISDIR(FileStat))
             {
-
-               CFE_EVS_SendEvent(FILESYS_TBL_VERIFY_ERR_EID, CFE_EVS_EventType_ERROR,
-                                 "%s table error: index = %d, invalid name = %s",
-                                 FileSys->CfeTblName, i, Tbl->Volume[i].Name);
+               /*
+               ** Only need to accumulate regular file entries, not dirs. Note OSAL
+               ** does not currently report the number of blocks, only the number of
+               ** bytes
+               */
+               TotalBytes += FileStat.FileSize;
             }
-         }
-         else
-         {
-            ValidEntries++;
+         }            
+      } /* End dir while loop */
 
-         } /* End NameLength checks */
-     
-      } /* End ENABLED/DISABLED checcks */ 
-      else if (Tbl->Volume[i].State == FILE_MGR_FileSysTblEntryState_UNUSED)
-      {
+      OS_DirectoryClose(DirId);
 
-         /* Ignore (but count) unused table entries */
-         ++UnusedEntries;
-      
-      }
-      else
-      {
+      *ByteCount = TotalBytes;
+      RetStatus  = CFE_SUCCESS;
+   
+   } /* End if dir opened */
+   else
+   {
+      CFE_EVS_SendEvent(FILESYS_GET_DIR_USED_SPACE_EID, CFE_EVS_EventType_ERROR, 
+                        "Error computing used space for directory %s. OS_DirectoryOpen() err=%d, path=%s",
+                        Directory, (int)OsStatus, Directory);
 
-         /* Invalid state */
-                    
-         ++InvalidEntries;   
-            
-         if (InvalidEntries == 1)
-         {
+      RetStatus = CFE_STATUS_EXTERNAL_RESOURCE_FAIL;
 
-            CFE_EVS_SendEvent(FILESYS_TBL_VERIFY_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "%s table error: index = %d, invalid state = %d",
-                              FileSys->CfeTblName, i, Tbl->Volume[i].State);
-         }
+   } /* End if dir open failed */
 
-      } /* End state checks **/
+   return RetStatus;
+    
+} /* End GetDirUsedSpace() */
 
-   } /* End volume loop */
 
-   CFE_EVS_SendEvent(FILESYS_TBL_VERIFIED_EID, CFE_EVS_EventType_INFORMATION,
-                      "%s table entry verification: valid = %d, invalid = %d, unused = %d",
-                       FileSys->CfeTblName, ValidEntries, InvalidEntries, UnusedEntries);
+/******************************************************************************
+** Function: GetVolFreeSpace
+**
+*/
+static CFE_Status_t GetVolFreeSpace(const char *FileSys, uint64 *BlockCount, uint64 *ByteCount)
+{
+   
+   OS_statvfs_t   FileStats = {0};
+   osal_status_t  OsStatus;
+   CFE_Status_t   RetStatus;
 
-   if (InvalidEntries == 0) RetStatus = CFE_SUCCESS;
+   // Get file system free space
+   OsStatus = OS_FileSysStatVolume(FileSys, &FileStats);
+   
+   if (OsStatus == OS_SUCCESS)
+   {
+      *BlockCount = FileStats.blocks_free;
+      *ByteCount  = FileStats.block_size * FileStats.blocks_free;
+
+      RetStatus = CFE_SUCCESS;
+   }
+   else
+   {
+      CFE_EVS_SendEvent(FILESYS_GET_VOL_FREE_SPACE_EID, CFE_EVS_EventType_ERROR,
+                        "Error computing free space for file system volume %s. OS_FileSysStatVolume() returned %d",
+                        FileSys, (int)OsStatus);
+
+      RetStatus = CFE_STATUS_EXTERNAL_RESOURCE_FAIL;
+   }
 
    return RetStatus;
 
-  
-} /* End ValidateTbl() */
-
+} /* End GetVolFreeSpace() */

@@ -34,14 +34,37 @@
       <!--***********************************-->
       <!--**** DataTypeSet:  Entry Types ****-->
       <!--***********************************-->
-    
-      <EnumeratedDataType name="FileSysTblEntryState" shortDescription="" >
-        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
+
+      <EnumeratedDataType name="TblId" shortDescription="Table Identifiers. See app_c_fw.xml guidelines" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
-          <Enumeration label="DISABLED" value="0" shortDescription="" />
-          <Enumeration label="ENABLED"  value="1" shortDescription="" />
-          <Enumeration label="UNUSED"   value="2" shortDescription="" />
+          <Enumeration label="FILE_SYS" value="0" shortDescription="File systems tha can have free/used space monitored" />
         </EnumerationList>
+      </EnumeratedDataType>
+      
+      <EnumeratedDataType name="FileSysTblEntryType" shortDescription="Table entry types">
+         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+         <EnumerationList>
+            <Enumeration label="UNDEFINED" value="0" shortDescription="Table entry is not used, these entries are ignored"/>
+            <Enumeration label="VOLUME_FREE_SPACE" value="1">
+               <LongDescription>
+                  Monitor the free space on given volume
+                  The given path will be passed to OS_FileSysStatVolume() and the results
+                  will be reported in the generated TLM entry.
+               </LongDescription>
+            </Enumeration>
+            <Enumeration label="DIRECTORY_ESTIMATE" value="2">
+               <LongDescription>
+                  Estimate the sum of space used by files within specified directory
+                  The given path will be opened as a directory.  The size of each regular
+                  file present in that directory will be summed to produce an estimate of the
+                  total space associated with that directory.
+                  Note that this yields only an estimate, as there can be discrepancies
+                  between the file size as observed by this method and the actual disk blocks
+                  used by a given file.
+               </LongDescription>
+            </Enumeration>
+         </EnumerationList>
       </EnumeratedDataType>
 
       <ContainerDataType name="DirFileEntry" shortDescription="">
@@ -57,42 +80,32 @@
       <!--**** DataTypeSet: Table Files ****-->
       <!--**********************************-->
 
-      <ContainerDataType name="FileSysTblEntry" shortDescription="">
-        <EntryList>
-          <Entry name="State" type="FileSysTblEntryState" shortDescription="" />
-          <Entry name="Name"  type="BASE_TYPES/PathName"  shortDescription="Name of file system volume" />
-        </EntryList>
+      <ContainerDataType name="FileSysTblEntry" shortDescription="Monitor table entry">
+         <EntryList>
+            <Entry name="State" type="APP_C_FW/ConfigEnaTriState"  shortDescription="Enable/disable flag indicating whether this entry is active or not" />
+            <Entry name="Type"  type="FileSysTblEntryType"         shortDescription=""/>
+            <Entry name="Name"  type="BASE_TYPES/PathName"         shortDescription="Name of file system which is based on the type"/>
+            <Entry name="Valid" type="APP_C_FW/BooleanUint8"       shortDescription="Boolean flag that is set by the table validation function" />
+         </EntryList>
       </ContainerDataType>
       
       <ArrayDataType name="FileSysTblEntries" dataTypeRef="FileSysTblEntry" shortDescription="">
         <DimensionList>
-          <Dimension size="${FILE_MGR/FILESYS_TBL_VOL_CNT}" />
+          <Dimension size="${FILE_MGR/FILESYS_TBL_ENTRY_CNT}" />
         </DimensionList>
       </ArrayDataType>
       
-      <ContainerDataType name="FileSysTbl" shortDescription="FILE_MGR file system table">
+      <ContainerDataType name="FileSysTblData" shortDescription="FILE_MGR file system table">
         <EntryList>
-          <Entry name="Volume" type="FileSysTblEntries" />
+          <Entry name="Entry" type="FileSysTblEntries" />
         </EntryList>
       </ContainerDataType>
-      
-      <ArrayDataType name="FileSysTblData" dataTypeRef="FileSysTblEntry">
-        <DimensionList>
-           <Dimension size="${FILE_MGR/FILESYS_TBL_VOL_CNT}"/>
-        </DimensionList>
-      </ArrayDataType>
 
-      <ContainerDataType name="FileSysTblFile_Payload" shortDescription="Proxy telemetry payload">
-        <EntryList>
-          <Entry name="FileHdr"  type="CFE_FS/Header"    shortDescription="cFE standard file header" />
-          <Entry name="TblHdr"   type="CFE_TBL/File_Hdr" shortDescription="cFE standard table header" />
-          <Entry name="TblData"  type="FileSysTblData"   shortDescription="" />
-        </EntryList>
-      </ContainerDataType>
 
       <!--***************************************-->
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
+
     
       <!-- FileMgr::Dir -->
 
@@ -139,7 +152,7 @@
 
       <!-- FileMgr::File -->
 
-      <ContainerDataType name="ConcatenateFile_CmdPayload">
+      <ContainerDataType name="ConcatenateFiles_CmdPayload">
         <EntryList>
           <Entry name="Source1Filename" type="BASE_TYPES/PathName" shortDescription="Source1 path/filename" />
           <Entry name="Source2Filename" type="BASE_TYPES/PathName" shortDescription="Source2 path/filename" />
@@ -149,9 +162,9 @@
 
       <ContainerDataType name="CopyFile_CmdPayload">
         <EntryList>
-          <Entry name="Overwrite"      type="BASE_TYPES/uint16"   shortDescription="Allow overwrite" />
-          <Entry name="SourceFilename" type="BASE_TYPES/PathName" shortDescription="Source path/filename" />
-          <Entry name="TargetFilename" type="BASE_TYPES/PathName" shortDescription="Target path/filename" />
+          <Entry name="Overwrite"      type="APP_C_FW/BooleanUint16" shortDescription="Allow overwrite" />
+          <Entry name="SourceFilename" type="BASE_TYPES/PathName"    shortDescription="Source path/filename" />
+          <Entry name="TargetFilename" type="BASE_TYPES/PathName"    shortDescription="Target path/filename" />
         </EntryList>
       </ContainerDataType>
 
@@ -170,9 +183,9 @@
 
       <ContainerDataType name="MoveFile_CmdPayload">
         <EntryList>
-          <Entry name="Overwrite"      type="BASE_TYPES/uint16"   shortDescription="Allow overwrite" />
-          <Entry name="SourceFilename" type="BASE_TYPES/PathName" shortDescription="Source path/filename" />
-          <Entry name="TargetFilename" type="BASE_TYPES/PathName" shortDescription="Target path/filename" />
+          <Entry name="Overwrite"      type="APP_C_FW/BooleanUint16" shortDescription="Allow overwrite" />
+          <Entry name="SourceFilename" type="BASE_TYPES/PathName"    shortDescription="Source path/filename" />
+          <Entry name="TargetFilename" type="BASE_TYPES/PathName"    shortDescription="Target path/filename" />
         </EntryList>
       </ContainerDataType>
 
@@ -202,9 +215,26 @@
       
       <ContainerDataType name="SetFileSysTblState_CmdPayload">
         <EntryList>
-          <Entry name="TblVolumeIndex"  type="BASE_TYPES/uint16"     shortDescription="Zero-based index into table's file volume array" />
-          <Entry name="TblVolumeState"  type="FileSysTblEntryState"  shortDescription="New state" />
+          <Entry name="TblEntryIndex"  type="BASE_TYPES/uint16"           shortDescription="Zero-based index into table's file volume array" />
+          <Entry name="TblEntryState"  type="APP_C_FW/ConfigEnaTriState"  shortDescription="New state" />
         </EntryList>
+      </ContainerDataType>
+
+      <!-- FileMgr::FileSys_Tbl -->
+      
+      <ContainerDataType name="LoadTbl_CmdPayload" shortDescription="Load an app's JSON table">
+        <EntryList>
+          <Entry name="Id"       type="TblId"                   shortDescription="Table identifier" />
+          <Entry name="Type"     type="APP_C_FW/TblLoadOptions" shortDescription="Replace entire table or perform sparse entry updates" />
+          <Entry name="Filename" type="BASE_TYPES/PathName"     shortDescription="Full path and file name of table to be loaded" />
+       </EntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="DumpTbl_CmdPayload" shortDescription="Dump an app's JSON table">
+        <EntryList>
+          <Entry name="Id"       type="TblId"               shortDescription="Table identifier" />
+          <Entry name="Filename" type="BASE_TYPES/PathName" shortDescription="Full path and file name of table to be dumped" />
+       </EntryList>
       </ContainerDataType>
 
       <!--*****************************************-->
@@ -241,9 +271,9 @@
         </EntryList>
       </ContainerDataType>
       
-      <ArrayDataType name="DirListFileList" dataTypeRef="DirListFileEntry">
+      <ArrayDataType name="DirListTlmList" dataTypeRef="DirListFileEntry">
         <DimensionList>
-           <Dimension size="${FILE_MGR/DIR_LIST_FILE_ENTRIES}"/>
+           <Dimension size="${FILE_MGR/DIR_LIST_TLM_ENTRIES}"/>
         </DimensionList>
       </ArrayDataType>
       
@@ -253,7 +283,7 @@
           <Entry name="DirFileCnt"    type="BASE_TYPES/uint32"   shortDescription="Number of files in dir or running count of files in dir when tlm entire dir " />
           <Entry name="PktFileCnt"    type="BASE_TYPES/uint32"   shortDescription="Number of files in this packet" />
           <Entry name="DirListOffset" type="BASE_TYPES/uint32"   shortDescription="Starting offset into alphabetical directory list" />
-          <Entry name="FileList"      type="DirListFileList"     shortDescription="Directory listing file data" />
+          <Entry name="FileList"      type="DirListTlmList"      shortDescription="Directory listing file data" />
         </EntryList>
       </ContainerDataType>
       
@@ -273,43 +303,36 @@
       </ContainerDataType>
 
       <!-- FileMgr::FileSys -->
-      
-      <ContainerDataType name="OpenFileTlmEntry" shortDescription="Data provided for each open file">
+
+      <ContainerDataType name="OpenFileTlm_Payload" shortDescription="File system estimate space telemetry payload">
         <EntryList>
-          <Entry name="Filename" type="BASE_TYPES/PathName" shortDescription="" />
-          <Entry name="AppName"  type="BASE_TYPES/PathName" shortDescription="Application that opened the file using the OSAL" />
+          <Entry type="APP_C_FW/OpenFileList" name="File" />
+        </EntryList>            
+      </ContainerDataType>
+
+      <ContainerDataType name="FileSysEstSpaceEntry" shortDescription="File system estimated space attributes">
+        <EntryList>
+          <Entry name="State"   type="APP_C_FW/ConfigEnaTriState" shortDescription=""/>
+          <Entry name="Type"    type="FileSysTblEntryType"  shortDescription=""/>
+          <Entry name="Name"    type="BASE_TYPES/PathName"  shortDescription="File system name"/>
+          <Entry name="Blocks"  type="BASE_TYPES/uint64"    shortDescription="Block count from last check/poll, 0 if unknown"/>
+          <Entry name="Bytes"   type="BASE_TYPES/uint64"    shortDescription="Byte count from last check/poll, 0 if unknown"/>
         </EntryList>
       </ContainerDataType>
-      
-      <ArrayDataType name="OpenFileTlm_Array" dataTypeRef="OpenFileTlmEntry">
+		
+      <ArrayDataType name="FileSysEstSpaceEntries" dataTypeRef="FileSysEstSpaceEntry" shortDescription="Array of estimated file system space entries">
         <DimensionList>
-           <Dimension size="${FILE_MGR/OS_MAX_NUM_OPEN_FILES}"/>
-        </DimensionList>
+         <Dimension size="${FILE_MGR/FILESYS_TBL_ENTRY_CNT}"/>
+      </DimensionList>
+      
       </ArrayDataType>
-
-      <ContainerDataType name="OpenFileTlm_Payload" shortDescription="List of open files">
-        <EntryList>
-          <Entry name="OpenCount" type="BASE_TYPES/uint16"   shortDescription="Number of files opened using the OSAL that are still open" />
-          <Entry name="OpenFile"  type="OpenFileTlm_Array"   shortDescription="" />
-        </EntryList>
+         
+      <ContainerDataType name="FileSysEstSpaceTlm_Payload" shortDescription="File system estimate space telemetry payload">
+				<EntryList>
+					<Entry name="Entry" type="FileSysEstSpaceEntries" shortDescription="Array of file system estimate space entries"/>
+				</EntryList>
       </ContainerDataType>
-
-
-      <ContainerDataType name="FileSysTblTlmEntry" shortDescription="File System table entry telemetry">
-        <EntryList>
-          <Entry name="FreeSpace_A" type="BASE_TYPES/uint32"   shortDescription="First 32 bit portion of a 64 bit value" />
-          <Entry name="FreeSpace_B" type="BASE_TYPES/uint32"   shortDescription="Second 32 bit portion of a 64 bit value" />
-          <Entry name="Name"        type="BASE_TYPES/PathName" shortDescription="File system name" />
-        </EntryList>
-      </ContainerDataType>
-      
-      <ArrayDataType name="FileSysTblTlm_Payload" dataTypeRef="FileSysTblTlmEntry">
-        <DimensionList>
-           <Dimension size="${FILE_MGR/FILESYS_TBL_VOL_CNT}"/>
-        </DimensionList>
-      </ArrayDataType>
-      
-      
+               
       <!--**************************************-->
       <!--**** DataTypeSet: Command Packets ****-->
       <!--**************************************-->
@@ -327,6 +350,24 @@
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
         </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="LoadTbl" baseType="CommandBase">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/LOAD_TBL_CC}" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="LoadTbl_CmdPayload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="DumpTbl" baseType="CommandBase">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/DUMP_TBL_CC}" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="DumpTbl_CmdPayload" name="Payload" />
+        </EntryList>
       </ContainerDataType>
 
       <!-- FileMgr::Dir -->
@@ -387,12 +428,12 @@
 
       <!-- FileMgr::File -->
     
-      <ContainerDataType name="ConcatenateFile" baseType="CommandBase" shortDescription="">
+      <ContainerDataType name="ConcatenateFiles" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 6" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="ConcatenateFile_CmdPayload" name="Payload" />
+          <Entry type="ConcatenateFiles_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
     
@@ -470,7 +511,7 @@
 
       <!-- FileMgr::FileSys -->
 
-      <ContainerDataType name="SendFileSysTblTlm" baseType="CommandBase" shortDescription="Send the File System table contents in a telemetry message">
+      <ContainerDataType name="SendFileSysEstSpaceTlm" baseType="CommandBase" shortDescription="Send the File System table contents in a telemetry message">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 15" />
         </ConstraintSet>
@@ -522,24 +563,22 @@
 
       <!-- FileMgr::FileSys -->
 
+      <!-- OpenFileList is created by app_c_fw::file_util -->
+      <!-- so it's stype is defined in APP_C_FW           -->
       <ContainerDataType name="OpenFileTlm" baseType="CFE_HDR/TelemetryHeader">
         <EntryList>
           <Entry type="OpenFileTlm_Payload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="FileSysTblTlm" baseType="CFE_HDR/TelemetryHeader">
+      <ContainerDataType name="FileSysEstSpaceTlm" baseType="CFE_HDR/TelemetryHeader">
         <EntryList>
-          <Entry type="FileSysTblTlm_Payload" name="Payload" />
+          <Entry type="FileSysEstSpaceTlm_Payload" name="Payload" />
         </EntryList>
       </ContainerDataType>
-
-      <ContainerDataType name="FileSysTblFile" baseType="CFE_HDR/TelemetryHeader">
-        <EntryList>
-          <Entry type="FileSysTblFile_Payload" name="Payload" shortDescription="FileSysTblFile_Payload"/>
-        </EntryList>
-      </ContainerDataType>
+      
     </DataTypeSet>
+
     
     <ComponentSet>
       <Component name="Application">
@@ -547,43 +586,44 @@
         <!--***********************************-->
         <!--**** Component Set: Interfaces ****-->
         <!--***********************************-->
-
         <RequiredInterfaceSet>
+        
           <Interface name="CMD" shortDescription="Software bus telecommand interface" type="CFE_SB/Telecommand">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelecommandDataType" type="CommandBase" />
             </GenericTypeMapSet>
           </Interface>
+          
           <Interface name="HK_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
             </GenericTypeMapSet>
           </Interface>
+          
           <Interface name="DIR_LIST_TLM" shortDescription="List directory contents in a telemetry packet" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="DirListTlm" />
             </GenericTypeMapSet>
           </Interface>
+          
           <Interface name="FILE_INFO_TLM" shortDescription="Send details about a single file in a telemetry" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="FileInfoTlm" />
             </GenericTypeMapSet>
           </Interface>
+          
           <Interface name="OPEN_FILE_TLM" shortDescription="Send list of open files in telemetry" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="OpenFileTlm" />
             </GenericTypeMapSet>
           </Interface>
-          <Interface name="FILE_SYS_TBL_TLM" shortDescription="Send systems telemetry" type="CFE_SB/Telemetry">
+          
+          <Interface name="FILE_SYS_EST_SPACE_TLM" shortDescription="Send systems telemetry" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
-              <GenericTypeMap name="TelemetryDataType" type="FileSysTblTlm" />
+              <GenericTypeMap name="TelemetryDataType" type="FileSysEstSpaceTlm" />
             </GenericTypeMapSet>
           </Interface>
-          <Interface name="FILE_SYS_TBL_FILE" shortDescription="Proxy telemetry for File System Table File" type="CFE_SB/Telemetry">
-            <GenericTypeMapSet>
-              <GenericTypeMap name="TelemetryDataType" type="FileSysTblFile" />
-            </GenericTypeMapSet>
-          </Interface>
+                  
         </RequiredInterfaceSet>
 
         <!--***************************************-->
@@ -592,23 +632,21 @@
 
         <Implementation>
           <VariableSet>
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"            initialValue="${CFE_MISSION/FILE_MGR_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"          initialValue="${CFE_MISSION/FILE_MGR_HK_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="DirListTlmTopicId"     initialValue="${CFE_MISSION/FILE_MGR_DIR_LIST_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FileInfoTlmTopicId"    initialValue="${CFE_MISSION/FILE_MGR_FILE_INFO_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="OpenFileTlmTopicId"    initialValue="${CFE_MISSION/FILE_MGR_OPEN_FILE_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FileSysTblTlmTopicId"  initialValue="${CFE_MISSION/FILE_MGR_FILE_SYS_TBL_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FileSysTblFileTopicId" initialValue="${CFE_MISSION/FILE_MGR_FILE_SYS_TBL_FILE_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"                initialValue="${CFE_MISSION/FILE_MGR_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"              initialValue="${CFE_MISSION/FILE_MGR_HK_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="DirListTlmTopicId"         initialValue="${CFE_MISSION/FILE_MGR_DIR_LIST_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FileInfoTlmTopicId"        initialValue="${CFE_MISSION/FILE_MGR_FILE_INFO_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="OpenFileTlmTopicId"        initialValue="${CFE_MISSION/FILE_MGR_OPEN_FILE_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="FileSysEstSpaceTlmTopicId" initialValue="${CFE_MISSION/FILE_MGR_FILE_SYS_EST_SPACE_TLM_TOPICID}" />
           </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>          
-            <ParameterMap interface="CMD"               parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="HK_TLM"            parameter="TopicId" variableRef="HkTlmTopicId" />
-            <ParameterMap interface="DIR_LIST_TLM"      parameter="TopicId" variableRef="DirListTlmTopicId" />
-            <ParameterMap interface="FILE_INFO_TLM"     parameter="TopicId" variableRef="FileInfoTlmTopicId" />
-            <ParameterMap interface="OPEN_FILE_TLM"     parameter="TopicId" variableRef="OpenFileTlmTopicId" />
-            <ParameterMap interface="FILE_SYS_TBL_TLM"  parameter="TopicId" variableRef="FileSysTblTlmTopicId" />
-            <ParameterMap interface="FILE_SYS_TBL_FILE" parameter="TopicId" variableRef="FileSysTblFileTopicId" />
+            <ParameterMap interface="CMD"                    parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="HK_TLM"                 parameter="TopicId" variableRef="HkTlmTopicId" />
+            <ParameterMap interface="DIR_LIST_TLM"           parameter="TopicId" variableRef="DirListTlmTopicId" />
+            <ParameterMap interface="FILE_INFO_TLM"          parameter="TopicId" variableRef="FileInfoTlmTopicId" />
+            <ParameterMap interface="OPEN_FILE_TLM"          parameter="TopicId" variableRef="OpenFileTlmTopicId" />
+            <ParameterMap interface="FILE_SYS_EST_SPACE_TLM" parameter="TopicId" variableRef="FileSysEstSpaceTlmTopicId" />
           </ParameterMapSet>
         </Implementation>
       </Component>

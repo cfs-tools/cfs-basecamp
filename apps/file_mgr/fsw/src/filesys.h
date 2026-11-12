@@ -39,22 +39,17 @@
 */
 
 #include "app_cfg.h"
+#include "filesys_tbl.h"
 
 /***********************/
 /** Macro Definitions **/
 /***********************/
 
-#define FILESYS_TBL_REGISTER_ERR_EID         (FILESYS_BASE_EID + 0)
-#define FILESYS_TBL_VERIFY_ERR_EID           (FILESYS_BASE_EID + 1)
-#define FILESYS_TBL_VERIFIED_EID             (FILESYS_BASE_EID + 2)
-#define FILESYS_SEND_TLM_ERR_EID             (FILESYS_BASE_EID + 3)
-#define FILESYS_SEND_TLM_CMD_EID             (FILESYS_BASE_EID + 4)
-#define FILESYS_SET_TBL_STATE_LOAD_ERR_EID   (FILESYS_BASE_EID + 5)
-#define FILESYS_SET_TBL_STATE_ARG_ERR_EID    (FILESYS_BASE_EID + 5)
-#define FILESYS_SET_TBL_STATE_UNUSED_ERR_EID (FILESYS_BASE_EID + 6)
-#define FILESYS_SET_TBL_STATE_CMD_EID        (FILESYS_BASE_EID + 7)
-#define FILESYS_SEND_OPEN_FILES_CMD_EID      (FILESYS_BASE_EID + 8)
-
+#define FILESYS_SEND_OPEN_FILES_CMD_EID  (FILESYS_BASE_EID + 0)
+#define FILESYS_SEND_TLM_CMD_EID         (FILESYS_BASE_EID + 1)
+#define FILESYS_SET_TBL_STATE_CMD_EID    (FILESYS_BASE_EID + 2)
+#define FILESYS_GET_DIR_USED_SPACE_EID   (FILESYS_BASE_EID + 3)
+#define FILESYS_GET_VOL_FREE_SPACE_EID   (FILESYS_BASE_EID + 4)
 
 /**********************/
 /** Type Definitions **/
@@ -68,16 +63,6 @@
 typedef struct
 {
 
-   bool                  Registered;
-   int32                 Status;        /* Status of last cFE Table service call */
-   CFE_TBL_Handle_t      Handle;
-   FILE_MGR_FileSysTbl_t *DataPtr;
-
-} FILESYS_CfeTbl_t;
-
-typedef struct
-{
-
    /*
    ** App Framework
    */
@@ -85,26 +70,25 @@ typedef struct
    const INITBL_Class_t *IniTbl;
 
    /*
-   ** Tables
-   */
-   
-   FILESYS_CfeTbl_t  CfeTbl;
-
-   /*
    ** Telemetry
    */
    
-   FILE_MGR_FileSysTblTlm_t  TblTlm;
-   FILE_MGR_OpenFileTlm_t    OpenFileTlm;
+   FILE_MGR_FileSysEstSpaceTlm_t  EstSpaceTlm;
+   FILE_MGR_OpenFileTlm_t         OpenFileTlm;
 
+   /*
+   ** Contained Objects
+   */
+
+   FILESYS_TBL_Class_t  Tbl;
+   
    /*
    ** Class State Data
    */
 
-   const char *CfeTblName;
-   FileUtil_OpenFileList_t OpenFileList;
-   
-
+   const char *TblName;
+   APP_C_FW_OpenFileList_t OpenFileList;
+    
 } FILESYS_Class_t;
 
 
@@ -121,15 +105,8 @@ typedef struct
 ** Notes:
 **   None
 */
-void FILESYS_Constructor(FILESYS_Class_t *FileSysPtr, const INITBL_Class_t *IniTbl);
-
-
-/******************************************************************************
-** Function: FILESYS_ManageTbl
-**
-** Manage the cFE table interface for table loads and validation. 
-*/
-void FILESYS_ManageTbl(void);
+void FILESYS_Constructor(FILESYS_Class_t *FileSysPtr, const INITBL_Class_t *IniTbl,
+                         TBLMGR_Class_t  *TblMgr);
 
 
 /******************************************************************************
@@ -162,12 +139,14 @@ bool FILESYS_SetTblStateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
-** Function: FILESYS_SendTblTlmCmd
+** Function: FILESYS_SendEstSpaceTlmCmd
 **
 ** Note:
 **  1. This function must comply with the CMDMGR_CmdFuncPtr_t definition
+**  2. The FileSys table must have been loaded prior to issuing this command
+**     and it determines what will be reported in telemetry. 
 */
-bool FILESYS_SendTblTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FILESYS_SendEstSpaceTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 #endif /* _filesys_ */

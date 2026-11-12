@@ -1,0 +1,39 @@
+{
+   "app-name": "FILE_MGR",
+   "tbl-name": "FileSys",
+   "description": [
+                    "This file defines the File System table entry defaults. The",
+                    "EDS spec defined in file_mgr.xml defines the table structure",
+                    "and the entry content options.",
+                    "  FileSysTblEntryState:",
+                    "    0 = DISABLED",
+                    "    1 = ENABLED",
+                    "    2 = UNUSED",
+                    "  FileSysTblEntryType:",
+                    "    0 = Unused",
+                    "    1 = VOLUME_FREE_SPACE",
+                    "    2 = DIRECTORY_ESTIMATE"
+                  ],
+   "entry": [
+       {
+          "state": 0,
+          "type":  1,
+          "name":  "/boot"
+       },
+       {
+          "state": 1,
+          "type":  1,
+          "name":  "/ram"
+       },
+       {
+          "state": 1,
+          "type":  2,
+          "name":  "/cf"
+       },
+       {
+          "state": 0,
+          "type":  0,
+          "name":  ""
+       }
+   ]   
+}

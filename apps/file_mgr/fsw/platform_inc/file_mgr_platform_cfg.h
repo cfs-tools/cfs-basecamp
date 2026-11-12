@@ -41,13 +41,4 @@
 #define FILE_MGR_PLATFORM_REV   0
 #define FILE_MGR_INI_FILENAME   "/cf/file_mgr_ini.json"
 
-
-/******************************************************************************
-** These are frustrating. They're only needed statically because of the table
-** decsriptor build process. 
-*/
-
-#define FILE_MGR_APP_CFE_NAME   "FILE_MGR"
-#define FILE_MGR_TBL_CFE_NAME   "FileSysTbl"
-
 #endif /* _file_mgr_platform_cfg_ */

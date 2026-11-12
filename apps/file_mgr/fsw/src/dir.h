@@ -121,7 +121,8 @@ typedef struct
    /*
    ** Directory State Data
    */
-
+   
+   uint32  ListFileEntryMax;    
    uint32  SendDirTlmDelay;
    uint32  TaskFileStatCnt;
    uint32  TaskFileStatDelay;

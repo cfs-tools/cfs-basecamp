@@ -73,6 +73,7 @@ void DIR_Constructor(DIR_Class_t *DirPtr, const INITBL_Class_t *IniTbl)
    Dir->IniTbl = IniTbl;
 
    /* These are used in loops so save value once */
+   Dir->ListFileEntryMax  = INITBL_GetIntConfig(Dir->IniTbl, CFG_DIR_LIST_FILE_ENTRY_MAX);
    Dir->SendDirTlmDelay   = INITBL_GetIntConfig(Dir->IniTbl, CFG_SEND_DIR_TLM_DELAY);
    Dir->TaskFileStatCnt   = INITBL_GetIntConfig(Dir->IniTbl, CFG_TASK_FILE_STAT_CNT);
    Dir->TaskFileStatDelay = INITBL_GetIntConfig(Dir->IniTbl, CFG_TASK_FILE_STAT_DELAY);
@@ -383,7 +384,7 @@ bool DIR_DeleteCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 ** Function:  DIR_ResetStatus
 **
 */
-void DIR_ResetStatus()
+void DIR_ResetStatus(void)
 {
  
    Dir->CmdWarningCnt = 0;
@@ -570,8 +571,12 @@ static void LoadFileEntry(const char *PathFilename, FILE_MGR_DirFileEntry_t *Fil
    
    int32       SysStatus; 
    os_fstat_t  FileStatus;
+
    
-   
+   FileEntry->Size = 0;
+   FileEntry->Time = 0;
+   FileEntry->Mode = 0;   
+
    if (IncludeSizeTime)
    {
       
@@ -589,24 +594,7 @@ static void LoadFileEntry(const char *PathFilename, FILE_MGR_DirFileEntry_t *Fil
          FileEntry->Time = OS_FILESTAT_TIME(FileStatus);
          
       }
-      else
-      {
-         
-         FileEntry->Size = 0;
-         FileEntry->Time = 0;
-         FileEntry->Mode = 0;
-      
-      }
-      
    } /* End if include Size & Time */
-   else
-   {
-         
-      FileEntry->Size = 0;
-      FileEntry->Time = 0;
-      FileEntry->Mode = 0;
-      
-   } /* End if don't include Size & Time */
 
 
 } /* End LoadFileEntry() */
@@ -632,7 +620,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
    osal_id_t           DirId;
    os_dirent_t         DirEntry;
    FileUtil_FileInfo_t FileInfo;
-   FILE_MGR_DirFileEntry_t     DirFileEntry;
+   FILE_MGR_DirFileEntry_t  DirFileEntry;
    
    bool   ReadingDir     = true;
    bool   CreatingTlmPkt = true;
@@ -730,7 +718,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
                         } /* End if valid path/filename length */
                      
                      } /* End if in range to fill packet */
-                     if (Dir->ListTlm.Payload.PktFileCnt >= FILE_MGR_DIR_LIST_FILE_ENTRIES)
+                     if (Dir->ListTlm.Payload.PktFileCnt >= EdsParam_FILE_MGR_DIR_LIST_TLM_ENTRIES)
                      {
                         /* If sending one pkt, continue counting directory entries and send pkt when done */
                         if (SendOpt == SEND_ONE_DIR_TLM_PKT)
@@ -749,7 +737,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
                                              (int)Dir->ListTlm.Payload.PktFileCnt);
                         
                            Dir->ListTlm.Payload.PktFileCnt = 0;
-                           Dir->ListTlm.Payload.DirListOffset += FILE_MGR_DIR_LIST_FILE_ENTRIES;
+                           Dir->ListTlm.Payload.DirListOffset += EdsParam_FILE_MGR_DIR_LIST_TLM_ENTRIES;
                            memset(Dir->ListTlm.Payload.FileList, 0, sizeof(Dir->ListTlm.Payload.FileList));                              
                            
                            OS_TaskDelay(Dir->SendDirTlmDelay);
@@ -767,7 +755,7 @@ bool SendDirListTlm(const char *DirName, uint16 DirListOffset, bool IncludeSizeT
             ** the last packet if it has entries
             */
             if ((SendOpt == SEND_ONE_DIR_TLM_PKT) ||
-                ((SendOpt == SEND_ALL_DIR_TLM_PKT) && (Dir->ListTlm.Payload.PktFileCnt != 0)))
+               ((SendOpt == SEND_ALL_DIR_TLM_PKT) && (Dir->ListTlm.Payload.PktFileCnt != 0)))
             {
             
                CFE_SB_TimeStampMsg(CFE_MSG_PTR(Dir->ListTlm.TelemetryHeader));
@@ -852,7 +840,6 @@ static bool WriteDirListToFile(const char *DirNameWithSep, osal_id_t DirId,
    uint16 DirEntryLen   = 0;               /* Length of each directory entry */
    uint16 DirEntryCnt   = 0;
    uint16 FileEntryCnt  = 0;
-   uint16 FileEntryMax  = INITBL_GetIntConfig(Dir->IniTbl, CFG_DIR_LIST_FILE_ENTRIES);
    uint16 TaskBlockCnt  = 0;               /* See prologue */
    int32  BytesWritten;
    char   PathFilename[OS_MAX_PATH_LEN] = "\0";   /* Combined directory path and entry filename */
@@ -908,12 +895,12 @@ static bool WriteDirListToFile(const char *DirNameWithSep, osal_id_t DirId,
                /* 
                ** General logic 
                ** - Do not count the "." and ".." directory entries 
-               ** - Count all files, but limit file to FILE_MGR_INI_DIR_LIST_FILE_ENTRIES
+               ** - Count all files, but limit file to FILE_MGR_INI_DIR_LIST_FILE_ENTRY_MAX
                */      
                   
                ++DirEntryCnt;
 
-               if (FileEntryCnt < FileEntryMax)
+               if (FileEntryCnt < Dir->ListFileEntryMax)
                {
                      
                   DirEntryLen = strlen(OS_DIRENTRY_NAME(DirEntry));

@@ -79,7 +79,7 @@ void FILE_Constructor(FILE_Class_t *FilePtr, const INITBL_Class_t *IniTbl)
 bool FILE_ConcatenateCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
 {
    
-   const FILE_MGR_ConcatenateFile_CmdPayload_t *ConcatenateCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_ConcatenateFile_t);
+   const FILE_MGR_ConcatenateFiles_CmdPayload_t *ConcatenateCmd = CMDMGR_PAYLOAD_PTR(MsgPtr, FILE_MGR_ConcatenateFiles_t);
    FileUtil_FileInfo_t FileInfo;
    char  EventErrStr[256] = "\0";
    
@@ -619,7 +619,7 @@ bool FILE_SendInfoTlmCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr)
       if (SendInfoTlmCmd->ComputeCrc == true)
       {
 
-         if (SendInfoTlmCmd->CrcType == CFE_MISSION_ES_CRC_16)
+         if (SendInfoTlmCmd->CrcType == DEFAULT_CFE_MISSION_ES_CRC_16)
          {
   
             if (ComputeFileCrc("Send File Info", SendInfoTlmCmd->Filename,
@@ -778,7 +778,7 @@ static bool ComputeFileCrc(const char *CmdName, const char *Filename, uint32 *Cr
       while (ComputingCrc)
       {
          
-         FileBytesRead = OS_read(FileHandle, File->FileTaskBuf, FILE_MGR_TASK_FILE_BLOCK_SIZE);
+         FileBytesRead = OS_read(FileHandle, File->FileTaskBuf, EdsParam_FILE_MGR_TASK_FILE_BLOCK_SIZE);
 
          if (FileBytesRead == 0) /* Successfully finished reading file */ 
          {  
@@ -857,7 +857,7 @@ static bool ConcatenateFiles(const char *SrcFile1, const char *SrcFile2, const c
       if (SysStatus == OS_SUCCESS)
       {
    
-         SysStatus = OS_OpenCreate(&TargetFileHandle, SrcFile2, OS_FILE_FLAG_CREATE | OS_FILE_FLAG_TRUNCATE, OS_READ_WRITE);
+         SysStatus = OS_OpenCreate(&TargetFileHandle, TargetFile, OS_FILE_FLAG_NONE, OS_READ_WRITE);
    
          if (SysStatus == OS_SUCCESS)
          {
@@ -867,7 +867,7 @@ static bool ConcatenateFiles(const char *SrcFile1, const char *SrcFile2, const c
             while (PerformingCatenation)
             {
                
-               BytesRead = OS_read(SourceFileHandle, File->FileTaskBuf, FILE_MGR_TASK_FILE_BLOCK_SIZE);
+               BytesRead = OS_read(SourceFileHandle, File->FileTaskBuf, EdsParam_FILE_MGR_TASK_FILE_BLOCK_SIZE);
                if (BytesRead == 0)
                {
                
