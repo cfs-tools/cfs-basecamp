@@ -1,6 +1,10 @@
 {
    "title": "Kit Scheduler",
-   "description": ["Define runtime configurations. See kit_sch::app_cfg.h for definitions"],
+   "description": ["Define runtime configurations. See kit_sch::app_cfg.h for definitions",
+                   "Use the following EID definitions [INIT|CMD]_DEBUG_TYPE:",
+                   "  1 = CFE_EVS_EventType_DEBUG",
+                   "  2 = CFE_EVS_EventType_INFORMATION",
+                   " See app developer's guide for debug event strategies"],
    "config": {
       
       "APP_CFE_NAME":      "KIT_SCH",
@@ -21,7 +25,13 @@
       "SCH_TBL_LOAD_FILE": "/cf/kit_sch_schtbl.json",
       "SCH_TBL_DUMP_FILE": "/cf/kit_sch_schtbl~.json",
 
-      "STARTUP_SYNC_TIMEOUT": 10000
+      "USRMSG_TBL_LOAD_FILE": "/cf/kit_sch_usrmsgtbl.json",
+      "USRMSG_TBL_DUMP_FILE": "/cf/kit_sch_usrmsgtbl~.json",
+
+      "STARTUP_SYNC_TIMEOUT": 10000,
+      
+      "INIT_DEBUG_EVT_TYPE": 1,
+      "LOW_FREQ_DEBUG_EVT_TYPE": 1
 
    }
 }

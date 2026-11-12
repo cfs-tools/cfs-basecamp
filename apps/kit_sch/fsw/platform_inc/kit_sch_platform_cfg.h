@@ -56,13 +56,13 @@
 */
 
 /*
-** Maximum Number of Message Definitions in Message Definition Table. Must be 
+** Maximum number of message definitions in Message Definition Table. Must be 
 ** greater than zero.
 */
 
-#define MSGTBL_MAX_ENTRIES           200
-#define MSGTBL_JSON_FILE_MAX_CHAR  16384
-#define MSGTBL_UNUSED_MSG_ID       (CFE_SB_INVALID_MSG_ID)
+#define MSGTBL_MAX_ENTRIES              200
+#define MSGTBL_JSON_FILE_MAX_CHAR     32768
+
 
 /*
 ** Max message length in words.  Must be at least large enough to hold the
@@ -75,6 +75,19 @@
 
 
 /******************************************************************************
+** User Message Table Configurations
+*/
+
+/*
+** Maximum number of user message definitions in User Message Table. Must be 
+** greater than zero.
+*/
+
+#define USRMSGTBL_MAX_ENTRIES            64
+#define USRMSGTBL_JSON_FILE_MAX_CHAR  16384
+
+
+/******************************************************************************
 ** Scheduler Configurations
 */
 
@@ -82,18 +95,20 @@
 ** Number of Minor Frames that will be processed in "Catch Up"
 ** mode before giving up and skipping ahead.
 */
-#define SCHEDULER_MAX_LAG_COUNT  (SCHTBL_SLOTS / 2)
+#define SCHEDULER_MAX_LAG_COUNT  3   // This is defined for a non-realtime desktop environment
 
 
 /*
 ** Maximum number of slots scheduler will process when trying to
-** "Catch Up" to the correct slot for the current time. Must be greater than zero.
+** "Catch Up" to the correct slot for the current time. Must be greater than
+** zero.
 */
 #define SCHEDULER_MAX_SLOTS_PER_WAKEUP      5
 
 
 /*
-** Number of microseconds in a Major Frame. Used as a "wake-up" period. Must be greater than zero.
+** Number of microseconds in a Major Frame. Used as a "wake-up" period. Must
+** be greater than zero.
 */
 #define SCHEDULER_MICROS_PER_MAJOR_FRAME    1000000
 
@@ -122,8 +137,7 @@
 ** than two because a single "noisy" Major Frame signal is likely when
 ** turning on or switching the 1 Hz signal on the spacecraft.
 */
-#define SCHEDULER_MAX_NOISY_MF   2
-
+#define SCHEDULER_MAX_NOISY_MF   3   // Set for a non-realtime desktop environment
 
 
 #endif /* _kit_sch_platform_cfg_ */

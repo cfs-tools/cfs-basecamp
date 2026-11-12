@@ -1,0 +1,184 @@
+{
+   "name": "Scheduler App's User Message Table",
+   "description":  [
+        "Defines user app messages that are sent with predefined KIT_SCH",
+        "periodic messages.",
+        " - The EDS UsrMsgperiod-id enumeration defines the periodic messages",
+        "   that can be used",
+        " - JsonTblTopicMap.USRMSG_UNUSED_PERIOD_ID defines the value 'period'",
+        "   must set to for unused entries",
+        "This file is automatically updated by the 'add app to target' process",
+        "or it can be manually edited.",
+        "The BC_ entries must be first and their indices must match the EDS",
+        "UsrMsgPeriodId definitions."
+        ],
+
+   
+   "topic-id-map": { 
+   
+      "start": true,
+      
+      "BC_SCH_250_MS_TOPICID" : "topic-id-0",
+      "BC_SCH_500_MS_TOPICID" : "topic-id-1",
+      "BC_SCH_1_SEC_TOPICID"  : "topic-id-2",
+      "BC_SCH_2_SEC_TOPICID"  : "topic-id-3",
+      "BC_SCH_4_SEC_TOPICID"  : "topic-id-4",
+      "BC_SCH_8_SEC_TOPICID"  : "topic-id-5",
+      "USER_6_TOPICID"  : "topic-id-6",
+      "USER_7_TOPICID"  : "topic-id-7",
+      "USER_8_TOPICID"  : "topic-id-8",
+      "USER_9_TOPICID"  : "topic-id-9",
+      "USER_10_TOPICID" : "topic-id-10",
+      "USER_11_TOPICID" : "topic-id-11",
+      "USER_12_TOPICID" : "topic-id-12",
+      "USER_13_TOPICID" : "topic-id-13",
+      "USER_14_TOPICID" : "topic-id-14",
+      "USER_15_TOPICID" : "topic-id-15",
+      "USER_16_TOPICID" : "topic-id-16",
+
+      "end": true
+      
+   },
+   
+   
+   "message-array": [
+
+      {"message": {
+         "name":  "BC_SCH_250_MS_TOPICID",
+         "id": 0,
+         "topic-id-0": 0,
+         "topic-id": 0,
+         "period-id": 0
+      }},
+
+      {"message": {
+         "name":  "BC_SCH_500_MS_TOPICID",
+         "id": 1,
+         "topic-id-1": 0,
+         "topic-id": 0,
+         "period-id": 1
+      }},
+
+      {"message": {
+         "name":  "BC_SCH_1_SEC_TOPICID",
+         "id": 2,
+         "topic-id-2": 0,
+         "topic-id": 0,
+         "period-id": 2
+      }},
+      
+      {"message": {
+         "name":  "BC_SCH_2_SEC_TOPICID",
+         "id": 3,
+         "topic-id-3": 0,
+         "topic-id": 0,
+         "period-id": 3
+      }},
+      
+      {"message": {
+         "name":  "BC_SCH_4_SEC_TOPICID",
+         "id": 4,
+         "topic-id-4": 0,
+         "topic-id": 0,
+         "period-id": 4
+      }},
+      
+      {"message": {
+         "name":  "BC_SCH_8_SEC_TOPICID",
+         "id": 5,
+         "topic-id-5": 0,
+         "topic-id": 0,
+         "period-id": 5
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 6,
+         "topic-id-6": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 7,
+         "topic-id-7": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 8,
+         "topic-id-8": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 9,
+         "topic-id-9": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 10,
+         "topic-id-10": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 11,
+         "topic-id-11": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 12,
+         "topic-id-12": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 13,
+         "topic-id-13": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 14,
+         "topic-id-14": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 15,
+         "topic-id-15": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }},
+      
+      {"message": {
+         "name":  "USER_TOPICID",
+         "id": 16,
+         "topic-id-15": 0,
+         "topic-id": 0,
+         "period-id": 99
+      }}
+      
+   ]
+}
+

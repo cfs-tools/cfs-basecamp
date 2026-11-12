@@ -32,6 +32,7 @@
 #include "app_cfg.h"
 #include "msgtbl.h"
 #include "schtbl.h"
+#include "usrmsgtbl.h"
 
 
 /***********************/
@@ -50,6 +51,8 @@
 
 /*
 ** Synchronized to Mission Elapsed Time States
+** - Synchronize to the MET when the Minor Frame timer
+**   is not accurate enough
 */
 
 #define SCHEDULER_SYNCH_FALSE          0
@@ -84,7 +87,14 @@
 #define SCHEDULER_MF_SRC_CFE_TIME           1
 #define SCHEDULER_MF_SRC_MINOR_FRAME_TIMER  2
 
-#define SCHEDULER_TIME_SYNC_SLOT   (SCHTBL_SLOTS-1)  /* Slot processing algorithm assumes this is set to the last slot */
+/*
+** Slot processing algorithm assumes this is set to the last slot 
+** - Ground commands are processed during this slot so they can
+**   safely change the state of the scheduler table  
+*/
+
+#define SCHEDULER_TIME_SYNC_SLOT   (SCHTBL_SLOTS-1)  
+
 
 
 /*
@@ -153,6 +163,14 @@
 **   for how the KIT_SCH_TblEntryTlm packet is created for each command.
 */
 
+/*
+** Process command pipe callback function
+** - Processing commands is synchonrized with the scheduler table
+** - Using a callback function preserves teh object design with 
+**   the main app object owning the command pipe and the CmdMgr object
+*/
+typedef int32 (*SCHEDULER_ProcessAppCmdsFunc_t)(void);
+
 
 /******************************************************************************
 ** Scheduler Class
@@ -160,6 +178,8 @@
 
 typedef struct
 {
+
+   SCHEDULER_ProcessAppCmdsFunc_t  ProcessAppCmds;
 
    /*
    ** Telemetry Packets
@@ -171,7 +191,9 @@ typedef struct
    /*
    ** Scheduler State
    */ 
-
+   
+   uint32  LowFreqDebugEvtType;
+   
    uint32  SlotsProcessedCount;           /* Total number of Schedule Slots (Minor Frames) Processed */
    uint16  SkippedSlotsCount;             /* Number of times that slot (minor frame) were skipped. NOT the number of slots that were skipped  */
    uint16  MultipleSlotsCount;            /* Number of times that multiple slots were skipped. NOT the number of slots that were skipped  */
@@ -203,15 +225,15 @@ typedef struct
    uint32  TimerId;                       /* OSAL assigned timer ID for minor frame timer */
    uint32  TimeSemaphore;                 /* Semaphore used by time references to control main loop */
    uint32  ClockAccuracy;                 /* Accuracy of Minor Frame Timer */
-   uint32  WorstCaseSlotsPerMinorFrame;   /* When syncing to MET, worst case # of slots that may need */
-
+   uint32  MaxSlotsPerMinorFrame;         /* When syncing to MET, worst case # of slots that may be needed */
 
    /*
    ** Contained Objects
    */ 
    
-   MSGTBL_Class_t MsgTbl;
-   SCHTBL_Class_t SchTbl;
+   MSGTBL_Class_t    MsgTbl;
+   SCHTBL_Class_t    SchTbl;
+   USRMSGTBL_Class_t UsrMsgTbl;
    
 } SCHEDULER_Class_t;
 
@@ -234,7 +256,8 @@ typedef struct
 */
 void SCHEDULER_Constructor(SCHEDULER_Class_t *ObjPtr,
                            const INITBL_Class_t *IniTbl,
-                           TBLMGR_Class_t *TblMgr);
+                           TBLMGR_Class_t *TblMgr,
+                           SCHEDULER_ProcessAppCmdsFunc_t ProcessAppCmds);
 
 
 /******************************************************************************

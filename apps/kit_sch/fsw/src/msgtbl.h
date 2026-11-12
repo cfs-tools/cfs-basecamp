@@ -13,7 +13,7 @@
 **  GNU Affero General Public License for more details.
 **
 **  Purpose:
-**    Define KIT_SCH's Message Table that provides the messages to 
+**    Define KIT_SCH's Message Table that defines the messages to 
 **    be sent by the scheduler
 **
 **  Notes:
@@ -90,6 +90,9 @@ typedef struct
 
 } MSGTBL_Commands_t;
 
+// Create CJSON_MSGTBL_t
+CJSON_STATE_STRUCT(MSGTBL, MSGTBL_JSON_FILE_MAX_CHAR);  
+
 typedef struct
 {
 
@@ -106,15 +109,17 @@ typedef struct
    MSGTBL_Commands_t Cmd;
 
    /*
-   ** Standard CJSON table data
+   ** Event messages
+   */
+
+   uint32  InitDebugEvtType;
+   uint32  LowFreqDebugEvtType;
+
+   /*
+   ** JSON Table Management
    */
    
-   bool         Loaded;   /* Has entire table been loaded? */
-   uint16       LastLoadCnt;
-   
-   size_t       JsonObjCnt;
-   char         JsonBuf[MSGTBL_JSON_FILE_MAX_CHAR];   
-   size_t       JsonFileLen;
+   CJSON_MSGTBL_t  Json;
    
 } MSGTBL_Class_t;
 
@@ -133,7 +138,7 @@ typedef struct
 **   2. The local table data is not populated. This is done when the table is 
 **      registered with the app framework table manager.
 */
-void MSGTBL_Constructor(MSGTBL_Class_t *ObjPtr);
+void MSGTBL_Constructor(MSGTBL_Class_t *ObjPtr, const INITBL_Class_t *IniTbl);
 
 
 /******************************************************************************

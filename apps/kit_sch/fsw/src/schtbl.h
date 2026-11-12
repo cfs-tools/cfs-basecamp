@@ -89,10 +89,8 @@ typedef struct
 } SCHTBL_Data_t;
 
 
-
-/*
-** Local table copy used for table load command
-*/
+// Create CJSON_SCHTBL_t
+CJSON_STATE_STRUCT(SCHTBL, SCHTBL_JSON_FILE_MAX_CHAR);  
 
 typedef struct
 {
@@ -104,15 +102,10 @@ typedef struct
    SCHTBL_Data_t Data; 
    
    /*
-   ** Standard CJSON table data
+   ** JSON Table Management
    */
    
-   bool         Loaded;   /* Has entire table been loaded? */
-   uint16       LastLoadCnt;
-   
-   size_t       JsonObjCnt;
-   char         JsonBuf[MSGTBL_JSON_FILE_MAX_CHAR];   
-   size_t       JsonFileLen;
+   CJSON_SCHTBL_t  Json;
    
 } SCHTBL_Class_t;
 

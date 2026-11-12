@@ -36,8 +36,21 @@
       <EnumeratedDataType name="TblId" shortDescription="Table Identifiers. See app_c_fw.xml guidelines" >
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
         <EnumerationList>
-          <Enumeration label="MESSAGE"  value="0" shortDescription="Identifies messages (Topic IDs) that can be scheduled" />
-          <Enumeration label="SCHEDULE" value="1" shortDescription="Defines and configures a schedule for sending messages" />
+          <Enumeration label="MESSAGE"   value="0" shortDescription="Identifies messages (Topic IDs) that can be scheduled" />
+          <Enumeration label="SCHEDULE"  value="1" shortDescription="Defines and configures a schedule for sending messages" />
+          <Enumeration label="USR_MSG"   value="2" shortDescription="Installed user app messages that are periodically sent" />
+        </EnumerationList>
+      </EnumeratedDataType>
+
+      <EnumeratedDataType name="UsrMsgPeriodId" shortDescription="List of periodic messages sent by KIT_SCH. See cfe-topicids.xml" >
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="250_MS"  value="0" shortDescription="Four times per second" />
+          <Enumeration label="500_MS"  value="1" shortDescription="Twice per second" />
+          <Enumeration label="1_SEC"   value="2" shortDescription="Once per second" />
+          <Enumeration label="2_SEC"   value="3" shortDescription="Every 2 seconds" />
+          <Enumeration label="4_SEC"   value="4" shortDescription="Every 4 seconds" />
+          <Enumeration label="8_SEC"   value="5" shortDescription="Every 6 seconds" />
         </EnumerationList>
       </EnumeratedDataType>
 
@@ -170,7 +183,7 @@
           <Entry name="TimerId"          type="BASE_TYPES/uint16" />
           <Entry name="TimeSemaphore"    type="BASE_TYPES/uint16" />
           <Entry name="ClockAccuracy"    type="BASE_TYPES/uint16" />
-          <Entry name="WorstCaseSlotsPerMinorFrame" type="BASE_TYPES/uint16" />
+          <Entry name="MaxSlotsPerMinorFrame" type="BASE_TYPES/uint16" />
           <Entry name="IgnoreMajorFrame" type="BASE_TYPES/uint8"  />
           <Entry name="SyncToMET"        type="BASE_TYPES/uint8"  />
           <Entry name="MajorFrameSource" type="BASE_TYPES/uint8"  />

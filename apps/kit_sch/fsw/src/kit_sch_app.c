@@ -30,6 +30,9 @@
 **         SCH_ProcessCommands()
 **         SCH_TblInit()
 **         InitEventFilters()
+**    6. The main loop must be designed to allow commands to be processed
+**       regardless of whether the message and scheduler tables are successfully
+**       loaded. This allows commands to be issued to diagnose the issues.
 **
 */
 
@@ -121,8 +124,6 @@ void KIT_SCH_AppMain(void)
       {
          RunStatus = CFE_ES_RunStatus_APP_ERROR;
       }
-
-      RunStatus = ProcessCommands();
       
    } /* End CFE_ES_RunLoop */
 
@@ -193,28 +194,26 @@ static int32 InitApp(void)
       
       KitSch.StartupSyncTimeout = INITBL_GetIntConfig(INITBL_OBJ, CFG_STARTUP_SYNC_TIMEOUT);
       
-      CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,"KIT_SCH_InitApp() Before TBLMGR calls");
-
       /* TBLMGR must be constructed before SCHEDULER that contains tables */
       TBLMGR_Constructor(TBLMGR_OBJ, INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME));
-      SCHEDULER_Constructor(SCHEDULER_OBJ, INITBL_OBJ, TBLMGR_OBJ);
+      SCHEDULER_Constructor(SCHEDULER_OBJ, INITBL_OBJ, TBLMGR_OBJ, ProcessCommands);
       
       CFE_SB_CreatePipe(&KitSch.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_CMD_PIPE_NAME));
       CFE_SB_Subscribe(KitSch.CmdMid,    KitSch.CmdPipe);
       CFE_SB_Subscribe(KitSch.SendHkMid, KitSch.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_NOOP_CC,     NULL,       KIT_SCH_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_RESET_CC,    NULL,       KIT_SCH_ResetAppCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd,   sizeof(KIT_SCH_LoadTbl_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd,   sizeof(KIT_SCH_DumpTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_SCH_NOOP_CC,     NULL,       KIT_SCH_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_SCH_RESET_CC,    NULL,       KIT_SCH_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_SCH_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd,   sizeof(KIT_SCH_LoadTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_SCH_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd,   sizeof(KIT_SCH_DumpTbl_CmdPayload_t));
 
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_MSG_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_LoadMsgTblEntryCmd, sizeof(KIT_SCH_LoadMsgTblEntry_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_SEND_MSG_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_SendMsgTblEntryCmd, sizeof(KIT_SCH_SendMsgTblEntry_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_CFG_SCH_TBL_ENTRY_CC,  SCHEDULER_OBJ, SCHEDULER_CfgSchTblEntryCmd,  sizeof(KIT_SCH_CfgSchTblEntry_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_LOAD_SCH_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_LoadSchTblEntryCmd, sizeof(KIT_SCH_LoadSchTblEntry_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_SEND_SCH_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_SendSchTblEntryCmd, sizeof(KIT_SCH_SendSchTblEntry_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_SCH_SEND_DIAG_TLM_CC,      SCHEDULER_OBJ, SCHEDULER_SendDiagTlmCmd,     sizeof(KIT_SCH_SendDiagTlm_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_SCH_LOAD_MSG_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_LoadMsgTblEntryCmd, sizeof(KIT_SCH_LoadMsgTblEntry_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_SCH_SEND_MSG_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_SendMsgTblEntryCmd, sizeof(KIT_SCH_SendMsgTblEntry_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_SCH_CFG_SCH_TBL_ENTRY_CC,  SCHEDULER_OBJ, SCHEDULER_CfgSchTblEntryCmd,  sizeof(KIT_SCH_CfgSchTblEntry_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_SCH_LOAD_SCH_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_LoadSchTblEntryCmd, sizeof(KIT_SCH_LoadSchTblEntry_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_SCH_SEND_SCH_TBL_ENTRY_CC, SCHEDULER_OBJ, SCHEDULER_SendSchTblEntryCmd, sizeof(KIT_SCH_SendSchTblEntry_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_SCH_SEND_DIAG_TLM_CC,      SCHEDULER_OBJ, SCHEDULER_SendDiagTlmCmd,     sizeof(KIT_SCH_SendDiagTlm_CmdPayload_t));
     
       CFE_MSG_Init(CFE_MSG_PTR(KitSch.HkTlm.TelemetryHeader),
                    CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_KIT_SCH_HK_TLM_TOPICID)),
@@ -243,7 +242,7 @@ static int32 InitApp(void)
 static int32 ProcessCommands(void)
 {
 
-   int32  RetStatus = CFE_ES_RunStatus_APP_RUN;
+   int32  RetStatus = CFE_SUCCESS;  // Use CFE_ES_RunStatus_APP_RUN if called from main loop
    int32  SysStatus;
 
    CFE_SB_Buffer_t  *SbBufPtr;

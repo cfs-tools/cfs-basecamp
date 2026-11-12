@@ -16,23 +16,23 @@
          "activity-array" : [
          
             {"activity": {
-               "name":    "BC_SCH_4_HZ_TOPICID",
+               "name":    "BC_SCH_250_MS_TOPICID",
                "descr":   "",
                "index":   0,
                "enabled": "true",
                "period":  1,
                "offset":  0,
-               "msg-idx": 12
+               "msg-idx": 10
             }},
 
             {"activity": {
-               "name":    "BC_SCH_1_HZ_TOPICID",
+               "name":    "BC_SCH_1_SEC_TOPICID",
                "descr":   "",
                "index":   1,
                "enabled": "true",
                "period":  1,
                "offset":  0,
-               "msg-idx": 10
+               "msg-idx": 12
             }},
 
             {"activity": {
@@ -75,17 +75,17 @@
          "activity-array" : [
          
             {"activity": {
-               "name":    "BC_SCH_4_HZ_TOPICID",
+               "name":    "BC_SCH_250_MS_TOPICID",
                "descr":   "",
                "index":   0,
                "enabled": "true",
                "period":  1,
                "offset":  0,
-               "msg-idx": 12
+               "msg-idx": 10
             }},
 
             {"activity": {
-               "name":    "BC_SCH_2_HZ_TOPICID",
+               "name":    "BC_SCH_500_MS_TOPICID",
                "descr":   "",
                "index":   1,
                "enabled": "true",
@@ -124,13 +124,13 @@
          "activity-array" : [
          
             {"activity": {
-               "name":    "BC_SCH_4_HZ_TOPICID",
+               "name":    "BC_SCH_250_MS_TOPICID",
                "descr":   "",
                "index":   0,
                "enabled": "true",
                "period":  1,
                "offset":  0,
-               "msg-idx": 12
+               "msg-idx": 10
             }},
 
             {"activity": {
@@ -192,17 +192,17 @@
          "activity-array" : [
          
             {"activity": {
-               "name":    "BC_SCH_4_HZ_TOPICID",
+               "name":    "BC_SCH_250_MS_TOPICID",
                "descr":   "",
                "index":   0,
                "enabled": "true",
                "period":  1,
                "offset":  0,
-               "msg-idx": 12
+               "msg-idx": 10
             }},
 
             {"activity": {
-               "name":    "BC_SCH_2_HZ_TOPICID",
+               "name":    "BC_SCH_500_MS_TOPICID",
                "descr":   "",
                "index":   1,
                "enabled": "true",

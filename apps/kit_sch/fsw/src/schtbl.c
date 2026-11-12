@@ -175,7 +175,7 @@ bool SCHTBL_DumpCmd(osal_id_t FileHandle)
          
          sprintf(DumpRecord,"         \"index\": %d,\n         \"enabled\": \"%s\",\n         \"period\": %d,\n         \"offset\": %d,\n         \"msg-idx\": %d\n      }}",
               Activity,
-              CJSON_BoolStr(SchTbl->Data.Entry[EntryIdx].Enabled),
+              PktUtil_BoolStr(SchTbl->Data.Entry[EntryIdx].Enabled,PKTUTIL_LOWER_CASE),
               SchTbl->Data.Entry[EntryIdx].Period,
               SchTbl->Data.Entry[EntryIdx].Offset,
               SchTbl->Data.Entry[EntryIdx].MsgTblIndex); 
@@ -276,10 +276,10 @@ bool SCHTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filenam
 {
 
    bool  RetStatus = false;
-
-   if (CJSON_ProcessFile(Filename, SchTbl->JsonBuf, SCHTBL_JSON_FILE_MAX_CHAR, LoadJsonData))
+   
+   if (CJSON_ProcessFile(Filename, SchTbl->Json.Buf, SCHTBL_JSON_FILE_MAX_CHAR, LoadJsonData))
    {
-      SchTbl->Loaded = true;
+      SchTbl->Json.Loaded = true;
       RetStatus = true;
    }
 
@@ -295,7 +295,7 @@ bool SCHTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filenam
 void SCHTBL_ResetStatus(void)
 {
 
-   SchTbl->LastLoadCnt = 0;
+   SchTbl->Json.LastLoadCnt = 0;
    
 } /* End SCHTBL_ResetStatus() */
 
@@ -442,7 +442,7 @@ static bool LoadJsonData(size_t JsonFileLen)
    SCHTBL_Entry_t  SchEntry;
 
 
-   SchTbl->JsonFileLen = JsonFileLen;
+   SchTbl->Json.FileLen = JsonFileLen;
 
    /* 
    ** 1. Copy table owner data into local table buffer
@@ -467,7 +467,7 @@ static bool LoadJsonData(size_t JsonFileLen)
       ** so the 'object not found' event will be suppressed 
       */      
       
-      if (CJSON_LoadObjOptional(&JsonSlot.Index.Obj, SchTbl->JsonBuf, SchTbl->JsonFileLen))
+      if (CJSON_LoadObjOptional(&JsonSlot.Index.Obj, SchTbl->Json.Buf, SchTbl->Json.FileLen))
       {
 
          /* 
@@ -486,15 +486,15 @@ static bool LoadJsonData(size_t JsonFileLen)
             memset((void*)&SchEntry,0,sizeof(SCHTBL_Entry_t));
             ConstructJsonActivity(&JsonActivity, ActivityArrayIdx, SlotArrayIdx);
             
-            if (CJSON_LoadObjOptional(&JsonActivity.Index.Obj, SchTbl->JsonBuf, SchTbl->JsonFileLen))
+            if (CJSON_LoadObjOptional(&JsonActivity.Index.Obj, SchTbl->Json.Buf, SchTbl->Json.FileLen))
             {
                
                ActivityIdx = JsonActivity.Index.Value;
                AttributeCnt = 0;
-               if (CJSON_LoadObj(&JsonActivity.Enabled.Obj, SchTbl->JsonBuf, SchTbl->JsonFileLen)) AttributeCnt++;
-               if (CJSON_LoadObj(&JsonActivity.Period.Obj,  SchTbl->JsonBuf, SchTbl->JsonFileLen)) AttributeCnt++;
-               if (CJSON_LoadObj(&JsonActivity.Offset.Obj,  SchTbl->JsonBuf, SchTbl->JsonFileLen)) AttributeCnt++;
-               if (CJSON_LoadObj(&JsonActivity.MsgIdx.Obj,  SchTbl->JsonBuf, SchTbl->JsonFileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonActivity.Enabled.Obj, SchTbl->Json.Buf, SchTbl->Json.FileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonActivity.Period.Obj,  SchTbl->Json.Buf, SchTbl->Json.FileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonActivity.Offset.Obj,  SchTbl->Json.Buf, SchTbl->Json.FileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonActivity.MsgIdx.Obj,  SchTbl->Json.Buf, SchTbl->Json.FileLen)) AttributeCnt++;
                
                if (AttributeCnt == 4)
                {
@@ -545,7 +545,7 @@ static bool LoadJsonData(size_t JsonFileLen)
    if (RetStatus == true)
    {
       memcpy(&SchTbl->Data,&TblData, sizeof(SCHTBL_Data_t));
-      SchTbl->LastLoadCnt = EntryUdateCnt;
+      SchTbl->Json.LastLoadCnt = EntryUdateCnt;
       CFE_EVS_SendEvent(SCHTBL_LOAD_EID, CFE_EVS_EventType_INFORMATION,
                         "Scheduler Table load updated %d entries", EntryUdateCnt);
    }

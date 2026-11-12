@@ -44,6 +44,7 @@ static uint32  GetCurrentSlotNumber(void);
 static uint32  GetMETSlotNumber(void);
 static int32   ProcessSlot(void);
 static bool    SendTblEntryTlm(uint16 SchTblIndex, uint16 MsgTblIndex, bool UseSchTblIndex);
+static uint32  SendUsrMsgs(CFE_SB_MsgId_t SentMsgId);
 
 /**********************/
 /** Global File Data **/
@@ -62,12 +63,18 @@ static SCHEDULER_Class_t*  Scheduler = NULL;
 */
 void SCHEDULER_Constructor(SCHEDULER_Class_t *ObjPtr, 
                            const INITBL_Class_t *IniTbl,
-                           TBLMGR_Class_t *TblMgr)
+                           TBLMGR_Class_t *TblMgr,
+                           SCHEDULER_ProcessAppCmdsFunc_t  ProcessAppCmds)
 {
 
    int32 Status = CFE_SUCCESS;
+   EdsDataType_KIT_SCH_TblId_t  TblId;
 
    Scheduler = ObjPtr;
+
+   Scheduler->ProcessAppCmds = ProcessAppCmds;
+   
+   Scheduler->LowFreqDebugEvtType = INITBL_GetIntConfig(IniTbl, CFG_LOW_FREQ_DEBUG_EVT_TYPE);
 
    Scheduler->SlotsProcessedCount = 0;
    Scheduler->SkippedSlotsCount   = 0;
@@ -77,22 +84,26 @@ void SCHEDULER_Constructor(SCHEDULER_Class_t *ObjPtr,
    Scheduler->ScheduleActivityFailureCount = 0;
 
    /*
-   ** Start off assuming Major Frame synch is normal
-   ** and should be coming at any moment
+   ** These defaults are for a non-realtime desktop
+   ** environment.Look through the code to see how
+   ** they need t be tuned for a synchronous realtime
+   ** platform.
    */
-   Scheduler->SendNoisyMajorFrameMsg = true;
    Scheduler->IgnoreMajorFrame       = false;
+   Scheduler->SendNoisyMajorFrameMsg = false;
    Scheduler->UnexpectedMajorFrame   = false;
    Scheduler->SyncToMET              = SCHEDULER_SYNCH_FALSE;
    Scheduler->MajorFrameSource       = SCHEDULER_MF_SRC_NONE;
+   
    Scheduler->NextSlotNumber         = 0;
    Scheduler->MinorFramesSinceTone   = SCHEDULER_TIME_SYNC_SLOT;
    Scheduler->LastSyncMETSlot        = 0;
    Scheduler->SyncAttemptsLeft       = 0;
-   Scheduler->UnexpectedMajorFrameCount   = 0;
-   Scheduler->MissedMajorFrameCount       = 0;
-   Scheduler->ValidMajorFrameCount        = 0;
-   Scheduler->WorstCaseSlotsPerMinorFrame = 1;
+   Scheduler->MaxSlotsPerMinorFrame  = 2;
+   
+   Scheduler->UnexpectedMajorFrameCount = 0;
+   Scheduler->MissedMajorFrameCount     = 0;
+   Scheduler->ValidMajorFrameCount      = 0;
 
    /*
    ** Configure Major Frame and Minor Frame sources
@@ -130,7 +141,7 @@ void SCHEDULER_Constructor(SCHEDULER_Class_t *ObjPtr,
          Scheduler->SyncToMET = SCHEDULER_SYNCH_TO_MINOR;
 
          /* Calculate how many slots we may have to routinely process on each Minor Frame Wakeup */
-         Scheduler->WorstCaseSlotsPerMinorFrame = ((Scheduler->ClockAccuracy * 2) / SCHEDULER_NORMAL_SLOT_PERIOD) + 1;
+         Scheduler->MaxSlotsPerMinorFrame = ((Scheduler->ClockAccuracy * 2) / SCHEDULER_NORMAL_SLOT_PERIOD) + 1;
 
       } /* End if bad accuracy */
 
@@ -160,14 +171,29 @@ void SCHEDULER_Constructor(SCHEDULER_Class_t *ObjPtr,
                 CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_SCH_DIAG_TLM_TOPICID)),
                 sizeof(KIT_SCH_DiagTlm_t));
 
-   MSGTBL_Constructor(&Scheduler->MsgTbl);
-   SCHTBL_Constructor(&Scheduler->SchTbl);
 
-   /* The order of table registration must match the EDS table ID definitions */
-   TBLMGR_RegisterTblWithDef(TblMgr, MSGTBL_NAME, MSGTBL_LoadCmd, MSGTBL_DumpCmd,
-                             INITBL_GetStrConfig(IniTbl, CFG_MSG_TBL_LOAD_FILE));
-   TBLMGR_RegisterTblWithDef(TblMgr, SCHTBL_NAME, SCHTBL_LoadCmd, SCHTBL_DumpCmd,
-                             INITBL_GetStrConfig(IniTbl, CFG_SCH_TBL_LOAD_FILE));
+   /* This loop ensures the order of table registrations matches the order of the EDS table ID definitions */
+   for (TblId=EdsDataType_EdsEnum_KIT_SCH_TblId_t_MIN; TblId <=EdsDataType_EdsEnum_KIT_SCH_TblId_t_MAX; TblId++)
+   {
+      switch(TblId)
+      {
+         case EdsLabel_KIT_SCH_TblId_MESSAGE:
+            MSGTBL_Constructor(&Scheduler->MsgTbl, IniTbl);
+            TBLMGR_RegisterTblWithDef(TblMgr, MSGTBL_NAME, MSGTBL_LoadCmd, MSGTBL_DumpCmd,
+                                      INITBL_GetStrConfig(IniTbl, CFG_MSG_TBL_LOAD_FILE));
+            break;
+         case EdsLabel_KIT_SCH_TblId_SCHEDULE:
+            SCHTBL_Constructor(&Scheduler->SchTbl);
+            TBLMGR_RegisterTblWithDef(TblMgr, SCHTBL_NAME, SCHTBL_LoadCmd, SCHTBL_DumpCmd,
+                                      INITBL_GetStrConfig(IniTbl, CFG_SCH_TBL_LOAD_FILE));
+            break;
+         case EdsLabel_KIT_SCH_TblId_USR_MSG:
+            USRMSGTBL_Constructor(&Scheduler->UsrMsgTbl, IniTbl);
+            TBLMGR_RegisterTblWithDef(TblMgr, USRMSGTBL_NAME, USRMSGTBL_LoadCmd, USRMSGTBL_DumpCmd,
+                                      INITBL_GetStrConfig(IniTbl, CFG_USRMSG_TBL_LOAD_FILE));
+            break;
+      }
+   }
 
  
 } /* End SCHEDULER_Constructor() */
@@ -222,7 +248,7 @@ bool SCHEDULER_CfgSchTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgP
             CFE_EVS_SendEvent(SCHEDULER_CMD_SUCCESS_EID, CFE_EVS_EventType_INFORMATION, 
                               "Configured scheduler table slot %d activity %d to %s",
                               CfgSchTblEntry->Slot, CfgSchTblEntry->Activity,
-                              CMDMGR_BoolStr(CfgSchTblEntry->Enabled));
+                              PktUtil_BoolStr(CfgSchTblEntry->Enabled,PKTUTIL_UPPER_CASE));
          }
       }    
       else
@@ -246,35 +272,18 @@ bool SCHEDULER_CfgSchTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgP
 */
 bool SCHEDULER_Execute(void)
 {
-   uint32  CurrentSlot;
-   uint32  ProcessCount;
    int32   Result;
+   int32   CurrentSlot;
+   uint32  ProcessCount;
+
 
    /* Wait for the next slot (Major or Minor Frame) */
    Result = OS_BinSemTake(Scheduler->TimeSemaphore);
 
    if (Result == OS_SUCCESS)
    {
-
+      Result = CFE_SUCCESS;
       CFE_EVS_SendEvent(SCHEDULER_DEBUG_EID, CFE_EVS_EventType_DEBUG, "ProcessTable::OS_BinSemTake() success");
-
-      if (Scheduler->IgnoreMajorFrame)
-      {
-         
-         if (Scheduler->SendNoisyMajorFrameMsg)
-         {
-            
-            CFE_EVS_SendEvent(SCHEDULER_NOISY_MAJOR_FRAME_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "Major Frame Sync too noisy (Slot %d). Disabling synchronization.",
-                              Scheduler->MinorFramesSinceTone);
-            Scheduler->SendNoisyMajorFrameMsg = false;
-         }
-      } /* End if ignore Major Frame */
-      else
-      {
-         
-         Scheduler->SendNoisyMajorFrameMsg = true;
-      }
 
       CurrentSlot = GetCurrentSlotNumber();
 
@@ -316,7 +325,6 @@ bool SCHEDULER_Execute(void)
          */
          if (Scheduler->LastProcessCount == 1)
          {
-            
             ProcessCount = 1;
          }
          Scheduler->LastProcessCount = 2;
@@ -352,7 +360,7 @@ bool SCHEDULER_Execute(void)
          ProcessCount = 0;
       }
 
-      /* If we are too far behind, jump forward and do just the current slot */
+      /* If we are too far behind, jump forward and only process the current slot */
       if (ProcessCount > SCHEDULER_MAX_LAG_COUNT)
       {
          
@@ -373,16 +381,11 @@ bool SCHEDULER_Execute(void)
 
          /*
          ** Process ground commands if we are skipping the time synch slot
-         ** NOTE: This assumes the Time Synch Slot is the LAST Schedule slot
-         **       (see definition of SCH_TIME_SYNC_SLOT in sch_app.h)
-         ** Ground commands should only be processed at the end of the schedule table
-         ** so that Group Enable/Disable commands do not change the state of entries
-         ** in the middle of a schedule.
          */
          if ((Scheduler->NextSlotNumber + ProcessCount) > SCHEDULER_TIME_SYNC_SLOT)
-         {
+         {            
+            Result = (Scheduler->ProcessAppCmds)();
             
-            /* TODO (DR-118) - Move to App level Result = SCH_ProcessCommands(); */
          }
 
          Scheduler->NextSlotNumber = CurrentSlot;
@@ -399,14 +402,16 @@ bool SCHEDULER_Execute(void)
          ProcessCount = SCHEDULER_MAX_SLOTS_PER_WAKEUP;
       }
 
-      /* Keep track of multi-slot processing */
+      /* 
+      ** Keep track of multi-slot processing
+      ** - Send event if operating with accurate minor frame timer
+      */
       if (ProcessCount > 1)
       {
          
          Scheduler->MultipleSlotsCount++;
-
-         /* Generate an event message if not syncing to MET or when there is more than two being processed */
-         if ((ProcessCount > Scheduler->WorstCaseSlotsPerMinorFrame) || (Scheduler->SyncToMET == SCHEDULER_SYNCH_FALSE))
+         if ((Scheduler->SyncToMET != SCHEDULER_SYNCH_FALSE)&&
+            (ProcessCount > Scheduler->MaxSlotsPerMinorFrame))             
          {
             CFE_EVS_SendEvent(SCHEDULER_MULTI_SLOTS_EID, CFE_EVS_EventType_INFORMATION,
                              "Multiple slots processed: slot = %d, count = %d",
@@ -417,7 +422,7 @@ bool SCHEDULER_Execute(void)
 
       CFE_EVS_SendEvent(SCHEDULER_DEBUG_EID, CFE_EVS_EventType_DEBUG, "ProcessTable::Final ProcessCount=%d", ProcessCount);
       /* Process the slots (most often this will be just one) */
-      while ((ProcessCount != 0) && (Result == CFE_SUCCESS))
+      while (ProcessCount != 0)
       {
          Result = ProcessSlot();
          ProcessCount--;
@@ -425,7 +430,7 @@ bool SCHEDULER_Execute(void)
 
    } /* End Semaphore */
 
-   return(Result == CFE_SUCCESS);
+   return (Result == CFE_SUCCESS);
 
 } /* End of SCHEDULER_Execute() */
 
@@ -507,7 +512,7 @@ bool SCHEDULER_LoadSchTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *Msg
          CFE_EVS_SendEvent(SCHEDULER_CMD_SUCCESS_EID, CFE_EVS_EventType_INFORMATION, 
                            "Loaded scheduler table slot %d activity %d (Enabled,Period,Offset,MsgTblIdx)=>(%s,%d,%d,%d)",
                            LoadSchTblEntry->Slot, LoadSchTblEntry->Activity,
-                           CMDMGR_BoolStr(Entry->Enabled), Entry->Period,
+                           PktUtil_BoolStr(Entry->Enabled,PKTUTIL_UPPER_CASE), Entry->Period,
                            Entry->Offset, Entry->MsgTblIndex);
  
       } /* End if valid entry fields */
@@ -522,7 +527,7 @@ bool SCHEDULER_LoadSchTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *Msg
 ** Function: SCHEDULER_ResetStatus
 **
 */
-void SCHEDULER_ResetStatus()
+void SCHEDULER_ResetStatus(void)
 {
 
    Scheduler->SlotsProcessedCount          = 0;
@@ -571,7 +576,7 @@ bool SCHEDULER_SendDiagTlmCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
       DiagTlm->TimerId          = Scheduler->TimerId;
       DiagTlm->TimeSemaphore    = Scheduler->TimeSemaphore;
       DiagTlm->ClockAccuracy    = Scheduler->ClockAccuracy;
-      DiagTlm->WorstCaseSlotsPerMinorFrame  = Scheduler->WorstCaseSlotsPerMinorFrame;
+      DiagTlm->MaxSlotsPerMinorFrame  = Scheduler->MaxSlotsPerMinorFrame;
       DiagTlm->IgnoreMajorFrame = Scheduler->IgnoreMajorFrame;
       DiagTlm->SyncToMET        = Scheduler->SyncToMET;
       DiagTlm->MajorFrameSource = Scheduler->MajorFrameSource;
@@ -619,7 +624,11 @@ bool SCHEDULER_SendDiagTlmCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 **
 ** Notes:
 **   1. Function signature must match the CMDMGR_CmdFuncPtr_t definition
-**
+**   2. The message table data is not simply copied from the raw JSON message
+**      table entry. The CFE_MSG API is used to retrieve the message header
+**      information. In order to use this API the message table command entry
+**      created from the JSON table data must be used. The message payload
+**      data is copied from the JSON data.
 */
 bool SCHEDULER_SendMsgTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
@@ -627,35 +636,54 @@ bool SCHEDULER_SendMsgTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *Msg
    const   KIT_SCH_SendMsgTblEntry_CmdPayload_t *SendMsgTblEntry = CMDMGR_PAYLOAD_PTR(MsgPtr, KIT_SCH_SendMsgTblEntry_t);
    bool    RetStatus = false;
    uint16  MsgIndex;
-   uint16 *DataBuf=NULL;
+   uint16  *DataBuf = NULL;
    uint16  SchIndex;
    bool    SchEntryFound;
+   CFE_Status_t CfeStatus;
    
    MsgIndex = SendMsgTblEntry->Index;
-   MsgPtr = (CFE_MSG_Message_t *) Scheduler->MsgTbl.Data.Entry[MsgIndex].Buffer;
+   
+   CFE_EVS_SendEvent(SCHEDULER_DEBUG_EID, Scheduler->LowFreqDebugEvtType,
+                     "SendMsgTblEntry[%d]: 0x%04X 0x%04X 0x%04X",
+                     MsgIndex, Scheduler->MsgTbl.Data.Entry[MsgIndex].Buffer[0],
+                     Scheduler->MsgTbl.Data.Entry[MsgIndex].Buffer[1],
+                     Scheduler->MsgTbl.Data.Entry[MsgIndex].Buffer[2]);  
+   
    if (MsgIndex < MSGTBL_MAX_ENTRIES)
    {
-      CFE_MSG_Size_t          Size;
-      CFE_MSG_Type_t          Type;
-      CFE_MSG_ApId_t          ApId;
+ 
+      uint16          MsgIdVal;
+      CFE_MSG_Size_t  Size;
+      CFE_MSG_Type_t  Type;
+      CFE_SB_MsgId_t  MsgId;
       CFE_MSG_SequenceCount_t SeqCnt;
-      CFE_MSG_GetSize(MsgPtr, &Size);
-      CFE_MSG_GetType(MsgPtr, &Type);
-      CFE_MSG_GetApId(MsgPtr, &ApId);
-      CFE_MSG_GetSequenceCount(MsgPtr, &SeqCnt);
+      const CFE_MSG_Message_t *TblMsgCmdHdrPtr;
+   
+      // See function prologue notes for table data retrieval strategy
+      TblMsgCmdHdrPtr = (const CFE_MSG_Message_t *)&Scheduler->MsgTbl.Cmd.Msg[MsgIndex];
+      CFE_MSG_GetType(TblMsgCmdHdrPtr,&Type);
+      CFE_MSG_GetMsgId(TblMsgCmdHdrPtr,&MsgId);
+      MsgIdVal = CFE_SB_MsgIdToValue(MsgId);    
+      CFE_MSG_GetSize(TblMsgCmdHdrPtr, &Size);
+      CFE_MSG_GetSequenceCount(TblMsgCmdHdrPtr, &SeqCnt);
 
+      CFE_EVS_SendEvent(SCHEDULER_DEBUG_EID, EdsParam_APP_C_FW_APP_LOW_FREQ_DEBUG_EID,
+                        "SendMsgTblEntry[%d]: MsgId=0x%04X, Type=%d, SeqCnt=%d, Len=%d",
+                        MsgIndex, MsgIdVal, Type, SeqCnt, (unsigned int)Size);
+                           
       if (Type == CFE_MSG_Type_Cmd)
       {
       
-         bool              ValidChecksum;
+         bool ValidChecksum;
          CFE_MSG_FcnCode_t FuncCode;
           
-         CFE_MSG_GetFcnCode(MsgPtr, &FuncCode);
-         CFE_MSG_ValidateChecksum(MsgPtr, &ValidChecksum);
+         CFE_MSG_GetFcnCode(TblMsgCmdHdrPtr, &FuncCode);
+         CfeStatus = CFE_MSG_ValidateChecksum(TblMsgCmdHdrPtr, &ValidChecksum);
          
          CFE_EVS_SendEvent(SCHEDULER_CMD_SUCCESS_EID, CFE_EVS_EventType_INFORMATION, 
-                           "Msg[%d]=Command(ApId,SeqCnt,Len,FuncCode,ValidChecksum)=>(0x%04X,%d,%d,%d,0x%02X)",
-                           MsgIndex, ApId, SeqCnt,(unsigned int)Size, FuncCode, ValidChecksum);
+                           "Msg[%d]=Command(MsgId,SeqCnt,Len,FuncCode,ValidChecksum)=>(0x%04X,%d,%d,%d,%s,(cFE Status: 0x%04X)",
+                           MsgIndex, MsgIdVal, SeqCnt, (unsigned int)Size, FuncCode, 
+                           PktUtil_BoolStr(ValidChecksum,PKTUTIL_UPPER_CASE), CfeStatus);
             
          DataBuf = &(Scheduler->MsgTbl.Data.Entry[MsgIndex].Buffer[sizeof(CFE_MSG_CommandHeader_t)/2]);
 
@@ -665,11 +693,11 @@ bool SCHEDULER_SendMsgTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *Msg
          
          CFE_TIME_SysTime_t Time;
          
-         CFE_MSG_GetMsgTime(MsgPtr, &Time);
+         CFE_MSG_GetMsgTime(TblMsgCmdHdrPtr, &Time);
          
          CFE_EVS_SendEvent(SCHEDULER_CMD_SUCCESS_EID, CFE_EVS_EventType_INFORMATION, 
-                           "Msg[%d]=Telemetry(ApId,SeqCnt,Len,Seconds,Subsecs)=>(0x%04X,%d,%d,%d,%d)",
-                           MsgIndex,ApId,SeqCnt,(unsigned int)Size,Time.Seconds,Time.Subseconds);
+                           "Msg[%d]=Telemetry(MsgId,SeqCnt,Len,Seconds,Subsecs)=>(0x%04X,%d,%d,%d,%d)",
+                           MsgIndex,MsgIdVal,SeqCnt,(unsigned int)Size,Time.Seconds,Time.Subseconds);
            
          DataBuf = &(Scheduler->MsgTbl.Data.Entry[MsgIndex].Buffer[sizeof(CFE_MSG_TelemetryHeader_t)/2]);
       
@@ -710,7 +738,7 @@ bool SCHEDULER_SendMsgTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *Msg
       
       } /* End if DataBuf != NULL */
    
-   } /* End if valid activity ID */
+   } /* End if valid message index */
    else
    {
       
@@ -754,7 +782,7 @@ bool SCHEDULER_SendSchTblEntryCmd(void *ObjDataPtr, const CFE_MSG_Message_t *Msg
       CFE_EVS_SendEvent(SCHEDULER_CMD_SUCCESS_EID, CFE_EVS_EventType_INFORMATION, 
                         "Scheduler table slot %d activity %d (Enabled,Period,Offset,MsgTblIdx)=>(%s,%d,%d,%d)",
                         SendSchTblEntry->Slot, SendSchTblEntry->Activity,
-                        CMDMGR_BoolStr(Entry->Enabled),Entry->Period,
+                        PktUtil_BoolStr(Entry->Enabled,PKTUTIL_UPPER_CASE),Entry->Period,
                         Entry->Offset,Entry->MsgTblIndex);
 
       RetStatus = SendTblEntryTlm(Index, Entry->MsgTblIndex, true);
@@ -941,7 +969,7 @@ static void MajorFrameCallback(void)
            (Scheduler->MinorFramesSinceTone != SCHEDULER_TIME_SYNC_SLOT)) ||
           ((Scheduler->SyncToMET == SCHEDULER_SYNCH_TO_MINOR) &&
            (Scheduler->NextSlotNumber != 0) &&
-           (Scheduler->NextSlotNumber < (SCHTBL_SLOTS - Scheduler->WorstCaseSlotsPerMinorFrame - 1))))
+           (Scheduler->NextSlotNumber < (SCHTBL_SLOTS - Scheduler->MaxSlotsPerMinorFrame - 1))))
       {
             
          /*
@@ -962,15 +990,29 @@ static void MajorFrameCallback(void)
             Scheduler->ConsecutiveNoisyFrameCounter++;
 
             /*
-            ** If the major frame is too "noisy", then send event message and ignore future signals
+            ** If the major frame is too "noisy", then disable synch 
+            ** - Using LowFreqDebugEvtType allows the event to be sent in 
+            **   diagnostic situations. ConsecutiveNoisyFrameCounter and
+            **   IgnoreMajorFrame are sent in HK telemetry so they can be
+            **   monitored
             */
             if (Scheduler->ConsecutiveNoisyFrameCounter >= SCHEDULER_MAX_NOISY_MF)
             {
                Scheduler->IgnoreMajorFrame = true;
+               if (Scheduler->SendNoisyMajorFrameMsg)
+               {
+                  CFE_EVS_SendEvent(SCHEDULER_NOISY_MAJOR_FRAME_ERR_EID, Scheduler->LowFreqDebugEvtType,
+                                    "Major Frame Sync too noisy (Slot %d). Disabling synchronization.",
+                                    Scheduler->MinorFramesSinceTone);
+                  Scheduler->SendNoisyMajorFrameMsg = false;
+               }
             }
-         
-         }
-      } /* End if majorframe synch issue */
+            else
+            {
+               Scheduler->SendNoisyMajorFrameMsg = true;
+            }               
+         } /* End if processing major frame */ 
+      } /* End if major frame synch issue */
       else
       {
          
@@ -1018,7 +1060,7 @@ static void MajorFrameCallback(void)
          */
          OS_BinSemGive(Scheduler->TimeSemaphore);
 
-      } /* End if IgnoreMajorFrame == FLASE */
+      } /* End if IgnoreMajorFrame == FALSE */
 
    } /* End if clock not fly wheeling */
 
@@ -1140,7 +1182,6 @@ static void MinorFrameCallback(uint32 TimerId)
    */
    if (Scheduler->MinorFramesSinceTone == SCHEDULER_TIME_SYNC_SLOT)
    {
-        
       /*
       ** Start "long slot" timer (should be stopped by Major Frame Callback)
       */
@@ -1170,15 +1211,17 @@ static void MinorFrameCallback(uint32 TimerId)
 */
 static int32 ProcessSlot(void)
 {
-    
-   int32  Result = CFE_SUCCESS; /* TODO - Fix after resolve ground command processing */
+ 
+   int32  RetStatus = CFE_SUCCESS;
    int32  Activity;
    int32  SlotIndex;
    uint32 Remainder;
+   int32  SysStatus;
    SCHTBL_Entry_t *TblEntry;
    uint16 *MsgBufPtr;
    int32  MsgSendStatus;
    MSGTBL_CmdMsg_t *CmdMsg;
+   CFE_SB_MsgId_t  SentMsgId;
 
    SlotIndex = Scheduler->NextSlotNumber * SCHTBL_ACTIVITIES_PER_SLOT;
 
@@ -1195,15 +1238,15 @@ static int32 ProcessSlot(void)
          if (Remainder == TblEntry->Offset)
          {
 
-            CFE_EVS_SendEvent(SCHEDULER_DEBUG_EID, CFE_EVS_EventType_DEBUG,"Scheduler ProcessSlot(): slot %d, entry %d, msgid %d", Scheduler->NextSlotNumber, Activity, TblEntry->MsgTblIndex);
+            CFE_EVS_SendEvent(SCHEDULER_DEBUG_EID, CFE_EVS_EventType_DEBUG,"Scheduler ProcessSlot(): slot %d, entry %d, msg-tbl-index %d", Scheduler->NextSlotNumber, Activity, TblEntry->MsgTblIndex);
              
             MsgSendStatus = CFE_SB_NO_MESSAGE;  /* use any non-success error code */
             if (TblEntry->MsgTblIndex < MSGTBL_MAX_ENTRIES)
             {
             
                MsgBufPtr = Scheduler->MsgTbl.Data.Entry[TblEntry->MsgTblIndex].Buffer;
-               
-               CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+  
+               CFE_EVS_SendEvent(SCHEDULER_DEBUG_EID, CFE_EVS_EventType_DEBUG,
                                  "Scheduler MsgTbl Entry: Id = %d, Buffer[0] = 0x%04x(%d)",
                                  TblEntry->MsgTblIndex, MsgBufPtr[0], MsgBufPtr[0]);
             
@@ -1213,10 +1256,14 @@ static int32 ProcessSlot(void)
             } /* End if valid EntryId */
 
             if (MsgSendStatus == CFE_SUCCESS)
-            {
-               
+            {               
                Scheduler->ScheduleActivitySuccessCount++;
-            
+               // TODO: Decide whether success counter should include user messages successfully being processed 
+               SysStatus = CFE_MSG_GetMsgId(CFE_MSG_PTR(CmdMsg->Header), &SentMsgId);
+               if (SysStatus == CFE_SUCCESS)
+               {
+                  SendUsrMsgs(SentMsgId);
+               }
             }
             else 
             {
@@ -1239,13 +1286,10 @@ static int32 ProcessSlot(void)
 
    /*
    ** Process ground commands in the slot reserved for time synch
-   ** Ground commands should only be processed at the end of the schedule table
-   ** so that Group Enable/Disable commands do not change the state of entries
-   ** in the middle of a schedule.
    */
    if (Scheduler->NextSlotNumber == SCHEDULER_TIME_SYNC_SLOT)
    {
-      /* TODO - Move to app level Result = SCH_ProcessCommands(); */
+      RetStatus = (Scheduler->ProcessAppCmds)();
    }
 
    Scheduler->NextSlotNumber++;
@@ -1259,8 +1303,8 @@ static int32 ProcessSlot(void)
 
    Scheduler->SlotsProcessedCount++;
 
-   return(Result);
-
+   return RetStatus;
+   
 } /* End ProcessSlot() */
 
 
@@ -1328,7 +1372,7 @@ static bool SendTblEntryTlm(uint16 SchTblIndex, uint16 MsgTblIndex, bool UseSchT
                     (MSGTBL_MAX_MSG_WORDS-MsgDataIndex)*2);
 
    }
- 
+OS_printf("@@SendTblEntryTlm(): Before message send\n"); 
    CFE_SB_TimeStampMsg(CFE_MSG_PTR(Scheduler->TblEntryTlm.TelemetryHeader));
    CfeStatus = CFE_SB_TransmitMsg(CFE_MSG_PTR(Scheduler->TblEntryTlm.TelemetryHeader), true);
 
@@ -1336,3 +1380,56 @@ static bool SendTblEntryTlm(uint16 SchTblIndex, uint16 MsgTblIndex, bool UseSchT
 
 } /* End SendTblEntryTlm() */
 
+
+/******************************************************************************
+** Function: SendUsrMsgs
+**
+** If SentMsgId is "BC_SCH_" message then check the UsrMsgTbl for entries
+** that have the same period.
+**
+** Notes:
+**   1. Assumes the EdsEnum_KIT_SCH_UsrMsgPeriodId value is both an index and
+**      and identifer of the period
+**
+*/
+static uint32 SendUsrMsgs(CFE_SB_MsgId_t SentMsgId)
+{
+   uint16 PeriodIdx, UsrIdx;
+   int32  SysStatus;
+   bool   FoundMatch = false;
+
+   CFE_SB_MsgId_t     UsrMsgId;
+   USRMSGTBL_CmdMsg_t *UsrMsg;
+
+ 
+   PeriodIdx=EdsDataType_EdsEnum_KIT_SCH_UsrMsgPeriodId_t_MIN;   
+   while (!FoundMatch && PeriodIdx <= EdsDataType_EdsEnum_KIT_SCH_UsrMsgPeriodId_t_MAX)
+   {
+      UsrMsg = &Scheduler->UsrMsgTbl.Cmd.Msg[PeriodIdx];
+      SysStatus = CFE_MSG_GetMsgId(CFE_MSG_PTR(UsrMsg->Header), &UsrMsgId);
+
+      if (SysStatus == CFE_SUCCESS)
+      {
+         if (CFE_SB_MsgId_Equal(SentMsgId, UsrMsgId))
+         {
+            
+            UsrIdx = EdsDataType_EdsEnum_KIT_SCH_UsrMsgPeriodId_t_MAX+1;
+            while (UsrIdx < USRMSGTBL_MAX_ENTRIES)
+            {
+               if (Scheduler->UsrMsgTbl.Data.Entry[UsrIdx].TopicId != 0 &&
+                   Scheduler->UsrMsgTbl.Data.Entry[UsrIdx].PeriodId == PeriodIdx)
+               {
+                  //TODO: OS_printf("Matched index %d, topic %d\n",PeriodIdx,CFE_SB_MsgIdToValue(UsrMsgId));  
+                  UsrMsg = &Scheduler->UsrMsgTbl.Cmd.Msg[UsrIdx];
+                  SysStatus = CFE_SB_TransmitMsg(CFE_MSG_PTR(UsrMsg->Header), true);
+               }
+               UsrIdx++;  
+            }
+         }
+      }
+      PeriodIdx++;
+   }
+   
+   return CFE_SUCCESS;
+
+} /* End SendUsrMsgs() */

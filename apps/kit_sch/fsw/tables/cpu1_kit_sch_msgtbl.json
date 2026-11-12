@@ -1,5 +1,5 @@
 {
-   "name": "Scheduler Table Message Table",
+   "name": "Scheduler App's Message Table",
    "description":  [
         "Steps to add a new message:",
         " 1. Add the topic to the 'topic-id-map' object. The entry must",
@@ -36,9 +36,9 @@
       "TBL_SEND_HK_TOPICID"  : "topic-id-3",
       "TIME_SEND_HK_TOPICID" : "topic-id-4",
 
-      "BC_SCH_1_HZ_TOPICID"    : "topic-id-10",
-      "BC_SCH_2_HZ_TOPICID"    : "topic-id-11",
-      "BC_SCH_4_HZ_TOPICID"    : "topic-id-12",
+      "BC_SCH_250_MS_TOPICID"  : "topic-id-10",
+      "BC_SCH_500_MS_TOPICID"  : "topic-id-11",
+      "BC_SCH_1_SEC_TOPICID"   : "topic-id-12",
       "BC_SCH_2_SEC_TOPICID"   : "topic-id-13",
       "BC_SCH_4_SEC_TOPICID"   : "topic-id-14",
       "BC_SCH_8_SEC_TOPICID"   : "topic-id-15",
@@ -110,7 +110,7 @@
       }},
 
       {"message": {
-         "name":  "BC_SCH_1_HZ_TOPICID",
+         "name":  "BC_SCH_250_MS_TOPICID",
          "id": 10,
          "topic-id-10": 6224,
          "topic-id": 6224,
@@ -119,7 +119,7 @@
       }},
 
       {"message": {
-         "name":  "BC_SCH_2_HZ_TOPICID",
+         "name":  "BC_SCH_500_MS_TOPICID",
          "id": 11,
          "topic-id-11": 6225,
          "topic-id": 6225,
@@ -128,7 +128,7 @@
       }},
 
       {"message": {
-         "name":  "BC_SCH_4_HZ_TOPICID",
+         "name":  "BC_SCH_1_SEC_TOPICID",
          "id": 12,
          "topic-id-12": 6226,
          "topic-id": 6226,

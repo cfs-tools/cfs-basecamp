@@ -35,6 +35,8 @@
 
 #define JSON_DATA_WORD_STR_MAX 32
 
+#define IDX_ID
+
 /**********************/
 /** Type Definitions **/
 /**********************/
@@ -68,6 +70,7 @@ typedef struct
 
 static void ConstructJsonMessage(JsonMessage_t *JsonMessage, uint16 MsgArrayIdx);
 static bool LoadJsonData(size_t JsonFileLen);
+static bool WriteMsgArrayEntry(osal_id_t FileHandle, uint16 Entry, bool *CompletePrevEntry);
 
 /**********************/
 /** Global File Data **/
@@ -84,25 +87,28 @@ static MSGTBL_Data_t   TblData;        /* Working buffer for loads */
 **    1. This must be called prior to any other functions
 **
 */
-void MSGTBL_Constructor(MSGTBL_Class_t *ObjPtr)
+void MSGTBL_Constructor(MSGTBL_Class_t *ObjPtr, const INITBL_Class_t *IniTbl)
 {
    
    MsgTbl = ObjPtr;
 
    CFE_PSP_MemSet(MsgTbl, 0, sizeof(MSGTBL_Class_t));
-
-   CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+   
+   MsgTbl->InitDebugEvtType = INITBL_GetIntConfig(IniTbl, CFG_INIT_DEBUG_EVT_TYPE);
+   MsgTbl->LowFreqDebugEvtType = INITBL_GetIntConfig(IniTbl, CFG_LOW_FREQ_DEBUG_EVT_TYPE);
+   
+   CFE_EVS_SendEvent(EdsParam_APP_C_FW_APP_INIT_DEBUG_EID, MsgTbl->InitDebugEvtType,
                     "MSGTBL_MAX_MSG_WORDS: %d, sizeof(CFE_MSG_CommandHeader_t): %d, sizeof(MSGTBL_Cmd_t): %d",
                     MSGTBL_MAX_MSG_WORDS, (unsigned int)sizeof(CFE_MSG_CommandHeader_t), (unsigned int)sizeof(MSGTBL_CmdMsg_t));    
-   CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+   CFE_EVS_SendEvent(EdsParam_APP_C_FW_APP_INIT_DEBUG_EID, MsgTbl->InitDebugEvtType,
                     "CFE_ES_SEND_HK_MID: 0x%04X (%d)", CFE_ES_SEND_HK_MID, CFE_ES_SEND_HK_MID);
-   CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+   CFE_EVS_SendEvent(EdsParam_APP_C_FW_APP_INIT_DEBUG_EID, MsgTbl->InitDebugEvtType,
                     "CFE_EVS_SEND_HK_MID: 0x%04X (%d)", CFE_EVS_SEND_HK_MID, CFE_EVS_SEND_HK_MID);
-   CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+   CFE_EVS_SendEvent(EdsParam_APP_C_FW_APP_INIT_DEBUG_EID, MsgTbl->InitDebugEvtType,
                     "CFE_SB_SEND_HK_MID: 0x%04X (%d)", CFE_SB_SEND_HK_MID, CFE_SB_SEND_HK_MID);
-   CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+   CFE_EVS_SendEvent(EdsParam_APP_C_FW_APP_INIT_DEBUG_EID, MsgTbl->InitDebugEvtType,
                     "CFE_TBL_SEND_HK_MID: 0x%04X (%d)", CFE_TBL_SEND_HK_MID, CFE_TBL_SEND_HK_MID);
-   CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+   CFE_EVS_SendEvent(EdsParam_APP_C_FW_APP_INIT_DEBUG_EID, MsgTbl->InitDebugEvtType,
                     "CFE_TIME_SEND_HK_MID: 0x%04X (%d)", CFE_TIME_SEND_HK_MID, CFE_TIME_SEND_HK_MID);
    
 
@@ -116,112 +122,28 @@ void MSGTBL_Constructor(MSGTBL_Class_t *ObjPtr)
 **  1. Function signature must match TBLMGR_DumpTblFuncPtr.
 **  2. File is formatted so it can be used as a load file. 
 */
-
 bool MSGTBL_DumpCmd(osal_id_t FileHandle)
 {
-
-   int32   i, d;
+   
+   bool    WroteEntry;
+   bool    CompletePrevEntry;
+   uint16  Entry;
    char    DumpRecord[256];
-   uint16  DataWords;
-   CFE_MSG_Size_t      MsgBytes;
-   const MSGTBL_Data_t *MsgTblPtr = &MsgTbl->Data;
-   
 
-   /* 
-   ** Message Array 
-   **
-   ** - Not all fields in ground table are saved in FSW so they are not
-   **   populated in the dump file. However, the dump file can still
-   **   be loaded.
-   **
-   **   "name":  Not loaded,
-   **   "descr": Not Loaded,
-   **   "id": 101,
-   **   "topic-id": 65303,
-   **   "seq-seg": 192,
-   **   "length": 1792,
-   **   "data-words": "0,1,2,3,4,5"
-   */
-   
    sprintf(DumpRecord,"\"message-array\": [\n");
    OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
 
-   for (i=0; i < MSGTBL_MAX_ENTRIES; i++)
-   {
+   WroteEntry = false;
+   CompletePrevEntry = false;
+   for (Entry=0; Entry < MSGTBL_MAX_ENTRIES; Entry++)
+   {      
+      WroteEntry = WriteMsgArrayEntry(FileHandle, Entry, &CompletePrevEntry);
       
-      if (i > 0)  /* Complete previous entry */
-      { 
-         sprintf(DumpRecord,",\n");
-         OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-      }
-       
-      sprintf(DumpRecord,"   {\"message\": {\n");
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+      if (WroteEntry) CompletePrevEntry = true;
       
-      sprintf(DumpRecord,"      \"id\": %d,\n      \"topic-id\": %d,\n      \"seq-seg\": %d,\n      \"length\": %d",
-              i,
-              CFE_MAKE_BIG16(MsgTblPtr->Entry[i].Buffer[0]),
-              CFE_MAKE_BIG16(MsgTblPtr->Entry[i].Buffer[1]),
-              CFE_MAKE_BIG16(MsgTblPtr->Entry[i].Buffer[2]));
-      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-      
-      /*
-      ** DataWords is everything past the primary header so they include
-      ** the secondary header and don't distinguish between cmd or tlm
-      ** packets. 
-      */
-      
-      // TODO - cFE7.0 Rethink table itself. Either only allow commands or use message type to get header length and data words will truly just be payload
-      
-      CFE_MSG_GetSize((const CFE_MSG_Message_t *)MsgTblPtr->Entry[i].Buffer, &MsgBytes);
-
-      DataWords = (MsgBytes-PKTUTIL_CMD_HDR_BYTES)/2;
-      if (DataWords > (uint8)(MSGTBL_MAX_MSG_WORDS))
-      {
-         
-         CFE_EVS_SendEvent(MSGTBL_DUMP_ERR_EID, CFE_EVS_EventType_ERROR,
-                           "Error creating dump file message entry %d. Message word length %d is greater than max data buffer %d",
-                           i, DataWords, (unsigned int)PKTUTIL_CMD_HDR_WORDS);         
-      }
-      else
-      {
-
-         /* 
-         ** Omit "data-words" property if no data
-         ** - Properly terminate 'length' line 
-         */
-         if (DataWords > 0)
-         {
-      
-            sprintf(DumpRecord,",\n      \"data-words\": \"");         
-            OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-               
-            for (d=0; d < DataWords; d++)
-            {
-               
-               if (d == (DataWords-1))
-               {
-                  sprintf(DumpRecord,"%d\"\n   }}",MsgTbl->Data.Entry[i].Buffer[PKTUTIL_CMD_HDR_WORDS+d]);
-               }
-               else
-               {
-                  sprintf(DumpRecord,"%d,",MsgTbl->Data.Entry[i].Buffer[PKTUTIL_CMD_HDR_WORDS+d]);
-               }
-               OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-
-            } /* End DataWord loop */
-                        
-         } /* End if non-zero data words */
-         else
-         {
-            sprintf(DumpRecord,"\n   }}");         
-            OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
-         }
-      } /* End if DataWords within range */
-
    } /* End message loop */
-
-   /* Close message-array and top-level object */      
+   
+   /* Close message-array. Top-level object closed by TBLMGR */      
    sprintf(DumpRecord,"\n]");
    OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
 
@@ -229,7 +151,7 @@ bool MSGTBL_DumpCmd(osal_id_t FileHandle)
    
 } /* End of MSGTBL_DumpCmd() */
 
-
+      
 /******************************************************************************
 ** Function: MSGTBL_LoadCmd
 **
@@ -243,9 +165,9 @@ bool MSGTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filenam
 
    bool  RetStatus = false;
 
-   if (CJSON_ProcessFile(Filename, MsgTbl->JsonBuf, MSGTBL_JSON_FILE_MAX_CHAR, LoadJsonData))
+   if (CJSON_ProcessFile(Filename, MsgTbl->Json.Buf, MSGTBL_JSON_FILE_MAX_CHAR, LoadJsonData))
    {
-      MsgTbl->Loaded = true;
+      MsgTbl->Json.Loaded = true;
       RetStatus = true;
    }
 
@@ -261,7 +183,7 @@ bool MSGTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filenam
 void MSGTBL_ResetStatus(void)
 {
    
-   MsgTbl->LastLoadCnt = 0;
+   MsgTbl->Json.LastLoadCnt = 0;
     
 } /* End MSGTBL_ResetStatus() */
 
@@ -315,8 +237,8 @@ static void ConstructJsonMessage(JsonMessage_t *JsonMessage, uint16 MsgArrayIdx)
 **  4. The current design does not support loading secondary header fields. If
 **     it's added, separate JSON variables should be added that correspond to 
 **     the CFE_MSG APIs rather than loaded buffers and making assumptions about
-**     structure defintiions.  
-**        
+**     structure definitions.  
+**  TODO: Looks like code evolved and the buffer[1..2] (seg-seq and length) are nor used. Also if command has payload is length set properly?
 */
 static bool LoadJsonData(size_t JsonFileLen)
 {
@@ -333,7 +255,7 @@ static bool LoadJsonData(size_t JsonFileLen)
    MSGTBL_Entry_t  MsgEntry;
    MSGTBL_CmdMsg_t *CmdMsg;
 
-   MsgTbl->JsonFileLen = JsonFileLen;
+   MsgTbl->Json.FileLen = JsonFileLen;
 
    /* 
    ** 1. Copy table owner data into local table buffer
@@ -358,32 +280,36 @@ static bool LoadJsonData(size_t JsonFileLen)
       ** used so the 'object not found' event will be suppressed 
       */      
       
-      if (CJSON_LoadObjOptional(&JsonMessage.Id.Obj, MsgTbl->JsonBuf, MsgTbl->JsonFileLen))
+      if (CJSON_LoadObjOptional(&JsonMessage.Id.Obj, MsgTbl->Json.Buf, MsgTbl->Json.FileLen))
       {
          if (JsonMessage.Id.Value < MSGTBL_MAX_ENTRIES)
          {
             
             AttributeCnt = 0;
-            if (CJSON_LoadObj(&JsonMessage.TopicId.Obj,  MsgTbl->JsonBuf, MsgTbl->JsonFileLen)) AttributeCnt++;
-            if (CJSON_LoadObj(&JsonMessage.SeqSeg.Obj,   MsgTbl->JsonBuf, MsgTbl->JsonFileLen)) AttributeCnt++;
-            if (CJSON_LoadObj(&JsonMessage.Length.Obj,   MsgTbl->JsonBuf, MsgTbl->JsonFileLen)) AttributeCnt++;
+            if (CJSON_LoadObj(&JsonMessage.TopicId.Obj,  MsgTbl->Json.Buf, MsgTbl->Json.FileLen)) AttributeCnt++;
+            if (CJSON_LoadObj(&JsonMessage.SeqSeg.Obj,   MsgTbl->Json.Buf, MsgTbl->Json.FileLen)) AttributeCnt++;
+            if (CJSON_LoadObj(&JsonMessage.Length.Obj,   MsgTbl->Json.Buf, MsgTbl->Json.FileLen)) AttributeCnt++;
             
             if (AttributeCnt == 3)
             {
-               /* TODO - This is not 'on the wire' so native works
-               MsgEntry.Buffer[0] = CFE_MAKE_BIG16((uint16)JsonMessage.TopicId.Value);
-               MsgEntry.Buffer[1] = CFE_MAKE_BIG16((uint16)JsonMessage.SeqSeg.Value);
-               MsgEntry.Buffer[2] = CFE_MAKE_BIG16((uint16)JsonMessage.Length.Value);
-               */
+               /*
+               TODO: Test on bigEndian platform 
+               #if EdsParam_CFE_MISSION_DATA_BYTE_ORDER == littleEndian
+                  MsgEntry.Buffer[0] = CFE_MAKE_BIG16((uint16)JsonMessage.TopicId.Value);
+                  MsgEntry.Buffer[1] = CFE_MAKE_BIG16((uint16)JsonMessage.SeqSeg.Value);
+                  MsgEntry.Buffer[2] = CFE_MAKE_BIG16((uint16)JsonMessage.Length.Value);
+               #else
+               #endif
+               */               
                MsgEntry.Buffer[0] = (uint16)JsonMessage.TopicId.Value;
                MsgEntry.Buffer[1] = (uint16)JsonMessage.SeqSeg.Value;
                MsgEntry.Buffer[2] = (uint16)JsonMessage.Length.Value;
-
-               CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+               
+               CFE_EVS_SendEvent(EdsParam_APP_C_FW_APP_LOW_FREQ_DEBUG_EID, MsgTbl->LowFreqDebugEvtType,
                                  "MsgEntry.Buffer: [0]=%d, [1]=%d, [2]=%d", 
                                  MsgEntry.Buffer[0], MsgEntry.Buffer[1], MsgEntry.Buffer[2]);
 
-               if (CJSON_LoadObjOptional(&JsonMessage.DataWords.Obj, MsgTbl->JsonBuf, MsgTbl->JsonFileLen))
+               if (CJSON_LoadObjOptional(&JsonMessage.DataWords.Obj, MsgTbl->Json.Buf, MsgTbl->Json.FileLen))
                {
                   if (strlen(JsonMessage.DataWords.Value) > 0)
                   {
@@ -393,13 +319,13 @@ static bool LoadJsonData(size_t JsonFileLen)
                      if (DataStrPtr != NULL)
                      {
                         MsgEntry.Buffer[i] = atoi(DataStrPtr);
-                        CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+                        CFE_EVS_SendEvent(EdsParam_APP_C_FW_APP_LOW_FREQ_DEBUG_EID, MsgTbl->LowFreqDebugEvtType,
                                           "MSGTBL::LoadJsonData data[%d] = 0x%04X, DataStrPtr=%s",i,MsgEntry.Buffer[i],DataStrPtr);         
                         while ((DataStrPtr = strtok(NULL,",")) != NULL)
                         {
                            i++;
                            MsgEntry.Buffer[i] = atoi(DataStrPtr);
-                           CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+                           CFE_EVS_SendEvent(EdsParam_APP_C_FW_APP_LOW_FREQ_DEBUG_EID, MsgTbl->LowFreqDebugEvtType,
                                              "MSGTBL::LoadJsonData data[%d] = 0x%04X, DataStrPtr=%s",i,MsgEntry.Buffer[i],DataStrPtr);
                            if (i >= MSGTBL_MAX_MSG_WORDS)
                            {
@@ -421,7 +347,7 @@ static bool LoadJsonData(size_t JsonFileLen)
                {
                   memcpy(&CmdMsg->Payload,&MsgEntry.Buffer[PayloadDataIdx],MsgEntry.PayloadWordCnt*2);
                   /*
-                  CFE_EVS_SendEvent(KIT_SCH_INIT_DEBUG_EID, KIT_SCH_INIT_EVS_TYPE,
+                  CFE_EVS_SendEvent(EdsParam_APP_C_FW_APP_LOW_FREQ_DEBUG_EID, MsgTbl->LowFreqDebugEvtType,
                                     "MsgEntry.PayloadWordCnt = %d",i-1, MsgEntry.PayloadWordCnt);
                   int WordBufLen = (sizeof(CmdMsg->Header)/2+MsgEntry.PayloadWordCnt);
                   OS_printf("\n*** MsgEntry.PayloadWordCnt = %d, WordBufLen = %d\n", MsgEntry.PayloadWordCnt, WordBufLen);                  
@@ -471,7 +397,7 @@ static bool LoadJsonData(size_t JsonFileLen)
       if (RetStatus == true)
       {
          memcpy(&MsgTbl->Data,&TblData, sizeof(MSGTBL_Data_t));
-         MsgTbl->LastLoadCnt = MsgArrayIdx;
+         MsgTbl->Json.LastLoadCnt = MsgArrayIdx;
          CFE_EVS_SendEvent(MSGTBL_LOAD_EID, CFE_EVS_EventType_INFORMATION,
                            "Message Table load updated %d entries", MsgArrayIdx);
       }
@@ -480,3 +406,122 @@ static bool LoadJsonData(size_t JsonFileLen)
    return RetStatus;
    
 } /* End LoadJsonData() */
+
+
+
+/******************************************************************************
+** Function: WriteMsgArrayEntry
+**
+*/
+static bool WriteMsgArrayEntry(osal_id_t FileHandle, uint16 Entry, bool *CompletePrevEntry)
+{
+   bool    WroteEntry = false;
+   char    DumpRecord[256];
+   uint16  DataWords, Data;
+   uint16  TopicId;
+   CFE_MSG_Size_t  MsgBytes;
+   CFE_MSG_Type_t  Type;
+   const MSGTBL_Data_t     *MsgTblData = &MsgTbl->Data;
+   const MSGTBL_Commands_t *MsgTblCmd  = &MsgTbl->Cmd;
+
+   TopicId = MsgTblData->Entry[Entry].Buffer[0];
+   if ( TopicId != 0 && TopicId != PKTUTIL_UNUSED_MSG_ID)
+   {
+      // Complete a previouly written entry
+      if (*CompletePrevEntry)
+      { 
+         sprintf(DumpRecord,",\n");
+         OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+         *CompletePrevEntry = false;
+      }
+      
+      /* 
+      ** Message Array 
+      **
+      ** - Not all fields in ground table are saved in FSW so they are not
+      **   populated in the dump file. However, the dump file can still
+      **   be loaded.
+      **
+      **   "name":  Not loaded,
+      **   "descr": Not Loaded,
+      **   "id": 101,
+      **   "topic-id": 65303,
+      **   "seq-seg": 192,
+      **   "length": 1792,
+      **   "data-words": "0,1,2,3,4,5"
+      */
+      
+      sprintf(DumpRecord,"   {\"message\": {\n");
+      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+         
+      sprintf(DumpRecord,"      \"id\": %d,\n      \"topic-id\": %d,\n      \"seq-seg\": %d,\n      \"length\": %d",
+              Entry, TopicId,
+              MsgTblData->Entry[Entry].Buffer[1],
+              MsgTblData->Entry[Entry].Buffer[2]);
+      OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+      
+      /*
+      ** DataWords are only meaningful for command messages and they
+      ** are the data past the primary header. If there is padding in 
+      ** the headers then it will show up as data words with a value
+      ** of zero.
+      */
+      
+      CFE_MSG_GetType((const CFE_MSG_Message_t *)&MsgTblCmd->Msg[Entry], &Type);
+      DataWords = 0;
+      if (Type == CFE_MSG_Type_Cmd)
+      {
+         CFE_MSG_GetSize((const CFE_MSG_Message_t *)&MsgTblCmd->Msg[Entry], &MsgBytes);
+         DataWords = (MsgBytes-(PKTUTIL_CMD_HDR_BYTES-PKTUTIL_CMD_SEC_HDR_BYTES))/2-1; // TODO: Why need to subtract 1?
+      }
+
+      if (DataWords < 0 || DataWords > (uint8)MSGTBL_MAX_MSG_PAYLOAD_WORDS)
+      {
+         
+         CFE_EVS_SendEvent(MSGTBL_DUMP_ERR_EID, CFE_EVS_EventType_ERROR,
+                           "Error creating dump file message entry %d 'data-words'. Computed data words %d is outside 0..%d range.",
+                           Entry, DataWords, (unsigned int)MSGTBL_MAX_MSG_PAYLOAD_WORDS);         
+      }
+      else
+      {
+
+         /* 
+         ** Omit "data-words" property if no data
+         ** - Properly terminate 'length' line 
+         */
+         if (DataWords > 0)
+         {
+      
+            sprintf(DumpRecord,",\n      \"data-words\": \"");         
+            OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+               
+            for (Data=0; Data < DataWords; Data++)
+            {
+               
+               if (Data == (DataWords-1))
+               {
+                  sprintf(DumpRecord,"%d\"\n   }}",MsgTbl->Data.Entry[Entry].Buffer[PKTUTIL_CMD_HDR_WORDS+Data]);
+               }
+               else
+               {
+                  sprintf(DumpRecord,"%d,",MsgTbl->Data.Entry[Entry].Buffer[PKTUTIL_CMD_HDR_WORDS+Data]);
+               }
+               OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+
+            } /* End DataWord loop */
+                        
+         } /* End if non-zero data words */
+         else
+         {
+            sprintf(DumpRecord,"\n   }}");         
+            OS_write(FileHandle,DumpRecord,strlen(DumpRecord));
+         }
+      } /* End if DataWords within range */
+
+      WroteEntry = true;
+
+   } /* End if valid Topic ID */
+
+   return WroteEntry;
+   
+} /* End WriteMsgArrayEntry() */

@@ -24,7 +24,7 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["kit_sch_ini.json", "kit_sch_msgtbl.json", "kit_sch_schtbl.json"]
+      "json-tables": ["kit_sch_ini.json", "kit_sch_msgtbl.json", "kit_sch_schtbl.json"]
    },
    
    "requires": ["app_c_fw"]
