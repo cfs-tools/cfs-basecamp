@@ -24,7 +24,7 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["app_c_demo_ini.json","app_c_demo_tbl.json"]
+      "json-tables": ["app_c_demo_ini.json","app_c_demo_tbl.json"]
    },
    
    "requires": ["app_c_fw"]

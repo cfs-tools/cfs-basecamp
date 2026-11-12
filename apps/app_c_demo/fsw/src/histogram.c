@@ -76,8 +76,7 @@ void HISTOGRAM_Constructor(HISTOGRAM_Class_t *HistogramPtr,
    
    HISTOGRAM_TBL_Constructor(&Histogram->Tbl, AcceptNewTbl);
 
-   TBLMGR_RegisterTblWithDef(TblMgr, HISTOGRAM_TBL_NAME,
-                             HISTOGRAM_TBL_LoadCmd, HISTOGRAM_TBL_DumpCmd,  
+   TBLMGR_RegisterTblWithDef(TblMgr, HISTOGRAM_TBL_NAME, HISTOGRAM_TBL_LoadCmd, HISTOGRAM_TBL_DumpCmd,  
                              INITBL_GetStrConfig(IniTbl, CFG_HIST_TBL_LOAD_FILE));
                              
 } /* End HISTOGRAM_Constructor */
@@ -131,7 +130,7 @@ bool HISTOGRAM_AddDataSample(uint16 DataSample, uint16 *BinNum)
 ** Function:  HISTOGRAM_ResetStatus
 **
 */
-void HISTOGRAM_ResetStatus()
+void HISTOGRAM_ResetStatus(void)
 {
  
    HISTOGRAM_LOG_ResetStatus();

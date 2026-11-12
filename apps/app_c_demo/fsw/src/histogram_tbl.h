@@ -80,6 +80,9 @@ typedef struct
 ** Class
 */
 
+// Create CJSON_HISTOGRAM_TBL_t
+CJSON_STATE_STRUCT(HISTOGRAM_TBL, HISTOGRAM_TBL_JSON_FILE_MAX_CHAR);  
+
 typedef struct
 {
 
@@ -89,17 +92,8 @@ typedef struct
    
    HISTOGRAM_TBL_Data_t     Data;
    HISTOGRAM_TBL_LoadFunc_t LoadFunc; 
-   
-   /*
-   ** Standard CJSON table data
-   */
-   
-   bool         Loaded;   /* Has entire table been loaded? */
-   uint16       LastLoadCnt;
-   
-   size_t       JsonObjCnt;
-   char         JsonBuf[HISTOGRAM_TBL_JSON_FILE_MAX_CHAR];   
-   size_t       JsonFileLen;
+
+   CJSON_HISTOGRAM_TBL_t    Json;
    
 } HISTOGRAM_TBL_Class_t;
 

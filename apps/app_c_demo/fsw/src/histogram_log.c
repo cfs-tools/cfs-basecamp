@@ -123,7 +123,7 @@ bool HISTOGRAM_LOG_RunChildTaskCmd(void *DataObjPtr, const CFE_MSG_Message_t *Ms
 ** Function:  HISTOGRAM_LOG_ResetStatus
 **
 */
-void HISTOGRAM_LOG_ResetStatus()
+void HISTOGRAM_LOG_ResetStatus(void)
 {
  
    if (!HistogramLog->Ena)

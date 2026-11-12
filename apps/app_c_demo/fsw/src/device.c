@@ -95,7 +95,7 @@ uint16 DEVICE_ReadData(void)
 ** Function: DEVICE_ResetStatus
 **
 */
-void  DEVICE_ResetStatus()
+void  DEVICE_ResetStatus(void)
 {
  
    Device->DataCnt = 0;

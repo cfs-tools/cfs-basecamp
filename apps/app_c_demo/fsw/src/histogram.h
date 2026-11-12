@@ -79,7 +79,7 @@ typedef struct
    uint16  DataSampleMaxValue;
    
    uint16  Bin[HISTOGRAM_MAX_BINS];
-   char    BinCntStr[OS_MAX_PATH_LEN];    //TODO use EDS definition
+   char    BinCntStr[OS_MAX_PATH_LEN];
        
    /*
    ** Contained Objects
@@ -140,7 +140,7 @@ void HISTOGRAM_ResetStatus(void);
 **
 ** Notes:
 **   1. No command parameters
-**   2. If a start command is recieved when a histogram is in progress the
+**   2. If a start command is received when a histogram is in progress the
 **      command will serve as a reset. It is not considered an error.
 */
 bool HISTOGRAM_StartCmd(void *DataObjPtr, const CFE_MSG_Message_t *MsgPtr);

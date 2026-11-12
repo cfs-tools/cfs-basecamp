@@ -91,8 +91,8 @@ void HISTOGRAM_TBL_Constructor(HISTOGRAM_TBL_Class_t *HistogramTblPtr,
 
    CFE_PSP_MemSet(HistogramTbl, 0, sizeof(HISTOGRAM_TBL_Class_t));
  
-   HistogramTbl->LoadFunc   = LoadFunc;
-   HistogramTbl->JsonObjCnt = (sizeof(JsonTblObjs)/sizeof(CJSON_Obj_t));
+   HistogramTbl->LoadFunc    = LoadFunc;
+   HistogramTbl->Json.ObjCnt = (sizeof(JsonTblObjs)/sizeof(CJSON_Obj_t));
          
 } /* End HISTOGRAM_TBL_Constructor() */
 
@@ -154,9 +154,9 @@ bool HISTOGRAM_TBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *
 
    bool  RetStatus = false;
 
-   if (CJSON_ProcessFile(Filename, HistogramTbl->JsonBuf, HISTOGRAM_TBL_JSON_FILE_MAX_CHAR, LoadJsonData))
+   if (CJSON_ProcessFile(Filename, HistogramTbl->Json.Buf, HISTOGRAM_TBL_JSON_FILE_MAX_CHAR, LoadJsonData))
    {
-      HistogramTbl->Loaded = true;
+      HistogramTbl->Json.Loaded = true;
       if (HistogramTbl->LoadFunc != NULL) (HistogramTbl->LoadFunc)();
       RetStatus = true;   
    }
@@ -173,7 +173,7 @@ bool HISTOGRAM_TBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *
 void HISTOGRAM_TBL_ResetStatus(void)
 {
 
-   HistogramTbl->LastLoadCnt = 0;
+   HistogramTbl->Json.LastLoadCnt = 0;
  
 } /* End HISTOGRAM_TBL_ResetStatus() */
 
@@ -190,8 +190,7 @@ static bool LoadJsonData(size_t JsonFileLen)
    bool      RetStatus = false;
    size_t    ObjLoadCnt;
 
-
-   HistogramTbl->JsonFileLen = JsonFileLen;
+   HistogramTbl->Json.FileLen = JsonFileLen;
 
    /* 
    ** 1. Copy table owner data into local table buffer
@@ -201,15 +200,15 @@ static bool LoadJsonData(size_t JsonFileLen)
    
    memcpy(&TblData, &HistogramTbl->Data, sizeof(HISTOGRAM_TBL_Data_t));
    
-   ObjLoadCnt = CJSON_LoadObjArray(JsonTblObjs, HistogramTbl->JsonObjCnt, HistogramTbl->JsonBuf, HistogramTbl->JsonFileLen);
+   ObjLoadCnt = CJSON_LoadObjArray(JsonTblObjs, HistogramTbl->Json.ObjCnt, HistogramTbl->Json.Buf, HistogramTbl->Json.FileLen);
 
    /* Only accept fixed sized bin arrays */
-   if (!HistogramTbl->Loaded && (ObjLoadCnt != HistogramTbl->JsonObjCnt))
+   if (!HistogramTbl->Json.Loaded && (ObjLoadCnt != HistogramTbl->Json.ObjCnt))
    {
 
       CFE_EVS_SendEvent(HISTOGRAM_TBL_LOAD_EID, CFE_EVS_EventType_ERROR, 
                         "Table has never been loaded and new table only contains %d of %d data objects",
-                        (unsigned int)ObjLoadCnt, (unsigned int)HistogramTbl->JsonObjCnt);
+                        (unsigned int)ObjLoadCnt, (unsigned int)HistogramTbl->Json.ObjCnt);
    
    }
    else
@@ -218,7 +217,7 @@ static bool LoadJsonData(size_t JsonFileLen)
       if (ValidTblData())
       {
          memcpy(&HistogramTbl->Data,&TblData, sizeof(HISTOGRAM_TBL_Data_t));
-         HistogramTbl->LastLoadCnt = ObjLoadCnt;
+         HistogramTbl->Json.LastLoadCnt = ObjLoadCnt;
          CFE_EVS_SendEvent(HISTOGRAM_TBL_LOAD_EID, CFE_EVS_EventType_DEBUG, 
                            "Successfully loaded %d JSON objects",
                            (unsigned int)ObjLoadCnt);

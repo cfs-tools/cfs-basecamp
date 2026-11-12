@@ -18,7 +18,7 @@
 **  Notes:
 **    1. Compile-time configurations that are applied to each platform
 **       deployment of this app.
-**    2. These definitions should minimal and only contain parameters that
+**    2. These definitions should be minimal and only contain parameters that
 **       need to be configurable at compile time that allows users to tuned
 **       the app for a particular platform. Use app_c_demo_mission_cfg.h
 **       for compile-time parameters that need to be tuned at the mission

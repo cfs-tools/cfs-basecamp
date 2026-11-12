@@ -23,7 +23,7 @@
       
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
-  <Package name="APP_C_DEMO" shortDescription="OpenSatKit Demo application">
+  <Package name="APP_C_DEMO" shortDescription="Basecamp demo app used in educational material">
     <DataTypeSet>
 
       <!--***********************************-->

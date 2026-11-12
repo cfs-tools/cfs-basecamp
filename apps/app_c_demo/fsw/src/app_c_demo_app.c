@@ -110,9 +110,14 @@ void APP_C_DEMO_AppMain(void)
       
    } /* End CFE_ES_RunLoop */
 
-   CFE_ES_WriteToSysLog("APP_C_DEMO App terminating, run status = 0x%08X\n", RunStatus);   /* Use SysLog, events may not be working */
+   CFE_ES_WriteToSysLog("%s App terminating, run status = 0x%08X\n",
+                        INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME),
+                        RunStatus);   /* Use SysLog, events may not be working */
 
-   CFE_EVS_SendEvent(APP_C_DEMO_EXIT_EID, CFE_EVS_EventType_CRITICAL, "APP_C_DEMO App terminating, run status = 0x%08X", RunStatus);
+   CFE_EVS_SendEvent(APP_C_DEMO_EXIT_EID, CFE_EVS_EventType_CRITICAL, 
+                     "%s App terminating, run status = 0x%08X",
+                     INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME),
+                     RunStatus);
 
    CFE_ES_ExitApp(RunStatus);  /* Let cFE kill the task (and any child tasks) */
 
@@ -129,10 +134,11 @@ bool APP_C_DEMO_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    uint32 PipeIndex;
 
    CFE_EVS_SendEvent (APP_C_DEMO_NOOP_EID, CFE_EVS_EventType_INFORMATION,
-                      "No operation command received for APP_C_DEMO App version %d.%d.%d",
+                      "No operation command received for %s App version %d.%d.%d",
+                      INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME),
                       APP_C_DEMO_MAJOR_VER, APP_C_DEMO_MINOR_VER, APP_C_DEMO_PLATFORM_REV);
 
-
+   // Used for teaching exercise
    CFE_SB_PipeId_ToIndex(AppCDemo.CmdPipe, &PipeIndex);
    CFE_EVS_SendEvent (APP_C_DEMO_NOOP_EID, CFE_EVS_EventType_DEBUG,
                       "AppCDemo.CmdPipe = %d",PipeIndex);
@@ -206,7 +212,7 @@ static int32 InitApp(void)
    if (RetStatus == CFE_SUCCESS)
    {
 
-      /* Must constructor table manager prior to any app objects that contain tables */
+      /* Must construct table manager prior to any app objects that contain tables */
       TBLMGR_Constructor(TBLMGR_OBJ, INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME));
 
       /*
@@ -225,34 +231,34 @@ static int32 InitApp(void)
       CFE_SB_Subscribe(AppCDemo.ExecuteMid, AppCDemo.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_NOOP_CC,  NULL, APP_C_DEMO_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_RESET_CC, NULL, APP_C_DEMO_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_NOOP_CC,  NULL, APP_C_DEMO_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_RESET_CC, NULL, APP_C_DEMO_ResetAppCmd, 0);
       
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd, sizeof(APP_C_DEMO_LoadTbl_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd, sizeof(APP_C_DEMO_DumpTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd, sizeof(APP_C_DEMO_LoadTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd, sizeof(APP_C_DEMO_DumpTbl_CmdPayload_t));
 
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_START_HISTOGRAM_CC, HISTOGRAM_OBJ, HISTOGRAM_StartCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_STOP_HISTOGRAM_CC,  HISTOGRAM_OBJ, HISTOGRAM_StopCmd,  0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_START_HISTOGRAM_CC, HISTOGRAM_OBJ, HISTOGRAM_StartCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_STOP_HISTOGRAM_CC,  HISTOGRAM_OBJ, HISTOGRAM_StopCmd,  0);
 
       /*
       ** The following commands are executed within the context of a child task. See the App Dev Guide for details.
       */
       
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_START_HISTOGRAM_LOG_CC,        CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(APP_C_DEMO_StartHistogramLog_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_STOP_HISTOGRAM_LOG_CC,         CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_START_HISTOGRAM_LOG_PLAYBK_CC, CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, APP_C_DEMO_STOP_HISTOGRAM_LOG_PLAYBK_CC,  CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, 0);
-      CHILDMGR_RegisterFunc(CHILDMGR_OBJ, APP_C_DEMO_START_HISTOGRAM_LOG_CC,        HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_StartLogCmd);
-      CHILDMGR_RegisterFunc(CHILDMGR_OBJ, APP_C_DEMO_STOP_HISTOGRAM_LOG_CC,         HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_StopLogCmd);
-      CHILDMGR_RegisterFunc(CHILDMGR_OBJ, APP_C_DEMO_START_HISTOGRAM_LOG_PLAYBK_CC, HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_StartPlaybkCmd);
-      CHILDMGR_RegisterFunc(CHILDMGR_OBJ, APP_C_DEMO_STOP_HISTOGRAM_LOG_PLAYBK_CC,  HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_StopPlaybkCmd);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_START_HISTOGRAM_LOG_CC,        CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, sizeof(APP_C_DEMO_StartHistogramLog_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_STOP_HISTOGRAM_LOG_CC,         CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_START_HISTOGRAM_LOG_PLAYBK_CC, CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_STOP_HISTOGRAM_LOG_PLAYBK_CC,  CHILDMGR_OBJ, CHILDMGR_InvokeChildCmd, 0);
+      CHILDMGR_RegisterFunc(CHILDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_START_HISTOGRAM_LOG_CC,        HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_StartLogCmd);
+      CHILDMGR_RegisterFunc(CHILDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_STOP_HISTOGRAM_LOG_CC,         HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_StopLogCmd);
+      CHILDMGR_RegisterFunc(CHILDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_START_HISTOGRAM_LOG_PLAYBK_CC, HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_StartPlaybkCmd);
+      CHILDMGR_RegisterFunc(CHILDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_STOP_HISTOGRAM_LOG_PLAYBK_CC,  HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_StopPlaybkCmd);
 
       /* 
       ** Alternative commands don't increment the main command counters, but they do increment the child command counters.
       ** This "command" is used by the app's main loop to perform periodic processing 
       */
-      CMDMGR_RegisterFuncAltCnt(CMDMGR_OBJ, APP_C_DEMO_RUN_HISTOGRAM_LOG_CHILD_TASK_CC, CHILDMGR_OBJ,      CHILDMGR_InvokeChildCmd, sizeof(APP_C_DEMO_RunHistogramLogChildTask_CmdPayload_t));
-      CHILDMGR_RegisterFunc(CHILDMGR_OBJ,   APP_C_DEMO_RUN_HISTOGRAM_LOG_CHILD_TASK_CC, HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_RunChildTaskCmd);
+      CMDMGR_RegisterFuncAltCnt(CMDMGR_OBJ, EDS_CONTAINER_APP_C_DEMO_RUN_HISTOGRAM_LOG_CHILD_TASK_CC, CHILDMGR_OBJ,      CHILDMGR_InvokeChildCmd, sizeof(APP_C_DEMO_RunHistogramLogChildTask_CmdPayload_t));
+      CHILDMGR_RegisterFunc(CHILDMGR_OBJ,   EDS_CONTAINER_APP_C_DEMO_RUN_HISTOGRAM_LOG_CHILD_TASK_CC, HISTOGRAM_LOG_OBJ, HISTOGRAM_LOG_RunChildTaskCmd);
 
 
       /*
@@ -261,7 +267,7 @@ static int32 InitApp(void)
 
 
       CFE_MSG_Init(CFE_MSG_PTR(AppCDemo.RunHistogramLogChildTask.CommandBase), AppCDemo.CmdMid, sizeof(APP_C_DEMO_RunHistogramLogChildTask_t));
-      CFE_MSG_SetFcnCode(CFE_MSG_PTR(AppCDemo.RunHistogramLogChildTask.CommandBase), (CFE_MSG_FcnCode_t)APP_C_DEMO_RUN_HISTOGRAM_LOG_CHILD_TASK_CC);
+      CFE_MSG_SetFcnCode(CFE_MSG_PTR(AppCDemo.RunHistogramLogChildTask.CommandBase), (CFE_MSG_FcnCode_t)EDS_CONTAINER_APP_C_DEMO_RUN_HISTOGRAM_LOG_CHILD_TASK_CC);
 
       CFE_MSG_Init(CFE_MSG_PTR(AppCDemo.StatusTlm.TelemetryHeader), 
                    CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_C_DEMO_STATUS_TLM_TOPICID)),
@@ -271,7 +277,8 @@ static int32 InitApp(void)
       ** Application startup event message
       */
       CFE_EVS_SendEvent(APP_C_DEMO_INIT_APP_EID, CFE_EVS_EventType_INFORMATION,
-                        "APP_C_DEMO App Initialized. Version %d.%d.%d",
+                        "%s App Initialized. Version %d.%d.%d",
+                        INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CFE_NAME),
                         APP_C_DEMO_MAJOR_VER, APP_C_DEMO_MINOR_VER, APP_C_DEMO_PLATFORM_REV);
 
    } /* End if CHILDMGR constructed */

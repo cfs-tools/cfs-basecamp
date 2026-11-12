@@ -44,9 +44,10 @@
 **       Changed app functionality from logging message headers to managing a 
 **       histogram for data read from a simulated device. A data processing
 **       app is more in line with what cubesat developers need to do.
+** 5.0 - Updated to cFS 7.0 (Basecamp 4.0 release)
 */
 
-#define  APP_C_DEMO_MAJOR_VER   4
+#define  APP_C_DEMO_MAJOR_VER   5
 #define  APP_C_DEMO_MINOR_VER   0
 
 
@@ -105,7 +106,7 @@
 #define CFG_APP_CMD_PIPE_DEPTH  APP_CMD_PIPE_DEPTH
 
 #define CFG_APP_C_DEMO_CMD_TOPICID             APP_C_DEMO_CMD_TOPICID
-#define CFG_APP_C_DEMO_EXE_TOPICID             BC_SCH_1_HZ_TOPICID
+#define CFG_APP_C_DEMO_EXE_TOPICID             BC_SCH_1_SEC_TOPICID
 #define CFG_APP_C_DEMO_STATUS_TLM_TOPICID      APP_C_DEMO_STATUS_TLM_TOPICID
 #define CFG_APP_C_DEMO_BIN_PLAYBK_TLM_TOPICID  APP_C_DEMO_BIN_PLAYBK_TLM_TOPICID
 
@@ -129,7 +130,7 @@
    XX(APP_CMD_PIPE_NAME,char*) \
    XX(APP_CMD_PIPE_DEPTH,uint32) \
    XX(APP_C_DEMO_CMD_TOPICID,uint32) \
-   XX(BC_SCH_1_HZ_TOPICID,uint32) \
+   XX(BC_SCH_1_SEC_TOPICID,uint32) \
    XX(APP_C_DEMO_STATUS_TLM_TOPICID,uint32) \
    XX(APP_C_DEMO_BIN_PLAYBK_TLM_TOPICID,uint32) \
    XX(CHILD_NAME,char*) \
@@ -160,11 +161,11 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define APP_C_DEMO_BASE_EID     (APP_C_FW_APP_BASE_EID +  0)
-#define DEVICE_BASE_EID         (APP_C_FW_APP_BASE_EID + 20)
-#define HISTOGRAM_BASE_EID      (APP_C_FW_APP_BASE_EID + 40)
-#define HISTOGRAM_LOG_BASE_EID  (APP_C_FW_APP_BASE_EID + 60)
-#define HISTOGRAM_TBL_BASE_EID  (APP_C_FW_APP_BASE_EID + 80)
+#define APP_C_DEMO_BASE_EID     (EdsParam_APP_C_FW_APP_BASE_EID +  0)
+#define DEVICE_BASE_EID         (EdsParam_APP_C_FW_APP_BASE_EID + 20)
+#define HISTOGRAM_BASE_EID      (EdsParam_APP_C_FW_APP_BASE_EID + 40)
+#define HISTOGRAM_LOG_BASE_EID  (EdsParam_APP_C_FW_APP_BASE_EID + 60)
+#define HISTOGRAM_TBL_BASE_EID  (EdsParam_APP_C_FW_APP_BASE_EID + 80)
 
 /******************************************************************************
 ** Histogram Macros
