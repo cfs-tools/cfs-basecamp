@@ -110,8 +110,8 @@ class PdfViewer():
 
 if __name__ == '__main__':
     """
-    sys.argv[0] - Name of script
-    sys.argv[1] - If provided is the filename to be edited
+    This is run as a separate Basecamp process with a command line arguments:
+       sys.argv[1] - Name of script
     """
     filename = None
     if len(sys.argv) > 1:
@@ -120,4 +120,4 @@ if __name__ == '__main__':
         pdf_viewer = PdfViewer(filename)
         pdf_viewer.execute()
     else:
-        print('Plese provide the PDF file name as the first argument')
+        print('Please provide the PDF file name as the first argument')

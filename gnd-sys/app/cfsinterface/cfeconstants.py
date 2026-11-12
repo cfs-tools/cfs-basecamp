@@ -31,5 +31,16 @@ class Cfe():
     EVS_INFO_MASK     = 0b0010
     EVS_ERROR_MASK    = 0b0100
     EVS_CRITICAL_MASK = 0b1000
-                
-    FILE_XFER_DATA_SEG_LEN = 512
+    
+    EVS_TYPE_STR = {
+        1: 'DEBUG',
+        2: 'INFORMATION',
+        3: 'ERROR',
+        4: 'CRITICAL'
+    }
+    
+    FILE_XFER_DATA_SEG_ID_START = 1
+    FILE_XFER_DATA_SEG_LEN      = 512
+
+    # TODO: Determine why this is needed and the best way to manage it across cFS releases if it changes
+    EDS_TLM_TOPIC_ID_OFFSET = 265

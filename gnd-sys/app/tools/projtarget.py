@@ -24,8 +24,8 @@
 
 import sys
 sys.path.append("..")
-import time
 import os
+import time
 import errno
 import json
 import configparser
@@ -38,20 +38,15 @@ import subprocess
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    from jsonfile   import JsonFile
-    from utils      import compress_abs_path
-    from usrapps    import AppStoreSpec
-    from appstore   import GitHubAppRepo
-    from cfstarget  import ManageCfs
-else:
-    from .jsonfile  import JsonFile
-    from .utils     import compress_abs_path
-    from .usrapps   import AppStoreSpec
-    from .appstore  import GitHubAppRepo
-    from .cfstarget import ManageCfs
-
 import FreeSimpleGUI as sg
+
+from tools.jsonfile  import JsonFile, JsonSupportFiles
+from tools.usrapps   import AppStoreSpec
+from tools.appstore  import GitHubAppRepo
+from tools.bcpaths   import BcPath, BcPathMgr
+
+
+###############################################################################
 
 PROJECT_JSON_FILE = 'project.json'
 PROJECT_SHELL_ERR = 42
@@ -63,6 +58,7 @@ class ProjectTemplateJson(JsonFile):
     Provide a functional interface to project template JSON files. Ideally all
     JSON objects are present. However, only app-list is required so trying to
     access the other objects may generate an exception.
+    JsonFile::get() JsonFile::set() should be used to access the JSON dictionary.
     """
     def __init__(self, json_file):
         super().__init__(json_file)
@@ -70,10 +66,10 @@ class ProjectTemplateJson(JsonFile):
         self.support_files_valid = False # True means self.support_files len greater than zero
         
     def version(self):
-        return self.json['version']
+        return self.get('version')
 
     def doc(self):
-        return self.json['doc']
+        return self.get('doc')
         
     def released(self):
         """
@@ -82,7 +78,7 @@ class ProjectTemplateJson(JsonFile):
         in this function.         
         """
         released = True
-        if "alpha" in self.json['release']:
+        if "alpha" in self.get('release'):
             released = False
         return released
         
@@ -90,7 +86,7 @@ class ProjectTemplateJson(JsonFile):
         pass
         
     def app_list(self):
-        return self.json['app-list'].split(',')
+        return self.get('app-list').split(',')
 
     def install_script(self):
         """
@@ -102,18 +98,27 @@ class ProjectTemplateJson(JsonFile):
         This functions returns a tuple
             (script name, sudo boolean flag) 
         """
-        script = ''
+        script_file = ''
         sudo = False
-        file_list = self.get_support_file('install-script')
-        list_len = len(file_list)
-        if list_len > 0:
-            script = file_list[0]
-            if list_len == 2:
-                sudo = (file_list[1] == 'sudo')
+        install_script = self.get('install-script',optional=True)
+        if install_script != None:
+            script_info = install_script.split(',')
+            script_info_len = len(script_info)
+            if script_info_len > 0:
+                script_file = script_info[0]
+                if script_info_len == 2:
+                    sudo = (script_info[1] == 'sudo')
             
-        return (script,sudo)
+        print(f'install_script(): {script_file}, {sudo}')
+        return (script_file,sudo)
 
     def script_instructions(self):
+        return self.get('script-instructions', optional=True, default='')
+
+    def post_install_instructions(self):
+        return self.get('post-install-instructions', optional=True, default='')
+
+    def delete_script_instructions(self):
         instructions = ''
         try:
            instructions = self.json['script-instructions']
@@ -121,7 +126,7 @@ class ProjectTemplateJson(JsonFile):
            pass
         return instructions
 
-    def post_install_instructions(self):
+    def delete_post_install_instructions(self):
         instructions = ''
         try:
            instructions = self.json['post-install-instructions']
@@ -129,7 +134,7 @@ class ProjectTemplateJson(JsonFile):
            pass
         return instructions
 
-    def load_support_files(self):
+    def delete_load_support_files(self):
         self.support_files = {}
         try:
            self.support_files = self.json['support-files']
@@ -139,7 +144,7 @@ class ProjectTemplateJson(JsonFile):
            pass
         return self.support_files
 
-    def get_support_file(self, support_file_key):
+    def delete_get_support_file(self, support_file_key):
         """
         All support file objects use the same syntax of a string of comma
         separated filenames 
@@ -159,6 +164,7 @@ class ProjectTemplateJson(JsonFile):
         
         return support_file_list
 
+
 ###############################################################################
 
 class ProjectInstallScript():
@@ -170,7 +176,7 @@ class ProjectInstallScript():
         self.json = project_json
         self.path = project_path
         (self.install_script,self.sudo) = self.json.install_script()
-        
+        print(f'ProjectInstallScript(): {self.install_script}, {self.sudo}')
         self.b_size  = (4,1)
         self.b_pad   = ((0,2),(2,2))
         self.b_font  = ('Arial bold', 12)
@@ -242,6 +248,7 @@ class ProjectInstallScript():
         if len(self.install_script) > 0:
             script_complete = False
             install_sh  = os.path.join(self.path, self.install_script)
+            print(f'install_sh: {install_sh}')
             process_str = f'{install_sh} {password}'
             try:    
                 shell_status = subprocess.run(process_str, cwd=self.path, shell=True, check=True, capture_output=True)
@@ -252,9 +259,9 @@ class ProjectInstallScript():
                    # Error code indicating a command didn't execute as expected
                    sg.popup(f'Script {self.install_script} completed with errors.\n{e.stderr}', title="Project Install Script Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)                
                 else:
-                   sg.popup(f'Error running {install_script}.\n{e.stderr}', title="Project Install Script Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                   sg.popup(f'Error running {self.install_script}.\n{e.stderr}', title="Project Install Script Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
             except FileNotFoundError as e:
-                sg.popup(f'Error running {install_script}.\nException: {e}', title="Project Install Script Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+                sg.popup(f'Error running {self.install_script}.\nException: {e}', title="Project Install Script Error", keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         return script_complete
 
 
@@ -263,14 +270,13 @@ class ProjectInstallScript():
 class ProjectTemplate():
     """
     """
-    def __init__(self, template_path, git_url, app_repo_branch, usr_app_rel_path, manage_cfs):
+    def __init__(self, template_path, git_url, app_repo_branch, manage_cfs):
 
         self.path = template_path
         self.json = ProjectTemplateJson(os.path.join(template_path, PROJECT_JSON_FILE))
  
         self.git_url = git_url
         self.app_repo_branch  = app_repo_branch
-        self.usr_app_rel_path = usr_app_rel_path
         
         self.manage_cfs = manage_cfs
         
@@ -297,7 +303,8 @@ class ProjectTemplate():
     def create_project(self, project_name):
         """
         """
-        ProjectInstallScript(self.path,self.json).execute()     
+        ProjectInstallScript(self.path,self.json).execute()
+        print('After call to ProjectInstallScript()') #~~
         github_txt = 'Downloading apps from github\n'
         layout = [[sg.Text(github_txt, key='-PROGRESS_TEXT-', size=(50,2))],
                   [sg.ProgressBar(max_value=self.max_progress, orientation='h', size=(50, 20), key='-PROGRESS-', bar_color=('green', 'white'))]]
@@ -311,7 +318,7 @@ class ProjectTemplate():
         build_delta  = 1
         # Build gets half progress bar 
         # 1. Download github apps
-        git_app_repo = GitHubAppRepo(self.git_url, self.app_repo_branch, AppStoreSpec.BC_APP_SPEC_VER, self.usr_app_rel_path, quiet_ops=True)
+        git_app_repo = GitHubAppRepo(self.git_url, self.app_repo_branch, AppStoreSpec.BC_APP_SPEC_VER, quiet_ops=True)
         git_app_repo.create_dict()
         for app in self.json.app_list():
             self.update_progress(github_txt, github_delta)
@@ -367,38 +374,8 @@ class ProjectTemplate():
         return True
  
     def copy_support_files(self):
-        """
-        Assumes all support files are in the project's base directory. 
-        """
-        
-        gnd_sys_app_path = compress_abs_path(os.path.join(self.path, '../../app'))
-        #print(f'gnd_sys_app_path: {gnd_sys_app_path}')
-        config = configparser.ConfigParser()
-        config.read(os.path.join(gnd_sys_app_path,'basecamp.ini'))
-
-        support_dict = {
-            'cmd-sender':  'CMD_SENDER_PATH',
-            'file-server': 'FLT_SERVER_PATH',
-            'scripts':     'SCRIPT_PATH',
-            'templates':   'APP_TEMPLATES_PATH',
-            'tutorials':   'TUTORIALS_PATH'
-            }
-
-        for support_file in support_dict:           
-            file_list = self.json.get_support_file(support_file)
-            if file_list != None:
-                config_param = support_dict[support_file]
-                rel_gnd_path = config.get('PATHS',config_param)           
-                for file in file_list:
-                    src_pathfile = os.path.join(self.path, file)
-                    dst_pathfile = os.path.join(gnd_sys_app_path, rel_gnd_path, file)
-                    os.makedirs(os.path.dirname(dst_pathfile), exist_ok=True)
-                    copy_file = True
-                    if os.path.exists(dst_pathfile):
-                        overwrite = sg.popup_yes_no(f'{dst_pathfile} exists.\nDo you want to overwrite it?',  title='Create Project')
-                        copy_file = (overwrite == 'Yes')
-                    if copy_file:
-                        shutil.copyfile(src_pathfile, dst_pathfile)
+        self.json_support_files = JsonSupportFiles(self.path, self.json.get('support-files', default={}))
+        self.json_support_files.copy_files()
 
 
 ###############################################################################
@@ -409,21 +386,24 @@ class CreateProject():
     one. Project titles defined in the JSON files are used as template
     identifiers for screen displays and as dictionary keys 
     """
-    def __init__(self, projects_url, projects_path, git_url, app_repo_branch, usr_app_rel_path, manage_cfs):
+
+    def __init__(self, projects_url, git_url, app_repo_branch, manage_cfs):
 
         self.projects_url    = projects_url
-        self.projects_path   = projects_path
         self.app_repo_branch = app_repo_branch
-        self.manage_cfs = manage_cfs
+        self.manage_cfs      = manage_cfs
+        
+        self.bc_path_mgr   = BcPathMgr()
+        self.projects_path = self.bc_path_mgr.get(BcPath.PROJECTS)
         
         self.project_template_titles = []
         self.project_template_lookup = {}  # [title]  => ProjectTemplate
         for project_template_folder in os.listdir(self.projects_path):
             logger.debug("Project template folder: " + project_template_folder)
             #todo: ProjectTemplate constructor could raise exception if JSON doesn't exist or is malformed
-            project_template_json_file = os.path.join(projects_path, project_template_folder, PROJECT_JSON_FILE)
+            project_template_json_file = os.path.join(self.projects_path, project_template_folder, PROJECT_JSON_FILE)
             if os.path.exists(project_template_json_file):
-                project_template = ProjectTemplate(os.path.join(projects_path, project_template_folder), git_url, self.app_repo_branch, usr_app_rel_path, self.manage_cfs)
+                project_template = ProjectTemplate(os.path.join(self.projects_path, project_template_folder), git_url, self.app_repo_branch, self.manage_cfs)
                 self.project_template_titles.append(project_template.json.title())
                 self.project_template_lookup[project_template.json.title()] = project_template                    
         logger.debug("Project Template Lookup " + str(self.project_template_lookup))
@@ -500,19 +480,28 @@ class CreateProject():
 
 if __name__ == '__main__':
 
-    #TODO: If possible run from main. ManageCfs() dependency may prevent it
-    config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
 
-    APP_REPO_BRANCH  = config.get('APP','APP_REPO_BRANCH')
-    GIT_URL          = config.get('APP','APP_STORE_URL')
-    PROJECTS_PATH    = config.get('PATHS','PROJECTS_PATH')
-    USR_APP_REL_PATH = config.get('PATHS', 'USR_APP_PATH')
+    bc_path_mgr = BcPathMgr()
+    projects_abs_path = bc_path_mgr.get(BcPath.PROJECTS)
+    usr_app_abs_path  = bc_path_mgr.get(BcPath.USR_APPS)
     
-    projects_dir = os.path.join(os.getcwd(),'..', PROJECTS_PATH) 
-    usr_app_dir  = os.path.join(os.getcwd(),'..', USR_APP_REL_PATH) 
-    print (f'projects_dir: {projects_dir}')
-    CreateProject(projects_dir,APP_REPO_BRANCH,GIT_URL,usr_app_dir).execute()
+    config = configparser.ConfigParser()
+    config.read(bc_path_mgr.get_basecamp_ini_file())
+    GIT_URL         = config.get('APP','APP_STORE_URL')
+    GIT_REPO_BRANCH = config.get('APP','APP_REPO_BRANCH')
+    
+
+    print (f'projects_abs_path: {projects_abs_path}')
+    print (f'usr_app_abs_path:  {usr_app_abs_path}')
+    print (f'GIT_URL:           {GIT_URL}')
+    print (f'GIT_REPO_BRANCH:   {GIT_REPO_BRANCH}')
+    
+    # Unit test is hard becuae CreatyProject requires a ManageCfs 
+    # object and ManageCfs requires a main window
+    #CreateProject(GIT_URL,GIT_REPO_BRANCH).execute()
+
+                    
+
     
     
 

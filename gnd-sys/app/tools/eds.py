@@ -28,15 +28,12 @@ from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    from utils  import compress_abs_path
-else:
-    from .utils import compress_abs_path
+from tools.bcpaths import BcPathConst, BcPath, BcPathMgr, CfsPath, CfsPathMgr
 
+
+###############################################################################
 
 # cFE Topic ID EDS keywords
-
-CFE_TOPICIDS_FILE = 'cfe-topicids.xml'
 
 EDS_TAG_PACKAGE  = 'Package'
 EDS_TAG_TOPIC_ID = 'Define'
@@ -209,8 +206,8 @@ class AppEds():
         self.req_cmd_interface = self.get_req_interface(EDS_ATTR_INTERFACE_CMD_VAL)
         self.req_tlm_interface = self.get_req_interface(EDS_ATTR_INTERFACE_TLM_VAL)
         self.interface_to_topic_id = self.get_interface_to_topic_id()
-        #print(str(self.req_cmd_interface))
-        #print(str(self.req_tlm_interface))
+        ##print(str(self.req_cmd_interface))
+        ##print(str(self.req_tlm_interface))
 
     def cmd_topics(self):
         cmd_topics = [self.interface_to_topic_id[cmd_if] for cmd_if in self.req_cmd_interface]
@@ -256,29 +253,21 @@ class AppEds():
                     initial_value = initial_value.split('/')[1].replace('}','')
                     interface_to_topic_id[var_ref_to_interface[name]] = initial_value
         
-        #print(f'interface_to_topic_id: {str(interface_to_topic_id)}')
+        ##print(f'interface_to_topic_id: {str(interface_to_topic_id)}')
         return interface_to_topic_id
 
 ###############################################################################
 
 if __name__ == '__main__':
 
-    config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
-
-    # basecamp.ini assumes cwd of basecamp 
-    basecamp_defs_path = config.get('PATHS','BASECAMP_DEFS_PATH')
-    eds_defs_path = compress_abs_path(os.path.join(os.getcwd(),'..', basecamp_defs_path, 'eds')) 
-    cfe_topic_ids_path_file = os.path.join(eds_defs_path, CFE_TOPICIDS_FILE) 
-    print ("cfe_topic_ids_path_file: ", cfe_topic_ids_path_file)
-
-    ## JMSG_LIB
-    usr_apps_path = config.get('PATHS','USR_APP_PATH')
-    jmsg_lib_eds_path = compress_abs_path(os.path.join(os.getcwd(),'..', usr_apps_path, 'jmsg_lib', 'eds')) 
-    jmsg_lib_eds_path_file = os.path.join(jmsg_lib_eds_path, 'jmsg_test.xml') 
-    print ("jmsg_lib EDS spec: ", jmsg_lib_eds_path_file,'\n')
-    jmsg_lib_eds  = AppEds(jmsg_lib_eds_path_file)
-   
+    bc_path_mgr  = BcPathMgr()
+    cfs_path_mgr = CfsPathMgr()
+    
+    # JMSG_LIB 
+    jmsg_lib_eds_path_file = bc_path_mgr.get_file(BcPath.USR_APPS, 'jmsg_lib/eds/jmsg_lib.xml')
+    print (f'jmsg_lib EDS spec: {jmsg_lib_eds_path_file}\n')
+    jmsg_lib_eds = AppEds(jmsg_lib_eds_path_file)
+    
     print('Command topics:')
     for cmd in jmsg_lib_eds.cmd_topics():
         print(cmd)
@@ -287,29 +276,30 @@ if __name__ == '__main__':
     for tlm in jmsg_lib_eds.tlm_topics():
         print(tlm)
 
-    exit()    
+
     ## FILE_MGR
-    basecamp_apps_path = config.get('PATHS','BASECAMP_APPS_PATH')
-    file_mgr_eds_path = compress_abs_path(os.path.join(os.getcwd(),'..', basecamp_apps_path, 'file_mgr', 'eds')) 
-    file_mgr_eds_path_file = os.path.join(file_mgr_eds_path, 'file_mgr.xml') 
-    print ("file_mgr EDS spec: ", file_mgr_eds_path_file,'\n')
+    cfe_topic_ids_path_file = cfs_path_mgr.get_file(CfsPath.CFS_TARGET_DEFS, f'eds/{BcPathConst.CFE_TOPICIDS_FILE}')
+    print (f'cfe_topic_ids_path_file: {cfe_topic_ids_path_file}')
     cfe_topic_ids = CfeTopicIds(cfe_topic_ids_path_file)
-    file_mgr_eds  = AppEds(file_mgr_eds_path_file)
+
+    file_mgr_eds_path_file = cfs_path_mgr.get_file(CfsPath.BC_APPS, 'file_mgr/eds/file_mgr.xml')
+    print (f'file_mgr EDS spec: {file_mgr_eds_path_file}\n')
+    file_mgr_eds = AppEds(file_mgr_eds_path_file)
    
     for cmd in file_mgr_eds.cmd_topics():
-        cfe_topic_ids.replace_spare_cmd_topic(cmd)
+        #cfe_topic_ids.replace_spare_cmd_topic(cmd)
         print(cmd)
         
     for tlm in file_mgr_eds.tlm_topics():
-        cfe_topic_ids.replace_spare_tlm_topic(tlm)
+        #cfe_topic_ids.replace_spare_tlm_topic(tlm)
         print(tlm)
 
-    cfe_topic_ids.write_doc_to_file()
+    #cfe_topic_ids.write_doc_to_file()
 
-    #print('TOPIC LIST:\n',cfe_topic_ids.get_topic_id_names(),'\n')
-    print('SPARE CMD TOPIC LIST LEN: '+str(len(cfe_topic_ids.spare_cmd_topics)))
-    print('SPARE TLM TOPIC LIST LEN: '+str(len(cfe_topic_ids.spare_tlm_topics)))
+    #print(f'TOPIC LIST:\n{cfe_topic_ids.get_topic_id_names()}\n')
+    print(f'SPARE CMD TOPIC LIST LEN: {len(cfe_topic_ids.spare_cmd_topics)}')
+    print(f'SPARE TLM TOPIC LIST LEN: {len(cfe_topic_ids.spare_tlm_topics)}')
     #cfe_topic_ids.restore_spare_cmd_topic(test_cmd_topic_id_name)
     #cfe_topic_ids.restore_spare_tlm_topic(test_tlm_topic_id_name)
-    
 
+    exit()

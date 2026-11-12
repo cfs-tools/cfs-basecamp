@@ -33,31 +33,32 @@
 
 from __future__ import annotations
 from abc import ABC, abstractmethod
-import os
+
 import sys
+sys.path.append('..')
+import os
+import time
 import configparser
 import socket
-import time
 import threading
 import traceback
 import inspect
 from typing import List
 from datetime import datetime
 
-
 import logging
 logger = logging.getLogger(__name__)
-if __name__ == '__main__' or 'cfsinterface' in os.getcwd():
-    sys.path.append('..')
-    from edsmission import EdsMission
-    from edsmission import CfeEdsTarget
-    from cmdtlmrouter  import RouterCmd
-else:
-    from .edsmission   import EdsMission
-    from .edsmission   import CfeEdsTarget
-    from .cmdtlmrouter import RouterCmd
-from tools import hex_string
+
 import FreeSimpleGUI as sg
+
+from tools.utils   import hex_string
+from tools.bcpaths import BcPathConst, BcPathMgr
+
+from cfsinterface.cfeconstants  import Cfe
+from cfsinterface.edsmission    import EdsMission
+from cfsinterface.edsmission    import CfeEdsTarget
+from cfsinterface.cmdtlmrouter  import RouterCmd
+
     
 ###############################################################################
 
@@ -68,8 +69,9 @@ class TelemetryMessage:
     class is not needed since the events are restricted to telemetry 
     messages.
      
-    Contains the most recent telemetry values. This class is intentionally kept simple and
-    additional 'business' logic is performed by the observer of this packet.
+    Contains the most recent telemetry values. This class is intentionally 
+    kept simple and additional 'business' logic is performed by the observer
+    of this packet.
     """
        
     def __init__(self, app_name, msg_name, app_id):
@@ -290,8 +292,8 @@ class TelemetryServer(CfeEdsTarget):
         topic_name = app_name.upper() + '/Application/' + tlm_msg_name.upper()
         app_id = -1 
         if topic_name in self.topic_dict:
-            app_id = self.topic_dict[topic_name] + 3 #todo: Clueless on the '+3' but that's what gets generated during runtime
-                 
+            app_id = self.topic_dict[topic_name] - Cfe.EDS_TLM_TOPIC_ID_OFFSET
+            print(f'Telemetry app_id: {app_id}')
         return app_id
         
         
@@ -334,7 +336,7 @@ class TelemetrySocketServer(TelemetryServer):
     def __init__(self, mission, target, ip_addr, router_ctrl_port, server_tlm_port, server_tlm_timeout):
         """
         router_ctrl_port:
-          CmdTlmRouter prot that is used to command the router itself. This is not the
+          CmdTlmRouter port that is used to command the router itself. This is not the
           command port used by the router that forwards a process's commands to a remote
           destination. This server uses the control port to notify the router when it
           shuts down.
@@ -385,9 +387,9 @@ class TelemetrySocketServer(TelemetryServer):
                     
                         #self.eds_objects[eds_entry.Name] = eds_obj
                         app_id = int(eds_obj.CCSDS.AppId)
-                        print("Msg name: %s, Msg Id: %d " % (eds_entry.Name,app_id))
+                        ##print("Msg name: %s, Msg Id: %d " % (eds_entry.Name,app_id))
                         if app_id in self.tlm_messages:
-                            print("Calling tlm message update()...")
+                            ##print("Calling tlm message update()...")
                             self.tlm_messages[app_id].update(eds_entry, eds_obj)
                     
                     except RuntimeError:
@@ -421,7 +423,7 @@ class TelemetrySocketServer(TelemetryServer):
         except Exception as e:
             err_str = f'Error creating telemetry server for {self.server_tlm_socket_addr}'
             logger.error(err_str)
-            help_str = 'Verify your ground IP address in basecamp.ini is correct'
+            help_str = f'Verify your ground IP address in {BcPathConst.BASECAMP_INI_FILE} is correct'
             str_len = len(err_str)
             if len(help_str) > str_len:
                 str_len = len(help_str)
@@ -600,18 +602,22 @@ def main():
     the cFS telemetry stream. When TelemetrySocketServer is used in Basecamp the CmdTlmRouter
     object contains the cFS telemetry port.
     """
+    
+    bc_path_mgr = BcPathMgr()
+    
     config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
-    MISSION     = config.get('CFS_TARGET', 'MISSION_EDS_NAME')
-    CFS_TARGET  = config.get('CFS_TARGET', 'CPU_EDS_NAME')
+    config.read(bc_path_mgr.get_basecamp_ini_file())
+    
+    MISSION = config.get('CFS_TARGET', 'MISSION_NAME')
+    CPU     = config.get('CFS_TARGET', 'CPU_NAME')
     GND_IP_ADDR = config.get('NETWORK','GND_IP_ADDR')
     ROUTER_CTRL_PORT   = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     SERVER_TLM_PORT    = config.getint('NETWORK','GND_TLM_PORT')
     SERVER_TLM_TIMEOUT = config.getint('NETWORK','GND_TLM_TIMEOUT')
     
-    system_string = f'Mission: {MISSION}, Target: {CFS_TARGET}, cFS IP Addr: {GND_IP_ADDR}, Gnd Tlm Port {SERVER_TLM_PORT}'
+    system_string = f'Mission: {MISSION}, Target: {CPU}, cFS IP Addr: {GND_IP_ADDR}, Gnd Tlm Port {SERVER_TLM_PORT}'
     try:
-        telemetry_server = TelemetrySocketServer(MISSION, CFS_TARGET, GND_IP_ADDR, ROUTER_CTRL_PORT, SERVER_TLM_PORT, SERVER_TLM_TIMEOUT)
+        telemetry_server = TelemetrySocketServer(MISSION, CPU, GND_IP_ADDR, ROUTER_CTRL_PORT, SERVER_TLM_PORT, SERVER_TLM_TIMEOUT)
         telemetry_cmd_line_client = TelemetryCmdLineClient(telemetry_server, True)
         print (f'Telemetry objects created for {system_string}')
         

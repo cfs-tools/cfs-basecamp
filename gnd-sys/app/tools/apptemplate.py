@@ -22,25 +22,22 @@
 
 import sys
 sys.path.append("..")
-import time
 import os
+import time
 import errno
 import json
-import configparser
 import shutil
 from datetime import datetime
 
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    from jsonfile import JsonFile
-    from utils    import compress_abs_path
-else:
-    from .jsonfile import JsonFile
-    from .utils    import compress_abs_path
-
 import FreeSimpleGUI as sg
+
+from tools.jsonfile  import JsonFile
+from tools.bcpaths   import compress_abs_path, BcPath, BcPathMgr
+
+###############################################################################
 
 TEMPLATE_JSON_FILE = 'app_template.json'
 TEMPLATE_VAR_UPPER = "@TEMPLATE@"
@@ -55,21 +52,22 @@ TEMPLATE_COMMENT_END   = "##*/"
 class AppTemplateJson(JsonFile):
     """
     Manage app template JSON files.
+    JsonFile::get() JsonFile::set() should be used to access the JSON dictionary.
     """
     def __init__(self, json_file):
         super().__init__(json_file)
         
     def version(self):
-        return self.json['version']
+        return self.get('version')
 
     def reset_child(self):
         pass
         
     def app_name(self):
-        return self.json['default-app-name']
+        return self.get('default-app-name')
         
     def directories(self):
-        return self.json['dir']
+        return self.get('dir')
 
     def subdir_path(self, dir_list):
         return dir_list['path']
@@ -106,7 +104,7 @@ class AppTemplate():
                             }
         
         self.new_app_dir = compress_abs_path(os.path.join(cfs_app_dir, self.app_name['LOWER']))
-        
+
         make_dir = True
         if (os.path.exists(self.new_app_dir)):
         
@@ -115,22 +113,23 @@ class AppTemplate():
                   [sg.B('Yes'), sg.B('No') ]]).read(close=True)
             if event == 'No':
                 make_dir = False
-                print('Create app aborted')
+        
         if make_dir:
+
             try: 
                 os.makedirs(self.new_app_dir) 
             except OSError as e:
-                if e.errno != errno.EEXIST:
-                    print("Error creating new app directory" + self.new_app_dir)
+                if e.errno != errno.EXIST:
+                    sg.popup(f'Error creating new app directory {self.new_app_dir}.\nException: {str(e)}', title="Create Application Error", modal=False)
                     raise  # raises the error again
-              
+
             for dir in self.dirs:
-            
+
                 subdir_path  = self.json.subdir_path(dir)
                 subdir_files = self.json.subdir_files(dir)
                 logger.debug("path = " + subdir_path)
                 logger.debug("files = " + str(subdir_files))
-                
+
                 if subdir_path == "tutorial":
                     self.has_tutorial = True
                 
@@ -140,21 +139,20 @@ class AppTemplate():
                 else:
                     template_file_path = self.path
                     new_app_file_path  = self.new_app_dir
-            
+                
                 try: 
-                    os.makedirs(new_app_file_path) 
-                except OSError as e:
-                    if e.errno != errno.EEXIST:
-                        print("Error creating new app subdirectory" + new_app_file_path)
-                        raise  # raises the error again
-               
+                    os.makedirs(new_app_file_path, exist_ok=True) 
+                except Exception as e:
+                    sg.popup(f'Error creating new app subdirectory {new_app_file_path}.\nException: {str(e)}', title="Create Application Error", modal=False)
+                    raise  # raises the error again
+
                 try:
                     for template_file in subdir_files:
                         self.instantiate_file(template_file_path, new_app_file_path, template_file)
                 except Exception as e:
-                    sg.popup("Exception:\n"+str(e), title="Create Application Error", modal=False)
+                    sg.popup(f'Error creating app from template {template_file}.\nException: {str(e)}', title="Create Application Error", modal=False)
                     raise  # raises the error again
-                    
+
             app_created = True
       
         return (app_created, self.new_app_dir)
@@ -177,7 +175,7 @@ class AppTemplate():
             binary_file = template_file[:-1]
             src_pathfile = os.path.join(template_file_path, binary_file)
             dst_pathfile = os.path.join(new_app_file_path, binary_file)
-            print(f'Copying binary file from {src_pathfile} to {dst_pathfile}')
+            ##print(f'Copying binary file from {src_pathfile} to {dst_pathfile}')
             try:
                 shutil.copyfile(src_pathfile, dst_pathfile)
             except FileNotFoundError:
@@ -314,7 +312,7 @@ class CreateApp():
                             sg.popup(popup_text, line_width=100, title="Create Application", modal=False)
                             break                
                     except:
-                        sg.popup(f'Failed to create {app_name} in {new_app_dir}', title="Create Application", modal=False)
+                        sg.popup(f'Failed to create {app_name} in {new_app_dir}', title="Create Application Error", modal=False)
                             
         self.window.close()
 
@@ -323,16 +321,12 @@ class CreateApp():
 
 if __name__ == '__main__':
 
-    config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
-
-    APP_TEMPLATES_PATH = config.get('PATHS','APP_TEMPLATES_PATH')
-    USR_APP_PATH  = config.get('PATHS','USR_APP_PATH')
+    bc_path_mgr = BcPathMgr()
+    templates_abs_path = bc_path_mgr.get(BcPath.TEMPLATES)
+    usr_app_abs_path   = bc_path_mgr.get(BcPath.USR_APPS)
     
-    templates_dir = os.path.join(os.getcwd(),'..', APP_TEMPLATES_PATH) 
-    usr_app_dir   = os.path.join(os.getcwd(),'..', USR_APP_PATH) 
-    print (f'Directories: templates_dir: {templates_dir}, usr_app_dir: {usr_app_dir}')
-    CreateApp(templates_dir, usr_app_dir).execute()
+    print (f'templates_abs_path: {templates_abs_path}, usr_app_abs_path: {usr_app_abs_path}')
+    CreateApp(templates_abs_path, usr_app_abs_path).execute()
     
     #Test without GUI
     #app_template = AppTemplate(template_dir)

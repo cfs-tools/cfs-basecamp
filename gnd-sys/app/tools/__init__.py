@@ -26,7 +26,8 @@ logger.addHandler(logging.NullHandler())
 from .appcodetutorial import ManageCodeTutorials
 from .appstore import AppStore
 from .apptemplate import CreateApp
-from .cfstarget import AppTargetStatus, AppTopicIdStatus, Cfs, CfsStdout, ManageCfs, build_cfs_target
+from .bcpaths import compress_abs_path, BcPathConst, BcPath, BcPathMgr, CfsPath, CfsPathMgr
+from .cfstarget import AppTargetStatus, AppTopicIdStatus, CfsStdout, ManageCfs, build_cfs_target
 from .eds import CfeTopicIds, AppEds
 from .jsonfile import JsonTblTopicMap
 from .pdfviewer import PdfViewer

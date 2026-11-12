@@ -25,8 +25,9 @@
 """
 
 import sys
-import time
+sys.path.append("..")
 import os
+import time
 import requests
 import json
 import configparser
@@ -36,16 +37,10 @@ from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    from eds     import AppEds
-    from usrapps import AppSpec, AppStoreSpec
-    from utils   import compress_abs_path
-else:
-    from .eds     import AppEds
-    from .usrapps import AppSpec, AppStoreSpec
-    from .utils   import compress_abs_path
-
 import FreeSimpleGUI as sg
+
+from tools.usrapps  import AppSpec, AppStoreSpec
+from tools.bcpaths  import BcPathConst, BcPath, BcPathMgr
 
 
 ###############################################################################
@@ -55,7 +50,7 @@ class GitHubAppRepo():
     Manage accessing and cloning github app repos.
     """
     
-    def __init__(self, git_url, repo_branch_select, git_branch_arg, usr_app_rel_path, quiet_ops=False):
+    def __init__(self, git_url, repo_branch_select, git_branch_arg, quiet_ops=False):
         """
         git_url
         - URL of app repositories
@@ -69,17 +64,14 @@ class GitHubAppRepo():
         - This argument can refer to a branch or a tagged release
         - A zero length string omits the --branch argument 
         
-        usr_app_rel_path
-        - Relative path to where git repos should be cloned into
-        
         quiet_ops
         - Used for non-GUI scenarios when autonomous/silent operations
           is needed. Error dialogues are still displayed. 
         """
         self.repo_branch_select = repo_branch_select
-        self.usr_clone_path = usr_app_rel_path
         self.git_url        = git_url
         self.git_branch_arg = git_branch_arg
+        self.bc_path_mgr    = BcPathMgr()
         self.quiet_ops = quiet_ops
         self.app_repo  = None
         self.app_dict  = {}
@@ -111,19 +103,12 @@ class GitHubAppRepo():
             
         return ret_status
         
-    def get_target_dir(self, app_name):
-        """
-        Return directory that was cloned into.
-        """
-        return compress_abs_path(os.path.join(os.getcwd(), self.usr_clone_path, app_name))
-        
-    
     def clone_repo(self, git_url, app_name, display_success_popup=True):
         """
         """
         ret_status = True
         clone_repo = True
-        target_dir = self.get_target_dir(app_name)
+        target_dir = self.bc_path_mgr.get_file(BcPath.USR_APPS, app_name)
         if self.repo_branch_select == AppStoreSpec.APP_REPO_MAIN_BRANCH:
             if len(self.git_branch_arg) == 0:
                 git_branch_txt = ''
@@ -143,7 +128,7 @@ class GitHubAppRepo():
         elif self.repo_branch_select == AppStoreSpec.APP_REPO_DEV_BRANCH:
             git_branch_txt = f'--branch {AppStoreSpec.APP_REPO_DEV_BRANCH}'
         else:
-            sg.popup(f"Invalid git branch '{self.repo_branch_select}' specified. See basecamp.ini APP_REPO_BRANCH parameter for details.", title='AppStore Error')
+            sg.popup(f"Invalid git branch '{self.repo_branch_select}' specified. See {BcPathConst.BASECAMP_INI_FILE} APP_REPO_BRANCH parameter for details.", title='AppStore Error')
             clone_repo = False
             ret_status = False
         
@@ -157,7 +142,7 @@ class GitHubAppRepo():
             
         if ret_status and clone_repo:
             saved_cwd = os.getcwd()
-            os.chdir(self.usr_clone_path)
+            os.chdir(self.bc_path_mgr.get(BcPath.USR_APPS))
             if display_success_popup:
                 sg.popup_quick_message('Github repo cloning in progress. Please be patient...', auto_close_duration=5)
             sys_status = os.system(f'git clone {git_branch_txt} {git_url}')
@@ -193,39 +178,43 @@ class GitHubAppRepo():
         
         This a helper function only used by clone() so it can assume the cwd is in user apps folder
                 
-        When this function is called the proxy app repo has been cloned. The remaining steps
-        are:
-          1. Read proxy app spec
+        The major steps perfromed are:
+          1. Clone proxy repo
+          2. Read proxy app spec
           2. Clone actual app 
           3. Use proxy app spec to copy files into actual app's repo
+          4. Copy optional support files into gnd-sys folders
         
         """
         ret_status = False
-        proxy_app_dir = self.get_target_dir(proxy_app_name)
+        proxy_app_dir = self.bc_path_mgr.get_file(BcPath.USR_APPS, proxy_app_name)
         real_app_name = proxy_app_name[len(AppStoreSpec.PROXY_APP_PREFIX):]
-        real_app_dir  = self.get_target_dir(real_app_name)
-        print(f'\n****proxy_app_dir: {proxy_app_dir}, proxy_app_name: {proxy_app_name}')
-        print(f'****real_app_dir: {real_app_dir}, real_app_name: {real_app_name}')
+        real_app_dir  = self.bc_path_mgr.get_file(BcPath.USR_APPS, real_app_name)
+        ##print(f'\n****proxy_app_dir: {proxy_app_dir}, proxy_app_name: {proxy_app_name}')
+        ##print(f'****real_app_dir: {real_app_dir}, real_app_name: {real_app_name}')
 
         cloned_proxy = self.clone_basecamp_repo(proxy_app_name, display_success_popup=False)
-        print(f'cloned_proxy: {cloned_proxy}')
+        ##print(f'cloned_proxy: {cloned_proxy}')
         if cloned_proxy:
             proxy_app_spec   = AppSpec(proxy_app_dir, proxy_app_name, proxy=True)
             real_github_repo = proxy_app_spec.get_real_github_repo()
-            print(f'****real_github_repo: {real_github_repo}')
+            ##print(f'****real_github_repo: {real_github_repo}')
             if len(real_github_repo) == 2:
-                git_app_repo = GitHubAppRepo(real_github_repo[0], AppStoreSpec.APP_REPO_MAIN_BRANCH, real_github_repo[1], self.usr_clone_path)
+                git_app_repo = GitHubAppRepo(real_github_repo[0], AppStoreSpec.APP_REPO_MAIN_BRANCH, real_github_repo[1])
                 ret_status = git_app_repo.clone_repo(real_github_repo[0], real_app_name, display_success_popup=(not self.quiet_ops))
-                print(f'\nReal clone ret_status: {ret_status}')
+                ##print(f'\nReal clone ret_status: {ret_status}')
                 if ret_status:
                     proxy_file_list = proxy_app_spec.get_proxy_file_list()
-                    print(f'\n>>>proxy_file_list = {proxy_file_list}')
+                    ##print(f'\n>>>proxy_file_list = {proxy_file_list}')
                     # No files is treated as invalid. This could change if Basecamp becomes wildly
                     # adopted and compliant third party repos flood the internet :-)
                     if len(proxy_file_list) > 0:                    
                         ret_status = self.copy_proxy_files(proxy_app_dir, real_app_dir, proxy_file_list)
                     else:
                         ret_status = False
+                    # Copy optional support files 
+                    if ret_status:
+                        proxy_app_spec.copy_support_files()
 
         if ret_status:
             sg.popup(f'Successfully cloned and populated {real_app_name} from {proxy_app_name}\n', title='AppStore')
@@ -244,10 +233,10 @@ class GitHubAppRepo():
             src_pathfile = os.path.join(proxy_app_dir, proxy_file[0].strip())
             dst_pathfile = os.path.join(real_app_dir,  proxy_file[1].strip())            
             os.makedirs(os.path.dirname(dst_pathfile), exist_ok=True)
-            print(f'src_pathfile: {src_pathfile}')
-            print(f'dst_pathfile: {dst_pathfile}')
+            ##print(f'src_pathfile: {src_pathfile}')
+            ##print(f'dst_pathfile: {dst_pathfile}')
             try:
-                print(f'\n>>>Copying {src_pathfile} {AppStoreSpec.PROXY_FILE_COPY_TOKEN} {dst_pathfile}')
+                ##print(f'\n>>>Copying {src_pathfile} {AppStoreSpec.PROXY_FILE_COPY_TOKEN} {dst_pathfile}')
                 shutil.copyfile(src_pathfile, dst_pathfile)        
                 ret_status = True
             except Exception as e:     
@@ -279,7 +268,7 @@ class GitHubAppRepo():
         ret_status = False
         if app_name in self.app_dict or proxy:
             clone_repo = True
-            target_dir = compress_abs_path(os.path.join(os.getcwd(), self.usr_clone_path, app_name))
+            target_dir = self.bc_path_mgr.get_file(BcPath.USR_APPS, app_name)
             if os.path.exists(target_dir):
                 overwrite = sg.popup_yes_no(f"{target_dir} exists. Do you want to overwrite it?",  title="AppStore")
                 if (overwrite == 'Yes'):
@@ -290,7 +279,7 @@ class GitHubAppRepo():
             
             if clone_repo:
                 saved_cwd = os.getcwd()
-                os.chdir(self.usr_clone_path)
+                os.chdir(self.bc_path_mgr.get(BcPath.USR_APPS))
                 clone_url = self.app_dict[app_name]["clone_url"]
                 sys_status = os.system("git clone {}".format(self.app_dict[app_name]["clone_url"]))
                 if (sys_status == 0):
@@ -332,16 +321,17 @@ class AppStore():
     them into the user's app directory. 
     """
         
-    def __init__(self, git_url, app_repo_branch, usr_app_rel_path, git_topic_include, git_topic_exclude, app_group):
+    def __init__(self, git_url, app_repo_branch, git_topic_include, git_topic_exclude, app_group):
         """
         git_topic_include - List of github topics identifying repos to be included
         git_topic_exclude - List of github topics identifying repos to be excluded
         """
         self.git_topic_include = git_topic_include
         self.git_topic_exclude = git_topic_exclude 
-        self.app_group = app_group
-        self.usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(), usr_app_rel_path))
-        self.git_app_repo = GitHubAppRepo(git_url, app_repo_branch, AppStoreSpec.BC_APP_SPEC_VER, usr_app_rel_path)
+        self.app_group   = app_group
+        self.bc_path_mgr = BcPathMgr()
+        self.usr_app_abs_path = self.bc_path_mgr.get(BcPath.USR_APPS)
+        self.git_app_repo = GitHubAppRepo(git_url, app_repo_branch, AppStoreSpec.BC_APP_SPEC_VER)
         self.git_app_repo_keys = [] # keys of app repos that pass the include/exclude filters 
         self.window  = None
 
@@ -387,7 +377,7 @@ class AppStore():
                 break
             
             if self.event == 'Download':
-                print(f'self.git_app_repo_keys={self.git_app_repo_keys}')
+                ##print(f'self.git_app_repo_keys={self.git_app_repo_keys}')
                 for app in self.git_app_repo_keys:
                     if self.values[f'-{app}-'] == True:
                         # Clone functions report status to user via popups
@@ -405,19 +395,19 @@ class AppStore():
         if self.git_app_repo.create_dict():
             self.gui()
         else:
-            sg.popup(f"Error accessing the git url\n   '{self.git_app_repo.git_url}'\n\nVerify your network connection and the basecamp.ini APP_STORE_URL definition.\n", title='AppStore Error')
+            sg.popup(f"Error accessing the git url\n   '{self.git_app_repo.git_url}'\n\nVerify your network connection and the {BcPathConst.BASECAMP_INI_FILE} APP_STORE_URL definition.\n", title='AppStore Error')
 
 
 ###############################################################################
 
 if __name__ == '__main__':
 
+    bc_path_mgr = BcPathMgr()
+    
     config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
+    config.read(bc_path_mgr.get_basecamp_ini_file())
 
-    GIT_URL          = config.get('APP','APP_STORE_URL')
-    USR_APP_REL_PATH = config.get('PATHS', 'USR_APP_PATH')
-    usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(),'..', USR_APP_REL_PATH)) 
+    GIT_URL = config.get('APP','APP_STORE_URL')
 
-    app_store = AppStore(GIT_URL, usr_app_abs_path)
+    app_store = AppStore(GIT_URL)
     app_store.execute()

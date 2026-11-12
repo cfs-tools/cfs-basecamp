@@ -20,18 +20,17 @@
 """
 
 import sys
-import time
+sys.path.append('..')
 import os
+import time
 import socket
 from queue import Queue
 
-if __name__ == '__main__' or 'cfsinterface' in os.getcwd():
-    sys.path.append('..')
-    from telecommand  import TelecommandScript
-    from telemetry    import TelemetrySocketServer
-else:
-    from .telecommand  import TelecommandScript
-    from .telemetry    import TelemetrySocketServer
+from tools.bcpaths  import CfsPathMgr
+
+from cfsinterface.telecommand  import TelecommandScript
+from cfsinterface.telemetry    import TelemetrySocketServer
+
     
 ###############################################################################
 
@@ -44,13 +43,16 @@ class CmdProcess():
         self.router_cmd_socket = None
         self.router_cmd_socket_addr = (self.gnd_ip_addr, self.router_cmd_port)
         self.router_cmd_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.cfs_path_mgr = cfs_path_mgr = CfsPathMgr()
 
         self.cfs_cmd_queue = Queue()
-        self.cmd_script = TelecommandScript(mission_name, 'cpu1', self.cfs_cmd_queue)  #TODO - Use kwarg?
+        self.cmd_script = TelecommandScript(mission_name, f'{self.cfs_path_mgr.get_cpu_name()}', self.cfs_cmd_queue)  #TODO - Use kwarg?
        
        
     def send_cfs_cmd(self, app_name, cmd_name, cmd_payload):
+        print(f'BC: send_cfs_cmd()cmd_payload: {cmd_payload}')
         (cmd_sent, cmd_text, cmd_status) = self.cmd_script.send_cfs_cmd(app_name, cmd_name, cmd_payload)
+        print(f'BC: cmd_sent: {cmd_sent}, cmd_text: {cmd_text}, cmd_status: {cmd_status}')
         if 'Error' not in cmd_status:
             datagram = self.cfs_cmd_queue.get()
             print(f'CmdTlmProcess sending {app_name}:{cmd_name} to router {self.router_cmd_socket_addr}')
@@ -72,7 +74,7 @@ class CmdTlmProcess(CmdProcess):
     lightweight design that does not need to scale up.
     
     The following steps outline how to create a new Basecamp GUI-based 
-    CmdTlmcProcess class. See filebrowser.py for a complete example:
+    CmdTlmrocess class. See filebrowser.py for a complete example:
       1. Create a standalone GUI class and identify cmd & tlm interface points
       2. Add CmdTlmProcess subclass 
       3. Create equivalent of FileBrowserTelemetryMonitor if you need to monitor
@@ -82,7 +84,8 @@ class CmdTlmProcess(CmdProcess):
     """
     def __init__(self, mission_name, gnd_ip_addr, router_ctrl_port, router_cmd_port, router_tlm_port, router_tlm_timeout):
         super().__init__(mission_name, gnd_ip_addr, router_cmd_port)
-        self.tlm_server = TelemetrySocketServer(mission_name, 'cpu1', gnd_ip_addr, router_ctrl_port,
+        self.cfs_path_mgr = cfs_path_mgr = CfsPathMgr()
+        self.tlm_server = TelemetrySocketServer(mission_name, f'{self.cfs_path_mgr.get_cpu_name()}', gnd_ip_addr, router_ctrl_port,
                                                 router_tlm_port, router_tlm_timeout)
  
     def shutdown(self):

@@ -20,10 +20,11 @@
     TODO - Add dirty flag and prompt user to save before exit without save
           
 """
+
 import sys
-sys.path.append("..")
-import time
+sys.path.append('..')
 import os
+import time
 from datetime import datetime
 
 import logging
@@ -98,9 +99,9 @@ class HelpText():
 
             'JSON':
                 ("JSON files are used by apps using the OpenSatKit app framework to define app initialization\n"
-                "configuration parameters. They are also used for app 'tables' that are used to define parameters\n"
-                "that can be changed during runtime using table loads. JSON tables can be written to a file,\n"
-                "transferred to the ground using FILE_XFER, and displayed in a text editor"),
+                "configuration parameters. They are also used for app 'json-tables' that are used to define\n"
+                "parameters that can be changed during runtime using table loads. JSON tables can be written to\n"
+                "a file, transferred to the ground using FILE_XFER, and displayed in a text editor"),
             
             'OTHER':  ("No guidance for this file type")
                 
@@ -189,7 +190,8 @@ class TextEditor():
             self.save_file(self.filename, window)
 
     def text_left_click(self):
-        print('text_left_click')
+        ##print('text_left_click')
+        pass
         
     def create_window(self):
         """
@@ -340,12 +342,14 @@ class TextEditor():
 
 if __name__ == '__main__':
     """
-    sys.argv[0] - Name of script
-    sys.argv[1] - If provided is the filename to be edited
-    """
+    This is run as a separate Basecamp process with a command line arguments:
+        sys.argv[0] - Name of script
+        sys.argv[1] - If provided is the filename to be edited
+
     #Raspberry Pi Python gave <ftype> error on these lines
     #print(f"Name of the script      : {sys.argv[0]=}")
     #print(f"Arguments of the script : {sys.argv[1:]=}")
+    """
 
     filename = None
     if len(sys.argv) > 1:

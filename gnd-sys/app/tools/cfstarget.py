@@ -26,8 +26,9 @@
 """
 
 import sys
-import time
+sys.path.append('..')
 import os
+import time
 import json
 import shutil
 import subprocess
@@ -37,34 +38,27 @@ from enum import Enum
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    from eds      import AppEds, CfeTopicIds
-    from jsonfile import JsonTblTopicMap
-    from usrapps  import AppSpec, ManageUsrApps
-    from utils    import compress_abs_path
-else:
-    from .eds      import AppEds, CfeTopicIds
-    from .jsonfile import JsonTblTopicMap
-    from .usrapps  import AppSpec, ManageUsrApps
-    from .utils    import compress_abs_path
-    
 import FreeSimpleGUI as sg
 
-###############################################################################
+from tools.eds        import CfeTopicIds
+from tools.jsonfile   import JsonTblTopicMap
+from tools.usrapps    import AppSpec, ManageUsrApps
+from tools.bcpaths    import BcPathConst, BcPath, BcPathMgr, CfsPath, CfsPathMgr
 
-DEFAULT_TARGET_NAME = 'cpu1'                # TODO: Parameterize
-CFS_DEFS_FOLDER     = 'basecamp_defs'
-INSERT_KEYWORD      = '!BASECAMP-INSERT!'
-CFE_STARTUP_SCR     = 'cfe_es_startup.scr'
+
+###############################################################################
 
 # Basecamp's default configuration supports these apps so they can't be removed
 # like other app store apps
-RESERVED_APPS       = ['sample_app']
+RESERVED_APPS = ['sample_app']
 
 ###############################################################################
 
-def build_cfs_target(cfs_build_script, cfs_abs_base_path, main_window):
+def build_cfs_target(cfs_build_script, main_window):
 
+    cfs_path_mgr = CfsPathMgr()
+    cfs_abs_base_path = cfs_path_mgr.get(CfsPath.CFS)
+    
     build_subprocess = subprocess.Popen(f'{cfs_build_script} {cfs_abs_base_path}',
                        stdout=subprocess.PIPE, shell=True, bufsize=1, universal_newlines=True)
     if build_subprocess is not None:
@@ -76,31 +70,35 @@ def build_cfs_target(cfs_build_script, cfs_abs_base_path, main_window):
 
 ###############################################################################
 
-class Cfs():
-
-    # Shell script names should not change and are considered part of the application
-    # Therefore they can be defined here and not in a configuration file
-
-    SH_BUILD_CFS_TOPICIDS = './build_cfs_topicids.sh'
-    SH_MAKE_INSTALL_CFS   = './make_install.sh'
-    SH_STOP_CFS           = './stop_cfs.sh'
-    SH_START_CFS          = './start_cfs.sh'
-    SH_SUDO_START_CFS     = './sudo_start_cfs.sh'
+class AppStatus():
+    """
+    Base class for AppTargetStatus and AppTopicIdStatus
+    """
+    # In addition to reporting status these values are used in GUI displays so
+    # their values are concise/informative
+    INSTALLED     = 'Installed'
+    INCOMPLETE    = 'Incomplete Installation'
+    NOT_INSTALLED = 'Not Installed'
 
 
 ###############################################################################
 
-class AppTargetStatus():
+class AppTargetStatus(AppStatus):
     """
     Helper class for ManageCfs
+    
+    Note AppTopicIdStatus() is a second helper class that covers Topic ID
+    installation.
     """
+    
     def __init__(self):
         self.app_in_applist        = {'state': True, 'descr': 'Valid'}  # App defined in targets.cmake APPLIST
         self.tbl_in_filelist       = {'state': True, 'descr': 'Valid'}  # Tables defined in targets.cmake FILELIST
         self.tbl_files_in_defs     = {'state': True, 'descr': 'Valid'}  # Tables in basecamp_defs folder
-        self.app_in_startup_scr    = {'state': True, 'descr': 'Valid'}  # App defined in CFE_STARTUP_SCR
+        self.app_in_startup_scr    = {'state': True, 'descr': 'Valid'}  # App defined in BcPathConst.CFE_STARTUP_SCR
         self.depend_in_applist     = {'state': True, 'descr': 'Valid'}  # Dependencies in targets.cmake APPLIST
-        self.depend_in_startup_scr = {'state': True, 'descr': 'Valid'}  # Dependencies in CFE_STARTUP_SCR prior to app
+        self.depend_in_startup_scr = {'state': True, 'descr': 'Valid'}  # Dependencies in BcPathConst.CFE_STARTUP_SCR prior to app
+    
     def print(self):
         print('\nAppTargetStatus:')
         print(f"app_in_applist:        {self.app_in_applist['state']}, {self.app_in_applist['descr']}")
@@ -109,17 +107,37 @@ class AppTargetStatus():
         print(f"app_in_startup_scr:    {self.app_in_startup_scr['state']}, {self.app_in_startup_scr['descr']}")
         print(f"depend_in_applist:     {self.depend_in_applist['state']}, {self.depend_in_applist['descr']}")
         print(f"depend_in_startup_scr: {self.depend_in_startup_scr['state']}, {self.depend_in_startup_scr['descr']}")
-    def all_true(self):
-        return all([self.app_in_applist['state'],self.tbl_in_filelist['state'],self.tbl_files_in_defs['state'],
-                    self.app_in_startup_scr['state'],self.depend_in_applist['state'],self.depend_in_startup_scr['state']])
-    def all_false(self):
-        return all([not self.app_in_applist['state'],not self.tbl_in_filelist['state'],not self.tbl_files_in_defs['state'],
-                    not self.app_in_startup_scr['state'],not self.depend_in_applist['state'],not self.depend_in_startup_scr['state']])
-    def app_not_installed(self):
+    
+    def state(self, obj_type, app_framework):
         """
-        Check fields that indicate an app is installed. It's not perfect but reasonable. 
-        """
-        return all([not self.app_in_applist['state'],not self.tbl_in_filelist['state'],not self.tbl_files_in_defs['state'], not self.app_in_startup_scr['state']])
+        app_framework - AppSpec.APP_FRAMEWORK_OSK or AppSpec.APP_FRAMEWORK_CFS
+        
+        The dependency states, self.depend_in_applist['state'] and self.depend_in_startup_scr['state'], are required
+        for an app to be installed but are not excluded from an incompllete determination because they amy be present
+        regardless of an app being installed or not
+        """       
+        status = self.NOT_INSTALLED            
+        if (obj_type != AppSpec.CFE_TYPE_LIB and app_framework == AppSpec.APP_FRAMEWORK_OSK):
+            incomplete_list = [self.app_in_applist['state'], self.tbl_in_filelist['state'], self.tbl_files_in_defs['state'], self.app_in_startup_scr['state']]
+            if all([self.app_in_applist['state'], self.tbl_in_filelist['state'], self.tbl_files_in_defs['state'],
+                    self.app_in_startup_scr['state'], self.depend_in_applist['state'], self.depend_in_startup_scr['state']]):
+                status = self.INSTALLED
+            elif any(incomplete_list) and not all(incomplete_list):
+                status = self.INCOMPLETE
+        
+        elif (obj_type == AppSpec.CFE_TYPE_LIB or app_framework == AppSpec.APP_FRAMEWORK_CFS):
+            # Treat cFS apps and both types of libraries the same 
+            print('*** Check this out')
+            incomplete_list = [self.app_in_applist['state'], self.app_in_startup_scr['state']]
+            if all([self.app_in_applist['state'], self.app_in_startup_scr['state'], self.depend_in_applist['state'], self.depend_in_startup_scr['state']]):
+                print('*** INSTALLED')
+                status = self.INSTALLED
+            elif any(incomplete_list) and not all(incomplete_list):
+                print('*** INCOMPLETE')
+                status = self.INCOMPLETE
+        
+        return status
+           
     def invalidate_all(self):
         self.app_in_applist['state'] = False
         self.app_in_applist['descr'] = 'Invalid'
@@ -137,17 +155,36 @@ class AppTargetStatus():
     
 ###############################################################################
 
-class AppTopicIdStatus():
+class AppTopicIdStatus(AppStatus):
     """
     Helper class for ManageCfs
     """
     def __init__(self):
         self.ini_topics_defined = {'state': True, 'descr': 'Valid'}  # Topic IDs used in ini table are defined in cfe-topicids.xml
         self.topics_in_kit_to   = {'state': True, 'descr': 'Valid'}  # App's topic IDs are defined in KIT_TO's filter table
+    
     def print(self):
         print('AppTopicStatus:')
         print(f"ini_topics_defined: {self.ini_topics_defined['state']}, {self.ini_topics_defined['descr']}")
         print(f"topics_in_kit_to:   {self.topics_in_kit_to['state']}, {self.topics_in_kit_to['descr']}")
+
+    def state(self, app_framework):
+        """
+        """
+        status = self.NOT_INSTALLED
+        if app_framework == AppSpec.APP_FRAMEWORK_OSK:
+            installed_list = [self.ini_topics_defined['state'], self.topics_in_kit_to['state']]
+            if all(installed_list):
+                status = self.INSTALLED
+            elif any(installed_list):
+                # Since all is checked first, incomplete means not all but at least one 
+                status = self.INCOMPLETE
+        else:
+            # Asssume cFS app and since they don't have ini files only check KIT_TO 
+            if self.topics_in_kit_to['state']:
+                status = self.INSTALLED
+        return status
+
 
 ###############################################################################
   
@@ -192,7 +229,7 @@ class CfsStdout(threading.Thread):
         try:
             logger.info("Starting cFS terminal window stdout display")
             for line in iter(self.cfs_subprocess.stdout.readline, ''):
-                #print(">>Line: " + line)
+                ##print(">>Line: " + line)
                 self.cfs_subprocess_log += line
                 self.window["-CFS_PROCESS_TEXT-"].update(self.cfs_subprocess_log)
                 self.window["-CFS_PROCESS_TEXT-"].set_vscroll_position(1.0)  # Scroll to bottom (most recent entry)
@@ -210,7 +247,7 @@ class CfsStdout(threading.Thread):
   
     def terminate(self):
         """
-        Terminate the thread by rasing an exception
+        Terminate the thread by raising an exception
         """
         logger.info("Raising CfsStdout exception to terminate thread")
         thread_id = self.get_id()
@@ -218,7 +255,7 @@ class CfsStdout(threading.Thread):
               ctypes.py_object(SystemExit))
         if res > 1:
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
-            print('Exception raise failure')
+            sg.popup(f'Failed to terminate thread using an exception. Return code = {res}', title="Thread Termination Error", modal=False)
 
 
 ###############################################################################
@@ -226,28 +263,33 @@ class CfsStdout(threading.Thread):
 class ManageCfs():
     """
     Manage the display for configuring, building and running the cFS.
-    app_abs_path is the python application path, not cFS apps
-    #TODO - Define path and file constants. ManageCfs should be its own package with cFS constants.
     #TODO - Consolidate common logic in restore_targets_cmake(), in_targets_cmake_list(() and update_targets_cmake()
     """
-    TRI_STATE = Enum('TriState', ['NOT_APP', 'TRUE', 'FALSE'])
+    
+    INSTALL_STATE = Enum('InstallState', ['NA', 'TRUE', 'FALSE', 'UNVER']) # Keep short and close to same length for display
 
-    def __init__(self, basecamp_abs_path, cfs_abs_base_path, usr_app_rel_path, main_window, cfs_target):
-        self.basecamp_abs_path      = basecamp_abs_path
-        self.cfs_abs_base_path      = cfs_abs_base_path
-        self.cfs_abs_defs_path      = os.path.join(self.cfs_abs_base_path, 'basecamp_defs')
-        self.basecamp_tools_path    = os.path.join(basecamp_abs_path, 'tools')
-        self.usr_app_path           = compress_abs_path(os.path.join(basecamp_abs_path, usr_app_rel_path))
+    def __init__(self, main_window, cfs_target):
+        
+        self.bc_path_mgr  = BcPathMgr()
+        self.cfs_path_mgr = CfsPathMgr()
+        
+        self.basecamp_abs_path      = self.bc_path_mgr.get(BcPath.GUI_APP)
+        self.basecamp_tools_path    = self.bc_path_mgr.get(BcPath.APP_TOOLS)
+        self.usr_app_path           = self.bc_path_mgr.get(BcPath.USR_APPS)
+        self.cfs_abs_base_path      = self.cfs_path_mgr.get(CfsPath.CFS)
+        self.cfs_abs_defs_path      = self.cfs_path_mgr.get(CfsPath.CFS_TARGET_DEFS)
+        
         self.main_window            = main_window
         self.cfs_target             = cfs_target
-        self.startup_scr_filename   = cfs_target + '_' + CFE_STARTUP_SCR
+        self.startup_scr_filename   = cfs_target + '_' + BcPathConst.CFE_STARTUP_SCR
         self.startup_scr_file       = os.path.join(self.cfs_abs_defs_path, self.startup_scr_filename)
-        self.targets_cmake_filename = 'targets.cmake'
-        self.targets_cmake_file     = os.path.join(self.cfs_abs_defs_path, self.targets_cmake_filename)
-        self.cfe_topic_id_filename  = 'cfe-topicids.xml'
+        self.targets_cmake_file     = os.path.join(self.cfs_abs_defs_path, BcPathConst.TARGET_CMAKE_FILE)
+        self.cfe_topic_id_filename  = BcPathConst.CFE_TOPIC_ID_FILE
         self.cfe_topic_id_file      = os.path.join(self.cfs_abs_defs_path, 'eds', self.cfe_topic_id_filename)
-        self.kit_to_tbl_filename    = cfs_target + '_' + 'kit_to_pkt_tbl.json'
+        self.kit_to_tbl_filename    = cfs_target + '_' + BcPathConst.KIT_TO_PKT_TBL
         self.kit_to_tbl_file        = os.path.join(self.cfs_abs_defs_path, self.kit_to_tbl_filename)
+        self.kit_sch_usrmsg_tbl_filename = cfs_target + '_' + BcPathConst.KIT_SCH_USRMSG_TBL
+        self.kit_sch_usrmsg_tbl_file     = os.path.join(self.cfs_abs_defs_path, self.kit_sch_usrmsg_tbl_filename)
         self.cmake_app_list         = cfs_target + '_APPLIST'
         self.cmake_file_list        = cfs_target + '_FILELIST'
         self.build_subprocess       = None
@@ -272,7 +314,6 @@ class ManageCfs():
         the table files are recomputed for the edit targets.cmake step and the
         copy files to cFS '_defs' steps. 
         """
-        #TODO - Use a loop to construct the layout
 
         layout = [
                   [sg.Text("Perform the following steps to add one or more apps to the cFS target. For step 1, choose 'Auto' to automatically\nperform all of the steps or 'Man' to manually perform each step. Libraries MUST be added prior\nto the apps that depend upon them.\n", font=self.t_font)],
@@ -283,11 +324,11 @@ class ManageCfs():
                   [sg.Text('', size=self.b_size), sg.Button('Auto', size=self.b_size, button_color=('SpringGreen4'), font=self.b_font, pad=self.b_pad, enable_events=True, key='-1_AUTO-'),
                    sg.Text('Automatically perform all steps or ...', font=self.t_font)],
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1A_MAN-'),
-                   sg.Text('Copy table files to %s' % CFS_DEFS_FOLDER, font=self.t_font)],
+                   sg.Text(f'Copy table files to {BcPathConst.CMAKE_DEFS_PATH_STR}', font=self.t_font)],
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1B_MAN-'),
-                   sg.Text("Update targets.cmake's %s and %s" % (self.cmake_app_list, self.cmake_file_list), font=self.t_font)],
+                   sg.Text(f"Update targets.cmake's {self.cmake_app_list} and {self.cmake_file_list}", font=self.t_font)],
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1C_MAN-'),
-                   sg.Text(f'Update cpu1_{CFE_STARTUP_SCR}', font=self.t_font)],
+                   sg.Text(f'Update {self.cfs_path_mgr.get_cpu_name()}_{BcPathConst.CFE_STARTUP_SCR}', font=self.t_font)],
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1D_MAN-'),
                    sg.Text('Update EDS cfe-topicids.xml', font=self.t_font)], 
                   [sg.Text('', size=self.b_size), sg.Button('Man',  size=self.b_size, button_color=self.b_color, font=self.b_font, pad=self.b_pad, enable_events=True, key='-1E_MAN-'),
@@ -334,6 +375,7 @@ class ManageCfs():
                     status_text = f'{self.selected_app.upper()} requires the following libraries to be installed:\n  {missing_req_libs}\n'
                     sg.popup(status_text, title=f'Missing {self.selected_app.upper()} Libraries', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
 
+
             elif self.event == '-1A_MAN-':
                 self.selected_app = self.values['-USR_APP-']
                 self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
@@ -360,7 +402,7 @@ class ManageCfs():
                 self.build_target()
             
             elif self.event == '-2_MAN-': # Build the cFS
-                popup_text = f"Open a terminal window, change directory to {self.cfs_abs_base_path} and build the cFS. See '{Cfs.SH_BUILD_CFS_TOPICIDS}' for guidance"
+                popup_text = f"Open a terminal window, change directory to {self.cfs_abs_base_path} and build the cFS. See '{BcPathConst.SH_BUILD_CFS_TOPICIDS}' for guidance"
                 sg.popup(popup_text, title='Manually Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)   
 
             ## Step 3 - Stop the cFS prior to modifying or adding an app
@@ -377,26 +419,26 @@ class ManageCfs():
                 event,values = window.read()
                 window.close()
                 password = values[0]
-                status = subprocess.run(Cfs.SH_STOP_CFS, shell=True, cwd=self.basecamp_abs_path, input=password.encode())
+                status = subprocess.run(BcPathConst.SH_STOP_CFS, shell=True, cwd=self.basecamp_abs_path, input=password.encode())
                 """
                 #popup_text = 'After you close this popup. Enter your sudo password in the terminal where you started cfs-basecamp'
                 #sg.popup(popup_text, title='Automatically Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=True)
                 password = self.values['-PASSWORD-']
                 if password is not None:
-                    status = subprocess.run(Cfs.SH_STOP_CFS, shell=True, cwd=self.basecamp_abs_path, input=password.encode())
-                    print('status type = %s'%str(type(status.returncode)))
+                    status = subprocess.run(self.bc_path_mgr.get_shell_script(BcPathConst.SH_STOP_CFS), shell=True, cwd=self.basecamp_abs_path, input=password.encode())
+                    ##print(f'status type = {str(type(status.returncode))}')
                     if status.returncode == 0:
-                        popup_text = f"'{Cfs.SH_STOP_CFS}' successfully executed with return status {status.returncode}"
+                        popup_text = f"'{BcPathConst.SH_STOP_CFS}' successfully executed with return status {status.returncode}"
                         self.main_window['-STOP_CFS-'].click()
                     else:
-                        popup_text = f"'{Cfs.SH_STOP_CFS}' returned with error status {status.returncode}"
+                        popup_text = f"'{BcPathConst.SH_STOP_CFS}' returned with error status {status.returncode}"
                     sg.popup(popup_text, title='Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                 else:
                     popup_text = 'No attempt to stop the cFS, since no password supplied'
                     sg.popup(popup_text, title='Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                             
             elif self.event == '-3_MAN-': # Stop the cFS prior to modifying or adding an app
-                popup_text = f"Open a terminal window and kill any running cFS processes. See '{Cfs.SH_STOP_CFS}' for guidance" 
+                popup_text = f"Open a terminal window and kill any running cFS processes. See '{BcPathConst.SH_STOP_CFS}' for guidance" 
                 sg.popup(popup_text, title='Stop the cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
             ## Step 4 - Restart Basecamp
@@ -413,7 +455,7 @@ class ManageCfs():
     def add_usr_app(self, usr_app, quiet_ops=False):
         self.selected_app = usr_app
         self.usr_app_spec = self.manage_usr_apps.get_app_spec(self.selected_app)
-        status_text = f"{self.selected_app.upper()} was successfully added to Basecamp's cFS target:\n\n"
+        status_text = f"{self.selected_app.upper()} successfully added to Basecamp's cFS target:\n\n"
         app_info = self.usr_app_spec.get_app_info()
         cfe_obj_type  = app_info['obj-type']
         app_framework = app_info['framework']
@@ -434,6 +476,7 @@ class ManageCfs():
                     else:
                         status_text += f"4. Topic IDs not updated since it's a library\n\n"
                         display_auto_popup = True
+                    
         if display_auto_popup and not quiet_ops:
             sg.popup(status_text, title=f'Update {self.startup_scr_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         return status_text
@@ -513,11 +556,11 @@ class ManageCfs():
                     f"   {target_status.tbl_in_filelist['state']}, {target_status.tbl_in_filelist['descr']}\n"
                     f"Table files in basecamp_defs?\n"
                     f"   {target_status.tbl_files_in_defs['state']}, {target_status.tbl_files_in_defs['descr']}\n"
-                    f"App in {CFE_STARTUP_SCR}?\n"
+                    f"App in {BcPathConst.CFE_STARTUP_SCR}?\n"
                     f"   {target_status.app_in_startup_scr['state']}, {target_status.app_in_startup_scr['descr']}\n"
                     f"App dependencies in {self.cmake_app_list}?\n"
                     f"   {target_status.depend_in_applist['state']}, {target_status.depend_in_applist['descr']}\n"
-                    f"App dependencies in {CFE_STARTUP_SCR}?\n"
+                    f"App dependencies in {BcPathConst.CFE_STARTUP_SCR}?\n"
                     f"   {target_status.depend_in_startup_scr['state']}, {target_status.depend_in_startup_scr['descr']}\n"
                     f"App ini table topic IDs in {self.cfe_topic_id_filename}?\n"
                     f"   {topic_ids_status.ini_topics_defined['state']}, {topic_ids_status.ini_topics_defined['descr']}\n"
@@ -544,7 +587,14 @@ class ManageCfs():
         if len(self.cfs_app_specs) > 0:
             usr_app_list = list(self.cfs_app_specs.keys())
             if action == 'Add':
-                self.add_usr_app_gui(usr_app_list)
+                # Remove apps the are already fully installed
+                # Removing from usr_app_list impacts loop so add apps to new list
+                add_usr_app_list = []
+                for app in usr_app_list:
+                    install_status = self.app_install_status(app)
+                    if not(install_status['summary'][0] and install_status['summary'][1] == AppTargetStatus.INSTALLED):
+                        add_usr_app_list.append(app)
+                self.add_usr_app_gui(add_usr_app_list)
             elif action == 'Remove':
                 self.remove_usr_app_gui(usr_app_list)
             elif action == 'App':
@@ -553,17 +603,20 @@ class ManageCfs():
             sg.popup('Your usr/apps directory is empty', title=f'{action} App', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
     def get_app_table_list(self):
+        """
+        Caller must ensure self.usr_app_spec is set to the app being processed
+        """
         app_cmake_files = self.usr_app_spec.get_targets_cmake_files()
         table_list_str = ""
         table_list = []
-        for table in app_cmake_files['tables']:
-            table_list_str += "%s, " % table
+        for table in app_cmake_files['json-tables']:
+            table_list_str += f'{table}, '
             table_list.append(table)
         return table_list
                 
     def build_target(self):
-        build_cfs_script = os.path.join(self.basecamp_abs_path, Cfs.SH_BUILD_CFS_TOPICIDS)
-        build_cfs_target(build_cfs_script, self.cfs_abs_base_path, self.main_window)
+        build_cfs_script = self.bc_path_mgr.get_shell_script(BcPathConst.SH_BUILD_CFS_TOPICIDS)
+        build_cfs_target(build_cfs_script, self.main_window)
                 
     def restart_popup(self, instructions):
         """
@@ -627,24 +680,24 @@ class ManageCfs():
             else:
                 app_table_path = os.path.join(self.usr_app_path, self.selected_app, 'fsw', 'tables')
                 if auto_copy:
-                    target_equals_default = (DEFAULT_TARGET_NAME == self.cfs_target)
+                    target_equals_default = (BcPathConst.DEFAULT_CPU_NAME == self.cfs_target)
                     try:
                         src=''   # Init for exception
                         dst=''
-                        target_prefix = DEFAULT_TARGET_NAME+'_'
+                        target_prefix = BcPathConst.DEFAULT_CPU_NAME+'_'
                         tables_copied = 0
                         for table in os.listdir(app_table_path):
-                            print(f'### {self.selected_app} table: {table}')
+                            ##print(f'### {self.selected_app} table: {table}')
                             src_table = table.replace(target_prefix,'')
                             if src_table in table_list:
                                 src = os.path.join(app_table_path, table)
-                                #print('##src: ' + src)
+                                ##print('##src: ' + src)
                                 if target_equals_default:
                                     dst_table = table
                                 else:
                                     dst_table = self.cfs_target + '_' + src_table
                                 dst = os.path.join(self.cfs_abs_defs_path, dst_table)
-                                #print('##dst: ' + dst)
+                                ##print('##dst: ' + dst)
                                 shutil.copyfile(src, dst)
                                 tables_copied += 1
                         if tables_copied == table_count:
@@ -680,7 +733,7 @@ class ManageCfs():
         popup_text = "Undefined"
         app_cmake_files = self.usr_app_spec.get_targets_cmake_files()
         table_list_str = ''
-        table_list = app_cmake_files['tables']
+        table_list = app_cmake_files['json-tables']
         if len(table_list) > 0:
             table_list_str = f'and {str(table_list)}'
         if auto_update:
@@ -699,17 +752,17 @@ class ManageCfs():
                 popup_text = f"Updated {self.targets_cmake_file} with {app_cmake_files['obj-file']} {table_list_str}"
             else:
                 popup_text = f"Preserved {self.targets_cmake_file}, it already contains {app_cmake_files['obj-file']} {table_list_str}"
-            #todo: Remove? sg.popup(popup_text, title=f'Update {self.targets_cmake_filename}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+            #todo: Remove? sg.popup(popup_text, title=f'Update {BcPathConst.TARGET_CMAKE_FILE}', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
         else:
-            sg.clipboard_set(app_cmake_files['obj-file'] + ',' + str(app_cmake_files['tables']))
-            popup_text = f"After this dialogue, {self.targets_cmake_filename} will open in an editor. Paste\n  {app_cmake_files['obj-file']}\ninto\n  {self.cmake_app_list}\n\nPaste filenames with spaces\n  {app_cmake_files['tables']}\ninto\n  {self.cmake_file_list}"
-            sg.popup(popup_text, title=f'Update {self.targets_cmake_filename}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
+            sg.clipboard_set(app_cmake_files['obj-file'] + ',' + str(app_cmake_files['json-tables']))
+            popup_text = f"After this dialogue, {BcPathConst.TARGET_CMAKE_FILE} will open in an editor. Paste\n  {app_cmake_files['obj-file']}\ninto\n  {self.cmake_app_list}\n\nPaste filenames with spaces\n  {app_cmake_files['json-tables']}\ninto\n  {self.cmake_file_list}"
+            sg.popup(popup_text, title=f'Update {BcPathConst.TARGET_CMAKE_FILE}', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
             self.text_editor = sg.execute_py_file('texteditor.py', parms=self.targets_cmake_file, cwd=self.basecamp_tools_path)
         return update_passed, popup_text
         
     def update_targets_cmake_line(self, app_cmake_files, line):
         line_modified = False
-        if INSERT_KEYWORD in line:
+        if BcPathConst.CMAKE_INSERT_TAG in line:
             if self.cmake_app_list in line:
                 # The string search logic looks for an exact match and allows
                 # the name being searched to exist in an end-of-line comment
@@ -718,15 +771,15 @@ class ManageCfs():
                     if not app_cmake_files['obj-file'] in line[:i].split(' '):
                         line = line[:i] + ' ' + app_cmake_files['obj-file'] + line[i:]     
                         line_modified = True
-                        print('app_list_new: ' + line)
+                        ##print('app_list_new: ' + line)
             elif self.cmake_file_list in line:
                 if not line.strip().startswith('#'):  # Non-commented line
-                    for table in app_cmake_files['tables']:
+                    for table in app_cmake_files['json-tables']:
                         i = line.find(')')
                         if not table in line[:i].split(' '):
                             line = line[:i] + ' ' + table + line[i:]     
                             line_modified = True
-                            print('file_list_new: ' + line)
+                            ##print('file_list_new: ' + line)
         return (line_modified, line)
         
     def restore_targets_cmake(self):
@@ -738,7 +791,7 @@ class ManageCfs():
         instantiated_text = ''
         with open(self.targets_cmake_file) as f:
             for line in f:
-                if INSERT_KEYWORD in line:
+                if BcPathConst.CMAKE_INSERT_TAG in line:
                     if self.cmake_app_list in line:
                         # The string search logic looks for an exact match and allows
                         # the name being searched to exist in an end-of-line comment
@@ -779,7 +832,7 @@ class ManageCfs():
                         if self.selected_app in line_array:
                             check_for_entry = False
                             original_entry = line
-                        if INSERT_KEYWORD in line:
+                        if BcPathConst.CMAKE_INSERT_TAG in line:
                             # If check_for_entry still true then entry hasn't been found
                             if check_for_entry:
                                 line = startup_script_entry+'\n'+line
@@ -817,7 +870,7 @@ class ManageCfs():
                         line = ''
                         check_for_entry = False
                         file_modified   = True
-                    if INSERT_KEYWORD in line:
+                    if BcPathConst.CMAKE_INSERT_TAG in line:
                         check_for_entry = False
                 instantiated_text += line               
         if file_modified:
@@ -826,9 +879,9 @@ class ManageCfs():
 
     def update_topic_ids(self):
         """
-        cfe-topicids.xml and kit_to_pkt_tbl.json are updated together because
-        they both use the telemetry topic IDs. Also with the current 'spare'
-        ID substitution method, this code makes sure they both have enough
+        CFE_TOPIC_ID_FILE and KIT_TO_PKT_TBL are updated together because
+        they both use the telemetry topic IDs. They both use a 'spare' ID
+        substitution method and this code verifies they both have enough
         spares before either is updated.
         """
         update_passed = False
@@ -836,7 +889,7 @@ class ManageCfs():
         cmd_topics = self.usr_app_spec.get_cmd_topics()
         tlm_topics = self.usr_app_spec.get_tlm_topics()
         cfe_topic_ids  = CfeTopicIds(self.cfe_topic_id_file)
-        kit_to_pkt_tbl = JsonTblTopicMap(self.kit_to_tbl_file)
+        kit_to_pkt_tbl = JsonTblTopicMap(self.kit_to_tbl_file,"packet-array","packet")
         
         if len(cmd_topics) > cfe_topic_ids.spare_cmd_topic_cnt():
             popup_text = f'Error acquiring command topic IDs. {len(cmd_topics)} needed, only {cfe_topic_ids.spare_cmd_topic_cnt()} available.'
@@ -850,29 +903,55 @@ class ManageCfs():
         else:  
             for cmd in cmd_topics:
                 cfe_topic_ids.replace_spare_cmd_topic(cmd)
-                #print(cmd)
+                ##print(cmd)
             for tlm in tlm_topics:
                 cfe_topic_ids.replace_spare_tlm_topic(tlm)
-                #print(tlm)
+                ##print(tlm)
             cfe_topic_ids.write_doc_to_file()
             kit_to_pkt_tbl.replace_spare_topics(tlm_topics)
             popup_text = f'Updated topic IDs in {self.cfe_topic_id_file} and {self.kit_to_tbl_file}'
             update_passed = True
-            #todo: Remove? sg.popup(popup_text, title='Update Topic IDs', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+            ##sg.popup(popup_text, title='Update Topic IDs', keep_on_top=True, non_blocking=False, grab_anywhere=True, modal=True)
+
+        """
+        Basecamp v4.0.0 added a feature allowing apps to add message topic IDs to a new 
+        KIT_SCH User Message table (KIT_SCH_USRMSG_TBL). This table defines messages that
+        will be sent in the same slots as the Basecamp periodic messages. The feature was
+        added to support NASA apps inatalled via a proxy app. However it was easier to make
+        the update to the app spec and not the proxy app spec so it's being supported in
+        this class.                   
+        """
+        ##print("Here 1")
+        if update_passed:
+            ##print("Here 2")
+            usrmsg_topics_dict = self.usr_app_spec.get_usrmsg_topics()
+            if len(usrmsg_topics_dict) > 0:
+                ##print(f'usrmsg_topics_dict: {usrmsg_topics_dict}')
+                kit_sch_usrmsg_tbl = JsonTblTopicMap(self.kit_sch_usrmsg_tbl_file,"message-array","message")
+                kit_sch_usrmsg_tbl.replace_spare_topics(list(usrmsg_topics_dict))
+                kit_sch_usrmsg_tbl.update_usrmsg_periods(usrmsg_topics_dict)
+        
         return update_passed, popup_text 
+ 
         
     def restore_topic_ids(self):
         if self.usr_app_spec.app_name not in RESERVED_APPS:
             cmd_topics = self.usr_app_spec.get_cmd_topics()
             tlm_topics = self.usr_app_spec.get_tlm_topics()
             cfe_topic_ids  = CfeTopicIds(self.cfe_topic_id_file)
-            kit_to_pkt_tbl = JsonTblTopicMap(self.kit_to_tbl_file)
+            kit_to_pkt_tbl = JsonTblTopicMap(self.kit_to_tbl_file,"packet-array","packet")
             for cmd in cmd_topics:
                 cfe_topic_ids.restore_spare_cmd_topic(cmd)
             for tlm in tlm_topics:
                 cfe_topic_ids.restore_spare_tlm_topic(tlm)
             cfe_topic_ids.write_doc_to_file()
-            kit_to_pkt_tbl.restore_spare_topics(tlm_topics)
+            kit_to_pkt_tbl.restore_spare_topics(tlm_topics, JsonTblTopicMap.APP_KIT_TO)
+            
+            # Retore KIT_SCH user message table 
+            usrmsg_topics_dict = self.usr_app_spec.get_usrmsg_topics()
+            if len(usrmsg_topics_dict) > 0:
+                kit_sch_usrmsg_tbl = JsonTblTopicMap(self.kit_sch_usrmsg_tbl_file,"message-array","message")
+                kit_sch_usrmsg_tbl.restore_spare_topics(list(usrmsg_topics_dict), JsonTblTopicMap.APP_KIT_SCH)
             
     def remove_app_src_files(self):
         app_path = os.path.join(self.usr_app_path, self.selected_app)
@@ -884,49 +963,68 @@ class ManageCfs():
            
     def app_install_status(self, app):
         """
-        A properly installed app includes:
-          1. App defined in targets.cmake APP_LIST
-          2. Tables defined in target.cmakes and present in basecamp_defs folder
+        A fully installed app includes:
+          1. App defined in target.cmake APP_LIST
+          2. Tables defined in target.cmake and present in basecamp_defs folder
           3. App defined in startup script 
           4. Dependencies exist in APP_LIST and startup script
           5. Topic IDs defined in ini file are defined in cfe-topicids.xml
           6. Telemetry topic IDs defined in TO's table
         """
         app_target_status = self.verify_app_installed_in_target(app)
-        app_topic_ids = self.verify_app_topic_ids(app)
-        #app_target_status.print()
-        #app_topic_ids.print()
+        app_topic_id_status = self.verify_app_topic_ids(app)
+        app_info = self.usr_app_spec.get_app_info()
+        #~app_target_status.print()
+        #~app_topic_id_status.print()
         
-        summary_status = [True,  f'Incomplete Installation', 'IndianRed3']
-        if app_target_status.all_true():
-            # kit_to is not consider an app installation error. It's status is still reported
-            if app_topic_ids.ini_topics_defined['state']:
-                summary_status = [True,  f'Valid Installation', 'SpringGreen4']
-        elif app_target_status.app_not_installed():
-            summary_status = [False, f'Not Installed', 'gray']
+        app_target_state = app_target_status.state(app_info['obj-type'], app_info['framework'])
 
-        app_status = { 'summary': summary_status, 'target': app_target_status, 'topic_ids': app_topic_ids}
+        if app_info['obj-type'] == AppSpec.CFE_TYPE_LIB:
+            # Topic ID installation doesn't apply to libraries
+            if app_target_state == AppStatus.INSTALLED:
+                summary_status = [True, AppStatus.INSTALLED, 'SpringGreen4']
+            elif app_target_state == AppStatus.INCOMPLETE:
+                summary_status = [True, AppStatus.INCOMPLETE, 'IndianRed3']
+            else:
+                summary_status = [False, AppStatus.NOT_INSTALLED, 'gray']
+            app_status = { 'summary': summary_status, 'target': app_target_status, 'topic_ids': app_topic_id_status}
+            return app_status
+
+        app_topic_id_state = app_topic_id_status.state(app_info['framework'])
+        if app_target_state == AppStatus.INSTALLED and app_topic_id_state == AppStatus.INSTALLED:
+            summary_status = [True, AppStatus.INSTALLED, 'SpringGreen4']
+        elif (app_target_state == AppStatus.INSTALLED
+              or app_target_state == AppStatus.INCOMPLETE 
+              or app_topic_id_state == AppStatus.INSTALLED
+              or app_topic_id_state == AppStatus.INCOMPLETE):
+            summary_status = [True, AppStatus.INCOMPLETE, 'IndianRed3']
+        else:
+            # Waffled between True/False. True allows user to see details of unstalled app which may
+            # helpful if they want to see details for a Basecamp vss NASA app
+            summary_status = [True, AppStatus.NOT_INSTALLED, 'gray']
+
+        app_status = { 'summary': summary_status, 'target': app_target_status, 'topic_ids': app_topic_id_status}
         return app_status
  
     def in_targets_cmake_list(self, line, cpu_list, item):
         """
         Searches for 'item' in the cpu_list(e.g.cpu1_APPLIST). The string
         search logic looks for an exact match and handles situations
-        when keywords or items being search are in comments
+        when keywords or items being searched are in comments
         """
-        item_in_list = self.TRI_STATE.NOT_APP
-        if INSERT_KEYWORD in line:
+        item_in_list = self.INSTALL_STATE.NA
+        if BcPathConst.CMAKE_INSERT_TAG in line:
             if cpu_list in line:
                if not line.strip().startswith('#'):  # Non-commented line
                     i = line.find(')')
                     if item in line[:i].split(' '):
-                        item_in_list = self.TRI_STATE.TRUE
+                        item_in_list = self.INSTALL_STATE.TRUE
                     else:
                         # app_c_fw may be in the global applist
                         if item == 'app_c_fw':
-                            item_in_list = self.TRI_STATE.TRUE
+                            item_in_list = self.INSTALL_STATE.TRUE
                         else:
-                            item_in_list = self.TRI_STATE.FALSE
+                            item_in_list = self.INSTALL_STATE.FALSE
         return item_in_list
 
     def verify_dependencies_installed(self, app):
@@ -934,7 +1032,12 @@ class ManageCfs():
         Verify an app's dependencies defined by JSON 'requires' are installed.
         Dependencies include libraries and other apps. App dependencies may
         have timing relationships that are not satisfied simply by the app
-        loading order so this check does not guarantee proper operation. 
+        loading order so this check does not guarantee proper operation.
+         
+        verify_dependencies_installed()
+        -- verify_app_installed_in_target(req_lib)
+        -- app_install_status(req_lib)
+           -- verify_app_installed_in_target(req_lib)
         """
         self.usr_app_spec = self.manage_usr_apps.get_app_spec(app)
         app_info = self.usr_app_spec.get_app_info()
@@ -942,22 +1045,24 @@ class ManageCfs():
         req_libs_installed = True
         missing_req_libs = []
         for req_lib in app_info['requires']:
-            print(f'req_lib: {req_lib}')
+            #~print(f'req_lib: {req_lib}')
+            # app_c_fw is always installed and may not be specified in 'requires'
             if 'app_c_fw' not in req_lib:
                 app_target_status = self.verify_app_installed_in_target(req_lib)
-                app_target_status.print()
-                if not app_target_status.all_true():
+                #~app_target_status.print()
+                install_status = self.app_install_status(req_lib)
+                if install_status['summary'][1] != AppStatus.INSTALLED:
                     req_libs_installed = False
                     missing_req_libs.append(req_lib)
         return req_libs_installed, missing_req_libs
-        
+       
+   
     def verify_app_installed_in_target(self, app):
         """
         Verifies:
-          1. App defined in targets.cmake APP_LIST
-          2. Tables defined in targets.cmake and present in basecamp_defs folder
-          3. App defined in startup script 
-          4. Dependencies exist in APP_LIST and startup script
+          1. targets.cmake: app and required apps in cpu APP_LIST. Required tables in cpu FILE_LIST (Basecamp apps)
+          2. startup script: Contains app and required apps
+          3. Verify table files in basecamp_defs
         """
         # Status defaults to valid and each verification below sets invalid states
         target_status = AppTargetStatus()
@@ -968,27 +1073,33 @@ class ManageCfs():
             target_status.invalidate_all()
             return target_status
             
-        app_info          = self.usr_app_spec.get_app_info()
-        app_cmake_files   = self.usr_app_spec.get_targets_cmake_files()
-        app_table_list    = self.get_app_table_list()
+        app_info        = self.usr_app_spec.get_app_info()
+        app_cmake_files = self.usr_app_spec.get_targets_cmake_files()
+        app_table_list  = self.get_app_table_list()
 
         # 1. Verify targets.cmake
         
         with open(self.targets_cmake_file) as f:
             for line in f:
-                # INSERT_KEYWORD check is in_targets_cmake_list(). Check here for efficiency  
-                if INSERT_KEYWORD in line:
-                    if self.in_targets_cmake_list(line, self.cmake_app_list, app) == self.TRI_STATE.FALSE:
+                # BcPathConst.CMAKE_INSERT_TAG check is in_targets_cmake_list(). Check here for efficiency  
+                if BcPathConst.CMAKE_INSERT_TAG in line:
+                    if self.in_targets_cmake_list(line, self.cmake_app_list, app) == self.INSTALL_STATE.FALSE:
                         target_status.app_in_applist['state'] = False
-                        target_status.app_in_applist['descr'] = f"{app} not in {self.targets_cmake_filename}'s {self.cmake_app_list}"
+                        target_status.app_in_applist['descr'] = f"{app.upper()} not in {BcPathConst.TARGET_CMAKE_FILE}'s {self.cmake_app_list}"
                     
-                    if any(self.in_targets_cmake_list(line, self.cmake_app_list, req_app) == self.TRI_STATE.FALSE for req_app in app_info['requires']):
+                    if any(self.in_targets_cmake_list(line, self.cmake_app_list, req_app) == self.INSTALL_STATE.FALSE for req_app in app_info['requires']):
                         target_status.depend_in_applist['state'] = False
-                        target_status.depend_in_applist['descr'] = f"Not all dependencies {app_info['requires']} found in {self.targets_cmake_filename}'s {self.cmake_app_list}"
+                        target_status.depend_in_applist['descr'] = f"Not all dependencies {app_info['requires']} found in {BcPathConst.TARGET_CMAKE_FILE}'s {self.cmake_app_list}"
 
-                    if any(self.in_targets_cmake_list(line, self.cmake_file_list, req_tbl) == self.TRI_STATE.FALSE for req_tbl in app_cmake_files['tables']):
-                        target_status.tbl_in_filelist['state'] = False
-                        target_status.tbl_in_filelist['descr'] = f"Not all tables {app_cmake_files['tables']} found in {self.targets_cmake_filename}'s {self.cmake_file_list}"
+                    # cFS app specs should have an empty 'json-tables' array 
+                    if len(app_cmake_files['json-tables']) > 0:
+                        if any(self.in_targets_cmake_list(line, self.cmake_file_list, req_tbl) == self.INSTALL_STATE.FALSE for req_tbl in app_cmake_files['json-tables']):
+                            target_status.tbl_in_filelist['state'] = False
+                            target_status.tbl_in_filelist['descr'] = f"Not all tables {app_cmake_files['json-tables']} found in {BcPathConst.TARGET_CMAKE_FILE}'s {self.cmake_file_list}"
+                    else:
+                        target_status.tbl_in_filelist['state'] = self.INSTALL_STATE.NA.name
+                        target_status.tbl_in_filelist['descr'] = f"{self.cmake_file_list} is empty which is expected for cFS proxy apps"
+                        
 
         # 2. Verify CFE_STARTUP_SCR
         
@@ -1004,7 +1115,7 @@ class ManageCfs():
          
         if not app in startup_app_list:
             target_status.app_in_startup_scr['state'] = False
-            target_status.app_in_startup_scr['descr'] = f'{app} not in {self.startup_scr_filename}'
+            target_status.app_in_startup_scr['descr'] = f'{app.upper()} not in {self.startup_scr_filename}'
                
         if not all(req_app in startup_app_list for req_app in app_info['requires']):
             target_status.depend_in_startup_scr['state'] = False
@@ -1014,21 +1125,26 @@ class ManageCfs():
         
         defs_file_list = os.listdir(self.cfs_abs_defs_path)
 
-        if not all(f'{self.cfs_target}_{req_tbl}' in defs_file_list for req_tbl in app_table_list):
-            # OSK tables must be copied into basecamp_defs, cFS tables are generated during build process
-            if app_info['framework'] == AppSpec.APP_FRAMEWORK_OSK:
+        # cFS app specs should have an empty 'json-tables' array, cFS tables are generated and installed during the build process
+        # 'OSK' (i.e. Basecamp) tables are copied from basecamp_defs into the target CPU's directory
+        if len(app_cmake_files['json-tables']) > 0:
+            if not all(f'{self.cfs_target}_{req_tbl}' in defs_file_list for req_tbl in app_table_list):
                 target_status.tbl_files_in_defs['state'] = False
                 target_status.tbl_files_in_defs['descr'] = f"Not all tables {app_table_list} found in basecamp_defs directory"
-            elif app_info['framework'] == AppSpec.APP_FRAMEWORK_CFS:
-                target_status.tbl_files_in_defs['descr'] = f"cFS apps do not require tables in basecamp_defs directory"
-                
+        else:
+            target_status.tbl_files_in_defs['state'] = self.INSTALL_STATE.NA.name
+            target_status.tbl_files_in_defs['descr'] = f"{self.cmake_file_list} is empty which is expected for cFS proxy apps"
+ 
         return target_status
          
     def verify_app_topic_ids(self, app):
         """
-        Verifies:
-          1. Topic IDs defined in ini file are defined in cfe-topicids.xml
-          2. Telemetry topic IDs defined in TO's table
+        Steps:
+          1. Gather data 
+          2. Verify topic IDs defined are defined in KIT_TO's packet table
+          3. Verify topic IDs defined in ini file are defined in cfe-topicids.xml and KIT_TO's packet table
+        
+        These are very simple sanity type checks not meant to catch every error scenario.  
         """
         self.usr_app_spec = self.manage_usr_apps.get_app_spec(app)
         app_info          = self.usr_app_spec.get_app_info()
@@ -1037,13 +1153,21 @@ class ManageCfs():
         # Status defaults to valid and each verification below sets invalid states
         topic_id_status = AppTopicIdStatus()
 
+        # 1a - Retrieve startup script
+        
         startup_script_entry = self.usr_app_spec.get_startup_scr_entry()
-        print(f'startup_script_entry: {startup_script_entry}')
+        ##print(f'startup_script_entry: {startup_script_entry}')
         if startup_script_entry.split(',')[0].strip() == 'CFE_LIB':
+            topic_id_status.ini_topics_defined['state'] = self.INSTALL_STATE.NA.name
+            topic_id_status.ini_topics_defined['descr'] = 'Libraries do not define topic IDs in JSON ini files'
+            topic_id_status.topics_in_kit_to['state'] = self.INSTALL_STATE.NA.name
+            topic_id_status.topics_in_kit_to['descr'] = "Libraries do not define topic IDs in KIT_TO's packet table"
             return topic_id_status
+
+        # 1b - Create array of topic IDs in the app's JSON ini file
         
-        # 1. Verify ini table topic IDs are defined in cfe-topicids.xml
-        
+        init_table_read = False
+        init_table_err_str = ''
         init_table = [tbl for tbl in app_table_list if "_ini" in tbl]
         init_table_len = len(init_table)
         if init_table_len == 1:
@@ -1057,35 +1181,93 @@ class ManageCfs():
                             keyword_str = keyword[0].strip().strip('"')
                             if '_TOPICID' in keyword_str:
                                 ini_topic_ids.append(keyword_str)
-                with open(self.cfe_topic_id_file) as f:
-                    cfe_topic_ids = f.read()
-                if not all(topic_id in cfe_topic_ids for topic_id in ini_topic_ids): # Simple check not concerned with commented out topics
-                    if app_info['framework'] == AppSpec.APP_FRAMEWORK_OSK:
-                        topic_id_status.ini_topics_defined['state'] = False
-                        topic_id_status.ini_topics_defined['descr'] = f"Not all ini table topic IDs {ini_topic_ids} found in {self.cfe_topic_id_filename}"            
-                    elif app_info['framework'] == AppSpec.APP_FRAMEWORK_CFS:
-                        topic_id_status.ini_topics_defined['descr'] = f"cFS apps do not require topic IDs in a JOSN ini file"
-               
-                # 2. Verify kit_to filter table contains ini table telemetry topic IDs. This isn't required but good practice for testing               
-                with open(self.kit_to_tbl_file) as f:
-                    kit_to_tbl = f.read()
-                ini_tlm_topic_ids = [topic_id for topic_id in ini_topic_ids if "TLM_TOPICID" in topic_id]
-                if not all(topic_id in kit_to_tbl for topic_id in ini_tlm_topic_ids): # Simple check not concerned with commented out topics
-                    topic_id_status.topics_in_kit_to['state'] = False
-                    topic_id_status.topics_in_kit_to['descr'] = f"Not all ini table tlm topic IDs {ini_tlm_topic_ids} found in {self.kit_to_tbl_filename}"            
-            except IOError:
-                topic_id_status.ini_topics_defined['state'] = False
-                topic_id_status.ini_topics_defined['descr'] = f"App's ini table file {init_table[0]} not in basecamp_defs directory"            
-            
+                init_table_read = True
+            except Exception as e:
+               init_table_err_str = f'Error opening/reading {ini_filename}: {e}'
+        
         elif init_table_len == 0:
             if app_info['framework'] == AppSpec.APP_FRAMEWORK_OSK:
-                topic_id_status.ini_topics_defined['state'] = False
-                topic_id_status.ini_topics_defined['descr'] = f"Init table not found in {app_table_list} using '_ini' substring"
-            elif app_info['framework'] == AppSpec.APP_FRAMEWORK_CFS:
-                topic_id_status.ini_topics_defined['descr'] = f"cFS apps do not require a JOSN '_ini' file"             
+                init_table_err_str = f"Init table using '_ini' substring not found in {app_table_list}"
+        
         else:
-            topic_id_status.ini_topics_defined['state'] = False
-            topic_id_status.ini_topics_defined['descr'] = f"Found more than 1 init table in {app_table_list} using '_ini' substring"
+            init_table_err_str = f"Found more than 1 init table using '_ini' substring in {app_table_list}"
+     
+        # 1c - Read EDS topic ID file
+        
+        cfe_topic_ids_read = False
+        topic_id_err_str = ''
+        try:
+            with open(self.cfe_topic_id_file) as f:
+                cfe_topic_ids = f.read()
+            cfe_topic_ids_read = True            
+        except Exception as e:
+            topic_id_err_str = f'Error opening/reading {self.cfe_topic_id_file}: {e}'
  
+        # 1d - Read KIT_TO packet table
+
+        kit_to_tbl_read = False
+        kit_to_err_str = ''
+        try:
+            with open(self.kit_to_tbl_file) as f:
+                kit_to_tbl = f.read()
+            kit_to_tbl_read = True
+        except Exception as e:
+            kit_to_err_str = f'Error opening/reading {self.kit_to_tbl_file}: {e}'
+ 
+        if app_info['obj-type'] == AppSpec.CFE_TYPE_APP:
+            
+            # 2. Verify topic IDs are defined in KIT_TO's packet table
+
+            if cfe_topic_ids_read:
+                if kit_to_tbl_read:
+                    cfe_topic_array = cfe_topic_ids.split('"')
+                    ##print(f'cfe_topic_array: {cfe_topic_array}')
+                    app_topic_ids = [item for item in cfe_topic_array if f'{app.upper()}_' in item and '_TLM_TOPICID' in item]
+                    ##print(f'TODO - EDS topics in KIT_TO {app_topic_ids}')
+                    if len(app_topic_ids) == 0:
+                        topic_id_status.topics_in_kit_to['state'] = False
+                        topic_id_status.topics_in_kit_to['descr'] = f'No {app.upper()} topic IDs defined in {self.cfe_topic_id_file}'
+                    else:
+                        if not all(topic_id in kit_to_tbl for topic_id in app_topic_ids):
+                            topic_id_status.topics_in_kit_to['state'] = False
+                            topic_id_status.topics_in_kit_to['descr'] = f'Topic IDs {app_topic_ids} not defined in KIT_TO packet table'            
+                else:
+                    topic_id_status.topics_in_kit_to['state'] = self.INSTALL_STATE.UNVER.name
+                    topic_id_status.topics_in_kit_to['descr'] = kit_to_err_str        
+            else:
+                topic_id_status.topics_in_kit_to['state'] = self.INSTALL_STATE.UNVER.name
+                topic_id_status.topics_in_kit_to['descr'] = topic_id_err_str
+
+            # 3. Verify Basecamp app ini table topic IDs are defined in cfe-topicids.xml and in KIT_TO's packet table
+
+            if app_info['framework'] == AppSpec.APP_FRAMEWORK_OSK:
+                if init_table_read:
+                    ini_tlm_topic_ids = [topic_id for topic_id in ini_topic_ids if "TLM_TOPICID" in topic_id]
+                    if kit_to_tbl_read:
+                        if not all(topic_id in kit_to_tbl for topic_id in ini_tlm_topic_ids): # Simple check not concerned with commented out topics
+                            topic_id_status.topics_in_kit_to['state'] = False
+                            topic_id_status.topics_in_kit_to['descr'] = f'Not all ini table tlm topic IDs {ini_tlm_topic_ids} found in {self.kit_to_tbl_filename}'
+                        if not all(topic_id in cfe_topic_ids for topic_id in ini_topic_ids): # Simple check not concerned with commented out topics
+                            topic_id_status.ini_topics_defined['state'] = False
+                            topic_id_status.ini_topics_defined['descr'] = f'Not all ini table topic IDs {ini_topic_ids} found in {self.cfe_topic_id_filename}'
+                    else:
+                        topic_id_status.ini_topics_defined['state'] = self.INSTALL_STATE.UNVER.name
+                        topic_id_status.ini_topics_defined['descr'] = kit_to_err_str                      
+                else:
+                    # No init table implies an app is not installed
+                    topic_id_status.ini_topics_defined['state'] = False
+                    topic_id_status.ini_topics_defined['descr'] = init_table_err_str
+            else:
+                topic_id_status.ini_topics_defined['state'] = self.INSTALL_STATE.NA.name
+                topic_id_status.ini_topics_defined['descr'] = 'cFS apps do not have a JSON ini file'
+        
+        else:
+            # Assume AppSpec.CFE_TYPE_LIB
+            topic_id_status.topics_in_kit_to['state']   = self.INSTALL_STATE.NA.name
+            topic_id_status.topics_in_kit_to['descr']   = 'Libraries do not typcially defined topic IDs'
+            topic_id_status.ini_topics_defined['state'] = self.INSTALL_STATE.NA.name
+            topic_id_status.ini_topics_defined['descr'] = 'Libraries do not typcially defined topic IDs'
+        
+        
         return topic_id_status
 

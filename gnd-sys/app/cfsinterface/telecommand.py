@@ -18,26 +18,24 @@
     
 """
 
+import sys
+sys.path.append('..')
+import os
+import time
 import configparser
 import socket
-import time
-import sys
-import os
 import re
 
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__' or 'cfsinterface' in os.getcwd():
-    sys.path.append('..')
-    from edsmission   import EdsMission
-    from edsmission   import CfeEdsTarget
-    from cmdtlmrouter import CmdTlmRouter
-else:
-    from .edsmission   import EdsMission
-    from .edsmission   import CfeEdsTarget
-    from .cmdtlmrouter import CmdTlmRouter
-from tools import hex_string
+from tools.utils   import hex_string
+from tools.bcpaths import BcPathMgr
+
+from cfsinterface.edsmission   import EdsMission
+from cfsinterface.edsmission   import CfeEdsTarget
+from cfsinterface.cmdtlmrouter import CmdTlmRouter
+
  
 ###############################################################################
 
@@ -473,10 +471,13 @@ class TelecommandCmdLine(TelecommandInterface):
 
 def main():
     
+    bc_path_mgr = BcPathMgr()
+    
     config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
-    MISSION         = config.get('CFS_TARGET', 'MISSION_EDS_NAME')
-    CFS_TARGET      = config.get('CFS_TARGET', 'CPU_EDS_NAME')
+    config.read(bc_path_mgr.get_basecamp_ini_file())
+    
+    MISSION         = config.get('CFS_TARGET', 'MISSION_NAME')
+    CPU             = config.get('CFS_TARGET', 'CPU_NAME')
     CFS_IP_ADDR     = config.get('NETWORK', 'CFS_IP_ADDR')
     CFS_CMD_PORT    = config.getint('NETWORK', 'CFS_CMD_PORT')
     GND_IP_ADDR     = config.get('NETWORK', 'GND_IP_ADDR')
@@ -484,13 +485,13 @@ def main():
     GND_TLM_PORT    = config.getint('NETWORK', 'GND_TLM_PORT')
     GND_TLM_TIMEOUT = float(config.getint('NETWORK', 'GND_TLM_TIMEOUT'))/1000.0
 
-    system_string = f'Mission: {MISSION}, Target: {CFS_TARGET}, cFS: ({CFS_IP_ADDR}, {CFS_CMD_PORT}), Gnd: ({GND_IP_ADDR}, {GND_CMD_PORT}), {GND_TLM_PORT})'
+    system_string = f'Mission: {MISSION}, Target: {CPU}, cFS: ({CFS_IP_ADDR}, {CFS_CMD_PORT}), Gnd: ({GND_IP_ADDR}, {GND_CMD_PORT}), {GND_TLM_PORT})'
     print(f'Creating telecommand objects for {system_string}')
 
     try:
         cmd_tlm_router       = CmdTlmRouter(CFS_IP_ADDR, CFS_CMD_PORT, GND_IP_ADDR, GND_CMD_PORT, GND_TLM_PORT, GND_TLM_TIMEOUT)
-        telecommand_script   = TelecommandScript(MISSION, CFS_TARGET, cmd_tlm_router.get_cfs_cmd_queue())      
-        telecommand_cmd_line = TelecommandCmdLine(MISSION, CFS_TARGET, cmd_tlm_router.get_cfs_cmd_queue())
+        telecommand_script   = TelecommandScript(MISSION, CPU, cmd_tlm_router.get_cfs_cmd_queue())      
+        telecommand_cmd_line = TelecommandCmdLine(MISSION, CPU, cmd_tlm_router.get_cfs_cmd_queue())
         logger.info("Telecommand object created for " + system_string)
         
     except RuntimeError:

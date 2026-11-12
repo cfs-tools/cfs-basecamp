@@ -22,6 +22,7 @@
 """
 
 import sys
+sys.path.append('..')
 import os
 import socket
 import configparser
@@ -29,20 +30,18 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    sys.path.append('..')
-    from cfeconstants  import Cfe
-    from cmdtlmprocess import CmdProcess
-    from cmdtlmrouter  import RouterCmd
-else:
-    from .cfeconstants  import Cfe
-    from .cmdtlmprocess import CmdProcess
-    from .cmdtlmrouter  import RouterCmd
-from remoteops import mqttconst as mc
-from tools import get_ip_addr
-
-import FreeSimpleGUI as sg
 import paho.mqtt.client as mqtt
+import FreeSimpleGUI as sg
+
+
+from remoteops import mqttconst as mc
+
+from tools.utils   import get_ip_addr
+from tools.bcpaths import BcPathMgr
+
+from cfsinterface.cmdtlmprocess import CmdProcess
+from cfsinterface.cmdtlmrouter  import RouterCmd
+
 
 ###############################################################################
 
@@ -116,7 +115,7 @@ class TargetControl(CmdProcess):
            self.local_ip_addr = get_ip_addr(local_network_adapter)
            print(f'Local ip_addr: {self.local_ip_addr}')
         except Exception as e:
-           err_str = f'Error obtaining host IP address using local adapter {local_network_adapter}\nUse ifconfig to verify adapter name in basecamp.ini\n{str(e)}'
+           err_str = f'Error obtaining host IP address using local adapter {local_network_adapter}\nUse ifconfig to verify adapter name in {BcPathConst.BASECAMP_INI_FILE}\n{str(e)}'
            logger.error(err_str)
            sg.popup(err_str, title='Target Control Error', modal=False)
       
@@ -432,10 +431,12 @@ class TargetControl(CmdProcess):
 
 if __name__ == '__main__':
 
+    bc_path_mgr = BcPathMgr()
+    
     config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
+    config.read(bc_path_mgr.get_basecamp_ini_file())
 
-    mission_name     = config.get('CFS_TARGET','MISSION_EDS_NAME')
+    mission_name     = config.get('CFS_TARGET','MISSION_NAME')
     router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     
     gnd_ip_addr = config.get('NETWORK','GND_IP_ADDR')

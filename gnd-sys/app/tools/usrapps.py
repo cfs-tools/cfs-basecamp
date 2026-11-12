@@ -29,25 +29,23 @@
 """
 
 import sys
-import time
+sys.path.append('..')
 import os
+import time
 import requests
 import json
 import configparser
-import shutil
 from datetime import datetime
 
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    from eds      import AppEds
-    from utils    import compress_abs_path 
-else:
-    from .eds      import AppEds
-    from .utils    import compress_abs_path
-
 import FreeSimpleGUI as sg
+
+from tools.eds      import AppEds
+from tools.bcpaths  import BcPath, BcPathMgr 
+from tools.jsonfile import JsonSupportFiles
+
 
 ###############################################################################
 
@@ -109,15 +107,21 @@ class AppSpec():
         self.json_app   = None
         self.json_cfs   = None
         self.json_proxy = None
-        
-        # 'is_valid' and 'has_topics' are False and will be set to True as needed
-        # EDS files are required for apps and optional for libraries to be valid.
-        # A proxy app's should not be processed in the context of the actual app 
-        # that the proxy app serves.
- 
-        if self.read_json_file() and not proxy:
-            self.read_eds_files()
+        self.json_support_file_dict = None
 
+        if self.read_json_file():
+            self.json_support_files = JsonSupportFiles(self.app_path, self.json_support_file_dict)
+            
+            if not proxy:
+                """
+                'is_valid' and 'has_topics' are False and will be set to True as needed
+                EDS files are required for apps and optional for libraries to be valid.
+                A proxy app's spec should not be processed in the context of the actual 
+                app that the proxy app serves.
+                """            
+                self.read_eds_files()
+            
+        
     def read_eds_files(self):
         """
         JSON spec must be loaded prior to calling this function 
@@ -129,7 +133,7 @@ class AppSpec():
         if os.path.exists(self.eds_path):
             eds_dir   = os.listdir(self.eds_path)
             eds_files = [filename for filename in eds_dir if '.xml' in filename]
-            print(f'*** eds_files: {eds_files}')
+            ##print(f'*** eds_files: {eds_files}')
             for eds_filename in eds_files:
                 eds_file = os.path.join(self.eds_path, eds_filename)
                 eds_spec = self.read_eds_file(eds_file)
@@ -139,8 +143,8 @@ class AppSpec():
                 for eds_spec in self.eds_specs:
                     self.cmd_topics += eds_spec.cmd_topics()
                     self.tlm_topics += eds_spec.tlm_topics()
-                print(f'*** self.cmd_topics: {self.cmd_topics}')
-                print(f'*** self.tlm_topics: {self.tlm_topics}')
+                ##print(f'*** self.cmd_topics: {self.cmd_topics}')
+                ##print(f'*** self.tlm_topics: {self.tlm_topics}')
                 if (len(self.cmd_topics) > 0 or len(self.tlm_topics) > 0):
                     self.has_topics = True
                     if self.json_cfs['cfe-type'] == self.CFE_TYPE_APP:
@@ -149,6 +153,10 @@ class AppSpec():
             if self.json_cfs['cfe-type'] == self.CFE_TYPE_APP:
                 sg.popup(f'App is missing an EDS spec. Expected {self.eds_path} to exist', title='AppStore Error', grab_anywhere=True, modal=False)
         
+
+    def copy_support_files(self):
+        self.json_support_files.copy_files()
+
             
     def read_json_file(self):
 
@@ -171,17 +179,26 @@ class AppSpec():
                 if self.proxy:
                     try:
                         self.json_proxy = self.json_app['proxy']
-                        print(f'self.json_proxy: {self.json_proxy}')
+                        ##print(f'self.json_proxy: {self.json_proxy}')
+                        success = True
                     except:
                         sg.popup(f"The JSON proxy spec file {self.json_file} does not contain the required 'proxy' object", title='AppStore Error', grab_anywhere=True, modal=False)                        
+                    """
+                    Support files (e.g. command sender file) are optional.
+                    """
+                    self.json_support_file_dict = {}
+                    try:
+                        self.json_support_file_dict = self.json_app['support-files']
+                    except:
+                       pass
                 else:
                     try:
                         self.json_cfs = self.json_app['cfs']
+                        success = True
                     except:
                         sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'cfs' object", title='AppStore Error', grab_anywhere=True, modal=False)
-                success = True
             except:
-                sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'app' object", title='AppStore Error', grab_anywhere=True, modal=False)
+                sg.popup(f"$$The JSON spec file {self.json_file} does not contain the required 'app' object", title='AppStore Error', grab_anywhere=True, modal=False)
         
         return success
         
@@ -219,6 +236,24 @@ class AppSpec():
     def get_tlm_topics(self):
         return self.tlm_topics
     
+    def get_usrmsg_topics(self):
+        """
+        This feature was added in v4.0.0 to support a new user message KIT_SCH
+        feature. App specs are not required to have a "usr-msg-topics" object so
+        the exception is not considered an error.        
+        
+        "usr-msg-topics" are an array of strings where each string contains 
+            "App topic name, BC_ topic identifier" 
+        """
+        usrmsg_topic_dict = {}
+        try:
+            # Create a dictionary mapping the app topic name to the BC_ topic ID
+            usrmsg_topics = self.json_app["usrmsg-topics"]
+            usrmsg_topic_dict = {tokens[0]: tokens[1] for topic in usrmsg_topics if (tokens := topic.split(','))}
+        except Exception as e: 
+            pass
+        return usrmsg_topic_dict
+        
     def get_targets_cmake_files(self):
         """
         The targets.cmake file needs
@@ -229,9 +264,9 @@ class AppSpec():
         files = {}
         files['obj-file'] = self.json_cfs['obj-file']
         if self.json_cfs['app-framework'] == self.APP_FRAMEWORK_OSK:
-            files['tables'] = self.json_cfs['tables']
+            files['json-tables'] = self.json_cfs['json-tables']
         else:
-            files['tables'] = []
+            files['json-tables'] = []
         return files
 
     def get_startup_scr_entry(self):
@@ -282,15 +317,15 @@ class AppSpec():
         """
         proxy_github_repo = ()
         valid_github_repo = False
-        print(f'self.json_file = {self.json_file}')
+        ##print(f'self.json_file = {self.json_file}')
         url = self.json_proxy['url']
         try:
-            print(f'@@self.json_proxy = {self.json_proxy}')
+            ##print(f'self.json_proxy = {self.json_proxy}')
             url = self.json_proxy['url']
-            print(f'url: {url}')
+            ##print(f'url: {url}')
             try:
                 release_tag = self.json_proxy['release-tag']
-                print(f'release_tag: {release_tag}')        
+                ##print(f'release_tag: {release_tag}')        
                 valid_github_repo = True
             except:
                 sg.popup(f"The JSON spec file {self.json_file} does not contain the required 'proxy->release-tag' object", title='AppStore Error', grab_anywhere=True, modal=False)
@@ -321,7 +356,7 @@ class AppSpec():
         """
         proxy_file_list = []
         valid_github_repo = False
-        print(f'self.json_file = {self.json_file}')
+        ##print(f'self.json_file = {self.json_file}')
         try:
             proxy_file_list = self.json_proxy['update-files']
             valid_github_repo = True
@@ -367,21 +402,18 @@ class ManageUsrApps():
 
 if __name__ == '__main__':
 
-    config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
 
-    git_url = config.get('APP','APP_STORE_URL')
-    usr_app_abs_path = compress_abs_path(os.path.join(os.getcwd(),'..', config.get('PATHS', 'USR_APP_PATH'))) 
+    bc_path_mgr = BcPathMgr()
+    usr_app_abs_path = bc_path_mgr.get(BcPath.USR_APPS)
+    print (f'usr_app_abs_path: {usr_app_abs_path}\n')
     
     manage_usr_apps = ManageUsrApps(usr_app_abs_path)
     
-    berry_imu = manage_usr_apps.get_app_spec('berry_imu')
-    print(berry_imu.get_targets_cmake_files())
-    print(berry_imu.get_startup_scr_entry())
+    app_name = 'hi_world'  # Set to an app that's installed 
+    app_spec = manage_usr_apps.get_app_spec(app_name)
+    print(f'app_spec.get_targets_cmake_files(): {app_spec.get_targets_cmake_files()}')
+    print(f'app_spec.get_startup_scr_entry():   {app_spec.get_startup_scr_entry()}')
     
-    gpio_demo = manage_usr_apps.get_app_spec('gpio_demo')
-    print(gpio_demo.get_targets_cmake_files())
-    print(gpio_demo.get_startup_scr_entry())
-    
+   
     
 

@@ -32,26 +32,25 @@
          telemetry values. Therefore some functionality has been added to
          the CfeFile that may be suitable for higher level classes.
       4. By convention EDS table file interface names must end with "TBL_FILE" 
+      5. cFS 7.0.1 default CCSDS header length is 16 bytes and previous
+         cFS versions had 12 byte headers. The read() and write() functions
+         treat these bytes 4 bytes as unused.
 """
 
 import sys
-import time
+sys.path.append('..')
 import os
+import time
 import socket
 import configparser
 import io
 
+from tools.bcpaths import BcPathMgr
 
-if __name__ == '__main__' or 'cfsinterface' in os.getcwd():
-    sys.path.append('..')
-    from edsmission    import EdsMission
-    from edsmission    import CfeEdsTarget
-    from cfeconstants  import Cfe
-else:
-    from .edsmission    import EdsMission
-    from .edsmission    import CfeEdsTarget
-    from .cfeconstants  import Cfe
-
+from cfsinterface.edsmission    import EdsMission
+from cfsinterface.edsmission    import CfeEdsTarget
+from cfsinterface.cfeconstants  import Cfe
+    
 
 ###############################################################################
 """
@@ -90,22 +89,24 @@ The cFS defines the binary header file in cfe_tbl.xml:
 class CfeFile(CfeEdsTarget):
     """
     This class can be used for all binary files because the files are defined in 
-    EDS and a "proxy telmeetry" topic ID is used to identify the EDS messages
+    EDS and a "proxy telemetry" topic ID is used to identify the EDS messages
     that defined the file's contents. See the file prologue notes for more details.
     
     Assumes cFE files are of a reasonable size and the entire file can be read
     into memory.    
     """
-
+    
+    CFS_CCSDS_TLM_HDR_LEN = 16  #TODO: This should be configured with the cFS build system
+    
     def __init__(self, mission, target):
-        super().__init__(mission, target, EdsMission.TELEMETRY_IF) # Files are defined as telemetry messages
+        super().__init__(mission, target, EdsMission.TABLE_IF)
 
         self.path_filename = None
         self.data_loaded = False
         self.tbl_data_array = []   # 2 column matrix with each row containing EDS parameter string and its value
         self.topic_name = None
-        self.topic_dict = self.eds_mission.get_tbl_topic_dict()
-        print(f'self.topic_dict: {self.topic_dict}')
+        self.topic_dict = self.eds_mission.get_topic_dict()
+        ##print(f'self.topic_dict: {self.topic_dict}')
         
     def extract_data(self, base_object, base_name):
         """
@@ -119,19 +120,19 @@ class CfeFile(CfeEdsTarget):
         
         # Array display string
         if (self.eds_mission.lib_db.IsArray(base_object)):
-            #print("@DEBUG@extract_data()-array: base_object = " + str(base_object))
-            #print("@DEBUG@extract_data()-array: base_name = " + str(base_name))
+            ##print("@DEBUG@extract_data()-array: base_object = " + str(base_object))
+            ##print("@DEBUG@extract_data()-array: base_name = " + str(base_name))
             for i in range(len(base_object)):
                 self.extract_data(base_object[i], f"{base_name}[{i}]")
         # Container display string
         elif (self.eds_mission.lib_db.IsContainer(base_object)):
-            #print("@DEBUG@extract_data()-container: base_object = " + str(base_object))
-            #print("@DEBUG@extract_data()-container: base_name = " + str(base_name))
+            ##print("@DEBUG@extract_data()-container: base_object = " + str(base_object))
+            ##print("@DEBUG@extract_data()-container: base_name = " + str(base_name))
             for item in base_object:
                 self.extract_data(item[1], f"{base_name}.{item[0]}")
         # Everything else (number, enumeration, string, etc.)
         else:
-            #print('{:<60} = {}'.format(base_name, base_object))
+            ##print('{:<60} = {}'.format(base_name, base_object))
             self.tbl_data_array.append([base_name,base_object])
 
 
@@ -146,15 +147,15 @@ class CfeFile(CfeEdsTarget):
         self.tbl_data_array = []
         self.err_str = None
         
-        print('>>>Enter read()')
+        ##print('>>>Enter read()')
         if path_filename not in (None,''):
             if os.path.isfile(path_filename):
                 try:              
                     with open(self.path_filename, 'rb') as file:
                         self.file_data = file.read()
                     self.file_len       = len(self.file_data)
-                    self.file_data_list = list(self.file_data)
-                    print(f'self.file_len: {self.file_len}')
+                    self.file_data_list = list(self.file_data)  # Create list that can be written to (bytes array is immutable)
+                    ##print(f'self.file_len: {self.file_len}')
                     
                     """
                     Create a proxy telemetry packet
@@ -162,42 +163,63 @@ class CfeFile(CfeEdsTarget):
                       2. Add CCSDS header len (12 bytes) to file header data length
                       3. Concatentate CCSDS header and table file data
                     """
-                    print(f'len: {self.file_data[8]}, {self.file_data[9]}, {self.file_data[10]}, {self.file_data[11]}')
+                    ##print(f'len: {self.file_data[8]}, {self.file_data[9]}, {self.file_data[10]}, {self.file_data[11]}')
                     file_hdr_len_lo = self.file_data[10] << 8 | self.file_data[11]
                     file_hdr_len_hi = self.file_data[8]  << 8 | self.file_data[9]
                     file_hdr_len    = file_hdr_len_hi << 16 | file_hdr_len_lo
-                    print(f'file_hdr_len: {file_hdr_len}')  
-                    self.topic_id = self.topic_dict[topic_name] + 3
-                    tlm_msg_len = len(self.file_data) + 5
-                    print(f'self.topic_id: {self.topic_id}, tlm_msg_len: {tlm_msg_len}') 
+                    ##print(f'file_hdr_len: {file_hdr_len}')
+                    self.topic_id = self.topic_dict[topic_name] - Cfe.EDS_TLM_TOPIC_ID_OFFSET
+                    app_id = list(self.topic_id.to_bytes(2,byteorder='big'))
+                    ##print(f'bytes(app_id): {app_id}')
+                    app_id_lo = app_id[1]
+                    app_id_hi = app_id[0] | 0x08  # Set secondary header bit
+                    ##print(f'app_id_hi: {app_id_hi}, app_id_lo: {app_id_lo}')
+                    tlm_msg_len = self.file_len + (CfeFile.CFS_CCSDS_TLM_HDR_LEN-7)  # CCSDS msg length is actual message size minus 7
+                    ##print(f'self.topic_id: {self.topic_id}, tlm_msg_len: {tlm_msg_len}') 
                     tlm_msg_len = list(tlm_msg_len.to_bytes(2,byteorder='big'))
-                    print(f'bytes(tlm_msg_len): {tlm_msg_len}')
+                    ##print(f'bytes(tlm_msg_len): {tlm_msg_len}')
                     tlm_msg_len_lo = tlm_msg_len[1]
                     tlm_msg_len_hi = tlm_msg_len[0]
-                    print(f'tlm_len_hi: {tlm_msg_len_hi}, tlm_len_lo: {tlm_msg_len_lo}')
-                    #                                      Sequence    Length                          Seconds                 SubSecs
-                    self.ccsds_hdr = [0x08, self.topic_id, 0xD7, 0xC2, tlm_msg_len_hi, tlm_msg_len_lo, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05]
-                    
-                    self.file_len = self.file_len + 12
+                    ##print(f'tlm_len_hi: {tlm_msg_len_hi}, tlm_len_lo: {tlm_msg_len_lo}')
+                    # See file prologue notes for four zeroes at the end of the header
+                    #                 App ID                Sequence    Length                          Seconds                 SubSecs
+                    self.ccsds_hdr = [app_id_hi, app_id_lo, 0xD7, 0xC2, tlm_msg_len_hi, tlm_msg_len_lo, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x00, 0x00, 0x00]
+                    if len(self.ccsds_hdr) != CfeFile.CFS_CCSDS_TLM_HDR_LEN:
+                        raise TypeError(f'The proxy telemetry message header length {len(self.ccsds_hdr)} does not equal the expected length {CfeFile.CFS_CCSDS_TLM_HDR_LEN}.') 
+
+                    # Set length in the cFE file header that includes the CCSDS header
+                    self.file_len = self.file_len + len(self.ccsds_hdr)
                     self.file_len = list(self.file_len.to_bytes(4,byteorder='big'))
-                    print(f'bytes(self.file_len): {self.file_len}')                   
+                    ##print(f'bytes(self.file_len): {self.file_len}')
                     self.file_data_list[8]  = self.file_len[0]
                     self.file_data_list[9]  = self.file_len[1]
                     self.file_data_list[10] = self.file_len[2]
                     self.file_data_list[11] = self.file_len[3]
+
+                    # Set app ID in cFE file header
+                    app_id = self.topic_id 
+                    app_id = list(app_id.to_bytes(2,byteorder='big'))
+                    self.file_data_list[20] = app_id[0]
+                    self.file_data_list[21] = app_id[1]
                     
                     self.proxy_tlm_msg = bytes(self.ccsds_hdr) + bytes(self.file_data_list)
-                    print(f'self.proxy_tlm_msg: {self.proxy_tlm_msg}')
+                    
+                    ##print(f'self.proxy_tlm_msg: {self.proxy_tlm_msg}')
                     with open('../../flt-file-server/debug.tbl', 'wb') as binary_file:
                          binary_file.write(self.proxy_tlm_msg)
+ 
+                    # Reversed engineered eds_mission.decode_message() errors
+                    # -6 "error unpacking bytes object" topic found but data doesn't match structure definitions
+                    # -7 "unable to get argument type"  topic not found 
                     eds_entry, eds_obj = self.eds_mission.decode_message(self.proxy_tlm_msg)
-                    # extract_data() loads self.tbl_data_array
-                    self.extract_data(eds_obj, eds_entry.Name)
+                    ##print('hello')
+                    self.extract_data(eds_obj, eds_entry.Name) # extract_data() loads self.tbl_data_array
                     self.data_loaded = True
-                    print('<<<Exit read()')
+                    ##print('<<<Exit read()')
                 except Exception as e:
-                    print(f'Exception: {e}')                    
-                    self.err_str = str(e)
+                    # Exception: 
+                    ##print(f'Exception: {e}')                    
+                    self.err_str = f'Read file exception: {str(e)}'
                     
         else:
             # TODO: Remove testing backdoor
@@ -215,18 +237,18 @@ class CfeFile(CfeEdsTarget):
     def write_file(self, path_filename):
         """
         """
-        print(f'\n>>>>write_file({path_filename})')
+        ##print(f'\n>>>>write_file({path_filename})')
         self.err_str = None
         try:
             byte_data = self.create_byte_data()
             byte_data_list = list(byte_data)
             # Set file header length back to header length
             # TODO: Use EDS to get file header length & resolve what the value should be. 
-            byte_data_list[20] = 0
-            byte_data_list[21] = 0
-            byte_data_list[22] = 0
-            byte_data_list[23] = 64
-            byte_data = bytes(byte_data_list[12:])
+            byte_data_list[24] = 0
+            byte_data_list[25] = 0
+            byte_data_list[26] = 0
+            byte_data_list[27] = 64
+            byte_data = bytes(byte_data_list[16:])  # See file prologue notes for 16 byte header
             with open(path_filename, 'wb') as binary_file:
                 binary_file.write(byte_data)
         except Exception as e:    
@@ -381,7 +403,7 @@ class CfeFile(CfeEdsTarget):
     def load_payload_entry_value(self, payload_name, payload_eds_entry, payload_type, payload_list):
         """
         """
-        #print(f'payload_name={payload_name}, payload_eds_entry={payload_eds_entry}, payload_type={payload_type}, payload_list={payload_list}')
+        ##print(f'payload_name={payload_name}, payload_eds_entry={payload_eds_entry}, payload_type={payload_type}, payload_list={payload_list}')
         #todo: Add type check error reporting
         
         value = self.tbl_data_dict[payload_name]
@@ -392,18 +414,18 @@ class CfeFile(CfeEdsTarget):
         """
         Create a binary byte data array from data self.tbl_data_array
         """
-        #print(f'\n*** create_byte_data()\ntopic_name: {self.topic_name}\ntopic_id: {self.topic_id}')
-        #print(f'\n***self.tbl_data_array: {self.tbl_data_array}\n')
-        #for entry in self.tbl_data_array:
-        #    print(f'{entry}')
+        ##print(f'\n*** create_byte_data()\ntopic_name: {self.topic_name}\ntopic_id: {self.topic_id}')
+        ##print(f'\n***self.tbl_data_array: {self.tbl_data_array}\n')
+        ##for entry in self.tbl_data_array:
+        ##    print(f'{entry}')
         self.tbl_data_dict = {entry[0][entry[0].find('.')+1:] : entry[1] for entry in self.tbl_data_array} 
-        #print(f'\n***tbl_data_dict: {self.tbl_data_dict}')
+        ##print(f'\n***tbl_data_dict: {self.tbl_data_dict}')
                
         eds_id = self.eds_mission.get_eds_id_from_topic(self.topic_name) # 'FILE_MGR/Application/FILE_SYS_TBL_FILE'
-        #print(f'eds_id: {eds_id}')
+        ##print(f'eds_id: {eds_id}')
         self.tlm_entry = self.eds_mission.get_database_entry(eds_id)
         self.tlm_obj   = self.tlm_entry()
-        #print(f'\nself.tlm_entry: {self.tlm_entry}\nself.tlm_obj: {self.tlm_obj}')
+        ##print(f'\nself.tlm_entry: {self.tlm_entry}\nself.tlm_obj: {self.tlm_obj}')
         
         """
         The EDS is API is undocumented and I couldn't reverse engineer a clean way to get the payload
@@ -418,18 +440,18 @@ class CfeFile(CfeEdsTarget):
         topic_payload = self.eds_mission.get_topic_payload(self.topic_name) # 'FILE_MGR/Application/FILE_SYS_TBL_FILE'
         payload_blob  = str(type(topic_payload)).split(',')[1]
         payload_token = payload_blob[payload_blob.find("'")+1:payload_blob.rfind("'")]
-        print(f'payload_token: {payload_token}')
-        #print(f'topic_payload({type(topic_payload)}): {topic_payload}\n{dir(topic_payload)}')
-        #print(f'topic_payload_type: {topic_payload_type}')
-        #print(f'items(topic_payload): {topic_payload.items()}')
-        #print(f'keys(topic_payload): {topic_payload.keys()}')
-        #print(f'values(topic_payload): {topic_payload.values()}')
+        ##print(f'payload_token: {payload_token}')
+        ##print(f'topic_payload({type(topic_payload)}): {topic_payload}\n{dir(topic_payload)}')
+        ##print(f'topic_payload_type: {topic_payload_type}')
+        ##print(f'items(topic_payload): {topic_payload.items()}')
+        ##print(f'keys(topic_payload): {topic_payload.keys()}')
+        ##print(f'values(topic_payload): {topic_payload.values()}')
         payload_entry = self.eds_mission.get_database_named_entry(payload_token) # 'FILE_MGR/FileSysTblFile_Payload'
         payload = payload_entry()
         self.payload_struct = self.get_payload_struct(payload_entry, payload, 'Payload')
         
-        #print(f'\n***payload_entry:\n{payload_entry}\npayload:\n{payload}')
-        #print(f'\n***payload_struct:\n{self.payload_struct}')
+        ##print(f'\n***payload_entry:\n{payload_entry}\npayload:\n{payload}')
+        ##print(f'\n***payload_struct:\n{self.payload_struct}')
 
         eds_payload = self.set_payload_values(self.payload_struct)
         payload = payload_entry(eds_payload)                           
@@ -437,7 +459,7 @@ class CfeFile(CfeEdsTarget):
                             
         packed_tlm = self.eds_mission.get_packed_obj(self.tlm_obj)
         packed_tlm_bytes = bytes(packed_tlm)
-        #print(f'\n***packed_tlm_bytes:\n{packed_tlm_bytes}')
+        ##print(f'\n***packed_tlm_bytes:\n{packed_tlm_bytes}')
         
         return packed_tlm_bytes
         
@@ -448,14 +470,16 @@ if __name__ == '__main__':
     """
     """
 
-    config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
-
-    MISSION         = config.get('CFS_TARGET', 'MISSION_EDS_NAME')
-    CFS_TARGET      = config.get('CFS_TARGET', 'CPU_EDS_NAME')
+    bc_path_mgr = BcPathMgr()
     
-    cfe_file = CfeFile(MISSION, CFS_TARGET)
-    cfe_file.reverse_eng()
+    config = configparser.ConfigParser()
+    config.read(bc_path_mgr.get_basecamp_ini_file())
+
+    MISSION = config.get('CFS_TARGET', 'MISSION_NAME')
+    CPU     = config.get('CFS_TARGET', 'CPU_NAME')
+    
+    cfe_file = CfeFile(MISSION, CPU)
+    #cfe_file.reverse_eng()
     
     #cfe_cmd_file.process_file('bogus_file', 'FILE_MGR/FileSys_Tbl') # CFE_ES/QueryOneCmd'
     #cfe_cmd_file.process_file('bogus_file', 'CFE_ES/QueryOneCmd', {'Application': 'APP_C_DEMO'})

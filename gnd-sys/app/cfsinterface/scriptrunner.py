@@ -16,34 +16,30 @@
         Provide a simple environment to execute user python scripts. This is not
         intended to replace a fuly featured ground system. Basecamp is an educational
         tool that should be simple to utilize. Basecamp and more specifically the 
-        cfe-eds-framework can be used as the foundation to integrate the cFS with
-        a ground system.
+        EDS can be used as the foundation to integrate the cFS with a ground system.
     
     Notes:
       1. TODO - THIS IS A PROTOTYPE!!!!      
 """
 
 import sys
-import time
+sys.path.append('..')
 import os
+import time
 import socket
 import configparser
 import io
 from contextlib import redirect_stdout
 
-if __name__ == '__main__':
-    sys.path.append('..')
-    from cfeconstants  import Cfe
-    from telecommand   import TelecommandScript
-    from telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
-    from cmdtlmprocess import CmdTlmProcess
-else:
-    from .cfeconstants  import Cfe
-    from .telecommand   import TelecommandScript
-    from .telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
-    from .cmdtlmprocess import CmdTlmProcess
-from tools import crc_32c, compress_abs_path, TextEditor
 import FreeSimpleGUI as sg
+
+from tools.bcpaths    import BcPath, BcPathMgr
+from tools.texteditor import TextEditor
+
+from cfsinterface.telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
+from cfsinterface.cmdtlmprocess import CmdTlmProcess
+
+
 
 CCSDS   = 0
 TIME    = 1
@@ -169,7 +165,14 @@ class ScriptRunner(CmdTlmProcess):
 ###############################################################################
 
 if __name__ == '__main__':
+    """
+    This is run as a separate Basecamp process with a command line arguments:
+       TODO 
+    """
+    
+    bc_path_mgr = BcPathMgr()
 
+    
     print(f"Name of the script      : {sys.argv[0]=}")
     print(f"Arguments of the script : {sys.argv[1:]=}")
     #if len(sys.argv) > 1:
@@ -177,17 +180,15 @@ if __name__ == '__main__':
     #    #print ('filename = ' + filename)
 
     config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
-    SCRIPT_PATH = config.get('PATHS', 'SCRIPT_PATH')
-    print ("SCRIPT_PATH = " + SCRIPT_PATH)    
-    demo_script_path = compress_abs_path(os.path.join(os.getcwd(), '..',SCRIPT_PATH))
-    demo_script = os.path.join(demo_script_path, 'demo_script.py') 
+    config.read(bc_path_mgr.get_basecamp_ini_file())
+    
+    demo_script = bc_path_mgr.get_file(BcPath.SCRIPTS, 'demo_script.py')
 
     cfs_ip_addr = config.get('NETWORK', 'CFS_IP_ADDR')
     router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     script_cmd_port  = config.getint('NETWORK', 'SCRIPT_RUNNER_CMD_PORT')
     script_tlm_port  = config.getint('NETWORK', 'SCRIPT_RUNNER_TLM_PORT')
-    mission_name     = config.get('CFS_TARGET','MISSION_EDS_NAME')
+    mission_name     = config.get('CFS_TARGET','MISSION_NAME')
 
     script_runner = ScriptRunner(mission_name, cfs_ip_addr, router_ctrl_port, script_cmd_port, script_tlm_port, 1.0)
     

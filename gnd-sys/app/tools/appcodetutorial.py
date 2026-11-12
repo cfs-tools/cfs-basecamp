@@ -25,28 +25,22 @@
 """
 
 import sys
-import time
+sys.path.append('..')
 import os
+import time
 import json
-import configparser
-import fitz
 from datetime import datetime
 
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    from jsonfile      import JsonFile
-    from pdfviewer     import PdfViewer
-    from utils         import compress_abs_path
-else:
-    from .jsonfile      import JsonFile
-    from .pdfviewer     import PdfViewer
-    from .utils         import compress_abs_path
-
 import FreeSimpleGUI as sg
 
-TUTORIAL_JSON_FILE = 'tutorial.json'
+from tools.jsonfile  import JsonFile
+from tools.bcpaths   import compress_abs_path, BcPathConst, BcPath, BcPathMgr
+
+###############################################################################
+
 TUTORIAL_DIR       = 'tutorial'
 LESSON_JSON_FILE   = 'lesson.json'
 LESSON_DIR         = 'lesson'
@@ -57,15 +51,14 @@ DOCS_DIR           = 'docs'
 
 class CodeTutorialJson(JsonFile):
     """
-    Manage tutor and lesson JSON files. Keep tag names and formats consistent.
-    The tutor and lesson JSON files have nearly identical keys and since this is
-    not a generic utility this one class takes care of both file types.
+    Manage tutorial JSON files. 
+    JsonFile::get() JsonFile::set() should be used to access the JSON dictionary.
     """
     def __init__(self, json_file):
         super().__init__(json_file)
         
     def document(self):
-        return self.json['document']
+        return self.get('document')
 
 
 ###############################################################################
@@ -81,7 +74,7 @@ class CodeTutorial():
 
         self.tools_path = tools_path
         self.path = tutorial_path
-        self.json = CodeTutorialJson(os.path.join(tutorial_path, TUTORIAL_JSON_FILE))
+        self.json = CodeTutorialJson(os.path.join(tutorial_path, BcPathConst.TUTORIAL_JSON_FILE))
         
         self.lesson_path = os.path.join(tutorial_path, LESSON_DIR)
         self.lesson_list = [int(l) for l in os.listdir(self.lesson_path) if l.isnumeric()]
@@ -209,6 +202,7 @@ class CodeTutorial():
                 
                 elif self.event == 'Tutorial Document':
                     pdf_filename = os.path.join(self.path, DOCS_DIR, self.json.document())
+                    print(f'pdf_filename: {pdf_filename}')
                     try:
                         if os.path.isfile(pdf_filename):
                             self.pdf_viewer = sg.execute_py_file("pdfviewer.py", parms=pdf_filename, cwd=self.tools_path)
@@ -268,44 +262,46 @@ class ManageCodeTutorials():
         for usr_app in usr_app_list:
             #todo: Tutorial constructor could raise exception if JSON doesn't exist or is malformed
             tutorial_dir = os.path.join(usr_app_path, usr_app, TUTORIAL_DIR)
-            tutorial_json_file = os.path.join(tutorial_dir, TUTORIAL_JSON_FILE)
+            tutorial_json_file = os.path.join(tutorial_dir, BcPathConst.TUTORIAL_JSON_FILE)
             if os.path.exists(tutorial_json_file):
-                tutorial = CodeTutorial(tools_path, tutorial_dir)
-                self.tutorial_titles.append(tutorial.json.title())
-                self.tutorial_lookup[tutorial.json.title()] = tutorial
-        
+                try:
+                    tutorial = CodeTutorial(tools_path, tutorial_dir)
+                    self.tutorial_titles.append(tutorial.json.title())
+                    self.tutorial_lookup[tutorial.json.title()] = tutorial
+                except Exception as e:
+                    sg.popup(f'Error creating code tutorial for {tutorial_json_file}.\nException: {e}', title='Code Tutorial Error')    
 
 ###############################################################################
 
 class CodeLessonJson(JsonFile):
     """
-    Manage a lesson JSON file that has an array of files and each file has an
-    array of exercises to complete the lesson.
+    Manage a lesson JSON file that contains an array of source files and each
+    source file has an array of coding exercises.
+    JsonFile::get() JsonFile::set() should be used to access the JSON dictionary.
     """
     
     def __init__(self, json_file):
         super().__init__(json_file)
-        self.file_array = self.json['file']
+        self.file_array = self.get('file')
         
     def current_file(self):
-        return self.json['current-file']
+        return self.get('current-file')
 
     def file(self, index):
         return self.file_array[index]
 
     def lesson_complete(self):
-        return self.json['complete']
+        return self.get('complete')
 
     def reset_child(self):
-        if 'current-file' in self.json:
-           self.json['current-file'] = "Undefined"
-           self.json['complete'] = False
+        self.set('current-file', 'Undefined')
+        self.set('complete', False)
 
     def set_complete(self, complete):
-        self.json['complete'] = complete
+        self.set('complete', complete)
 
     def set_lesson_file(self, file):
-        self.json['current-file'] = file
+        self.set('current-file', file)
 
     def get_objective_text(self):
         objective_text = ""
@@ -578,7 +574,7 @@ class CodeLessonEditor():
                             sg.popup(f'Error in {self.lesson_filename} exercise {self.lesson_filename} format spec.', title="Code Lesson Error", modal=False)
 
             self.exercise_text = window_text
-            print(f'start_h_index: {start_h_index}, stop_h_index: {stop_h_index}, h_offset: {h_offset}, h_length: {h_length}')
+            ##print(f'start_h_index: {start_h_index}, stop_h_index: {stop_h_index}, h_offset: {h_offset}, h_length: {h_length}')
         else:
             self.exercise_text = f'Lesson file {self.lesson_filename} has not been loaded'
         window['-LESSON_TEXT-'].update(value=self.exercise_text)
@@ -592,7 +588,7 @@ class CodeLessonEditor():
 
         else:
             end_tk_index = f"{stop_h_index}.0"
-        print(f'start_tk_index: {start_tk_index}, end_tk_index: {end_tk_index}')
+        ##print(f'start_tk_index: {start_tk_index}, end_tk_index: {end_tk_index}')
         window['-LESSON_TEXT-'].Widget.tag_add('highlight', start_tk_index, end_tk_index)       
             
     
@@ -693,7 +689,7 @@ class CodeLessonEditor():
         while True:
 
             self.event, self.values = window.read() # (timeout=50) - Using a timeout stops the control scheme from working
-            print(f'self.event" {self.event}')
+            ##print(f'self.event" {self.event}')
             if self.event in (sg.WIN_CLOSED, 'Exit') or self.event is None:
                 if self.user_file_mod:
                     if self.values is None:
@@ -789,26 +785,27 @@ class CodeLessonEditor():
 ###############################################################################
 
 if __name__ == '__main__':
+    """
+    This is run as a separate Basecamp process with a command line argument so
+    argv is used to differentiate between a unit test and a basecamp app
+    execution.
+    """
+    
+    bc_path_mgr = BcPathMgr()
+    bc_app_abs_path = bc_path_mgr.get(BcPath.GUI_APP)
+    tools_abs_path  = bc_path_mgr.get(BcPath.APP_TOOLS)
 
-    tools_dir = os.getcwd()
-    tutorial_dir = None
+    tutorial_abs_path = None
     if len(sys.argv) > 1:
         # argv is relative path from gnd-sys/app
-        # Since executing from gnd-sys/app/tools need to go back one level
-        # Example from tools directory: python3 appcodetutorial.py ../../usr/apps/hello/tutorial
-        tutorial_dir = compress_abs_path(os.path.join(os.getcwd(),'..',sys.argv[1]))
-        temp_file = os.path.join(os.getcwd(),'temp.txt')
-        #with open('/home/osk/sandbox/cayg/temp.txt','w') as f:
-        #    f.write(tutorial_dir)
+        # Example from tools directory: python3 appcodetutorial.py ../../usr/apps/hi_world/tutorial
+        tutorial_abs_path = compress_abs_path(os.path.join(bc_app_abs_path,sys.argv[1]))
     else:
-        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../templates/hello-world/tutorial'))
-        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../../usr/apps/hi_world/tutorial'))
-        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../templates/hello-world/tutorial'))
-        tutorial_dir = compress_abs_path(os.path.join(tools_dir,'../../templates/nasa-world/tutorial'))
-        print ("Main: tutorial_dir = " + tutorial_dir)
-            
-    tutorial = CodeTutorial(tools_dir, tutorial_dir)
-    tutorial.execute()
-    
-    
+        manage_code_tutorials = ManageCodeTutorials(tools_abs_path, '../../usr/apps')
+        tutorial_abs_path = compress_abs_path(os.path.join(bc_app_abs_path,'../templates/nasa-world/tutorial'))
+        tutorial_abs_path = compress_abs_path(os.path.join(bc_app_abs_path,'../../usr/apps/hi_world/tutorial'))
+        print (f'tutorial_abs_path: {tutorial_abs_path}')
 
+            
+    tutorial = CodeTutorial(tools_abs_path, tutorial_abs_path)
+    tutorial.execute()

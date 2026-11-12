@@ -16,33 +16,35 @@
       Display, edit and save cFS binary tables
       
     Notes:
-      1. The telemetry is displayed in a text box with each row containing
-         one data point. The data point labels are extracted from the EDS
-         message definition. The screen layout can't be altered.
+      1. The table proxy telemetry is displayed in a text box with each
+         row containing one table data element. The data element labels
+         are extracted from the EDS message definition. The screen layout
+         can't be altered.
                 
 """
 
 import sys
-import time
+sys.path.append('..')
 import os
+import time
 import socket
 import configparser
 import io
 
-if __name__ == '__main__':
-    sys.path.append('..')
-    from cfeconstants  import Cfe
-    from cfefile       import CfeFile
-else:
-    from .cfeconstants  import Cfe
-    from .cfefile       import CfeFile
-from tools import crc_32c, compress_abs_path, TextEditor
 import FreeSimpleGUI as sg
+
+from tools.bcpaths  import BcPath, BcPathMgr
+
+from cfsinterface.cfeconstants  import Cfe
+from cfsinterface.cfefile       import CfeFile
+
+
+###############################################################################
 
 WINDOW_TITLE  = 'cFS Table Manager'
 TBL_FILE_EXT  = 'tbl'
 MODIFIED_CHAR = '*'
-TBL_DATA_ROW_START = 23  # Index of first data row
+TBL_DATA_ROW_START = 21  # Index of first data row, TODO: This shoudl be configured with cSF build and CCSDS header fields
 
 ###############################################################################
 
@@ -269,14 +271,19 @@ class TblManager():
 ###############################################################################
 
 if __name__ == '__main__':
+    """
+    This is run as a separate Basecamp process with a command line arguments:
+       TODO
+    """
+    
+    bc_path_mgr = BcPathMgr()
     
     config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
+    config.read(bc_path_mgr.get_basecamp_ini_file())
 
-    MISSION         = config.get('CFS_TARGET', 'MISSION_EDS_NAME')
-    CFS_TARGET      = config.get('CFS_TARGET', 'CPU_EDS_NAME')
-    FLT_SERVER_PATH = config.get('PATHS','FLT_SERVER_PATH')
-    FLT_SERVER_PATH = compress_abs_path(os.path.join(os.getcwd(), '..', FLT_SERVER_PATH))
+    MISSION         = config.get('CFS_TARGET', 'MISSION_NAME')
+    CPU             = config.get('CFS_TARGET', 'CPU_NAME')
+    FLT_SERVER_PATH = bc_path_mgr.get(BcPath.FLT_FILE_SERVER)
 
     filename = None
     if len(sys.argv) > 1:
@@ -285,8 +292,11 @@ if __name__ == '__main__':
     if filename is None:
         print('TblManager starting without a filename')
     else:
-        print(f'TblManager staring with file {filename}')
+        # Shortcut to allow command line testing with sample app
+        if filename == 'sample':
+            filename = '../../flt-file-server/sample_app_tbl.tbl'
+        print(f'TblManager starting with file {filename}')
         
-    tbl_manager = TblManager(MISSION, CFS_TARGET, FLT_SERVER_PATH)
+    tbl_manager = TblManager(MISSION, CPU, FLT_SERVER_PATH)
     tbl_manager.execute(filename) 
     

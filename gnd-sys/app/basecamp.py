@@ -70,18 +70,19 @@ import paho.mqtt.client as mqtt
 
 from tools import CreateApp, ManageTutorials, crc_32c, datagram_to_str, compress_abs_path, TextEditor
 from tools import CreateProject, AppStore, ManageCodeTutorials
-from tools import AppTargetStatus, AppTopicIdStatus, Cfs, CfsStdout, ManageCfs, build_cfs_target
+from tools import AppTargetStatus, AppTopicIdStatus, CfsStdout, ManageCfs, build_cfs_target
+from tools import BcPathConst, BcPath, BcPathMgr, CfsPath, CfsPathMgr
 from cfsinterface import CmdTlmRouter
 from cfsinterface import Cfe, EdsMission
 from cfsinterface import TelecommandInterface, TelecommandScript
 from cfsinterface import TelemetryMessage, TelemetryObserver, TelemetryQueueServer
 
 
+###############################################################################
 
-BASECAMP_INI_FILE   = 'basecamp.ini'
-TUTORIAL_JSON_FILE  = 'tutorial.json' #TODO - Remove duplicate definitions
 GITHUB_BC_APP_TAG   = 'cfs-basecamp'
 GITHUB_NASA_APP_TAG = 'nasa-proxy'
+
 
 ###############################################################################
 
@@ -756,22 +757,31 @@ class App():
     
     def __init__(self, ini_file):
 
-        self.path = os.getcwd()
-        self.cfs_interface_dir = os.path.join(self.path, "cfsinterface")
         self.ini_config = IniConfig(ini_file)
+        
+        self.path = os.getcwd()
+        self.bc_path_mgr  = BcPathMgr()
+        self.cfs_path_mgr = CfsPathMgr()
+
+        self.bc_cfs_intf_path = self.bc_path_mgr.get(BcPath.CFS_INTERFACE)
+
+        self.tech_docs_path   = self.bc_path_mgr.get_doc(BcPath.GUI_APP)  # Technical docs are in the GUI path
+        self.proj_docs_path   = self.bc_path_mgr.get_doc(BcPath.PROJECTS)
+        self.tools_path       = self.bc_path_mgr.get(BcPath.APP_TOOLS)
+        
+        self.cfs_exe_file       = self.cfs_path_mgr.get_exe_filename()
+
+        self.usr_app_path       = self.bc_path_mgr.get(BcPath.USR_APPS)
+        self.app_templates_path = self.bc_path_mgr.get(BcPath.TEMPLATES)
 
         # See IniConfig class self.modifiable{} for config parameters that
         # can be changed during runtime and can't be set here
 
-        self.APP_VERSION     = self.ini_config.get('APP','VERSION')
-        self.PROJECTS_URL    = self.ini_config.get('APP','PROJECTS_URL')
+        self.APP_VERSION  = self.ini_config.get('APP','VERSION')
+        self.PROJECTS_URL = self.ini_config.get('APP','PROJECTS_URL')
 
-        self.USR_APP_PATH       = self.ini_config.get('PATHS','USR_APP_PATH')
-        self.APP_TEMPLATES_PATH = self.ini_config.get('PATHS', 'APP_TEMPLATES_PATH')
-        self.PROJECTS_PATH      = self.ini_config.get('PATHS','PROJECTS_PATH')
-
-        self.EDS_MISSION_NAME    = self.ini_config.get('CFS_TARGET','MISSION_EDS_NAME')
-        self.EDS_CFS_TARGET_NAME = self.ini_config.get('CFS_TARGET','CPU_EDS_NAME')
+        self.MISSION_NAME    = self.ini_config.get('CFS_TARGET','MISSION_NAME')
+        self.TARGET_CPU_NAME = self.ini_config.get('CFS_TARGET','CPU_NAME')
 
         self.CMD_GUI_PAYLOAD_ROW_COUNT = self.ini_config.getint('GUI','CMD_PAYLOAD_ROW_COUNT')
         self.CMD_GUI_PAYLOAD_ROW_INPUT = self.ini_config.getint('GUI','CMD_PAYLOAD_ROW_INPUT')
@@ -790,15 +800,9 @@ class App():
         self.GND_TLM_TIMEOUT  = float(self.ini_config.getint('NETWORK','GND_TLM_TIMEOUT'))/1000.0
         self.ROUTER_CTRL_PORT = self.ini_config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
 
-        self.default_tech_doc = self.ini_config.get('APP','DEFAULT_TECH_DOC')
-        self.default_proj_doc = self.ini_config.get('APP','DEFAULT_PROJ_DOC')
-        self.tech_docs_path   = compress_abs_path(os.path.join(self.path, self.ini_config.get('PATHS','TECH_DOC_PATH')))
-        self.proj_docs_path   = compress_abs_path(os.path.join(self.path, self.ini_config.get('PATHS','PROJ_DOC_PATH')))
-        self.tools_path       = os.path.join(self.path, "tools")
-        
-        self.cfs_exe_rel_path   = 'build/exe/' + self.EDS_CFS_TARGET_NAME.lower()
-        self.cfs_exe_file       = 'core-' + self.EDS_CFS_TARGET_NAME.lower()
-        self.cfs_abs_base_path  = compress_abs_path(os.path.join(self.path, self.ini_config.get('CFS_TARGET','BASE_PATH')))
+        self.DEFAULT_TECH_DOC = self.ini_config.get('APP','DEFAULT_TECH_DOC')
+        self.DEFAULT_PROJ_DOC = self.ini_config.get('APP','DEFAULT_PROJ_DOC')
+
         self.cfs_subprocess     = None
         self.cfs_subprocess_log = ""
         self.cfs_stdout         = None
@@ -817,9 +821,9 @@ class App():
         self.usr_app_list = [self.GUI_APP_TITLE_STR]  # Non-cFE apps
         self.all_app_list = []  # Combined user and cFE app list
 
-        self.manage_tutorials = ManageTutorials(self.ini_config.get('PATHS', 'TUTORIALS_PATH'))
-        self.create_app       = CreateApp(self.APP_TEMPLATES_PATH, self.USR_APP_PATH)
-        self.manage_code_tutorials = ManageCodeTutorials(self.tools_path, self.USR_APP_PATH)
+        self.manage_tutorials = ManageTutorials(self.bc_path_mgr.get(BcPath.TUTORIALS))
+        self.create_app       = CreateApp(self.app_templates_path, self.usr_app_path)
+        self.manage_code_tutorials = ManageCodeTutorials(self.tools_path, self.usr_app_path)
         self.cfs_mqtt_cmd_client = CfsMqttCmdClient(self.CFS_MQTT_BROKER_ADDR, self.ini_config.get('NETWORK','MQTT_CLIENT_NAME'),
                                                     self.CFS_MQTT_CMD_TOPIC, self.display_event)
         
@@ -986,18 +990,18 @@ class App():
                 break
         doc_window.close()
         
-    def view_tutorial_doc(self, pdf_viewer_app, tutorial_path):
+    def execute_tutorial(self, tutorial_app, tutorial_path):
         """
-        tutorial_path is the relative path from gnd-sys/app to TUTORIAL_JSON_FILE
+        tutorial_path is the relative path from gnd-sys/app to BcPathConst.TUTORIAL_JSON_FILE
         """
-        print(f'tutorial_path = {tutorial_path}')
-        pdf_filename = f'{compress_abs_path(os.path.join(self.path,tutorial_path))}{TUTORIAL_JSON_FILE}'
-        print(f'pdf_filename = {pdf_filename}')
-        if os.path.isfile(pdf_filename):
-            self.pdf_viewer = sg.execute_py_file(pdf_viewer_app, parms=tutorial_path, cwd=self.tools_path)
+        ##print(f'tutorial_app: {tutorial_app}, tutorial_path: {tutorial_path}')
+        ##print(f'self.tools_path: {self.tools_path}')
+        json_filename = f'{compress_abs_path(os.path.join(self.path,tutorial_path))}{BcPathConst.TUTORIAL_JSON_FILE}'
+        ##print(f'json_filename = {json_filename}')
+        if os.path.isfile(json_filename):
+            self.tutorial = sg.execute_py_file(tutorial_app, parms=tutorial_path, cwd=self.tools_path)
         else:
-            sg.popup(f'Failed to open {pdf_filename}, file does not exist.', title='Tutorials', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
-        #self.pdf_viewer = sg.execute_py_file(pdf_viewer_app, parms=tutorial_path, cwd=self.tools_path)
+            sg.popup(f'{json_filename} does not exist.', title='Tutorial Error', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
     def launch_tlmplot(self):
                 
@@ -1107,7 +1111,7 @@ class App():
         #todo: Add check if tlm_plots been run before or is there logic in router?
         if (len(tlm_plot_cmd_parms)>0):
             self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','TLM_PLOT_TLM_PORT'))                
-            self.tlm_plot = sg.execute_py_file("tlmplot.py", parms=tlm_plot_cmd_parms, cwd=self.cfs_interface_dir)
+            self.tlm_plot = sg.execute_py_file("tlmplot.py", parms=tlm_plot_cmd_parms, cwd=self.bc_cfs_intf_path)
 
     def create_window(self, sys_target_str, sys_comm_str):
         """
@@ -1158,7 +1162,7 @@ class App():
                       sg.Button('Stop',      enable_events=True, key='-STOP_CFS-',   button_color=('IndianRed3'),   border_width=0, pad=((5,5),(5,5))),
                       ]]),
                       sg.Text('Mission:', font=pri_hdr_font),
-                      sg.Text(self.EDS_MISSION_NAME, font=sec_hdr_font, text_color='blue'),
+                      sg.Text(self.MISSION_NAME, font=sec_hdr_font, text_color='blue'),
                       sg.Text('Target:', font=pri_hdr_font, pad=(10,1)),
                       sg.Text(self.telecommand_gui.target_name, font=sec_hdr_font, text_color='blue'),
                       sg.Text('Image', font=pri_hdr_font, pad=(10,1)),
@@ -1199,7 +1203,7 @@ class App():
        
     def execute(self):
     
-        sys_target_str = f"Basecamp version {self.APP_VERSION} initialized with mission '{self.EDS_MISSION_NAME}', target '{self.EDS_CFS_TARGET_NAME}' on {datetime.now().strftime('%m/%d/%Y')} at {datetime.now().strftime('%H:%M:%S')}"
+        sys_target_str = f"Basecamp version {self.APP_VERSION} initialized with mission '{self.MISSION_NAME}', target '{self.TARGET_CPU_NAME}' on {datetime.now().strftime('%m/%d/%Y')} at {datetime.now().strftime('%H:%M:%S')}"
         sys_comm_str = f'Basecamp target host {self.CFS_IP_ADDR}, command port {self.CFS_CMD_PORT}, telemetry port {self.GND_TLM_PORT}'
     
         logger.info(sys_target_str)
@@ -1218,7 +1222,7 @@ class App():
         except Exception as e:
             err_str = f'Error creating command-telemetry router: {e}.'
             logger.error(err_str)
-            help_str = f'Verify your ground and cFS IP addresses in {BASECAMP_INI_FILE} are correct.'
+            help_str = f'Verify your ground and cFS IP addresses in {BcPathConst.BASECAMP_INI_FILE} are correct.'
             str_len = len(err_str)
             if len(help_str) > str_len:
                 str_len = len(help_str)
@@ -1228,13 +1232,13 @@ class App():
         try:
             # Command Objects    
              
-            self.telecommand_gui    = TelecommandGui(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cfs_cmd_output_queue,
+            self.telecommand_gui    = TelecommandGui(self.MISSION_NAME, self.TARGET_CPU_NAME, self.cfs_cmd_output_queue,
                                                      self.CMD_GUI_PAYLOAD_ROW_COUNT, self.CMD_GUI_PAYLOAD_ROW_INPUT)
-            self.telecommand_script = TelecommandScript(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cfs_cmd_output_queue)
+            self.telecommand_script = TelecommandScript(self.MISSION_NAME, self.TARGET_CPU_NAME, self.cfs_cmd_output_queue)
              
             # Telemetry Objects
              
-            self.tlm_server  = TelemetryQueueServer(self.EDS_MISSION_NAME, self.EDS_CFS_TARGET_NAME, self.cmd_tlm_router.get_gnd_tlm_queue())
+            self.tlm_server  = TelemetryQueueServer(self.MISSION_NAME, self.TARGET_CPU_NAME, self.cmd_tlm_router.get_gnd_tlm_queue())
             self.tlm_monitor = BasecampTelemetryMonitor(self.tlm_server, self.tlm_monitors, self.display_tlm_monitor, self.event_queue)
             self.tlm_server.execute()      
             self.cmd_tlm_router.start()
@@ -1267,7 +1271,7 @@ class App():
             if not self.event_queue.empty():
                 new_event_text = self.event_queue.get_nowait()
                 self.display_event(new_event_text)
-            
+           
             # Route commands from remote processes. for now, always accept commands
             if not self.cfs_cmd_input_queue.empty():
                 datagram = self.cfs_cmd_input_queue.get()[0]
@@ -1289,9 +1293,8 @@ class App():
             ### FILE ###
 
             if self.event == 'Create Project...':
-                project_path = os.path.join(self.path,self.PROJECTS_PATH)
-                manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
-                CreateProject(self.PROJECTS_URL, project_path, self.ini_config.get('APP','APP_STORE_URL'), self.ini_config.get('APP','APP_REPO_BRANCH'), self.USR_APP_PATH, manage_cfs).execute()
+                manage_cfs = ManageCfs(self.window, self.TARGET_CPU_NAME)
+                CreateProject(self.PROJECTS_URL, self.ini_config.get('APP','APP_STORE_URL'), self.ini_config.get('APP','APP_REPO_BRANCH'), manage_cfs).execute()
 
             elif self.event == 'Create App':
                 self.create_app.execute()
@@ -1307,35 +1310,35 @@ class App():
                     app_group = 'NASA'
                     git_topic_include.append(GITHUB_NASA_APP_TAG)                 
                     git_topic_exclude.append(GITHUB_BC_APP_TAG)
-                app_store = AppStore(self.ini_config.get('APP','APP_STORE_URL'), self.ini_config.get('APP','APP_REPO_BRANCH'), self.USR_APP_PATH, git_topic_include, git_topic_exclude,app_group)
+                app_store = AppStore(self.ini_config.get('APP','APP_STORE_URL'), self.ini_config.get('APP','APP_REPO_BRANCH'), git_topic_include, git_topic_exclude, app_group)
                 app_store.execute()
  
             elif self.event in ('Add App to Target','Remove App from Target', 'App Target Status'):
-                manage_cfs = ManageCfs(self.path, self.cfs_abs_base_path, self.USR_APP_PATH, self.window, self.EDS_CFS_TARGET_NAME)
+                manage_cfs = ManageCfs(self.window, self.TARGET_CPU_NAME)
                 manage_cfs.execute(self.event.split(' ')[0]) # First menu word used as execute() command
 
             elif self.event == 'Certify App':
-                self.ComingSoonPopup("Certify your app to an OpenSatKit app repo")
+                self.ComingSoonPopup("Certify your app is compliant with Basecamp's integration standards")
 
             ### TOOLS ###
 
             elif self.event == 'Browse Files' or self.event == '-FILE_BROWSER-':
                 self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','FILE_BROWSER_CMD_PORT'))
                 self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','FILE_BROWSER_TLM_PORT'))
-                self.file_browser = sg.execute_py_file("filebrowser.py", cwd=self.cfs_interface_dir)
+                self.file_browser = sg.execute_py_file("filebrowser.py", cwd=self.bc_cfs_intf_path)
 
             elif self.event == 'Run Cmd Sender':
                 self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','CMD_SENDER_CMD_PORT'))
                 self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','CMD_SENDER_TLM_PORT'))
-                self.cmd_sender = sg.execute_py_file("cmdsender.py", cwd=self.cfs_interface_dir)
+                self.cmd_sender = sg.execute_py_file("cmdsender.py", cwd=self.bc_cfs_intf_path)
         
             elif self.event == 'Run Script':
                 self.cmd_tlm_router.add_cfs_cmd_source(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_CMD_PORT'))
                 self.cmd_tlm_router.add_gnd_tlm_dest(self.ini_config.getint('NETWORK','SCRIPT_RUNNER_TLM_PORT'))
-                self.script_runner = sg.execute_py_file("scriptrunner.py", cwd=self.cfs_interface_dir)
+                self.script_runner = sg.execute_py_file("scriptrunner.py", cwd=self.bc_cfs_intf_path)
 
             elif self.event == 'Manage cFS Tables':
-                self.tbl_manager = sg.execute_py_file("tblmanager.py", cwd=self.cfs_interface_dir)
+                self.tbl_manager = sg.execute_py_file("tblmanager.py", cwd=self.bc_cfs_intf_path)
 
             elif self.event == 'Plot Data':
                 self.launch_tlmplot()
@@ -1353,8 +1356,8 @@ class App():
             elif self.event == 'Configure Command Destination':
                 pop_win = sg.Window('Configure Command Destination',
                                     [[sg.Text('')],
-                                     [sg.Text("'UDP'",  size=(8,1), justification='center'), sg.Text(f'Send commands to cFS IP address/port defined in {BASECAMP_INI_FILE}')],
-                                     [sg.Text("'MQTT'", size=(8,1), justification='center'), sg.Text(f'Send commands to MQTT broker/topic defined in {BASECAMP_INI_FILE}')],
+                                     [sg.Text("'UDP'",  size=(8,1), justification='center'), sg.Text(f'Send commands to cFS IP address/port defined in {BcPathConst.BASECAMP_INI_FILE}')],
+                                     [sg.Text("'MQTT'", size=(8,1), justification='center'), sg.Text(f'Send commands to MQTT broker/topic defined in {BcPathConst.BASECAMP_INI_FILE}')],
                                      [sg.Button('UDP',  button_color=('SpringGreen4'), enable_events=True, key='-UDP-',  pad=(2,1)),
                                       sg.Button('MQTT', button_color=('SpringGreen4'), enable_events=True, key='-MQTT-', pad=(2,1)), 
                                       sg.Cancel(button_color=('gray'), pad=(2,1))],
@@ -1409,20 +1412,10 @@ class App():
             ### TUTORIALS ###
 
             elif self.event in self.manage_tutorials.tutorial_titles:
-                """
-                tutorial_dir = self.manage_tutorials.tutorial_lookup[self.event].path
-                print (f'tutorial_dir = {tutorial_dir}')
-                self.tutorial = sg.execute_py_file("tutorial.py", parms=tutorial_dir, cwd=self.tools_path)
-                """
-                self.view_tutorial_doc("tutorial.py", self.manage_tutorials.tutorial_lookup[self.event].path)
+                self.execute_tutorial("tutorial.py", self.manage_tutorials.tutorial_lookup[self.event].path)
                 
             elif self.event in self.manage_code_tutorials.tutorial_titles:
-                """
-                tutorial_dir = self.manage_code_tutorials.tutorial_lookup[self.event].path
-                print (f'tutorial_dir = {tutorial_dir}')
-                self.tutorial = sg.execute_py_file("appcodetutorial.py", parms=tutorial_dir, cwd=self.tools_path)
-                """
-                self.view_tutorial_doc("appcodetutorial.py", self.manage_code_tutorials.tutorial_lookup[self.event].path)
+                self.execute_tutorial("appcodetutorial.py", self.manage_code_tutorials.tutorial_lookup[self.event].path)
             
             ### HELP ###
                 """ 
@@ -1445,10 +1438,10 @@ class App():
                     sg.clipboard_set(text)
                 """
             elif self.event == 'Tech Docs...':
-                self.view_pdf_doc(self.tech_docs_path, self.default_tech_doc)
+                self.view_pdf_doc(self.tech_docs_path, self.DEFAULT_TECH_DOC)
 
             elif self.event == 'Project Docs...':
-                self.view_pdf_doc(self.proj_docs_path, self.default_proj_doc)
+                self.view_pdf_doc(self.proj_docs_path, self.DEFAULT_PROJ_DOC)
 
             elif self.event == 'About':
                 about_msg = ('Basecamp provides a cFS application framework,\n'
@@ -1468,16 +1461,16 @@ class App():
             elif self.event == '-CREATE_CFS-':
             
                 if self.cfs_subprocess is None:
-                    build_cfs_script = os.path.join(self.path, Cfs.SH_BUILD_CFS_TOPICIDS)
-                    build_cfs_target(build_cfs_script, self.cfs_abs_base_path, self.window)
+                    build_cfs_script = self.bc_path_mgr.get_shell_script(BcPathConst.SH_BUILD_CFS_TOPICIDS)
+                    build_cfs_target(build_cfs_script, self.window)
                 else:
                     sg.popup("A cFS image is currently running. You must stop the current image prior to building a new image.", title='Build cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
                 
             elif self.event == '-BUILD_CFS-':
             
                 if self.cfs_subprocess is None:
-                    build_cfs_script = os.path.join(self.path, Cfs.SH_MAKE_INSTALL_CFS)
-                    build_cfs_target(build_cfs_script, self.cfs_abs_base_path, self.window)
+                    build_cfs_script = self.bc_path_mgr.get_shell_script(BcPathConst.SH_MAKE_INSTALL_CFS)
+                    build_cfs_target(build_cfs_script, self.window)
                 else:
                     sg.popup("A cFS image is currently running. You must stop the current image prior to building a new image.", title='Build cFS', keep_on_top=True, non_blocking=True, grab_anywhere=True, modal=False)
 
@@ -1485,13 +1478,13 @@ class App():
                 """
                 
                 """
-                cfs_abs_exe_path = os.path.join(self.cfs_abs_base_path, self.cfs_exe_rel_path) 
+                cfs_abs_exe_path = self.cfs_path_mgr.get(CfsPath.CFS_EXE)
                 if self.ini_config.getboolean('CFS_TARGET','SUDO_START_CFS'):
-                   start_sh  = os.path.join(self.path, Cfs.SH_SUDO_START_CFS)
+                   start_sh  = self.bc_path_mgr.get_shell_script(BcPathConst.SH_SUDO_START_CFS)
                    password  = self.ini_config.get('APP','PASSWORD')
                    popen_str = f'{start_sh} {cfs_abs_exe_path} {self.cfs_exe_file} {password}'
                 else:
-                   start_sh  = os.path.join(self.path, Cfs.SH_START_CFS)
+                   start_sh  = self.bc_path_mgr.get_shell_script(BcPathConst.SH_START_CFS)
                    popen_str = f'{start_sh} {cfs_abs_exe_path} {self.cfs_exe_file}'
                 #self.cfs_subprocess = subprocess.Popen('%s %s %s' % (start_cfs_sh, cfs_abs_exe_path, self.cfs_exe_file), shell=True)
                 #self.cfs_subprocess = subprocess.Popen('%s %s %s' % (start_cfs_sh, cfs_abs_exe_path, self.cfs_exe_file),
@@ -1503,7 +1496,7 @@ class App():
                                                        preexec_fn = lambda : (os.setsid(), os.nice(10)))
                 time.sleep(2.0)
                 if self.cfs_subprocess is not None:
-                    self.window["-CFS_IMAGE-"].update(os.path.join(cfs_abs_exe_path, self.cfs_exe_file))
+                    self.window["-CFS_IMAGE-"].update(self.cfs_path_mgr.get_file(CfsPath.CFS_EXE,self.cfs_exe_file))
                     time.sleep(1.0)
                     self.enable_telemetry()
                     self.cfs_stdout = CfsStdout(self.cfs_subprocess, self.window)
@@ -1788,7 +1781,7 @@ class App():
                     app_name = self.tlm_server.get_app_name_from_topic(tlm_topic)
                     tlm_screen_cmd_parms = f'{self.tlm_screen_port} {app_name} {tlm_topic}'
                     self.cmd_tlm_router.add_gnd_tlm_dest(self.tlm_screen_port)
-                    self.tlm_screen = sg.execute_py_file("tlmscreen.py", parms=tlm_screen_cmd_parms, cwd=self.cfs_interface_dir)
+                    self.tlm_screen = sg.execute_py_file("tlmscreen.py", parms=tlm_screen_cmd_parms, cwd=self.bc_cfs_intf_path)
                     self.display_event(f'Created telemetry screen for {tlm_topic} on port {self.tlm_screen_port}')
                     self.tlm_screen_port += 1
                 else:
@@ -1808,7 +1801,7 @@ def run_app():
     #TODO: Try to get reload EDS to work
     execute = True
     while execute:
-        app = App(BASECAMP_INI_FILE)
+        app = App(BcPathConst.BASECAMP_INI_FILE)
         execute = app.execute()
         break
     logger.info('Exiting app')

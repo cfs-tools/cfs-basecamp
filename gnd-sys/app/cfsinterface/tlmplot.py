@@ -17,33 +17,30 @@
       
     Notes:
       1. This is a simple single integer plot utility that only supports
-         linear time plots. If more sophisticated plotting becomess
+         linear time plots. If more sophisticated plotting becomes
          necessary then a package such as matplot will be used.      
 """
 
 import sys
-import time
+sys.path.append('..')
 import os
+import time
 import socket
 import configparser
 import io
 import math
 from contextlib import redirect_stdout
 import numpy as np
-
-if __name__ == '__main__':
-    sys.path.append('..')
-    from cfeconstants  import Cfe
-    from telecommand   import TelecommandScript
-    from telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
-    from cmdtlmprocess import CmdTlmProcess
-else:
-    from .cfeconstants  import Cfe
-    from .telecommand   import TelecommandScript
-    from .telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
-    from .cmdtlmprocess import CmdTlmProcess
-from tools import crc_32c, compress_abs_path, TextEditor
 import FreeSimpleGUI as sg
+
+
+from tools.bcpaths import BcPathMgr, CfsPathMgr
+
+from cfsinterface.cfeconstants  import Cfe
+from cfsinterface.telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
+
+
+###############################################################################
 
 CCSDS   = 0
 TIME    = 1
@@ -112,8 +109,8 @@ class TlmPlot():
         Example current value usage: get_tlm_val("CFE_ES", "HK_TLM", "Sequence")
     """
     def __init__(self, mission_name, gnd_ip_addr, router_ctrl_port, plot_tlm_port, plot_tlm_timeout, min_value, max_value):
-
-        self.tlm_server = TelemetrySocketServer(mission_name, 'cpu1', gnd_ip_addr, router_ctrl_port, plot_tlm_port, plot_tlm_timeout)
+        self.cfs_path_mgr = cfs_path_mgr = CfsPathMgr()
+        self.tlm_server = TelemetrySocketServer(mission_name, f'{self.cfs_path_mgr.get_cpu_name()}', gnd_ip_addr, router_ctrl_port, plot_tlm_port, plot_tlm_timeout)
 
         self.app_name    = ''
         self.tlm_topic   = ''
@@ -237,6 +234,10 @@ class TlmPlot():
 ###############################################################################
 
 if __name__ == '__main__':
+    """
+    This is run as a separate Basecamp process with a command line arguments:
+       TODO 
+    """
     
     if len(sys.argv) > 1:
         app_name    = sys.argv[1]
@@ -253,13 +254,15 @@ if __name__ == '__main__':
         min_value   = 0
         max_value   = 6
     
+    bc_path_mgr = BcPathMgr()
+    
     config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
+    config.read(bc_path_mgr.get_basecamp_ini_file())
 
     cfs_ip_addr = config.get('NETWORK', 'CFS_IP_ADDR')
     router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     plot_tlm_port    = config.getint('NETWORK', 'TLM_PLOT_TLM_PORT')
-    mission_name     = config.get('CFS_TARGET','MISSION_EDS_NAME')
+    mission_name     = config.get('CFS_TARGET','MISSION_NAME')
 
     tlm_plot = TlmPlot(mission_name, cfs_ip_addr, router_ctrl_port, plot_tlm_port, 1.0, min_value, max_value)
     tlm_plot.execute(app_name, tlm_topic, tlm_payload, tlm_element) 

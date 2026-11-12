@@ -23,25 +23,18 @@
 """
 
 import sys
-import time
+sys.path.append('..')
 import os
+import time
 import socket
 import configparser
 import io
-
-if __name__ == '__main__':
-    sys.path.append('..')
-    from cfeconstants  import Cfe
-    from telecommand   import TelecommandScript
-    from telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
-    from cmdtlmprocess import CmdTlmProcess
-else:
-    from .cfeconstants  import Cfe
-    from .telecommand   import TelecommandScript
-    from .telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
-    from .cmdtlmprocess import CmdTlmProcess
-from tools import crc_32c, compress_abs_path, TextEditor
 import FreeSimpleGUI as sg
+
+from tools.bcpaths import BcPathMgr, CfsPathMgr
+
+from cfsinterface.telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
+from cfsinterface.cmdtlmprocess import CmdTlmProcess
 
 
 ###############################################################################
@@ -78,7 +71,8 @@ class TlmScreen():
     """
     def __init__(self, mission_name, gnd_ip_addr, router_ctrl_port, screen_tlm_port, screen_tlm_timeout):
 
-        self.tlm_server = TelemetrySocketServer(mission_name, 'cpu1', gnd_ip_addr, router_ctrl_port, screen_tlm_port, screen_tlm_timeout)
+        self.cfs_path_mgr = CfsPathMgr()
+        self.tlm_server = TelemetrySocketServer(mission_name, f'{self.cfs_path_mgr.get_cpu_name()}', gnd_ip_addr, router_ctrl_port, screen_tlm_port, screen_tlm_timeout)
 
         self.app_name  = ''
         self.tlm_topic = ''
@@ -218,9 +212,15 @@ class TlmScreen():
 ###############################################################################
 
 if __name__ == '__main__':
+    """
+    This is run as a separate Basecamp process with a command line arguments:
+       TODO 
+    """
+
+    bc_path_mgr = BcPathMgr()
     
     config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
+    config.read(bc_path_mgr.get_basecamp_ini_file())
 
     router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     if len(sys.argv) > 1:
@@ -238,7 +238,7 @@ if __name__ == '__main__':
         tlm_topic   = 'HS/Application/HK_TLM'
 
     gnd_ip_addr  = config.get('NETWORK', 'GND_IP_ADDR')
-    mission_name = config.get('CFS_TARGET','MISSION_EDS_NAME')
+    mission_name = config.get('CFS_TARGET','MISSION_NAME')
 
     tlm_screen = TlmScreen(mission_name, gnd_ip_addr, router_ctrl_port, tlm_port, 2.0) #TODO - Parameterize timeout
     tlm_screen.execute(app_name, tlm_topic) 

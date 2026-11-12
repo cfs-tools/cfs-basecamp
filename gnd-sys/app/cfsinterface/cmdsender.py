@@ -22,8 +22,9 @@
 """
 
 import sys
-import time
+sys.path.append('..')
 import os
+import time
 import socket
 import configparser
 from queue import Queue
@@ -32,20 +33,13 @@ from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    sys.path.append('..')
-    from cfeconstants  import Cfe
-    from telecommand   import TelecommandScript
-    from telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
-    from cmdtlmprocess import CmdTlmProcess
-else:
-    from .cfeconstants  import Cfe
-    from .telecommand   import TelecommandScript
-    from .telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
-    from .cmdtlmprocess import CmdTlmProcess
-from tools import crc_32c, compress_abs_path, bin_hex_decode, bin_hex_encode, TextEditor
-
 import FreeSimpleGUI as sg
+
+from tools.bcpaths import BcPath, BcPathMgr
+
+from cfsinterface.telemetry     import TelemetryMessage, TelemetryObserver, TelemetrySocketServer
+from cfsinterface.cmdtlmprocess import CmdTlmProcess
+
 
 CMD_SENDER_FILE_EXT                = 'txt'
 CMD_SENDER_START_CMD_DELIMITER     = '>'
@@ -395,18 +389,22 @@ class CmdSender(CmdTlmProcess):
 ###############################################################################
 
 if __name__ == '__main__':
+    """
+    This is run as a separate Basecamp process with a command line arguments:
+       TODO 
+    """
 
+    bc_path_mgr = BcPathMgr()
+    cmd_sender_path = bc_path_mgr.get(BcPath.CMD_SENDER)
+    
     config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
+    config.read(bc_path_mgr.get_basecamp_ini_file())
 
-    cmd_sender_path = config.get('PATHS','CMD_SENDER_PATH')
-    cmd_sender_path = compress_abs_path(os.path.join(os.getcwd(), '..', cmd_sender_path))
-    print(f'cmd_sender_path = {cmd_sender_path}')
     cfs_ip_addr = config.get('NETWORK','CFS_IP_ADDR')
     router_ctrl_port = config.getint('NETWORK','CMD_TLM_ROUTER_CTRL_PORT')
     sender_cmd_port = config.getint('NETWORK','CMD_SENDER_CMD_PORT')
     sender_tlm_port = config.getint('NETWORK','CMD_SENDER_TLM_PORT')
-    mission_name     = config.get('CFS_TARGET','MISSION_EDS_NAME')
+    mission_name     = config.get('CFS_TARGET','MISSION_NAME')
     
     cmd_sender = CmdSender(mission_name, cmd_sender_path, cfs_ip_addr, router_ctrl_port, sender_cmd_port, sender_tlm_port, 1.0)
     cmd_sender.execute()

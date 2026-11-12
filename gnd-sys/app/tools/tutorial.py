@@ -28,27 +28,23 @@
 
 import sys
 sys.path.append("..")
-import time
 import os
+import time
 import json
-import configparser
 import fitz
 from datetime import datetime
 
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    from jsonfile import JsonFile
-    from utils    import compress_abs_path
-else:
-    from .jsonfile import JsonFile
-    from .utils    import compress_abs_path
-
 import FreeSimpleGUI as sg
 
+from tools.jsonfile  import JsonFile
+from tools.bcpaths   import BcPathConst, BcPath, BcPathMgr
 
-TUTORIAL_JSON_FILE = 'tutorial.json'
+
+###############################################################################
+
 LESSON_JSON_FILE   = 'lesson.json'
 LESSON_DIR         = 'lesson'
 
@@ -57,17 +53,18 @@ LESSON_DIR         = 'lesson'
 class TutorialJson(JsonFile):
     """
     Manage tutor and lesson JSON files. Keep tag names and formats consistent.
-    The tutor and lesson JSON files have nearly idenical keys and since this is
+    The tutor and lesson JSON files have nearly identical keys and since this is
     not a generic utility this one class takes care of both file types.
+    JsonFile::get() JsonFile::set() should be used to access the JSON dictionary.
     """
     def __init__(self, json_file):
         super().__init__(json_file)
         
     def lesson_slide(self):
-        return self.json['current-slide']
+        return self.get('current-slide')
 
     def lesson_complete(self):
-        return self.json['complete']
+        return self.get('complete')
 
     def reset_child(self):
         if 'current-slide' in self.json:
@@ -75,10 +72,12 @@ class TutorialJson(JsonFile):
            self.json['complete'] = False
 
     def set_complete(self, complete):
-        self.json['complete'] = complete
+        if 'complete' in self.json:
+            self.json['complete'] = complete
 
     def set_slide(self, slide):
-        self.json['current-slide'] = slide
+        if 'current-slide' in self.json:
+            self.json['current-slide'] = slide
     
     
 ###############################################################################
@@ -195,7 +194,7 @@ class Tutorial():
     def __init__(self, tutorial_path):
 
         self.path = tutorial_path
-        self.json = TutorialJson(os.path.join(tutorial_path, TUTORIAL_JSON_FILE))
+        self.json = TutorialJson(os.path.join(tutorial_path, BcPathConst.TUTORIAL_JSON_FILE))
         
         self.lesson_path = os.path.join(tutorial_path,LESSON_DIR)
         logger.debug(f'self.lesson_path  = {self.lesson_path}')
@@ -436,7 +435,7 @@ class TutorialPng():
     def __init__(self, tutorial_path):
 
         self.path = tutorial_path
-        self.json = TutorialJson(os.path.join(tutorial_path, TUTORIAL_JSON_FILE))
+        self.json = TutorialJson(os.path.join(tutorial_path, BcPathConst.TUTORIAL_JSON_FILE))
         
         self.lesson_path = os.path.join(tutorial_path,LESSON_DIR)
         logger.debug(f'self.lesson_path  = {self.lesson_path}')
@@ -560,7 +559,7 @@ class ManageTutorials():
         for tutorial_folder in tutorial_list:
             logger.debug(f'Tutorial folder: {tutorial_folder}')
             #todo: Tutorial constructor could raise exception if JSON doesn't exist or is malformed
-            tutorial_json_file = os.path.join(tutorials_path, tutorial_folder, TUTORIAL_JSON_FILE)
+            tutorial_json_file = os.path.join(tutorials_path, tutorial_folder, BcPathConst.TUTORIAL_JSON_FILE)
             if os.path.exists(tutorial_json_file):
                 #tutorial = TutorialPng(os.path.join(tutorials_path, tutorial_folder))
                 tutorial = Tutorial(os.path.join(tutorials_path, tutorial_folder))
@@ -578,22 +577,23 @@ class ManageTutorials():
 ###############################################################################
 
 if __name__ == '__main__':
+    """
+    This is run as a separate Basecamp process with a command line arguments:
+       sys.argv[1] - Tutorial path 
+    """
+    
+    bc_path_mgr = BcPathMgr()
 
-    tutorial_rel_dir = None
+    tutorial_path_name = None
     if len(sys.argv) > 1:
-        tutorial_rel_dir = sys.argv[1]
+        tutorial_path_name = sys.argv[1]
     else:
-        tutorial_rel_dir = '1-basecamp-intro'
+        tutorial_path_name = '1-basecamp-intro'
+        manage_tutorials = ManageTutorials(bc_path_mgr.get(BcPath.TUTORIALS))
+        print (f'tutorial_titles: {manage_tutorials.tutorial_titles}')
         
-    config = configparser.ConfigParser()
-    config.read('../basecamp.ini')
-    TUTORIALS_PATH = config.get('PATHS','TUTORIALS_PATH')
+    tutorial_abs_path = bc_path_mgr.get_file(BcPath.TUTORIALS, tutorial_path_name)
 
-    tutorial_dir = compress_abs_path(os.path.join(os.getcwd(),'..', TUTORIALS_PATH, tutorial_rel_dir)) 
-    print ("tutorial_dir = " + tutorial_dir)
-    tutorial = Tutorial(tutorial_dir)
-    #tutorial = TutorialPng(tutorial_dir)
+    tutorial = Tutorial(tutorial_abs_path)
     tutorial.execute()
     
-    
-

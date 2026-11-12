@@ -14,34 +14,12 @@
     GNU Affero General Public License for more details.
 
     Purpose:
-        Provide JSON base class.
+        Provide utiltiy functions
 """
 import os
 import socket
 import fcntl
 import struct
-
-###############################################################################
-
-def compress_abs_path(path):
-    """
-    Remove '../' entries from a path
-    """
-    path_array = path.split(os.path.sep)
-    path_array.pop(0)   # Abs paths start with separator so first split array is ''
-
-    new_path_array = []
-    for p in path_array:
-        if p == '..':
-            new_path_array.pop()
-        else:
-            new_path_array.append(p)
-    
-    new_path = os.path.sep
-    for p in new_path_array:
-        new_path += p + os.path.sep
-    
-    return new_path
 
 
 ###############################################################################
@@ -57,10 +35,11 @@ def crc_32c(crc, bytes_obj):
     
         crc = crc ^ byte
         for i in range(8):
-            crc = (crc >> 1) ^ CRC_POLY_32C if crc & 1 else crc >> 1
-        
+            if crc & 0x00000001:
+                crc = (crc >> 1) ^ CRC_POLY_32C
+            else:
+                crc = (crc >> 1)        
     return ~crc    
-
 
 ###############################################################################
 
