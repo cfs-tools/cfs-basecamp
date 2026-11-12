@@ -6,7 +6,18 @@
                    "  priority: Unused, always set to zero",
                    "  reliability: Unused, always set to zero",
                    "  buf-limit: Number of SB buffers allocated to KIT_TO input pipe",
-                   "  filter: Filter algorithm parameters. See app_c_fw::pkt_util"],
+                   "  filter: Filter algorithm parameters. See app_c_fw::pkt_util",
+                   "FILE_XFER protocol packets must not be filtered!",
+                   "**IMPORTANT APP STORE NOTES**",
+                   "  - When an app is added to a cFS target the default packet record field",
+                   "    values in this file are used",
+                   "  - The automated cFS target management process only updates the topicv IDs",
+                   "  - If default values don't accommodate an app's requirements then this",
+                   "    file needs to be edited (in basecamp_defs folder) after the app is",
+                   "    added to the target",                   
+                   "  - See https://github.com/cfs-tools/cfs-basecamp/issues/129 for additonal",
+                   "    information"
+                   ],
   
    "topic-id-map": { 
    
@@ -39,12 +50,12 @@
       "FILE_MGR_OPEN_FILE_TLM_TOPICID"    : "topic-id-24",
       "FILE_MGR_FILE_SYS_TBL_TLM_TOPICID" : "topic-id-25",
       "FILE_XFER_HK_TLM_TOPICID"          : "topic-id-26",
-      "FILE_XFER_FOTP_START_TRANSFER_TLM_TOPICID"  : "topic-id-27",
-      "FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID"    : "topic-id-28",
-      "FILE_XFER_FOTP_FINISH_TRANSFER_TLM_TOPICID" : "topic-id-29",
+      "FILE_XFER_START_FOTP_TLM_TOPICID"  : "topic-id-27",
+      "FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID" : "topic-id-28",
+      "FILE_XFER_FINISH_FOTP_TLM_TOPICID" : "topic-id-29",
       "KIT_SCH_HK_TLM_TOPICID"            : "topic-id-30",
       "KIT_SCH_DIAG_TLM_TOPICID"          : "topic-id-31",
-      "KIT_SCh_TBL_ENTRY_TLM_TOPICID"     : "topic-id-32",
+      "KIT_SCH_TBL_ENTRY_TLM_TOPICID"     : "topic-id-32",
       "KIT_TO_HK_TLM_TOPICID"             : "topic-id-33",
       "KIT_TO_DATA_TYPES_TOPICID"         : "topic-id-34",
       "KIT_TO_PKT_TBL_TOPICID"            : "topic-id-35",
@@ -331,7 +342,7 @@
       }},
 
       {"packet": {
-         "name": "FILE_XFER_FOTP_START_TRANSFER_TLM_TOPICID",
+         "name": "FILE_XFER_START_FOTP_TLM_TOPICID",
          "topic-id-27": 0,
          "topic-id": 0,
          "forward": false,
@@ -353,7 +364,7 @@
       }},
 
       {"packet": {
-         "name": "FILE_XFER_FOTP_FINISH_TRANSFER_TLM_TOPICID",
+         "name": "FILE_XFER_FINISH_FOTP_TLM_TOPICID",
          "topic-id-29": 0,
          "topic-id": 0,
          "forward": false,

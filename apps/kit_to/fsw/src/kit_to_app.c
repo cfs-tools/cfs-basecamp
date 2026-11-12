@@ -71,10 +71,10 @@ DEFINE_ENUM(Config,APP_CONFIG)
 
 static CFE_EVS_BinFilter_t  EventFilters[] =
 {  
-   /* Event ID                   Mask */
-   {PKTMGR_FORWARD_EID,          CFE_EVS_FIRST_4_STOP},
-   {PKTMGR_UNWRAP_EID,           CFE_EVS_FIRST_4_STOP},
-   {PKTMGR_EDS_PACK_MSG_ERR_EID, CFE_EVS_FIRST_4_STOP}
+   /* Event ID                      Mask */
+   {PKTMGR_OUTPUT_TLM_EID,          CFE_EVS_FIRST_4_STOP},
+   {PKTMGR_EDS_ENCODE_MSG_ERR_EID,  CFE_EVS_FIRST_4_STOP},
+   {PKTMGR_EDS_ENCODE_PYLD_ERR_EID, CFE_EVS_FIRST_4_STOP}
 };
 
 /*****************/
@@ -251,6 +251,7 @@ bool KIT_TO_SetRunLoopDelayCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr
 bool KIT_TO_TestPktFilterCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
+   // TODO - Implement KIT_TO_TestPktFilterCmd()
    return true;
    
 }
@@ -292,14 +293,14 @@ bool KIT_TO_TestPktFilterCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    if (SecHdrTimeLen == 6)
    {
       SubSecDelta = 0x0100;
-      // TODO cfe6.8 strcpy(FormatStr,">>>Time=0x%08X:%06X APP_C_FW Filtered=%d, cFS Filtered=%d\n");
+      // cfe6.8 strcpy(FormatStr,">>>Time=0x%08X:%06X APP_C_FW Filtered=%d, cFS Filtered=%d\n");
       strcpy(FormatStr,">>>Time=0x%08X:%06X APP_C_FW Filtered=%d\n");
       CFE_SB_InitMsg(&TestPkt, CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_HK_TLM_MID)), 12, true);
    }
    else
    {
       SubSecDelta = 0x01000000;
-      // TODO strcpy(FormatStr,">>>Time=0x%08X:%08X APP_C_FW Filtered=%d, cFS Filtered=%d\n");
+      // strcpy(FormatStr,">>>Time=0x%08X:%08X APP_C_FW Filtered=%d, cFS Filtered=%d\n");
       strcpy(FormatStr,">>>Time=0x%08X:%08X APP_C_FW Filtered=%d\n");
       CFE_SB_InitMsg(&TestPkt, CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_HK_TLM_MID)), 14, true);
    }
@@ -308,13 +309,13 @@ bool KIT_TO_TestPktFilterCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    Subseconds = 0;
    for (SeqCnt=0; SeqCnt < 20; SeqCnt++)
    {
-      // TODO - Temp cfe6.8 Bootes workaround that iis fixed in cFE 7.0 (Caelum)
+      // Temp cfe6.8 Bootes workaround that is fixed in cFE 7.0 (Caelum)
       
-      CCSDS_WR_SEC_HDR_SEC(TestPkt.Sec,Seconds);         // TODO - EDS-Bootes: TestPkt.Sec.Seconds    = Seconds;
-      CCSDS_WR_SEC_HDR_SUBSEC(TestPkt.Sec, Subseconds);  // TODO - EDS-Bootes: TestPkt.Sec.Subseconds = Subseconds;
+      CCSDS_WR_SEC_HDR_SEC(TestPkt.Sec,Seconds);         // EDS-Bootes: TestPkt.Sec.Seconds    = Seconds;
+      CCSDS_WR_SEC_HDR_SUBSEC(TestPkt.Sec, Subseconds);  // EDS-Bootes: TestPkt.Sec.Subseconds = Subseconds;
       PktTime = CFE_MSG_GetMsgTime((CFE_MSG_PTR(TestPkt));
 
-      // TODO - cfe6.8 Wait for cfs_utils update
+      // cfe6.8 Wait for cfs_utils update
       CFE_EVS_SendEvent(KIT_TO_TEST_FILTER_EID, CFE_EVS_EventType_INFORMATION, FormatStr,
                         PktTime.Seconds, PktTime.Subseconds, 
                         PktUtil_IsPacketFiltered((const CFE_SB_MsgPtr_t)&TestPkt, &Filter),
@@ -370,26 +371,26 @@ static int32 InitApp(void)
       CFE_SB_Subscribe(KitTo.SendHkMid, KitTo.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_NOOP_CC,     NULL,       KIT_TO_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_RESET_CC,    NULL,       KIT_TO_ResetAppCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd,  sizeof(KIT_TO_LoadTbl_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd,  sizeof(KIT_TO_DumpTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_NOOP_CC,     NULL,       KIT_TO_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_RESET_CC,    NULL,       KIT_TO_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd,  sizeof(KIT_TO_LoadTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd,  sizeof(KIT_TO_DumpTbl_CmdPayload_t));
 
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_ADD_PKT_CC,           PKTMGR_OBJ, PKTMGR_AddPktCmd,          sizeof(KIT_TO_AddPkt_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_ENABLE_OUTPUT_CC,     PKTMGR_OBJ, PKTMGR_EnableOutputCmd,    sizeof(KIT_TO_EnableOutput_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_REMOVE_ALL_PKTS_CC,   PKTMGR_OBJ, PKTMGR_RemoveAllPktsCmd,   0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_REMOVE_PKT_CC,        PKTMGR_OBJ, PKTMGR_RemovePktCmd,       sizeof(KIT_TO_RemovePkt_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SEND_PKT_TBL_TLM_CC,  PKTMGR_OBJ, PKTMGR_SendPktTblTlmCmd,   sizeof(KIT_TO_SendPktTblTlm_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_UPDATE_PKT_FILTER_CC, PKTMGR_OBJ, PKTMGR_UpdatePktFilterCmd, sizeof(KIT_TO_UpdatePktFilter_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SET_TLM_SOURCE_CC,    PKTMGR_OBJ, PKTMGR_SetTlmSourceCmd,    2); //TODO - cmdmgr expects 2 error: sizeof(KIT_TO_SetTlmSource_Payload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_ADD_PKT_CC,           PKTMGR_OBJ, PKTMGR_AddPktCmd,          sizeof(KIT_TO_AddPkt_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_ENABLE_OUTPUT_CC,     PKTMGR_OBJ, PKTMGR_EnableOutputCmd,    sizeof(KIT_TO_EnableOutput_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_REMOVE_ALL_PKTS_CC,   PKTMGR_OBJ, PKTMGR_RemoveAllPktsCmd,   0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_REMOVE_PKT_CC,        PKTMGR_OBJ, PKTMGR_RemovePktCmd,       sizeof(KIT_TO_RemovePkt_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_SEND_PKT_TBL_TLM_CC,  PKTMGR_OBJ, PKTMGR_SendPktTblTlmCmd,   sizeof(KIT_TO_SendPktTblTlm_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_UPDATE_PKT_FILTER_CC, PKTMGR_OBJ, PKTMGR_UpdatePktFilterCmd, sizeof(KIT_TO_UpdatePktFilter_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_SET_TLM_SOURCE_CC,    PKTMGR_OBJ, PKTMGR_SetTlmSourceCmd,    sizeof(KIT_TO_SetTlmSource_CmdPayload_t));
       
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SEND_DATA_TYPES_TLM_CC, &KitTo, KIT_TO_SendDataTypesTlmCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_SET_RUN_LOOP_DELAY_CC,  &KitTo, KIT_TO_SetRunLoopDelayCmd,  sizeof(KIT_TO_SetRunLoopDelay_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_TEST_PKT_FILTER_CC,     &KitTo, KIT_TO_TestPktFilterCmd,    sizeof(KIT_TO_TestPktFilter_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_SEND_DATA_TYPES_TLM_CC, &KitTo, KIT_TO_SendDataTypesTlmCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_SET_RUN_LOOP_DELAY_CC,  &KitTo, KIT_TO_SetRunLoopDelayCmd,  sizeof(KIT_TO_SetRunLoopDelay_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_TEST_PKT_FILTER_CC,     &KitTo, KIT_TO_TestPktFilterCmd,    sizeof(KIT_TO_TestPktFilter_CmdPayload_t));
 
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_CFG_EVT_LOG_PLBK_CC,   EVTPLBK_OBJ, EVT_PLBK_ConfigCmd, sizeof(KIT_TO_CfgEvtLogPlbk_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_START_EVT_LOG_PLBK_CC, EVTPLBK_OBJ, EVT_PLBK_StartCmd,  0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, KIT_TO_STOP_EVT_LOG_PLBK_CC,  EVTPLBK_OBJ, EVT_PLBK_StopCmd,   0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_CFG_EVT_LOG_PLBK_CC,   EVTPLBK_OBJ, EVT_PLBK_ConfigCmd, sizeof(KIT_TO_CfgEvtLogPlbk_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_START_EVT_LOG_PLBK_CC, EVTPLBK_OBJ, EVT_PLBK_StartCmd,  0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_KIT_TO_STOP_EVT_LOG_PLBK_CC,  EVTPLBK_OBJ, EVT_PLBK_StopCmd,   0);
 
       CFE_EVS_SendEvent(KIT_TO_INIT_DEBUG_EID, KIT_TO_INIT_EVS_TYPE, "KIT_TO_InitApp() Before TBLMGR calls\n");
 
@@ -531,7 +532,7 @@ static void SendHousekeepingTlm(void)
    
    Payload->PktTblAction       = LastTbl->LastAction;
    Payload->PktTblActionStatus = LastTbl->LastActionStatus;
-   Payload->PktTblJsonObjCnt   = KitTo.PktTbl.LastLoadCnt;
+   Payload->PktTblJsonObjCnt   = KitTo.PktTbl.Json.LastLoadCnt;
 
    /*
    ** PKTMGR Data
@@ -545,9 +546,6 @@ static void SendHousekeepingTlm(void)
    Payload->PktsPerSec    = round(KitTo.PktMgr.Stats.AvgPktsPerSec);
    Payload->BytesPerSec   = round(KitTo.PktMgr.Stats.AvgBytesPerSec);
    Payload->PktForwardCnt = KitTo.PktMgr.PktForwardCnt;
-
-   Payload->TlmSockId = (uint16)KitTo.PktMgr.TlmSockId;
-   strncpy(Payload->TlmDestIp, KitTo.PktMgr.TlmDestIp, PKTMGR_IP_STR_LEN);
 
    Payload->EvtPlbkEna      = KitTo.EvtPlbk.Enabled;
    Payload->EvtPlbkHkPeriod = (uint8)KitTo.EvtPlbk.HkCyclePeriod;

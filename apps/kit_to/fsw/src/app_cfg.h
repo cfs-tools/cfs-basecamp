@@ -48,10 +48,11 @@
 ** 3.0 - New baseline for separate OSK app repo compatible with cFE Bootes
 ** 3.1 - Implement https://github.com/cfs-tools/cfs-basecamp/issues/31 
 ** 3.2 - Implement https://github.com/cfs-tools/cfs-basecamp/issues/40
+** 4.0 - Updated to cFS 7.0 (Basecamp 4.0 release)
 */
 
-#define  KIT_TO_MAJOR_VER     3
-#define  KIT_TO_MINOR_VER     2
+#define  KIT_TO_MAJOR_VER     4
+#define  KIT_TO_MINOR_VER     0
 
 
 /******************************************************************************
@@ -71,7 +72,7 @@
 #define CFG_APP_RUN_LOOP_DELAY_MAX APP_RUN_LOOP_DELAY_MAX   /* Maximum command value to set delay  */
 
 #define CFG_KIT_TO_CMD_TOPICID              KIT_TO_CMD_TOPICID
-#define CFG_KIT_TO_SEND_HK_TOPICID          BC_SCH_2_SEC_TOPICID
+#define CFG_KIT_TO_SEND_HK_TOPICID          BC_SCH_1_SEC_TOPICID
 #define CFG_KIT_TO_HK_TLM_TOPICID           KIT_TO_HK_TLM_TOPICID
 #define CFG_KIT_TO_DATA_TYPES_TOPICID       KIT_TO_DATA_TYPES_TOPICID
 #define CFG_KIT_TO_PKT_TBL_TLM_TOPICID      KIT_TO_PKT_TBL_TLM_TOPICID
@@ -79,12 +80,18 @@
 #define CFG_KIT_TO_SUB_WRAPPED_TLM_TOPICID  KIT_TO_SUB_WRAPPED_TLM_TOPICID
 #define CFG_KIT_TO_PUB_WRAPPED_TLM_TOPICID  KIT_TO_PUB_WRAPPED_TLM_TOPICID
 
-#define CFG_PKTMGR_PIPE_NAME           PKTMGR_PIPE_NAME
-#define CFG_PKTMGR_PIPE_DEPTH          PKTMGR_PIPE_DEPTH
 #define CFG_PKTMGR_UDP_TLM_PORT        PKTMGR_UDP_TLM_PORT
 
-#define CFG_PKTMGR_STATS_INIT_DELAY    PKTMGR_STATS_INIT_DELAY   /* ms after app initialized to start stats computations   */
-#define CFG_PKTMGR_STATS_CONFIG_DELAY  PKTMGR_STATS_CONFIG_DELAY /* ms after a reconfiguration to start stats computations */
+#define CFG_PKTMGR_VC1_PIPE_NAME       PKTMGR_VC1_PIPE_NAME    
+#define CFG_PKTMGR_VC1_PIPE_DEPTH      PKTMGR_VC1_PIPE_DEPTH
+#define CFG_PKTMGR_VC1_SEMAPHORE_NAME  PKTMGR_VC1_SEMAPHORE_NAME // Counting semaphore used by FILE_XFER to control daat segment flow
+
+#define CFG_PKTMGR_VC2_PIPE_NAME       PKTMGR_VC2_PIPE_NAME
+#define CFG_PKTMGR_VC2_PIPE_DEPTH      PKTMGR_VC2_PIPE_DEPTH
+
+#define CFG_PKTMGR_STATS_INIT_DELAY    PKTMGR_STATS_INIT_DELAY    /* ms after app initialized to start stats computations   */
+#define CFG_PKTMGR_STATS_CONFIG_DELAY  PKTMGR_STATS_CONFIG_DELAY  /* ms after a reconfiguration to start stats computations */
+#define CFG_PKTMGR_EDS_ENCODE_ERR_LIM  PKTMGR_EDS_ENCODE_ERR_LIM  /* Number of EDS packet encode errors that suppress downlink */
 
 #define CFG_PKTTBL_LOAD_FILE           PKTTBL_LOAD_FILE
 #define CFG_PKTTBL_DUMP_FILE           PKTTBL_DUMP_FILE
@@ -93,6 +100,7 @@
 #define CFG_EVT_PLBK_LOG_FILE          EVT_PLBK_LOG_FILE 
 
 #define CFG_EVS_CMD_TOPICID            EVS_CMD_TOPICID     /* Name must be identical to the EDS name */
+#define CFG_FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID  FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID     /* Name must be identical to the EDS name */
 
 
 #define APP_CONFIG(XX) \
@@ -104,23 +112,28 @@
    XX(APP_RUN_LOOP_DELAY_MIN,uint32) \
    XX(APP_RUN_LOOP_DELAY_MAX,uint32) \
    XX(KIT_TO_CMD_TOPICID,uint32) \
-   XX(BC_SCH_2_SEC_TOPICID,uint32) \
+   XX(BC_SCH_1_SEC_TOPICID,uint32) \
    XX(KIT_TO_HK_TLM_TOPICID,uint32) \
    XX(KIT_TO_DATA_TYPES_TOPICID,uint32) \
    XX(KIT_TO_PKT_TBL_TLM_TOPICID,uint32) \
    XX(KIT_TO_EVENT_PLBK_TLM_TOPICID,uint32) \
    XX(KIT_TO_SUB_WRAPPED_TLM_TOPICID,uint32) \
    XX(KIT_TO_PUB_WRAPPED_TLM_TOPICID,uint32) \
-   XX(PKTMGR_PIPE_NAME,char*) \
-   XX(PKTMGR_PIPE_DEPTH,uint32) \
    XX(PKTMGR_UDP_TLM_PORT,uint32) \
+   XX(PKTMGR_VC1_PIPE_NAME,char*) \
+   XX(PKTMGR_VC1_PIPE_DEPTH,uint32) \
+   XX(PKTMGR_VC1_SEMAPHORE_NAME,char*) \
+   XX(PKTMGR_VC2_PIPE_NAME,char*) \
+   XX(PKTMGR_VC2_PIPE_DEPTH,uint32) \
    XX(PKTMGR_STATS_INIT_DELAY,uint32) \
    XX(PKTMGR_STATS_CONFIG_DELAY,uint32) \
+   XX(PKTMGR_EDS_ENCODE_ERR_LIM,uint32) \
    XX(PKTTBL_LOAD_FILE,char*) \
    XX(PKTTBL_DUMP_FILE,char*) \
    XX(EVT_PLBK_HK_PERIOD,uint32) \
    XX(EVT_PLBK_LOG_FILE,char*) \
    XX(EVS_CMD_TOPICID,uint32) \
+   XX(FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID,uint32) \
 
 DECLARE_ENUM(Config,APP_CONFIG)
 
@@ -133,10 +146,10 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define KIT_TO_APP_BASE_EID  (APP_C_FW_APP_BASE_EID +   0)
-#define PKTTBL_BASE_EID      (APP_C_FW_APP_BASE_EID + 100)
-#define PKTMGR_BASE_EID      (APP_C_FW_APP_BASE_EID + 200)
-#define EVT_PLBK_BASE_EID    (APP_C_FW_APP_BASE_EID + 300)
+#define KIT_TO_APP_BASE_EID  (EdsParam_APP_C_FW_APP_BASE_EID +   0)
+#define PKTTBL_BASE_EID      (EdsParam_APP_C_FW_APP_BASE_EID + 100)
+#define PKTMGR_BASE_EID      (EdsParam_APP_C_FW_APP_BASE_EID + 200)
+#define EVT_PLBK_BASE_EID    (EdsParam_APP_C_FW_APP_BASE_EID + 300)
 
 /*
 ** One event ID is used for all initialization debug messages. Uncomment one of

@@ -77,7 +77,7 @@ void EVT_PLBK_Constructor(EVT_PLBK_Class_t *EvtPlbkPtr, INITBL_Class_t *IniTbl)
    CFE_MSG_Init(CFE_MSG_PTR(WriteEvsLogFileCmd.CommandBase),
                 CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_EVS_CMD_TOPICID)),
                 sizeof(CFE_EVS_WriteLogDataFileCmd_t));
-   CFE_MSG_SetFcnCode(CFE_MSG_PTR(WriteEvsLogFileCmd.CommandBase), CFE_EVS_WRITE_LOG_DATA_FILE_CC);
+   CFE_MSG_SetFcnCode(CFE_MSG_PTR(WriteEvsLogFileCmd.CommandBase), EDS_CONTAINER_CFE_EVS_WRITE_LOG_DATA_FILE_CC);
                                                               
 } /* End EVT_PLBK_Constructor() */
 
@@ -428,7 +428,7 @@ static void SendEventTlmMsg(void)
    const KIT_TO_PlbkEvent_t *EventLogEntry;
    KIT_TO_PlbkEvent_t       *EventTlmEntry;
       
-   for (i=0; i < KIT_TO_PLBK_EVENTS_PER_TLM_MSG; i++)
+   for (i=0; i < EdsParam_KIT_TO_PLBK_EVENTS_PER_TLM_MSG; i++)
    {
    
       if (EvtPlbk->EventLog.PlbkIdx >= CFE_PLATFORM_EVS_LOG_MAX) EvtPlbk->EventLog.PlbkIdx = 0;

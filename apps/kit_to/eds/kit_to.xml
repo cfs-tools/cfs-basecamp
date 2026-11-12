@@ -45,7 +45,7 @@
       </EnumeratedDataType>
 
       <EnumeratedDataType name="TlmSource" shortDescription="Identifies different telemetry sources" >
-        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" shortDescription="Had command length issues if 8 bits"/>
         <EnumerationList>
           <Enumeration label="LOCAL"  value="1" shortDescription="Output telemetry generated on the local system" />
           <Enumeration label="REMOTE" value="2" shortDescription="Output telemetry generated on a remote system" />
@@ -166,8 +166,6 @@
           <Entry name="StatsValid"           type="APP_C_FW/BooleanUint8"  />
           <Entry name="PktsPerSec"           type="BASE_TYPES/uint16" />
           <Entry name="BytesPerSec"          type="BASE_TYPES/uint32" />
-          <Entry name="TlmSockId"            type="BASE_TYPES/uint16" />
-          <Entry name="TlmDestIp"            type="APP_C_FW/IPv4Address"/>
           <Entry name="EvtPlbkEna"           type="APP_C_FW/BooleanUint8" />
           <Entry name="EvtPlbkHkPeriod"      type="BASE_TYPES/uint8" />
         </EntryList>
@@ -256,7 +254,7 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="AddPkt" baseType="CommandBase" shortDescription="Add a packet to packet table in memory">
+      <ContainerDataType name="AddPkt" baseType="CommandBase" shortDescription="Add a packet to packet table in memory and subscribe to oacket on VC2">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
@@ -280,7 +278,7 @@
         </ConstraintSet>
       </ContainerDataType>
 
-      <ContainerDataType name="RemovePkt" baseType="CommandBase" shortDescription="Remove all telemetry packets from the filter table. ">
+      <ContainerDataType name="RemovePkt" baseType="CommandBase" shortDescription="Remove a telemetry packet from the filter table. ">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 3" />
         </ConstraintSet>

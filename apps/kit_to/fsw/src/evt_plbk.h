@@ -59,59 +59,8 @@
 **
 ** - Packets are defined in EDS definition file kit_to.xml
 ** - Separate start/stop commands are defined so command parameters are not
-**   required. This simplifies soem remote ops configurations. 
+**   required. This simplifies some remote ops configurations. 
 */
-
-/**********TODO: Start Remove
-typedef struct
-{
-
-   CFE_MSG_CommandHeader_t  CmdHeader;
-
-   char    EvsLogFilename[CFE_MISSION_MAX_PATH_LEN];   // Filename to use when command write EVS log file
-   uint16  HkCyclesPerPkt;                             // Number of HK request cycles between event log telemetry packets
-   
-} EVT_PLBK_ConfigCmdMsg_t;
-#define EVT_PLBK_CONFIG_CMD_DATA_LEN  (sizeof(EVT_PLBK_ConfigCmdMsg_t) - sizeof(CFE_MSG_CommandHeader_t))
-
-typedef struct
-{
-
-   CFE_MSG_CommandHeader_t  CmdHeader;
-
-} EVT_PLBK_NoParamCmdMsg_t;
-#define EVT_PLBK_NO_PARAM_CMD_DATA_LEN  (sizeof(EVT_PLBK_NoParamCmdMsg_t) - sizeof(CFE_MSG_CommandHeader_t))
-#define EVT_PLBK_START_CMD_DATA_LEN (EVT_PLBK_NO_PARAM_CMD_DATA_LEN)
-#define EVT_PLBK_STOP_CMD_DATA_LEN  (EVT_PLBK_NO_PARAM_CMD_DATA_LEN)
-
-typedef struct 
-{
-
-   CFE_TIME_SysTime_t Time;
-   char    AppName[CFE_MISSION_MAX_API_LEN];
-   uint16  EventId;
-   uint16  EventType;
-   char    Message[CFE_MISSION_EVS_MAX_MESSAGE_LENGTH];
-
-   
-} EVT_PLBK_TlmEvent_t;
-
-typedef struct
-{
-
-   CFE_MSG_TelemetryHeader_t TlmHeader;
-
-   char    EvsLogFilename[CFE_MISSION_MAX_PATH_LEN];
-   uint16  EventCnt;
-   uint16  PlbkIdx;
-   
-   EVT_PLBK_TlmEvent_t Event[EVT_PLBK_EVENTS_PER_TLM_MSG];
-
-} EVT_PLBK_TlmMsg_t;
-
-#define EVT_PLBK_TLM_MSG_LEN sizeof (EVT_PLBK_TlmMsg_t)
-
-TODO: End Remove ************/
 
 
 /******************************************************************************

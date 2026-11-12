@@ -17,10 +17,18 @@
 **    the software bus to a socket.
 **
 **  Notes:
-**   1. This has some of the features of a flight app such as packet
-**      filtering but it would need design/code reviews to transition it to a
-**      flight mission. For starters it uses UDP sockets and it doesn't
-**      regulate output bit rates.
+**   1. Packet output is supressed during initialization. The enable
+**      output command needs to be sent to start output to a command
+**      specified IP address and port. 
+**   2. This has some of the features of a flight app such as packet
+**      filtering but it would need design/code reviews to transition
+**      it to a flight mission. For starters it uses UDP sockets and 
+**      it doesn't regulate output bit rates.
+**   3. CCSDS virtual channels are not actually used but two telemetry
+**      pipes are setup as if they are virtual channels to illustrate
+**      how they can be used. 
+**      - VC1: File Transfer (FILE_XFER) data segment packets
+**      - VC2: All other telemetry packets
 **
 */
 
@@ -36,7 +44,9 @@
 
 #include "cfe_msgids.h"
 #include "cfe_config.h"
+#include "edslib_global.h"
 #include "edslib_datatypedb.h"
+#include "edslib_intfdb.h"
 #include "cfe_missionlib_api.h"
 #include "cfe_missionlib_runtime.h"
 #include "cfe_mission_eds_parameters.h"
@@ -50,12 +60,15 @@
 /** File Function Prototypes **/
 /******************************/
 
-static void  ComputeStats(uint16 PktsSent, uint32 BytesSent);
-static void  DestructorCallback(void);
-static void  FlushTlmPipe(void);
-static bool  LoadPktTbl(PKTTBL_Data_t *NewTbl);
-static int32 PackEdsOutputMessage(void *DestBuffer, const CFE_MSG_Message_t *SrcBuffer, 
-                                  size_t SrcBufferSize, size_t *EdsDataSize);
+static void ComputeStats(uint16 PktsSent, uint32 BytesSent);
+static CFE_Status_t CreateEdsOutputMessage(void *DstBuffer, const CFE_MSG_Message_t *SrcBuffer, 
+                                           size_t SrcBufferSize, size_t *EdsDataSize);
+static void DestructorCallback(void);
+static CFE_Status_t EncodeEdsOutputPayload(void *DstBuffer, const CFE_MSG_Message_t *SrcBuffer, EdsLib_Id_t ParentIntfId,
+                                           const EdsLib_SizeInfo_t *MaxSize, EdsLib_SizeInfo_t *ProcessedSize);
+static void FlushTlmPipes(void);
+static bool LoadPktTbl(PKTTBL_Data_t *NewTbl);
+static uint16 OutputTelemetry(const CFE_SB_Buffer_t *SbBufPtr);
 static int32 SubscribeNewPkt(PKTTBL_Pkt_t *NewPkt);
 
 /**********************/
@@ -63,7 +76,7 @@ static int32 SubscribeNewPkt(PKTTBL_Pkt_t *NewPkt);
 /**********************/
 
 static PKTMGR_Class_t *PktMgr = NULL;
-static CFE_HDR_TelemetryHeader_PackedBuffer_t SocketBuffer;
+static EdsPackedBuffer_CFE_HDR_TelemetryHeader_t SocketBuffer;
 static uint16 SocketBufferLen = sizeof(SocketBuffer);
 
 /******************************************************************************
@@ -74,18 +87,24 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr,
                         INITBL_Class_t *IniTbl,
                         TBLMGR_Class_t *TblMgr)
 {
-
+   int32 OsStatus;
+   
    PktMgr = PktMgrPtr;
 
-   PktMgr->IniTbl       = IniTbl;
-   PktMgr->DownlinkOn   = false;
-   PktMgr->SuppressSend = true;
-   PktMgr->TlmSource    = KIT_TO_TlmSource_LOCAL;
-   PktMgr->TlmSockId    = 0;
-   PktMgr->TlmUdpPort   = INITBL_GetIntConfig(PktMgr->IniTbl, CFG_PKTMGR_UDP_TLM_PORT);
+   memset(PktMgr,0,sizeof(PKTMGR_Class_t));
+   PktMgr->IniTbl          = IniTbl;
+   PktMgr->DownlinkOn      = false;
+   PktMgr->SuppressSend    = true;
+   PktMgr->EdsEncodeErrLim = INITBL_GetIntConfig(PktMgr->IniTbl, CFG_PKTMGR_EDS_ENCODE_ERR_LIM);
+   PktMgr->TlmSource       = KIT_TO_TlmSource_LOCAL;
+   PktMgr->TlmSockId       = 0;
+   PktMgr->TlmUdpPort      = INITBL_GetIntConfig(PktMgr->IniTbl, CFG_PKTMGR_UDP_TLM_PORT);
    strncpy(PktMgr->TlmDestIp, "000.000.000.000", PKTMGR_IP_STR_LEN);
-   PktMgr->SubWrappedTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_SUB_WRAPPED_TLM_TOPICID));
-   PktMgr->PubWrappedTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_PUB_WRAPPED_TLM_TOPICID));
+   PktMgr->SubWrappedTlmMid  = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_SUB_WRAPPED_TLM_TOPICID));
+   PktMgr->PubWrappedTlmMid  = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(IniTbl, CFG_KIT_TO_PUB_WRAPPED_TLM_TOPICID));
+   
+   PktMgr->Vc1FileDataTlmVal = INITBL_GetIntConfig(IniTbl, CFG_FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID);
+   PktMgr->Vc1FileDataTlmMid = CFE_SB_ValueToMsgId(PktMgr->Vc1FileDataTlmVal);
 
    PKTMGR_InitStats(INITBL_GetIntConfig(IniTbl, CFG_APP_RUN_LOOP_DELAY),
                     INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_STATS_INIT_DELAY));
@@ -100,25 +119,56 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr,
    
    OS_TaskInstallDeleteHandler(&DestructorCallback); /* Called when application terminates */
 
-   PktMgr->TlmPipeStatus = CFE_SB_CreatePipe(&(PktMgr->TlmPipe),
-                                             INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_PIPE_DEPTH),
-                                             INITBL_GetStrConfig(IniTbl, CFG_PKTMGR_PIPE_NAME));
 
-   if (PktMgr->TlmPipeStatus == CFE_SUCCESS)
+   /*
+   ** Create pipes sequentially to allow more specific error reporting
+   ** - Could run a system without the file downlink VC pipe but not
+   **   worth the complexity for an educational system
+   ** 
+   */
+   PktMgr->Vc1PipeStatus = CFE_SB_CreatePipe(&(PktMgr->Vc1Pipe),
+                                             INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_VC1_PIPE_DEPTH),
+                                             INITBL_GetStrConfig(IniTbl, CFG_PKTMGR_VC1_PIPE_NAME));
+   if (PktMgr->Vc1PipeStatus == CFE_SUCCESS)
    {
-      PKTTBL_Constructor(&PktMgr->PktTbl, LoadPktTbl);
-      TBLMGR_RegisterTblWithDef(TblMgr, PKTTBL_NAME,
-                                PKTTBL_LoadCmd, PKTTBL_DumpCmd,
-                                INITBL_GetStrConfig(IniTbl, CFG_PKTTBL_LOAD_FILE));
+      
+      PktMgr->Vc2PipeStatus = CFE_SB_CreatePipe(&(PktMgr->Vc2Pipe),
+                                                INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_VC2_PIPE_DEPTH),
+                                                INITBL_GetStrConfig(IniTbl, CFG_PKTMGR_VC2_PIPE_NAME));
+
+      if (PktMgr->Vc2PipeStatus == CFE_SUCCESS)
+      {
+         PKTTBL_Constructor(&PktMgr->PktTbl, LoadPktTbl);
+         TBLMGR_RegisterTblWithDef(TblMgr, PKTTBL_NAME,
+                                   PKTTBL_LoadCmd, PKTTBL_DumpCmd,
+                                   INITBL_GetStrConfig(IniTbl, CFG_PKTTBL_LOAD_FILE));
+
+         OsStatus = OS_CountSemCreate(&PktMgr->Vc1SemId, INITBL_GetStrConfig(IniTbl, CFG_PKTMGR_VC1_SEMAPHORE_NAME),
+                                      INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_VC1_PIPE_DEPTH), 0);
+         if (OsStatus != CFE_SUCCESS)
+         {
+            CFE_EVS_SendEvent(PKTMGR_CONSTRUCTOR_EID, CFE_EVS_EventType_ERROR,
+                              "Error creating virtual channel 1 semaphore %s, status=%d",
+                              INITBL_GetStrConfig(IniTbl, CFG_PKTMGR_VC1_SEMAPHORE_NAME), OsStatus);            
+         }        
+      }
+      else
+      {
+         // Don't isolate the error. Pipe depth error is most likely cause. 
+         CFE_EVS_SendEvent(PKTMGR_CONSTRUCTOR_EID, CFE_EVS_EventType_ERROR,
+                           "Error creating virtual channel 2 telemetry pipe, status=%d. Verify pipe depth %d is within cFE configuration limit.",
+                           PktMgr->Vc2PipeStatus, INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_VC2_PIPE_DEPTH));
+      }
    }
    else
    {
       // Don't isolate the error. Pipe depth error is most likely cause. 
       CFE_EVS_SendEvent(PKTMGR_CONSTRUCTOR_EID, CFE_EVS_EventType_ERROR,
-                        "Error creating telemetry pipe, status=%d. Verify pipe depth %d is within cFE configuration limit.",
-                        PktMgr->TlmPipeStatus, INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_PIPE_DEPTH));
+                        "Error creating virtual channel 1 telemetry pipe, status=%d. Verify pipe depth %d is within cFE configuration limit.",
+                        PktMgr->Vc1PipeStatus, INITBL_GetIntConfig(IniTbl, CFG_PKTMGR_VC1_PIPE_DEPTH));
    }
    
+
 } /* End PKTMGR_Constructor() */
 
 
@@ -127,8 +177,8 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr,
 **
 ** Notes:
 **   1. Command rejected if table has existing entry for commanded msg ID
-**   2. Only update the table if the software bus subscription successful.  
-** 
+**   2. Only update the table if the software bus subscription successful 
+**   3. This command only applies to virtual channel 2
 */
 bool PKTMGR_AddPktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
@@ -142,7 +192,7 @@ bool PKTMGR_AddPktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    
    AppId = AddPkt->MsgId & PKTTBL_APP_ID_MASK;
    
-   if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId == PKTTBL_UNUSED_MSG_ID)
+   if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId == PKTUTIL_UNUSED_MSG_ID)
    {
       
       NewPkt.MsgId          = AddPkt->MsgId;
@@ -183,7 +233,7 @@ bool PKTMGR_AddPktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    
    return RetStatus;
 
-} /* End of PKTMGR_AddPktCmd() */
+} /* End PKTMGR_AddPktCmd() */
 
 
 /******************************************************************************
@@ -198,7 +248,7 @@ bool PKTMGR_EnableOutputCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    int32 OsStatus;
    
 
-   if (PktMgr->TlmPipeStatus == CFE_SUCCESS)
+   if (PktMgr->Vc2PipeStatus == CFE_SUCCESS)
    {
       
       /*
@@ -224,7 +274,8 @@ bool PKTMGR_EnableOutputCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
          PktMgr->DownlinkOn   = true;
          PktMgr->SuppressSend = false;
          CFE_EVS_SendEvent(PKTMGR_TLM_ENA_OUTPUT_EID, CFE_EVS_EventType_INFORMATION,
-                           "Telemetry output enabled for IP %s", PktMgr->TlmDestIp);         
+                           "Telemetry output enabled for IP %s using OSAL object %ld",
+                           PktMgr->TlmDestIp, OS_ObjectIdToInteger(PktMgr->TlmSockId));         
       }
       else
       {
@@ -247,8 +298,9 @@ bool PKTMGR_EnableOutputCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 /******************************************************************************
 ** Function:  PKTMGR_InitStats
 **
-** If OutputTlmInterval==0 then retain current stats
-** ComputeStats() logic assumes at least 1 init cycle
+** Notes:
+**   1. If OutputTlmInterval==0 then retain current stats
+**   2. ComputeStats() logic assumes at least 1 init cycle
 **
 */
 void PKTMGR_InitStats(uint16 OutputTlmInterval, uint16 InitDelay)
@@ -275,141 +327,60 @@ void PKTMGR_InitStats(uint16 OutputTlmInterval, uint16 InitDelay)
 /******************************************************************************
 ** Function: PKTMGR_OutputTelemetry
 **
+** Notes:
+**   1. Stats are computed for downlink volume so all virtual channels are
+**      included.
 */
 uint16 PKTMGR_OutputTelemetry(void)
 {
 
-   int     SocketStatus;
-   int32   SbStatus;
-   bool    SendMsg;
-   uint16  NumPktsOutput  = 0;
-   uint32  NumBytesOutput = 0;
-   size_t  EdsDataSize;
-   
-   CFE_SB_MsgId_t   MsgId;
-   CFE_MSG_ApId_t   MsgAppId;
-   CFE_MSG_Size_t   MsgLen;
+   uint16           NumPktsOutput=0;
+   CFE_Status_t     CfeStatus;
    CFE_SB_Buffer_t  *SbBufPtr;
-   PKTTBL_Pkt_t     *PktTblEntry;
-   const CFE_MSG_Message_t *MsgPtr;
-
-   if (PktMgr->TlmPipeStatus != CFE_SUCCESS) return 0; // If tlm pipe not created
-    
+   
    /*
    ** CFE_SB_RcvMsg returns CFE_SUCCESS when it gets a packet, otherwise
    ** no packet was received
    */
-   do
+
+   if (PktMgr->Vc1PipeStatus == CFE_SUCCESS)
    {
-
-      SbStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, PktMgr->TlmPipe, CFE_SB_POLL);
- 
-      if ( (SbStatus == CFE_SUCCESS) && (PktMgr->SuppressSend == false) )
+      do
       {
-          
-         CFE_MSG_GetSize(&SbBufPtr->Msg, &MsgLen);
-         CFE_MSG_GetApId(&SbBufPtr->Msg, &MsgAppId);
-         MsgAppId = MsgAppId & PKTTBL_APP_ID_MASK;
-         PktTblEntry = &(PktMgr->PktTbl.Data.Pkt[MsgAppId]);
+         CfeStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, PktMgr->Vc1Pipe, CFE_SB_POLL);
+         if (CfeStatus == CFE_SUCCESS)
+         {
+            OS_CountSemGive(PktMgr->Vc1SemId);
+            NumPktsOutput = OutputTelemetry(SbBufPtr);
+         }
+      } while(CfeStatus == CFE_SUCCESS); 
+   } /* End VC1 */
 
-         if (!PktUtil_IsPacketFiltered(&SbBufPtr->Msg, &PktTblEntry->Filter))
+   if (PktMgr->Vc2PipeStatus == CFE_SUCCESS)
+   {
+      do
+      {
+         CfeStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, PktMgr->Vc2Pipe, CFE_SB_POLL);
+         if (CfeStatus == CFE_SUCCESS)
          {
-            if (PktTblEntry->Forward)
-            {
-               // TODO - Can message length be tailored to wrapped message size?
-               // TODO - Could make message information with a filter
-               CFE_EVS_SendEvent(PKTMGR_FORWARD_EID, CFE_EVS_EventType_DEBUG,
-                                 "Forwarding app ID %d, length %d", MsgAppId, (int16)MsgLen);
-               
-               memcpy(&(PktMgr->PubWrappedTlm.Payload), &SbBufPtr->Msg, MsgLen);
-               CFE_SB_TimeStampMsg(CFE_MSG_PTR(PktMgr->PubWrappedTlm.TelemetryHeader));
-               CFE_SB_TransmitMsg(CFE_MSG_PTR(PktMgr->PubWrappedTlm.TelemetryHeader), true);
-               PktMgr->PktForwardCnt++;
-            } 
-            
-            if(PktMgr->DownlinkOn)
-            {
-              
-               SendMsg = false; 
-               SbStatus = CFE_MSG_GetMsgId(&SbBufPtr->Msg, &MsgId);
-               if (SbStatus == CFE_SUCCESS)
-               {
-                  if (PktMgr->TlmSource == KIT_TO_TlmSource_LOCAL)
-                  {
-                     
-                     // If it's not a wrapped message then send it
-                     if (!CFE_SB_MsgId_Equal(MsgId, PktMgr->SubWrappedTlmMid))
-                     {
-                        SendMsg = true;
-                        MsgPtr  = &(SbBufPtr->Msg); 
-                     }
-                  }
-                  else
-                  {
-                     // Only wrapped messages
-                     if (CFE_SB_MsgId_Equal(MsgId, PktMgr->SubWrappedTlmMid))
-                     {
-                        // TODO - Verify unwrapped message
-                        // TODO - Could make message information with a filter
-                        CFE_EVS_SendEvent(PKTMGR_UNWRAP_EID, CFE_EVS_EventType_INFORMATION,
-                                          "Unwrapping msg ID 0x%04X(%d)", CFE_SB_MsgIdToValue(MsgId),CFE_SB_MsgIdToValue(MsgId));
-                        const KIT_TO_WrappedSbMsgTlm_Payload_t *SbMsgPayload = CMDMGR_PAYLOAD_PTR(&(SbBufPtr->Msg), KIT_TO_WrappedSbMsgTlm_t);
-                        SendMsg = true;
-                        MsgPtr  = (CFE_MSG_Message_t *)SbMsgPayload;
-                     } 
-                  }
-
-                  if (SendMsg)
-                  {
-                     SbStatus = PackEdsOutputMessage(SocketBuffer, MsgPtr, SocketBufferLen, &EdsDataSize);     
-                     if (SbStatus == CFE_SUCCESS)
-                     {
-                        SocketStatus = OS_SocketSendTo(PktMgr->TlmSockId, SocketBuffer, EdsDataSize, &PktMgr->TlmSocketAddr);
-                        ++NumPktsOutput;
-                        NumBytesOutput += MsgLen;
-                     }
-                     else
-                     {
-                        CFE_EVS_SendEvent(PKTMGR_EDS_PACK_MSG_ERR_EID,CFE_EVS_EventType_ERROR,
-                              "Error packing EDS output message %d, message length %ld",
-                              CFE_SB_MsgIdToValue(MsgId),MsgLen);
-                     }
-                  } /* End if send msg */
-               } /* End if got msg id */
-            } /* End if downlink enabled */
-         } /* End if packet is not filtered */
-         else
-         {
-            SocketStatus = 0;
-         } 
-         
-         if (SocketStatus < 0)
-         {
-             
-            CFE_EVS_SendEvent(PKTMGR_SOCKET_SEND_ERR_EID,CFE_EVS_EventType_ERROR,
-                              "Error sending packet on socket %s, port %d, status %d. Tlm output suppressed\n",
-                              PktMgr->TlmDestIp, PktMgr->TlmUdpPort, SocketStatus);
-            PktMgr->SuppressSend = true;
+            NumPktsOutput += OutputTelemetry(SbBufPtr);
          }
 
-      } /* End if SB received msg and output enabled */
-
-   } while(SbStatus == CFE_SUCCESS);
-
-   ComputeStats(NumPktsOutput, NumBytesOutput);
+      } while(CfeStatus == CFE_SUCCESS);
+   } /* End VC2 */
 
    return NumPktsOutput;
    
-} /* End of PKTMGR_OutputTelemetry() */
+} /* End PKTMGR_OutputTelemetry() */
 
-
+      
 /******************************************************************************
 ** Function: PKTMGR_RemoveAllPktsCmd
 **
 ** Notes:
-**   1. The cFE to_lab code unsubscribes the command and send HK MIDs. I'm not
-**      sure why this is done and I'm not sure how the command is used. This 
-**      command is intended to help manage TO telemetry packets.
+**   1. The use case for this command is unclear but it is included because
+**      the cFS TO_LAB app and KIT_TO is designed to include all of TO_LAB's
+**      functionality.
 */
 bool PKTMGR_RemoveAllPktsCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
@@ -423,12 +394,13 @@ bool PKTMGR_RemoveAllPktsCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    for (AppId=0; AppId < PKTUTIL_MAX_APP_ID; AppId++)
    {
       
-      if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PKTTBL_UNUSED_MSG_ID)
+      if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PKTUTIL_UNUSED_MSG_ID &&
+          PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PktMgr->Vc1FileDataTlmVal)
       {
           
          ++PktCnt;
 
-         Status = CFE_SB_Unsubscribe(CFE_SB_ValueToMsgId(PktMgr->PktTbl.Data.Pkt[AppId].MsgId), PktMgr->TlmPipe);
+         Status = CFE_SB_Unsubscribe(CFE_SB_ValueToMsgId(PktMgr->PktTbl.Data.Pkt[AppId].MsgId), PktMgr->Vc2Pipe);
          if(Status != CFE_SUCCESS)
          {
              
@@ -446,7 +418,7 @@ bool PKTMGR_RemoveAllPktsCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
    CFE_EVS_SendEvent(KIT_TO_INIT_DEBUG_EID, KIT_TO_INIT_EVS_TYPE, 
                      "PKTMGR_RemoveAllPktsCmd() - About to flush pipe\n");
-   FlushTlmPipe();
+   FlushTlmPipes();
    CFE_EVS_SendEvent(KIT_TO_INIT_DEBUG_EID, KIT_TO_INIT_EVS_TYPE, 
                      "PKTMGR_RemoveAllPktsCmd() - Completed pipe flush\n");
 
@@ -467,12 +439,15 @@ bool PKTMGR_RemoveAllPktsCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
    return RetStatus;
 
-} /* End of PKTMGR_RemoveAllPktsCmd() */
+} /* End PKTMGR_RemoveAllPktsCmd() */
 
 
 /*******************************************************************
 ** Function: PKTMGR_RemovePktCmd
 **
+** Notes:
+**   1. Trying to remove a non-existent entry is not considered an error
+**   2. This command only applies to virtual channel 2
 */
 bool PKTMGR_RemovePktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
@@ -485,26 +460,34 @@ bool PKTMGR_RemovePktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    
    AppId = RemovePkt->MsgId & PKTTBL_APP_ID_MASK;
   
-   if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PKTTBL_UNUSED_MSG_ID)
+   if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PKTUTIL_UNUSED_MSG_ID)
    {
 
-      PKTTBL_SetPacketToUnused(&(PktMgr->PktTbl.Data.Pkt[AppId]));
-      
-      Status = CFE_SB_Unsubscribe(CFE_SB_ValueToMsgId(RemovePkt->MsgId), PktMgr->TlmPipe);
-      if(Status == CFE_SUCCESS)
+      if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PktMgr->Vc1FileDataTlmVal)
       {
-         CFE_EVS_SendEvent(PKTMGR_REMOVE_PKT_EID, CFE_EVS_EventType_INFORMATION,
-                           "Succesfully removed message ID 0x%04X from the packet table",
-                           RemovePkt->MsgId);
+         PKTTBL_SetPacketToUnused(&(PktMgr->PktTbl.Data.Pkt[AppId]));
+         
+         Status = CFE_SB_Unsubscribe(CFE_SB_ValueToMsgId(RemovePkt->MsgId), PktMgr->Vc2Pipe);
+         if(Status == CFE_SUCCESS)
+         {
+            CFE_EVS_SendEvent(PKTMGR_REMOVE_PKT_EID, CFE_EVS_EventType_INFORMATION,
+                              "Succesfully removed message ID 0x%04X from the packet table",
+                              RemovePkt->MsgId);
+         }
+         else
+         {
+            RetStatus = false;
+            CFE_EVS_SendEvent(PKTMGR_REMOVE_PKT_EID, CFE_EVS_EventType_ERROR,
+                              "Removed message ID 0x%04X from packet table, but SB unsubscribe failed with return status 0x%8x",
+                              RemovePkt->MsgId, Status);
+         }
       }
       else
       {
-         RetStatus = false;
          CFE_EVS_SendEvent(PKTMGR_REMOVE_PKT_EID, CFE_EVS_EventType_ERROR,
-                           "Removed message ID 0x%04X from packet table, but SB unsubscribe failed with return status 0x%8x",
-                           RemovePkt->MsgId, Status);
+                           "Remove message 0x%04X command rejected. Message is file data on virtual channel 1 that can't be removed",
+                           RemovePkt->MsgId);         
       }
-
    } /* End if found message ID in table */
    else
    {
@@ -517,11 +500,11 @@ bool PKTMGR_RemovePktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
    return RetStatus;
 
-} /* End of PKTMGR_RemovePktCmd() */
+} /* End PKTMGR_RemovePktCmd() */
 
 
 /******************************************************************************
-** Function:  PKTMGR_ResetStatus
+** Function: PKTMGR_ResetStatus
 **
 */
 void PKTMGR_ResetStatus(void)
@@ -529,6 +512,7 @@ void PKTMGR_ResetStatus(void)
 
    PKTMGR_InitStats(0,INITBL_GetIntConfig(PktMgr->IniTbl, CFG_PKTMGR_STATS_CONFIG_DELAY));
    PktMgr->PktForwardCnt = 0;
+   PktMgr->EdsEncodeErrCnt = 0;
 
 } /* End PKTMGR_ResetStatus() */
 
@@ -564,7 +548,7 @@ bool PKTMGR_SendPktTblTlmCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
     
    return (Status == CFE_SUCCESS);
 
-} /* End of PKTMGR_SendPktTblTlmCmd() */
+} /* End oPKTMGR_SendPktTblTlmCmd() */
 
 
 /*******************************************************************
@@ -578,8 +562,8 @@ bool PKTMGR_SetTlmSourceCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    bool RetStatus = false;
 
 
-   if ((SetTlmSource->Source >= KIT_TO_TlmSource_Enum_t_MIN) &&
-       (SetTlmSource->Source <= KIT_TO_TlmSource_Enum_t_MAX))
+   if ((SetTlmSource->Source >= EdsDataType_EdsEnum_KIT_TO_TlmSource_t_MIN) &&
+       (SetTlmSource->Source <= EdsDataType_EdsEnum_KIT_TO_TlmSource_t_MAX))
    {
       PktMgr->TlmSource = SetTlmSource->Source;
       CFE_EVS_SendEvent(PKTMGR_SET_TLM_SOURCE_CMD_EID, CFE_EVS_EventType_INFORMATION,
@@ -595,7 +579,7 @@ bool PKTMGR_SetTlmSourceCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    
    return RetStatus;
 
-} /* End of PKTMGR_SetTlmSourceCmd() */
+} /* End PKTMGR_SetTlmSourceCmd() */
 
 
 /******************************************************************************
@@ -616,7 +600,7 @@ bool PKTMGR_UpdatePktFilterCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr
    
    AppId = UpdatePktFilter->MsgId & PKTTBL_APP_ID_MASK;
    
-   if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PKTTBL_UNUSED_MSG_ID)
+   if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PKTUTIL_UNUSED_MSG_ID)
    {
       
       if (PktUtil_IsFilterTypeValid(UpdatePktFilter->FilterType))
@@ -658,11 +642,11 @@ bool PKTMGR_UpdatePktFilterCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr
    
    return RetStatus;
 
-} /* End of PKTMGR_UpdatePktFilterCmd() */
+} /* End PKTMGR_UpdatePktFilterCmd() */
 
 
 /******************************************************************************
-** Function:  ComputeStats
+** Function: ComputeStats
 **
 ** Called each output telemetry cycle
 */
@@ -696,7 +680,7 @@ static void ComputeStats(uint16 PktsSent, uint32 BytesSent)
       
          double Seconds = PktMgr->Stats.IntervalMilliSecs/1000;
          
-         CFE_EVS_SendEvent(PKTMGR_DEBUG_EID, CFE_EVS_EventType_DEBUG,
+         CFE_EVS_SendEvent(PKTMGR_COMPUTE_STATS_EID, CFE_EVS_EventType_DEBUG,
                            "IntervalSecs=%f, IntervalPkts=%d, IntervalBytes=%d\n",
                            Seconds,PktMgr->Stats.IntervalPkts,PktMgr->Stats.IntervalBytes);
         
@@ -736,6 +720,68 @@ static void ComputeStats(uint16 PktsSent, uint32 BytesSent)
 
 
 /******************************************************************************
+** Function: CreateEdsOutputMessage
+**
+** Notes:
+**   1. Adopted from NASA'S cfE-eds-framework TO_LAB app's
+**      TO_LAB_EncodeOutputMessage()
+**
+*/
+static CFE_Status_t CreateEdsOutputMessage(void *DstBuffer, const CFE_MSG_Message_t *SrcBuffer, 
+                                           size_t SrcBufferSize, size_t *EdsDataSize)
+{
+
+   CFE_MissionLib_TopicInfo_t            TopicInfo;
+   CFE_SB_SoftwareBus_PubSub_Interface_t PubSubParams;
+   CFE_SB_Publisher_Component_t          PublisherParams;
+   int32                                 EdsStatus;
+   CFE_Status_t                          CfeStatus;
+   CFE_MSG_Size_t                        SrcMsgSize;
+   EdsLib_SizeInfo_t                     MaxSize;
+   EdsLib_SizeInfo_t                     ProcessedSize;
+    
+   memset(&MaxSize, 0, sizeof(MaxSize));
+   memset(&ProcessedSize, 0, sizeof(ProcessedSize));
+    
+   CfeStatus = CFE_MSG_GetSize(SrcBuffer, &SrcMsgSize);
+   if (CfeStatus == CFE_SUCCESS)
+   {
+      MaxSize.Bits  = EdsLib_OCTETS_TO_BITS(sizeof(SocketBuffer));
+      MaxSize.Bytes = SrcMsgSize;
+   }
+    
+   CFE_MissionLib_Get_PubSub_Parameters(&PubSubParams, &SrcBuffer->BaseMsg);
+   CFE_MissionLib_UnmapPublisherComponent(&PublisherParams, &PubSubParams);
+   
+   EdsStatus = CFE_MissionLib_GetTopicInfo(&CFE_SOFTWAREBUS_INTERFACE, PublisherParams.Telemetry.TopicId, &TopicInfo);
+   if (EdsStatus != CFE_MISSIONLIB_SUCCESS)
+   {
+      CFE_EVS_SendEvent(PKTMGR_EDS_ENCODE_MSG_ERR_EID,CFE_EVS_EventType_ERROR,
+            "Error getting EDS topic ID, CFE_MissionLib_GetTopicInfo() return status %d",
+            (int)EdsStatus);
+      CfeStatus = CFE_STATUS_EXTERNAL_RESOURCE_FAIL;
+   }
+   else if (EdsLib_Is_Valid(TopicInfo.ParentIntfId))
+   {
+      CfeStatus = EncodeEdsOutputPayload(SocketBuffer, SrcBuffer, TopicInfo.ParentIntfId,
+                                           &MaxSize, &ProcessedSize);
+   }
+   else
+   {
+      CFE_EVS_SendEvent(PKTMGR_EDS_ENCODE_MSG_ERR_EID,CFE_EVS_EventType_ERROR,
+                        "No EDS definition for TopicId %u",
+                        (unsigned int)PublisherParams.Telemetry.TopicId);
+      CfeStatus = CFE_STATUS_VALIDATION_FAILURE;
+   }
+    
+   *EdsDataSize   = EdsLib_BITS_TO_OCTETS(ProcessedSize.Bits);
+
+   return CfeStatus;
+    
+} /* End CreateEdsOutputMessage() */ 
+
+
+/******************************************************************************
 ** Function: DestructorCallback
 **
 ** This function is called when the app is killed. This should
@@ -759,24 +805,97 @@ static void DestructorCallback(void)
 
 
 /******************************************************************************
-** Function: FlushTlmPipe
+** Function: EncodeEdsOutputPayload
 **
-** Remove all of the packets from the input pipe.
+** Notes:
+**   1. Adopted from NASA'S cfE-eds-framework TO_LAB app's
+**      TO_LAB_EncodeOutputPayload()
 **
 */
-static void FlushTlmPipe(void)
+static CFE_Status_t EncodeEdsOutputPayload(void *DstBuffer, const CFE_MSG_Message_t *SrcBuffer, EdsLib_Id_t ParentIntfId,
+                                           const EdsLib_SizeInfo_t *MaxSize, EdsLib_SizeInfo_t *ProcessedSize)
+{
+   int32        EdsStatus;
+   CFE_Status_t CfeStatus;
+   EdsLib_Id_t  EdsId;
+
+   static const EdsLib_Id_t CFE_SB_TELEMETRY_ID =
+        EDSLIB_INTF_ID(EDS_INDEX(CFE_SB), EdsCommand_CFE_SB_Telemetry_indication_DECLARATION);
+
+   const EdsLib_DatabaseObject_t *EDS_DB = CFE_Config_GetObjPointer(CFE_CONFIGID_MISSION_EDS_DB);
+
+   CfeStatus = CFE_SUCCESS;
+
+   /* Note on the encode side, this does not need to process the header separately from the payload. */
+   EdsStatus = EdsLib_IntfDB_FindAllArgumentTypes(EDS_DB, CFE_SB_TELEMETRY_ID, ParentIntfId, &EdsId, 1);
+   if (EdsStatus != EDSLIB_SUCCESS)
+   {
+   
+      CFE_EVS_SendEvent(PKTMGR_EDS_ENCODE_PYLD_ERR_EID,CFE_EVS_EventType_ERROR,
+                        "Error getting EDS arguments types, EdsLib_IntfDB_FindAllArgumentTypes() return status %d",
+                        (int)EdsStatus);
+      CfeStatus = CFE_STATUS_EXTERNAL_RESOURCE_FAIL;
+    
+   }
+   else
+   {   
+      EdsStatus = EdsLib_DataTypeDB_PackPartialObjectVarSize(EDS_DB, &EdsId, DstBuffer, SrcBuffer,
+                                                             MaxSize, ProcessedSize);
+      if (EdsStatus != EDSLIB_SUCCESS)
+      {
+      
+         CFE_EVS_SendEvent(PKTMGR_EDS_ENCODE_PYLD_ERR_EID,CFE_EVS_EventType_ERROR,
+                        "Error packing EDS object, EdsLib_DataTypeDB_PackPartialObjectVarSize() return status %d",
+                        (int)EdsStatus);
+         CfeStatus = CFE_STATUS_EXTERNAL_RESOURCE_FAIL;
+         
+      }
+   }
+
+   if (CfeStatus == CFE_SUCCESS)
+   {
+      EdsStatus =
+            EdsLib_DataTypeDB_FinalizePackedObjectVarSize(EDS_DB, EdsId, SrcBuffer, DstBuffer, ProcessedSize);
+      
+      if (EdsStatus != EDSLIB_SUCCESS)
+      {
+         CFE_EVS_SendEvent(PKTMGR_EDS_ENCODE_PYLD_ERR_EID,CFE_EVS_EventType_ERROR,
+                        "Error finalizing EDS object, EdsLib_DataTypeDB_FinalizePackedObjectVarSize() return status %d",
+                        (int)EdsStatus);
+         CfeStatus = CFE_STATUS_VALIDATION_FAILURE;
+      }
+   }
+
+   return CfeStatus;
+    
+} /* End EncodeEdsOutputPayload() */
+
+
+/******************************************************************************
+** Function: FlushTlmPipes
+**
+** Remove all packets from all virtual channel pipes.
+**
+*/
+static void FlushTlmPipes(void)
 {
 
-   int32 SbStatus;
+   CFE_Status_t     CfeStatus;
    CFE_SB_Buffer_t  *SbBufPtr;
 
    do
    {
-      SbStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, PktMgr->TlmPipe, CFE_SB_POLL);
+      CfeStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, PktMgr->Vc1Pipe, CFE_SB_POLL);
 
-   } while(SbStatus == CFE_SUCCESS);
+   } while(CfeStatus == CFE_SUCCESS);
 
-} /* End FlushTlmPipe() */
+   do
+   {
+      CfeStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, PktMgr->Vc2Pipe, CFE_SB_POLL);
+
+   } while(CfeStatus == CFE_SUCCESS);
+
+} /* End FlushTlmPipes() */
    
 
 /******************************************************************************
@@ -805,8 +924,7 @@ static bool LoadPktTbl(PKTTBL_Data_t *NewTbl)
 
    for (AppId=0; AppId < PKTUTIL_MAX_APP_ID; AppId++)
    {
-
-      if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PKTTBL_UNUSED_MSG_ID)
+      if (PktMgr->PktTbl.Data.Pkt[AppId].MsgId != PKTUTIL_UNUSED_MSG_ID)
       {
          
          ++PktCnt;
@@ -844,59 +962,143 @@ static bool LoadPktTbl(PKTTBL_Data_t *NewTbl)
 
    return RetStatus;
 
-} /* End LoadPktTbl() */
+} /* End LoadPktTbl() */   
 
 
 /******************************************************************************
-** Function: PackEdsOutputMessage
-**
-** Notes:
-**   1. Adopted from NASA"S cfE-eds-framework TO_LAB app
+** Function: OutputTelemetry
 **
 */
-static int32 PackEdsOutputMessage(void *DestBuffer, const CFE_MSG_Message_t *SrcBuffer, 
-                                  size_t SrcBufferSize, size_t *EdsDataSize)
+static uint16 OutputTelemetry(const CFE_SB_Buffer_t *SbBufPtr)
 {
-    EdsLib_Id_t                           EdsId;
-    EdsLib_DataTypeDB_TypeInfo_t          TypeInfo;
-    CFE_SB_SoftwareBus_PubSub_Interface_t PubSubParams;
-    CFE_SB_Publisher_Component_t          PublisherParams;
-    uint16                                TopicId;
-    int32                                 Status;
-    size_t                                SrcMsgSize;
+   int     SocketStatus;
+   bool    SendMsg;
+   uint16  NumPktsOutput  = 0;
+   uint32  NumBytesOutput = 0;
+   size_t  EdsDataSize;
+   CFE_Status_t CfeStatus;
+   
+   CFE_SB_MsgId_t   MsgId;
+   CFE_MSG_ApId_t   MsgAppId = PKTUTIL_UNUSED_MSG_ID;
+   CFE_MSG_Size_t   MsgLen=0;
+   PKTTBL_Pkt_t     *PktTblEntry;
+   const CFE_MSG_Message_t *MsgPtr;
 
-    const EdsLib_DatabaseObject_t *EDS_DB = CFE_Config_GetObjPointer(CFE_CONFIGID_MISSION_EDS_DB);
+   if (PktMgr->SuppressSend == false)
+   {   
+      CFE_MSG_GetSize(&SbBufPtr->Msg, &MsgLen);
+      CFE_MSG_GetApId(&SbBufPtr->Msg, &MsgAppId);
+      MsgAppId = MsgAppId & PKTTBL_APP_ID_MASK;
+      PktTblEntry = &(PktMgr->PktTbl.Data.Pkt[MsgAppId]);
 
-    CFE_MSG_GetSize(SrcBuffer, &SrcMsgSize);
+      if (!PktUtil_IsPacketFiltered(&SbBufPtr->Msg, &PktTblEntry->Filter))
+      {
+         if (PktTblEntry->Forward)
+         {
+            // TODO - Can message length be tailored to wrapped message size? Information event with filter?
+            CFE_EVS_SendEvent(PKTMGR_OUTPUT_TLM_EID, CFE_EVS_EventType_DEBUG,
+                              "Forwarding app ID %d, length %d", MsgAppId, (int16)MsgLen);
+            
+            memcpy(&(PktMgr->PubWrappedTlm.Payload), &SbBufPtr->Msg, MsgLen);
+            CFE_SB_TimeStampMsg(CFE_MSG_PTR(PktMgr->PubWrappedTlm.TelemetryHeader));
+            CFE_SB_TransmitMsg(CFE_MSG_PTR(PktMgr->PubWrappedTlm.TelemetryHeader), true);
+            PktMgr->PktForwardCnt++;
+         } 
+         
+         if(PktMgr->DownlinkOn)
+         {
+           
+            SendMsg = false; 
+            CfeStatus = CFE_MSG_GetMsgId(&SbBufPtr->Msg, &MsgId);
+            if (CfeStatus == CFE_SUCCESS)
+            {
+               if (PktMgr->TlmSource == KIT_TO_TlmSource_LOCAL)
+               {
+                  
+                  // If it's not a wrapped message then send it
+                  if (!CFE_SB_MsgId_Equal(MsgId, PktMgr->SubWrappedTlmMid))
+                  {
+                     SendMsg = true;
+                     MsgPtr  = &(SbBufPtr->Msg); 
+                  }
+               }
+               else
+               {
+                  
+                  // Only wrapped messages
+                  if (CFE_SB_MsgId_Equal(MsgId, PktMgr->SubWrappedTlmMid))
+                  {
+                     // TODO: Verify unwrapped message, information event with filter?
+                     CFE_EVS_SendEvent(PKTMGR_OUTPUT_TLM_EID, CFE_EVS_EventType_INFORMATION,
+                                       "Unwrapping msg ID 0x%04X(%d)", CFE_SB_MsgIdToValue(MsgId),CFE_SB_MsgIdToValue(MsgId));
+                     const KIT_TO_WrappedSbMsgTlm_Payload_t *SbMsgPayload = CMDMGR_PAYLOAD_PTR(&(SbBufPtr->Msg), KIT_TO_WrappedSbMsgTlm_t);
+                     SendMsg = true;
+                     MsgPtr  = (CFE_MSG_Message_t *)SbMsgPayload;
+                  } 
+               } /* End if not local */
 
-    CFE_MissionLib_Get_PubSub_Parameters(&PubSubParams, &SrcBuffer->BaseMsg);
-    CFE_MissionLib_UnmapPublisherComponent(&PublisherParams, &PubSubParams);
-    TopicId = PublisherParams.Telemetry.TopicId;
+               if (SendMsg)
+               {
 
-    Status = CFE_MissionLib_GetArgumentType(&CFE_SOFTWAREBUS_INTERFACE, CFE_SB_Telemetry_Interface_ID, TopicId, 1, 1,
-                                            &EdsId);
-    if (Status != CFE_MISSIONLIB_SUCCESS)
-    {
-        return CFE_STATUS_UNKNOWN_MSG_ID;
-    }
+                  CfeStatus = CreateEdsOutputMessage(SocketBuffer, MsgPtr, SocketBufferLen, &EdsDataSize);     
+                  if (CfeStatus == CFE_SUCCESS)
+                  {
+                     SocketStatus = OS_SocketSendTo(PktMgr->TlmSockId, SocketBuffer, EdsDataSize, &PktMgr->TlmSocketAddr);
+                     ++NumPktsOutput;
+                     NumBytesOutput += MsgLen;
+                  }
+                  else
+                  {
+                     
+                     /*
+                     ** EDS error strategy:
+                     **    1. Disable individual packet output on first encoding error
+                     **    2. Disable downlink after N total packet errors
+                     */
+                     
+                     CFE_EVS_SendEvent(PKTMGR_OUTPUT_TLM_EID,CFE_EVS_EventType_ERROR,
+                           "Error packing EDS output message %d, message length %ld",
+                           CFE_SB_MsgIdToValue(MsgId),MsgLen);
 
-    Status = EdsLib_DataTypeDB_PackCompleteObject(EDS_DB, &EdsId, DestBuffer, SrcBuffer, 8 * SrcBufferSize,
-                                                  SrcMsgSize);
-    if (Status != EDSLIB_SUCCESS)
-    {
-        return CFE_SB_INTERNAL_ERR;
-    }
-
-    Status = EdsLib_DataTypeDB_GetTypeInfo(EDS_DB, EdsId, &TypeInfo);
-    if (Status != EDSLIB_SUCCESS)
-    {
-        return CFE_SB_INTERNAL_ERR;
-    }
-
-    *EdsDataSize = (TypeInfo.Size.Bits + 7) / 8;
-    
-    return CFE_SUCCESS;
-}
+                     PKTTBL_PKTTBL_DisablePacketOutput(&(PktMgr->PktTbl.Data.Pkt[MsgAppId]));
+                     CFE_EVS_SendEvent(PKTMGR_OUTPUT_TLM_EID,CFE_EVS_EventType_INFORMATION,
+                           "Disabled message %d's otuput by setting filter to 'always filtered'",MsgAppId);
+                     
+                     ++PktMgr->EdsEncodeErrCnt;
+                     if (PktMgr->EdsEncodeErrCnt > PktMgr->EdsEncodeErrLim)
+                     {
+                        PktMgr->SuppressSend = true;
+                        CFE_EVS_SendEvent(PKTMGR_OUTPUT_TLM_EID,CFE_EVS_EventType_ERROR,
+                                          "Telemetry packet encoding errors exceeded %d, telemetry output suspended. Verify EDS library matches current code.",
+                                          PktMgr->EdsEncodeErrLim);
+                     }
+                     
+                  }
+               } /* End if send msg */
+            } /* End if got msg id */
+         } /* End if downlink enabled */
+      } /* End if packet is not filtered */
+      else
+      {
+         SocketStatus = 0;
+      } 
+      
+      if (SocketStatus < 0)
+      {
+         
+         PktMgr->SuppressSend = true;          
+         CFE_EVS_SendEvent(PKTMGR_OUTPUT_TLM_EID,CFE_EVS_EventType_ERROR,
+                           "Error sending MsgAppId %d (len %d) on socket %s, port %d, status %d. Tlm output suppressed",
+                           MsgAppId, (int16)MsgLen, PktMgr->TlmDestIp, PktMgr->TlmUdpPort, SocketStatus);
+      }
+      
+   } /* End if not SuppressSend */
+   
+   ComputeStats(NumPktsOutput, NumBytesOutput);
+   
+   return NumPktsOutput;
+   
+} /* End OutputTelemetry() */
 
 
 /******************************************************************************
@@ -908,13 +1110,23 @@ static int32 SubscribeNewPkt(PKTTBL_Pkt_t *NewPkt)
 
    int32 Status = CFE_SUCCESS;
    CFE_SB_MsgId_t MsgId = CFE_SB_ValueToMsgId(NewPkt->MsgId);
-
+   int16 VirtualChannel = 2;
+   
    // Don't subscribe to messages that get wrapped and forwarded because they'd immediately get forwarded to KIT_TO
    if (!CFE_SB_MsgId_Equal(MsgId, PktMgr->PubWrappedTlmMid))
    {
-      Status = CFE_SB_SubscribeEx(CFE_SB_ValueToMsgId(NewPkt->MsgId), PktMgr->TlmPipe, NewPkt->Qos, NewPkt->BufLim);
+      if (CFE_SB_MsgId_Equal(MsgId, PktMgr->Vc1FileDataTlmMid))
+      {
+         VirtualChannel = 1;
+         Status = CFE_SB_SubscribeEx(CFE_SB_ValueToMsgId(NewPkt->MsgId), PktMgr->Vc1Pipe, NewPkt->Qos, NewPkt->BufLim);         
+      }
+      else
+      {
+         Status = CFE_SB_SubscribeEx(CFE_SB_ValueToMsgId(NewPkt->MsgId), PktMgr->Vc2Pipe, NewPkt->Qos, NewPkt->BufLim);
+      }
       CFE_EVS_SendEvent(PKTMGR_SUBSCRIBE_EID, CFE_EVS_EventType_DEBUG,
-                        "Subscribed to message 0x%04X(%d)",NewPkt->MsgId, NewPkt->MsgId); 
+                        "Subscribed to message 0x%04X(%d) on virtual channel %d",
+                        NewPkt->MsgId, NewPkt->MsgId, VirtualChannel); 
    }
    else
    {

@@ -50,21 +50,20 @@
 ** Event Message IDs
 */
 #define PKTMGR_CONSTRUCTOR_EID          (PKTMGR_BASE_EID +  0)
-#define PKTMGR_SOCKET_SEND_ERR_EID      (PKTMGR_BASE_EID +  1)
-#define PKTMGR_LOAD_TBL_EID             (PKTMGR_BASE_EID +  2)
-#define PKTMGR_LOAD_TBL_ENTRY_EID       (PKTMGR_BASE_EID +  3)
-#define PKTMGR_TLM_ENA_OUTPUT_EID       (PKTMGR_BASE_EID +  4)
-#define PKTMGR_ADD_PKT_EID              (PKTMGR_BASE_EID +  5)
-#define PKTMGR_REMOVE_PKT_EID           (PKTMGR_BASE_EID +  6)
-#define PKTMGR_REMOVE_ALL_PKTS_EID      (PKTMGR_BASE_EID +  7)
-#define PKTMGR_DESTRUCTOR_INFO_EID      (PKTMGR_BASE_EID +  8)
-#define PKTMGR_UPDATE_FILTER_CMD_EID    (PKTMGR_BASE_EID +  9)
-#define PKTMGR_SET_TLM_SOURCE_CMD_EID   (PKTMGR_BASE_EID + 10)
-#define PKTMGR_SUBSCRIBE_EID            (PKTMGR_BASE_EID + 11)
-#define PKTMGR_FORWARD_EID              (PKTMGR_BASE_EID + 12)
-#define PKTMGR_UNWRAP_EID               (PKTMGR_BASE_EID + 13)
-#define PKTMGR_DEBUG_EID                (PKTMGR_BASE_EID + 14)
-#define PKTMGR_EDS_PACK_MSG_ERR_EID     (PKTMGR_BASE_EID + 15)
+#define PKTMGR_LOAD_TBL_EID             (PKTMGR_BASE_EID +  1)
+#define PKTMGR_LOAD_TBL_ENTRY_EID       (PKTMGR_BASE_EID +  2)
+#define PKTMGR_TLM_ENA_OUTPUT_EID       (PKTMGR_BASE_EID +  3)
+#define PKTMGR_ADD_PKT_EID              (PKTMGR_BASE_EID +  4)
+#define PKTMGR_REMOVE_PKT_EID           (PKTMGR_BASE_EID +  5)
+#define PKTMGR_REMOVE_ALL_PKTS_EID      (PKTMGR_BASE_EID +  6)
+#define PKTMGR_DESTRUCTOR_INFO_EID      (PKTMGR_BASE_EID +  7)
+#define PKTMGR_UPDATE_FILTER_CMD_EID    (PKTMGR_BASE_EID +  8)
+#define PKTMGR_SET_TLM_SOURCE_CMD_EID   (PKTMGR_BASE_EID +  9)
+#define PKTMGR_SUBSCRIBE_EID            (PKTMGR_BASE_EID + 10)
+#define PKTMGR_COMPUTE_STATS_EID        (PKTMGR_BASE_EID + 11)
+#define PKTMGR_OUTPUT_TLM_EID           (PKTMGR_BASE_EID + 11)
+#define PKTMGR_EDS_ENCODE_MSG_ERR_EID   (PKTMGR_BASE_EID + 12)
+#define PKTMGR_EDS_ENCODE_PYLD_ERR_EID  (PKTMGR_BASE_EID + 13)
 
 /**********************/
 /** Type Definitions **/
@@ -142,12 +141,20 @@ typedef struct
    ** PktMgr Data
    */
 
-   int32            TlmPipeStatus;
-   CFE_SB_PipeId_t  TlmPipe;
    uint32           TlmUdpPort;
    osal_id_t        TlmSockId;
    OS_SockAddr_t    TlmSocketAddr;
    char             TlmDestIp[PKTMGR_IP_STR_LEN];
+
+   int32            Vc1PipeStatus;
+   CFE_SB_PipeId_t  Vc1Pipe;
+   osal_id_t        Vc1SemId;
+   CFE_SB_MsgId_t   Vc1FileDataTlmMid;
+   uint16           Vc1FileDataTlmVal;  // TopicId value (term used by SB conversion utilities)
+   
+   int32            Vc2PipeStatus;
+   CFE_SB_PipeId_t  Vc2Pipe;
+
    CFE_SB_MsgId_t   PubWrappedTlmMid;
    CFE_SB_MsgId_t   SubWrappedTlmMid;
    
@@ -156,6 +163,8 @@ typedef struct
    KIT_TO_TlmSource_Enum_t TlmSource;
    PKTMGR_Stats_t          Stats;
    uint32                  PktForwardCnt;
+   uint16                  EdsEncodeErrCnt;
+   uint16                  EdsEncodeErrLim;
    
    /*
    ** Contained Objects
@@ -189,11 +198,12 @@ void PKTMGR_Constructor(PKTMGR_Class_t *PktMgrPtr,
 /******************************************************************************
 ** Function: PKTMGR_AddPktCmd
 **
-** Add a packet to the table and subscribe for it on the SB.
+** Add a packet to the table and subscribe to it on virtual channel 2
 **
 ** Notes:
 **   1. Command rejected if table has existing entry for the commanded msg ID
 **   2. Only update the table if the software bus subscription successful
+**   3. This command only applies to virtual channel 2
 ** 
 */
 bool PKTMGR_AddPktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
@@ -247,9 +257,9 @@ void PKTMGR_ResetStatus(void);
 ** Function: PKTMGR_RemoveAllPktsCmd
 **
 ** Notes:
-**   1. The cFE to_lab code unsubscribes the command and send HK MIDs. I'm not
-**      sure why this is done and I'm not sure how the command is used. This 
-**      command is intended to help manage TO telemetry packets.
+**   1. The use case for this command is unclear but it is included because
+**      the cFS TO_LAB app and KIT_TO is designed to include all of TO_LAB's
+**      functionality.
 */
 bool PKTMGR_RemoveAllPktsCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
@@ -257,10 +267,12 @@ bool PKTMGR_RemoveAllPktsCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 /******************************************************************************
 ** Function: PKTMGR_RemovePktCmd
 **
-** Remove a packet from the table and unsubscribe from receiving it on the SB.
+** Remove a packet from the table and unsubscribe from receiving it 
+** on virtual channel 2 pipe
 **
 ** Notes:
-**   1. Don't consider trying to remove an non-existent entry an error
+**   1. Trying to remove a non-existent entry is not considered an error
+**   2. This command only applies to virtual channel 2
 */
 bool PKTMGR_RemovePktCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 

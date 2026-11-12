@@ -7,7 +7,8 @@
       "  priority: Unused, always set to zero",
       "  reliability: Unused, always set to zero",
       "  buf-limit: Number of SB buffers allocated to KIT_TO input pipe",
-      "  filter: Filter algorithm parameters. See app_c_fw::pkt_util"
+      "  filter: Filter algorithm parameters. See app_c_fw::pkt_util",
+      "FILE_XFER protocol packets must not be filtered!"
    ],
    "topic-id-map": {
       "start": true,
@@ -33,12 +34,12 @@
       "FILE_MGR_OPEN_FILE_TLM_TOPICID": "topic-id-24",
       "FILE_MGR_FILE_SYS_TBL_TLM_TOPICID": "topic-id-25",
       "FILE_XFER_HK_TLM_TOPICID": "topic-id-26",
-      "FILE_XFER_FOTP_START_TRANSFER_TLM_TOPICID": "topic-id-27",
+      "FILE_XFER_START_FOTP_TLM_TOPICID": "topic-id-27",
       "FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID": "topic-id-28",
-      "FILE_XFER_FOTP_FINISH_TRANSFER_TLM_TOPICID": "topic-id-29",
+      "FILE_XFER_FINISH_FOTP_TLM_TOPICID": "topic-id-29",
       "KIT_SCH_HK_TLM_TOPICID": "topic-id-30",
       "KIT_SCH_DIAG_TLM_TOPICID": "topic-id-31",
-      "KIT_SCh_TBL_ENTRY_TLM_TOPICID": "topic-id-32",
+      "KIT_SCH_TBL_ENTRY_TLM_TOPICID": "topic-id-32",
       "KIT_TO_HK_TLM_TOPICID": "topic-id-33",
       "KIT_TO_DATA_TYPES_TOPICID": "topic-id-34",
       "KIT_TO_PKT_TBL_TOPICID": "topic-id-35",
@@ -455,7 +456,7 @@
       },
       {
          "packet": {
-            "name": "FILE_XFER_FOTP_START_TRANSFER_TLM_TOPICID",
+            "name": "FILE_XFER_START_FOTP_TLM_TOPICID",
             "topic-id-27": 2134,
             "topic-id": 2134,
             "forward": false,
@@ -489,7 +490,7 @@
       },
       {
          "packet": {
-            "name": "FILE_XFER_FOTP_FINISH_TRANSFER_TLM_TOPICID",
+            "name": "FILE_XFER_FINISH_FOTP_TLM_TOPICID",
             "topic-id-29": 2136,
             "topic-id": 2136,
             "forward": false,

@@ -37,8 +37,6 @@
 
 #define PKTTBL_APP_ID_MASK   (0x07FF)  /* CCSDS v1 ApId mask    */
 
-#define PKTTBL_UNUSED_MSG_ID CFE_SB_MsgIdToValue(CFE_SB_INVALID_MSG_ID)
-
 /*
 ** Event Message IDs
 */
@@ -81,6 +79,8 @@ typedef struct
 /* Callback function for table owner to perform the load */
 typedef bool (*PKTTBL_LoadNewTbl_t)(PKTTBL_Data_t *NewTbl);
 
+// Create CJSON_PKTTBL_t
+CJSON_STATE_STRUCT(PKTTBL, PKTTBL_JSON_FILE_MAX_CHAR);
 
 typedef struct
 {
@@ -89,21 +89,11 @@ typedef struct
    ** Table parameter data
    */
    
-   PKTTBL_Data_t Data;
+   PKTTBL_Data_t        Data;
+   PKTTBL_LoadNewTbl_t  LoadNewTbl;
 
-   PKTTBL_LoadNewTbl_t LoadNewTbl;
-
-   /*
-   ** Standard CJSON table data
-   */
+   CJSON_PKTTBL_t  Json;
    
-   bool        Loaded;      /* Has entire table been loaded? */
-   uint16      LastLoadCnt;
-   
-   size_t      JsonObjCnt;
-   char        JsonBuf[PKTTBL_JSON_FILE_MAX_CHAR];   
-   size_t      JsonFileLen;
-
 } PKTTBL_Class_t;
 
 
@@ -122,6 +112,15 @@ typedef struct
 **      registered with the table manager.
 */
 void PKTTBL_Constructor(PKTTBL_Class_t *ObjPtr, PKTTBL_LoadNewTbl_t LoadNewTbl);
+
+
+/******************************************************************************
+** Function: PKTTBL_DisablePacketOutput
+**
+** Disable packet output by setting the filterto always filtered.
+**
+*/
+void PKTTBL_PKTTBL_DisablePacketOutput(PKTTBL_Pkt_t *PktPtr);
 
 
 /******************************************************************************
@@ -164,7 +163,7 @@ void PKTTBL_ResetStatus(void);
 
 
 /******************************************************************************
-** Function: KTTBL_SetPacketToUnused
+** Function: PKTTBL_SetPacketToUnused
 **
 */
 void PKTTBL_SetPacketToUnused(PKTTBL_Pkt_t *PktPtr);

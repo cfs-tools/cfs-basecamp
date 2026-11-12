@@ -102,6 +102,20 @@ void PKTTBL_Constructor(PKTTBL_Class_t *ObjPtr, PKTTBL_LoadNewTbl_t LoadNewTbl)
 
 
 /******************************************************************************
+** Function: PKTTBL_DisablePacketOutput
+**
+** Disable packet output by setting the filterto always filtered.
+**
+*/
+void PKTTBL_PKTTBL_DisablePacketOutput(PKTTBL_Pkt_t *PktPtr)
+{
+   
+   PktPtr->Filter.Type = PKTUTIL_FILTER_ALWAYS;
+   
+} /* End PKTTBL_PKTTBL_DisablePacketOutput() */
+
+
+/******************************************************************************
 ** Function: PKTTBL_DumpCmd
 **
 ** Notes:
@@ -162,9 +176,9 @@ bool PKTTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filenam
 
    bool  RetStatus = false;
 
-   if (CJSON_ProcessFile(Filename, PktTbl->JsonBuf, PKTTBL_JSON_FILE_MAX_CHAR, LoadJsonData))
+   if (CJSON_ProcessFile(Filename, PktTbl->Json.Buf, PKTTBL_JSON_FILE_MAX_CHAR, LoadJsonData))
    {
-      PktTbl->Loaded = true;
+      PktTbl->Json.Loaded = true;
       RetStatus = true;
    }
 
@@ -180,7 +194,7 @@ bool PKTTBL_LoadCmd(APP_C_FW_TblLoadOptions_Enum_t LoadType, const char *Filenam
 void PKTTBL_ResetStatus(void)
 {
    
-   PktTbl->LastLoadCnt = 0;
+   PktTbl->Json.LastLoadCnt = 0;
     
 } /* End PKTTBL_ResetStatus() */
 
@@ -195,7 +209,7 @@ void PKTTBL_SetPacketToUnused(PKTTBL_Pkt_t *PktPtr)
    
    CFE_PSP_MemSet(PktPtr, 0, sizeof(PKTTBL_Pkt_t));
 
-   PktPtr->MsgId       = PKTTBL_UNUSED_MSG_ID;
+   PktPtr->MsgId       = PKTUTIL_UNUSED_MSG_ID;
    PktPtr->Filter.Type = PKTUTIL_FILTER_ALWAYS;
    
 } /* End PKTTBL_SetPacketToUnused() */
@@ -216,7 +230,7 @@ void PKTTBL_SetTblToUnused(PKTTBL_Data_t *TblPtr)
    for (AppId=0; AppId < PKTUTIL_MAX_APP_ID; AppId++)
    {
       
-      TblPtr->Pkt[AppId].MsgId       = PKTTBL_UNUSED_MSG_ID;
+      TblPtr->Pkt[AppId].MsgId       = PKTUTIL_UNUSED_MSG_ID;
       TblPtr->Pkt[AppId].Filter.Type = PKTUTIL_FILTER_ALWAYS;
    
    }
@@ -295,7 +309,7 @@ static bool LoadJsonData(size_t JsonFileLen)
    PKTTBL_Pkt_t  Pkt;
 
 
-   PktTbl->JsonFileLen = JsonFileLen;
+   PktTbl->Json.FileLen = JsonFileLen;
 
    /* 
    ** 1. Copy table owner data into local table buffer
@@ -320,56 +334,58 @@ static bool LoadJsonData(size_t JsonFileLen)
       ** used so the 'object not found' event will be suppressed 
       */      
       
-      if (CJSON_LoadObjOptional(&JsonPacket.TopicId.Obj, PktTbl->JsonBuf, PktTbl->JsonFileLen))
+      if (CJSON_LoadObjOptional(&JsonPacket.TopicId.Obj, PktTbl->Json.Buf, PktTbl->Json.FileLen))
       {
-         
-         AppIdIdx = JsonPacket.TopicId.Value & PKTTBL_APP_ID_MASK;
-         
-         if (AppIdIdx < PKTUTIL_MAX_APP_ID)
+         if (JsonPacket.TopicId.Value != PKTUTIL_UNUSED_MSG_ID)
          {
-         
-            AttributeCnt = 0;
-            if (CJSON_LoadObj(&JsonPacket.Forward.Obj,     PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
-            if (CJSON_LoadObj(&JsonPacket.Priority.Obj,    PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
-            if (CJSON_LoadObj(&JsonPacket.Reliability.Obj, PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
-            if (CJSON_LoadObj(&JsonPacket.BufLimit.Obj,    PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
-            if (CJSON_LoadObj(&JsonPacket.FilterType.Obj,  PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
-            if (CJSON_LoadObj(&JsonPacket.FilterX.Obj,     PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
-            if (CJSON_LoadObj(&JsonPacket.FilterN.Obj,     PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
-            if (CJSON_LoadObj(&JsonPacket.FilterO.Obj,     PktTbl->JsonBuf, PktTbl->JsonFileLen)) AttributeCnt++;
+            AppIdIdx = JsonPacket.TopicId.Value & PKTTBL_APP_ID_MASK;
             
-            if (AttributeCnt == 8)
+            if (AppIdIdx < PKTUTIL_MAX_APP_ID)
             {
+            
+               AttributeCnt = 0;
+               if (CJSON_LoadObj(&JsonPacket.Forward.Obj,     PktTbl->Json.Buf, PktTbl->Json.FileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonPacket.Priority.Obj,    PktTbl->Json.Buf, PktTbl->Json.FileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonPacket.Reliability.Obj, PktTbl->Json.Buf, PktTbl->Json.FileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonPacket.BufLimit.Obj,    PktTbl->Json.Buf, PktTbl->Json.FileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonPacket.FilterType.Obj,  PktTbl->Json.Buf, PktTbl->Json.FileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonPacket.FilterX.Obj,     PktTbl->Json.Buf, PktTbl->Json.FileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonPacket.FilterN.Obj,     PktTbl->Json.Buf, PktTbl->Json.FileLen)) AttributeCnt++;
+               if (CJSON_LoadObj(&JsonPacket.FilterO.Obj,     PktTbl->Json.Buf, PktTbl->Json.FileLen)) AttributeCnt++;
                
-               Pkt.MsgId           = JsonPacket.TopicId.Value;
-               Pkt.Forward         = (strcmp(JsonPacket.Forward.Value, "true") == 0);
-               Pkt.Qos.Priority    = JsonPacket.Priority.Value;
-               Pkt.Qos.Reliability = JsonPacket.Reliability.Value;
-               Pkt.BufLim          = JsonPacket.BufLimit.Value;
-               Pkt.Filter.Type     = JsonPacket.FilterType.Value;
-               Pkt.Filter.Param.X  = JsonPacket.FilterX.Value; 
-               Pkt.Filter.Param.N  = JsonPacket.FilterN.Value; 
-               Pkt.Filter.Param.O  = JsonPacket.FilterO.Value; 
-                              
-               memcpy(&TblData.Pkt[AppIdIdx],&Pkt,sizeof(PKTTBL_Pkt_t));
-               
-            } /* End if valid attributes */
+               if (AttributeCnt == 8)
+               {
+                  
+                  Pkt.MsgId           = JsonPacket.TopicId.Value;
+                  Pkt.Forward         = (strcmp(JsonPacket.Forward.Value, "true") == 0);
+                  Pkt.Qos.Priority    = JsonPacket.Priority.Value;
+                  Pkt.Qos.Reliability = JsonPacket.Reliability.Value;
+                  Pkt.BufLim          = JsonPacket.BufLimit.Value;
+                  Pkt.Filter.Type     = JsonPacket.FilterType.Value;
+                  Pkt.Filter.Param.X  = JsonPacket.FilterX.Value; 
+                  Pkt.Filter.Param.N  = JsonPacket.FilterN.Value; 
+                  Pkt.Filter.Param.O  = JsonPacket.FilterO.Value; 
+                                 
+                  memcpy(&TblData.Pkt[AppIdIdx],&Pkt,sizeof(PKTTBL_Pkt_t));
+                  
+               } /* End if valid attributes */
+               else
+               {
+                  CFE_EVS_SendEvent(PKTTBL_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
+                                    "Packet[%d] has missing attributes, only %d of 8 defined",
+                                    PktArrayIdx, AttributeCnt);
+                  ReadPkt = false;
+                  RetStatus = false;
+               }
+            } /* End if valid ID */
             else
             {
                CFE_EVS_SendEvent(PKTTBL_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
-                                 "Packet[%d] has missing attributes, only %d of 8 defined",
-                                 PktArrayIdx, AttributeCnt);
-               ReadPkt = false;
-               RetStatus = false;
+                                 "Packet[%d]'s topic-id %d has an invalid app-id value of %d. Valid range is 0 to %d",
+                                 PktArrayIdx, JsonPacket.TopicId.Value, AppIdIdx, (PKTUTIL_MAX_APP_ID-1));
             }
-         } /* End if valid ID */
-         else
-         {
-            CFE_EVS_SendEvent(PKTTBL_LOAD_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "Packet[%d]'s topic-id %d has an invalid app-id value of %d. Valid range is 0 to %d",
-                              PktArrayIdx, JsonPacket.TopicId.Value, AppIdIdx, (PKTUTIL_MAX_APP_ID-1));
-         }
-
+         } /* End if not unused topic ID */
+         
          PktArrayIdx++;
          
       } /* End if 'topic-id' */
@@ -391,7 +407,7 @@ static bool LoadJsonData(size_t JsonFileLen)
       if (RetStatus == true)
       {
          PktTbl->LoadNewTbl(&TblData);
-         PktTbl->LastLoadCnt = PktArrayIdx;
+         PktTbl->Json.LastLoadCnt = PktArrayIdx;
          CFE_EVS_SendEvent(PKTTBL_LOAD_EID, CFE_EVS_EventType_INFORMATION,
                            "Packet Table load updated %d entries", PktArrayIdx);
       }
@@ -415,7 +431,7 @@ static bool WriteJsonPkt(int32 FileHandle, const PKTTBL_Pkt_t *Pkt, bool FirstPk
    bool PktWritten = false;
    char DumpRecord[256];
 
-   if (Pkt->MsgId != PKTTBL_UNUSED_MSG_ID)
+   if (Pkt->MsgId != PKTUTIL_UNUSED_MSG_ID)
    {
       
       if (FirstPktWritten)
