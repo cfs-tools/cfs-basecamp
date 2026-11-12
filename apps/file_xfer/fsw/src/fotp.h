@@ -75,25 +75,28 @@
 ** Event Message IDs
 */
 
-#define FOTP_START_TRANSFER_CMD_EID      (FOTP_BASE_EID +  0)
-#define FOTP_START_TRANSFER_CMD_ERR_EID  (FOTP_BASE_EID +  1)
+#define FOTP_CONSTRUCTOR_EID             (FOTP_BASE_EID +  0)
 
-#define FOTP_PAUSE_TRANSFER_CMD_EID      (FOTP_BASE_EID +  2)
-#define FOTP_PAUSE_TRANSFER_CMD_ERR_EID  (FOTP_BASE_EID +  3)
+#define FOTP_START_TRANSFER_CMD_EID      (FOTP_BASE_EID +  1)
+#define FOTP_START_TRANSFER_CMD_ERR_EID  (FOTP_BASE_EID +  2)
 
-#define FOTP_RESUME_TRANSFER_CMD_EID     (FOTP_BASE_EID +  4)
-#define FOTP_RESUME_TRANSFER_CMD_ERR_EID (FOTP_BASE_EID +  5)
+#define FOTP_PAUSE_TRANSFER_CMD_EID      (FOTP_BASE_EID +  3)
+#define FOTP_PAUSE_TRANSFER_CMD_ERR_EID  (FOTP_BASE_EID +  4)
 
-#define FOTP_CANCEL_TRANSFER_CMD_EID     (FOTP_BASE_EID +  6)
-#define FOTP_CANCEL_TRANSFER_CMD_ERR_EID (FOTP_BASE_EID +  7)
+#define FOTP_RESUME_TRANSFER_CMD_EID     (FOTP_BASE_EID +  5)
+#define FOTP_RESUME_TRANSFER_CMD_ERR_EID (FOTP_BASE_EID +  6)
 
-#define FOTP_SEND_DATA_SEGMENT_EID       (FOTP_BASE_EID +  8)
-#define FOTP_SEND_DATA_SEGMENT_ERR_EID   (FOTP_BASE_EID +  9)
+#define FOTP_CANCEL_TRANSFER_CMD_EID     (FOTP_BASE_EID +  7)
+#define FOTP_CANCEL_TRANSFER_CMD_ERR_EID (FOTP_BASE_EID +  8)
 
-#define FOTP_SEND_FILE_TRANSFER_EID      (FOTP_BASE_EID + 10)
-#define FOTP_SEND_FILE_TRANSFER_ERR_EID  (FOTP_BASE_EID + 10)
+#define FOTP_SEND_DATA_SEGMENT_EID       (FOTP_BASE_EID +  9)
+#define FOTP_SEND_DATA_SEG_NO_SEM_EID    (FOTP_BASE_EID + 10)
+#define FOTP_SEND_DATA_SEGMENT_ERR_EID   (FOTP_BASE_EID + 11)
 
-#define FOTP_EXECUTE_EID                 (FOTP_BASE_EID + 11)
+#define FOTP_SEND_FILE_TRANSFER_EID      (FOTP_BASE_EID + 12)
+#define FOTP_SEND_FILE_TRANSFER_ERR_EID  (FOTP_BASE_EID + 13)
+
+#define FOTP_EXECUTE_EID                 (FOTP_BASE_EID + 14)
 
 /**********************/
 /** Type Definitions **/
@@ -112,12 +115,7 @@ typedef enum
 } FOTP_FileTransferState_t;
 
 /******************************************************************************
-** Command Packets
-** See file_xfer.xml
-*/
-
-/******************************************************************************
-** Telemetry Packets
+** Command & Telemetry Packets
 ** See file_xfer.xml
 */
 
@@ -149,6 +147,9 @@ typedef struct
    /*
    ** FOTP State Data
    */
+
+   bool      KitToSemValid;
+   osal_id_t KitToSemId;
 
    char      SrcFilename[FOTP_FILENAME_LEN];
    osal_id_t FileHandle;
@@ -195,6 +196,14 @@ void FOTP_Constructor(FOTP_Class_t *FotpPtr, INITBL_Class_t *IniTbl);
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
 bool FOTP_CancelTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+
+
+/******************************************************************************
+** Function: FOTP_Destructor
+**
+** This function should be called when the app is terminated. 
+*/
+void FOTP_Destructor(void);
 
 
 /******************************************************************************

@@ -6,7 +6,6 @@ include_directories(${app_c_fw_MISSION_DIR}/fsw/app_inc)
 include_directories(${app_c_fw_MISSION_DIR}/fsw/platform_inc)
 include_directories(${app_c_fw_MISSION_DIR}/fsw/mission_inc)
 
-
 aux_source_directory(fsw/src APP_SRC_FILES)
 
 # Create the app module

@@ -43,17 +43,16 @@
         </EnumerationList>
       </EnumeratedDataType>
 
-      <StringDataType name="FitpDataSegment" length="${FILE_XFER/FITP_DATA_SEG_MAX_LEN}" shortDescription="" />
       <StringDataType name="FotpDataSegment" length="${FILE_XFER/FOTP_DATA_SEG_MAX_LEN}" shortDescription="" />
+      <StringDataType name="FitpDataSegment" length="${FILE_XFER/FITP_DATA_SEG_MAX_LEN}" shortDescription="" />
 
       <!-- Failed attempts
-      <ArrayDataType name="FitpDataBlock" dataTypeRef="BASE_TYPES/uint8">
+      <BinaryDataType name="FitpDataSegment" shortDescription="File Input Data Segment" sizeInBits="${FILE_XFER/FOTP_DATA_SEG_MAX_LEN} * 8" />
+      <ArrayDataType name="FitpDataSegment" dataTypeRef="BASE_TYPES/uint8">
         <DimensionList>
            <Dimension size="${FILE_XFER/FITP_DATA_SEG_MAX_LEN}"/>
         </DimensionList>
       </ArrayDataType>
-      <BinaryDataType name="FitpDataBlock">
-
       <ArrayDataType name="FotpDataBlock" dataTypeRef="BASE_TYPES/uint8">
         <DimensionList>
            <Dimension size="${FILE_XFER/FOTP_DATA_SEG_MAX_LEN}"/>
@@ -74,7 +73,7 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="FitpDataSegment_CmdPayload">
+      <ContainerDataType name="SendFitpData_CmdPayload">
         <EntryList>
           <Entry name="Id"    type="BASE_TYPES/uint16"  shortDescription="Integer identifier that increments for each sequential segement" />
           <Entry name="Len"   type="BASE_TYPES/uint16"  shortDescription="Number of data bytes in the data block" />
@@ -227,12 +226,12 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="FitpDataSegment" baseType="CommandBase" shortDescription="">
+      <ContainerDataType name="SendFitpData" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="FitpDataSegment_CmdPayload" name="Payload" />
+          <Entry type="SendFitpData_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
       

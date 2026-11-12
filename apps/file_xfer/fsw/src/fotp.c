@@ -27,6 +27,7 @@
 */
 
 #include "fotp.h"
+#include "cfe_es_eds_datatypes.h"
 
 typedef enum
 {
@@ -41,7 +42,6 @@ typedef enum
 /** Local Function Prototypes **/
 /*******************************/
 
-static void DestructorCallback(void);
 const char *FileTransferStateStr(FOTP_FileTransferState_t  FileTransferState);
 static SendDataSegmentState_t SendDataSegments(void);
 static bool SendFileTransferTlm(FOTP_FileTransferState_t FileTransferState);
@@ -53,7 +53,7 @@ static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferC
 /**********************/
 
 static FOTP_Class_t *Fotp = NULL;
-static uint8 DataSegBuf[FITP_DATA_SEG_MAX_LEN];
+static uint8 DataSegBuf[EdsParam_FILE_XFER_FITP_DATA_SEG_MAX_LEN];
 
 /******************************************************************************
 ** Function: FOTP_Constructor
@@ -62,8 +62,10 @@ static uint8 DataSegBuf[FITP_DATA_SEG_MAX_LEN];
 void FOTP_Constructor(FOTP_Class_t *FotpPtr, INITBL_Class_t *IniTbl)
 {
 
-   Fotp = FotpPtr;
+   CFE_Status_t  CfeStatus;
 
+   Fotp = FotpPtr;
+   
    /* All booleans and counters set to zero. States have non-zero defaults and must be explicitly set */ 
    CFE_PSP_MemSet((void*)Fotp, 0, sizeof(FOTP_Class_t));
   
@@ -74,7 +76,7 @@ void FOTP_Constructor(FOTP_Class_t *FotpPtr, INITBL_Class_t *IniTbl)
    FOTP_ResetStatus();
 
    CFE_MSG_Init(CFE_MSG_PTR(Fotp->StartTransferPkt.TelemetryHeader), 
-                CFE_SB_ValueToMsgId(INITBL_GetIntConfig(Fotp->IniTbl, CFG_FILE_XFER_FOTP_START_TRANSFER_TLM_TOPICID)),
+                CFE_SB_ValueToMsgId(INITBL_GetIntConfig(Fotp->IniTbl, CFG_FILE_XFER_START_FOTP_TLM_TOPICID)),
                 sizeof(FILE_XFER_StartFotpTlm_t));
 
    CFE_MSG_Init(CFE_MSG_PTR(Fotp->DataSegmentPkt.TelemetryHeader),
@@ -82,11 +84,40 @@ void FOTP_Constructor(FOTP_Class_t *FotpPtr, INITBL_Class_t *IniTbl)
                sizeof(FILE_XFER_FotpDataSegmentTlm_t));
 
    CFE_MSG_Init(CFE_MSG_PTR(Fotp->FinishTransferPkt.TelemetryHeader),
-                CFE_SB_ValueToMsgId(INITBL_GetIntConfig(Fotp->IniTbl, CFG_FILE_XFER_FOTP_FINISH_TRANSFER_TLM_TOPICID)),
+                CFE_SB_ValueToMsgId(INITBL_GetIntConfig(Fotp->IniTbl, CFG_FILE_XFER_FINISH_FOTP_TLM_TOPICID)),
                 sizeof(FILE_XFER_FinishFotpTlm_t));
 
-   OS_TaskInstallDeleteHandler(DestructorCallback); /* Called when application terminates */
+   /*
+   ** KIT_TO is not guaranteed to start before FILE_XFER so use a loop
+   ** to get KIT_TO's flow ocntrol semaphore
+   ** - Repeated calls to INITBL_GetIntConfig() is most time effcient but it's not 
+   **   critical for thsi loop
+   */
+   
+   Fotp->KitToSemValid = false;
+   for (int i=0; i < INITBL_GetIntConfig(Fotp->IniTbl, CFG_KIT_TO_SEM_LOOP_ATTEMPTS); i++)
+   {
+      CfeStatus = OS_CountSemGetIdByName(&Fotp->KitToSemId,
+                                         INITBL_GetStrConfig(Fotp->IniTbl, CFG_KIT_TO_SEM_NAME));
 
+      if (CfeStatus == OS_SUCCESS)
+      {
+         Fotp->KitToSemValid = true;
+         break;
+      }
+      CFE_ES_PerfLogExit(INITBL_GetIntConfig(Fotp->IniTbl, CFG_APP_PERF_ID));
+      OS_TaskDelay(INITBL_GetIntConfig(Fotp->IniTbl, CFG_KIT_TO_SEM_LOOP_DELAY));
+      CFE_ES_PerfLogEntry(INITBL_GetIntConfig(Fotp->IniTbl, CFG_APP_PERF_ID));
+   }
+                                    
+   if (CfeStatus != OS_SUCCESS)
+   {
+      CFE_EVS_SendEvent(FOTP_CONSTRUCTOR_EID, CFE_EVS_EventType_ERROR,
+                        "FOTP failed to get semaphore %s, status=%ld",
+                        INITBL_GetStrConfig(Fotp->IniTbl, CFG_KIT_TO_SEM_NAME),
+                        (long)CfeStatus);
+   }
+            
 } /* End FOTP_Constructor() */
 
  
@@ -122,6 +153,23 @@ bool FOTP_CancelTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    return RetStatus;
 
 } /* End FOTP_CancelTransferCmd() */
+
+
+/******************************************************************************
+** Function: FOTP_Destructor
+**
+** This function is called when the app is terminated. This should
+** never occur but if it does this will close an open file. 
+*/
+void FOTP_Destructor(void)
+{
+ 
+   if (Fotp->FileTransferState != FOTP_IDLE)
+   {
+      OS_close(Fotp->FileHandle);
+   }
+   
+} /* End FOTP_Destructor() */
 
 
 /******************************************************************************
@@ -311,23 +359,6 @@ bool FOTP_StartTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
 
 /******************************************************************************
-** Function: DestructorCallback
-**
-** This function is called when the app is terminated. This should
-** never occur but if it does this will close an open file. 
-*/
-static void DestructorCallback(void)
-{
- 
-   if (Fotp->FileTransferState != FOTP_IDLE)
-   {
-      OS_close(Fotp->FileHandle);
-   }
-   
-} /* End DestructorCallback() */
-
-
-/******************************************************************************
 ** Function: FileTransferStateStr
 **
 ** Type checking should enforce valid parameter but check just to be safe.
@@ -367,14 +398,16 @@ const char *FileTransferStateStr(FOTP_FileTransferState_t  FileTransferState)
 **   2. NextDataSegmentId, FileTransferByteCnt, and FileRunningCrc are based on
 **      successful telemetry packet send. If the send fails then the stats are
 **      not updated.
-**   TODO - Replace DataSegmentsSent logic with a TO semaphore handshake
+**   3. A fixed length data segment packet is always sent, even for the last
+**      data segment that may only be partially filled with file data.
 */
 static SendDataSegmentState_t SendDataSegments(void)
 {
-   
+   int32   OsStatus;
    uint16  DataSegmentsSent = 0;
    uint16  FileBytesRead;
    uint32  RemainingBytes;
+   bool    UsingSemaphore;
    bool    ContinueSend = true;
    bool    CloseFile = false;
    SendDataSegmentState_t SendDataSegmentState = SEND_DATA_SEGMENT_ACTIVE;
@@ -384,71 +417,99 @@ static SendDataSegmentState_t SendDataSegments(void)
    {
       while (ContinueSend)
       {
-         
-         Fotp->DataSegmentPkt.Payload.Id = Fotp->NextDataSegmentId;
-         
-         RemainingBytes = Fotp->FileLen - Fotp->FileTransferByteCnt;
-         if (RemainingBytes <= Fotp->DataSegmentLen)
+         /*
+         ** Logic allows file transfers without semaphore
+         ** - When operating without a semaphore send an event (should be
+         **   filtered) to inform ops of the situation 
+         */
+         OsStatus = OS_SUCCESS;
+         UsingSemaphore = false;
+         if (Fotp->KitToSemValid)
          {
-            Fotp->DataSegmentPkt.Payload.Len = RemainingBytes;
-            Fotp->LastDataSegment = true;
-         }
-         else
-         {
-            Fotp->DataSegmentPkt.Payload.Len = Fotp->DataSegmentLen;
-         }
-         
-         memset(Fotp->DataSegmentPkt.Payload.Data, 0, FOTP_DATA_SEG_MAX_LEN);
-         if (Fotp->BinFile)
-         {
-            FileBytesRead = OS_read(Fotp->FileHandle, DataSegBuf, Fotp->DataSegmentPkt.Payload.Len);
-            PktUtil_HexEncode(Fotp->DataSegmentPkt.Payload.Data, DataSegBuf, Fotp->DataSegmentPkt.Payload.Len, false);
-            CrcBufPtr = (const uint8 *)DataSegBuf;
-         }
-         else
-         {
-            FileBytesRead = OS_read(Fotp->FileHandle, Fotp->DataSegmentPkt.Payload.Data, Fotp->DataSegmentPkt.Payload.Len);
-            CrcBufPtr = (const uint8 *)Fotp->DataSegmentPkt.Payload.Data;
-         }
-         if (FileBytesRead == Fotp->DataSegmentPkt.Payload.Len)
-         {
-            Fotp->FileRunningCrc = CRC_32c(Fotp->FileRunningCrc, CrcBufPtr, FileBytesRead);
-            //TODO - Always send full packet: CFE_SB_SetUserDataLength((CFE_MSG_Message_t *)&Fotp->DataSegmentPkt, (FOTP_DATA_SEGMENT_NON_DATA_TLM_LEN + Fotp->DataSegmentPkt.Payload.Len));
-          
-            if (SendFileTransferTlm(FOTP_SEND_DATA))
+            if (OS_ObjectIdDefined(Fotp->KitToSemId))
             {
-               Fotp->PrevSendDataSegmentFailed = false;
-               Fotp->NextDataSegmentId++;
-               Fotp->FileTransferByteCnt += Fotp->DataSegmentPkt.Payload.Len;
-               if (Fotp->LastDataSegment)
-               {
-                  CloseFile    = true;
-                  ContinueSend = false;
-                  SendDataSegmentState = SEND_DATA_SEGMENT_FINISHED;
-               }
-               else
-               {
-                  DataSegmentsSent++;
-                  if (DataSegmentsSent >= 1) ContinueSend = false; //TODO - Add flow control logic
-               }
-            }/* End if sent data segment telemetry */
+               UsingSemaphore = true;
+               OsStatus = OS_CountSemTimedWait(Fotp->KitToSemId, 0);
+            }
+         }
+         else
+         {
+            CFE_EVS_SendEvent(FOTP_SEND_DATA_SEG_NO_SEM_EID, CFE_EVS_EventType_INFORMATION, 
+                              "Sending file data segments without telemetry output semaphore flow control");           
+         }
+
+         if (OsStatus == OS_SUCCESS)
+         {
+            Fotp->DataSegmentPkt.Payload.Id = Fotp->NextDataSegmentId;
+            
+            RemainingBytes = Fotp->FileLen - Fotp->FileTransferByteCnt;
+            if (RemainingBytes <= Fotp->DataSegmentLen)
+            {
+               Fotp->DataSegmentPkt.Payload.Len = RemainingBytes;
+               Fotp->LastDataSegment = true;
+            }
             else
             {
-               Fotp->PrevSendDataSegmentFailed = true;
-               ContinueSend = false;
+               Fotp->DataSegmentPkt.Payload.Len = Fotp->DataSegmentLen;
             }
             
-         } /* End if successful file read */
+            memset(Fotp->DataSegmentPkt.Payload.Data, 0, EdsParam_FILE_XFER_FOTP_DATA_SEG_MAX_LEN);
+            if (Fotp->BinFile)
+            {
+               FileBytesRead = OS_read(Fotp->FileHandle, DataSegBuf, Fotp->DataSegmentPkt.Payload.Len);
+               PktUtil_HexEncode(Fotp->DataSegmentPkt.Payload.Data, DataSegBuf, Fotp->DataSegmentPkt.Payload.Len, false);
+               CrcBufPtr = (const uint8 *)DataSegBuf;
+            }
+            else
+            {
+               FileBytesRead = OS_read(Fotp->FileHandle, Fotp->DataSegmentPkt.Payload.Data, Fotp->DataSegmentPkt.Payload.Len);
+               CrcBufPtr = (const uint8 *)Fotp->DataSegmentPkt.Payload.Data;
+            }
+            if (FileBytesRead == Fotp->DataSegmentPkt.Payload.Len)
+            {
+               Fotp->FileRunningCrc = CRC_32Bitwise((const uint8 *)CrcBufPtr, FileBytesRead, Fotp->FileRunningCrc);
+
+               if (SendFileTransferTlm(FOTP_SEND_DATA))
+               {
+                  Fotp->PrevSendDataSegmentFailed = false;
+                  Fotp->NextDataSegmentId++;
+                  Fotp->FileTransferByteCnt += Fotp->DataSegmentPkt.Payload.Len;
+                  if (Fotp->LastDataSegment)
+                  {
+                     CloseFile    = true;
+                     ContinueSend = false;
+                     SendDataSegmentState = SEND_DATA_SEGMENT_FINISHED;
+                  }
+                  else
+                  {
+                     DataSegmentsSent++;
+                     if (!UsingSemaphore && DataSegmentsSent >= FOTP_DATA_SEGMENT_PER_EXEC)
+                     {
+                         ContinueSend = false;
+                     }
+                  }
+               }/* End if sent data segment telemetry */
+               else
+               {
+                  Fotp->PrevSendDataSegmentFailed = true;
+                  ContinueSend = false;
+               }
+               
+            } /* End if successful file read */
+            else
+            {
+              CloseFile = true;
+              ContinueSend = false;
+              SendDataSegmentState = SEND_DATA_SEGMENT_ABORTED;
+              CFE_EVS_SendEvent(FOTP_SEND_DATA_SEGMENT_ERR_EID, CFE_EVS_EventType_ERROR, 
+                                "File transfer aborted: Error reading data from file %s. Attempted %d bytes, read %d",
+                                Fotp->SrcFilename, Fotp->DataSegmentPkt.Payload.Len, FileBytesRead);
+            }
+         } /* End if semaphore take */
          else
          {
-           CloseFile = true;
-           ContinueSend = false;
-           SendDataSegmentState = SEND_DATA_SEGMENT_ABORTED;
-           CFE_EVS_SendEvent(FOTP_SEND_DATA_SEGMENT_ERR_EID, CFE_EVS_EventType_ERROR, 
-                             "File transfer aborted: Error reading data from file %s. Attempted %d bytes, read %d",
-                             Fotp->SrcFilename, Fotp->DataSegmentPkt.Payload.Len, FileBytesRead);
+            ContinueSend = false;
          }
-         
       } /* End while send DataSegment */
    } /* End if PrevSendDataSegmentFailed */
    else
@@ -497,7 +558,9 @@ static SendDataSegmentState_t SendDataSegments(void)
 ** Notes:
 **   1. Sends a telemetry packet unique to each file transfer state. The START
 **      and FINISH telemetry data is loaded in this function. The SEND_DATA
-**      telemetry data is loaded by the calling function. 
+**      telemetry data is loaded by the calling function. It would be desirable
+**      to have this function use object data consistently across states but
+**      teh nature of the states makes this difficult.    
 **   2. This should only be called in a state that should send a message. If
 **      no message is sent (wrong state or SB send failure) then it returns
 **      false.
@@ -507,7 +570,7 @@ static SendDataSegmentState_t SendDataSegments(void)
 static bool SendFileTransferTlm(FOTP_FileTransferState_t FileTransferState)
 {
    
-   CFE_MSG_TelemetryHeader_t *TlmHeader = NULL;
+   EdsDataType_CFE_HDR_TelemetryHeader_t *TlmHeader = NULL;
    int32 SbStatus;
    bool  RetStatus = false;
    
@@ -539,7 +602,7 @@ static bool SendFileTransferTlm(FOTP_FileTransferState_t FileTransferState)
    
    if (TlmHeader != NULL)
    {
-   
+  
       CFE_SB_TimeStampMsg(CFE_MSG_PTR(*TlmHeader));
       SbStatus = CFE_SB_TransmitMsg(CFE_MSG_PTR(*TlmHeader), true);
    
@@ -564,7 +627,7 @@ static bool SendFileTransferTlm(FOTP_FileTransferState_t FileTransferState)
 ** Function: StartTransfer
 **
 ** Notes:
-**   1. All command parameters are validated prior to updating and FOTP state
+**   1. All command parameters are validated prior to updating the FOTP state
 **      data.
 */
 static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferCmd)
@@ -576,11 +639,11 @@ static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferC
    uint16  i;
    uint32  FileByteOffset=0;
    uint16  DataSegmentReadLen;
-   uint8   DataSegment[FOTP_DATA_SEG_MAX_LEN];
+   uint8   DataSegment[EdsParam_FILE_XFER_FOTP_DATA_SEG_MAX_LEN];
    bool    ValidCmdParams = false;
    bool    RetStatus = false;
    
-
+   memset(DataSegment, 0, EdsParam_FILE_XFER_FOTP_DATA_SEG_MAX_LEN);
    CFE_EVS_SendEvent(FOTP_START_TRANSFER_CMD_EID, CFE_EVS_EventType_DEBUG, 
                      "FOTP_StartTransferCmd: %s, DataSegLen %d, DataSegOffset %d",
                      StartTransferCmd->SrcFilename, StartTransferCmd->DataSegLen, StartTransferCmd->DataSegOffset);
@@ -592,8 +655,8 @@ static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferC
       if (FILEUTIL_FILE_EXISTS(FileInfo.State) && FileInfo.State == APP_C_FW_FileState_FILE_CLOSED)
       {
          
-         if ((StartTransferCmd->DataSegLen >= FOTP_DATA_SEG_MIN_LEN) &&
-             (StartTransferCmd->DataSegLen <= FOTP_DATA_SEG_MAX_LEN) )
+         if ((StartTransferCmd->DataSegLen >= EdsParam_FILE_XFER_FOTP_DATA_SEG_MIN_LEN) &&
+             (StartTransferCmd->DataSegLen <= EdsParam_FILE_XFER_FOTP_DATA_SEG_MAX_LEN) )
          {
             FileByteOffset = StartTransferCmd->DataSegLen * StartTransferCmd->DataSegOffset;
             if (FileByteOffset < FileInfo.Size)
@@ -612,7 +675,7 @@ static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferC
          {
             CFE_EVS_SendEvent(FOTP_START_TRANSFER_CMD_ERR_EID, CFE_EVS_EventType_ERROR, 
                               "Start transfer command rejected: Invalid data segement length %d. It must be between %d and %d",
-                              StartTransferCmd->DataSegLen, FOTP_DATA_SEG_MIN_LEN, FOTP_DATA_SEG_MAX_LEN);
+                              StartTransferCmd->DataSegLen, EdsParam_FILE_XFER_FOTP_DATA_SEG_MIN_LEN, EdsParam_FILE_XFER_FOTP_DATA_SEG_MAX_LEN);
          }
          
          if (ValidCmdParams)
@@ -644,7 +707,7 @@ static bool StartTransfer(const FILE_XFER_StartFotp_CmdPayload_t *StartTransferC
                   if (DataSegmentReadLen == Fotp->DataSegmentLen)
                   {
                      Fotp->FileTransferByteCnt += DataSegmentReadLen;
-                     Fotp->FileRunningCrc = CRC_32c(Fotp->FileRunningCrc, DataSegment, DataSegmentReadLen);
+                     Fotp->FileRunningCrc = CRC_32Bitwise((const uint8 *)DataSegment, DataSegmentReadLen, Fotp->FileRunningCrc);
                   }
                   else
                   {

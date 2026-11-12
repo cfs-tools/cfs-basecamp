@@ -16,17 +16,7 @@
 **    Implement the File Transfer application
 **
 **  Notes:
-**    1. See file_xfer_app.h for details.
-**    2. TODO: Add performance monitors
-**    3. TODO: Verify applying the running CRC is equal to a one-time end CRC 
-**    4. TODO: Add event filters
-**    5. TODO: Analyze separating FOTP and FITP into separate telemetry that is only sent during a transfer
-**    6. TODO: Can there be more than one OS_TaskInstallDeleteHandler?
-**    7. TODO: Put limit on failed data segment attempts? 
-**    8. TODO: Replace FOTP loop with telemetry output flow control
-**    9. TODO: Verify Fotp->NextDataSegmentId managed correctly
-**   10. TODO: The SendFileTransferTlm() function is inconsistent with whether
-**       TODO: the caller loads the telemetry packet prior to calling the function.
+**    1. See file_xfer_app.h for details
 **
 */
 
@@ -53,6 +43,7 @@
 /** Local Function Prototypes **/
 /*******************************/
 
+static void TaskDeleteCallback(void);
 static int32 InitApp(void);
 static int32 ProcessCommands(void);
 static void SendHousekeepingPkt(void);
@@ -74,6 +65,7 @@ static CFE_EVS_BinFilter_t  EventFilters[] =
 
    /* Event ID                       Mask                 */
    {FITP_DATA_SEGMENT_CMD_ERR_EID,   CFE_EVS_FIRST_TWO_STOP},
+   {FOTP_SEND_DATA_SEG_NO_SEM_EID,   CFE_EVS_FIRST_TWO_STOP},
    {FOTP_SEND_FILE_TRANSFER_ERR_EID, CFE_EVS_FIRST_TWO_STOP}
 
 };
@@ -195,6 +187,8 @@ static int32 InitApp(void)
       FITP_Constructor(FITP_OBJ);
       FOTP_Constructor(FOTP_OBJ, INITBL_OBJ);
       
+      OS_TaskInstallDeleteHandler(TaskDeleteCallback); /* Called when application terminates */
+
       Status = CFE_SB_CreatePipe(&FileXfer.CmdPipe,
                                  INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_DEPTH),
                                  INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_NAME)); 
@@ -232,20 +226,20 @@ static int32 InitApp(void)
       if (Status == CFE_SUCCESS)
       {         
          CMDMGR_Constructor(CMDMGR_OBJ);
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_NOOP_CC,   NULL, FILE_XFER_NoOpCmd,     0);
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_RESET_CC,  NULL, FILE_XFER_ResetAppCmd, 0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_NOOP_CC,   NULL, FILE_XFER_NoOpCmd,     0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_RESET_CC,  NULL, FILE_XFER_ResetAppCmd, 0);
                                          
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_FITP_CC,        FITP_OBJ, FITP_StartTransferCmd,    sizeof(FILE_XFER_StartFitp_CmdPayload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_BIN_FITP_CC,    FITP_OBJ, FITP_StartBinTransferCmd, sizeof(FILE_XFER_StartFitp_CmdPayload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_FITP_DATA_SEGMENT_CC, FITP_OBJ, FITP_DataSegmentCmd,      sizeof(FILE_XFER_FitpDataSegment_CmdPayload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_FINISH_FITP_CC,       FITP_OBJ, FITP_FinishTransferCmd,   sizeof(FILE_XFER_FinishFitp_CmdPayload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_CANCEL_FITP_CC,       FITP_OBJ, FITP_CancelTransferCmd,   0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_START_FITP_CC,     FITP_OBJ, FITP_StartTransferCmd,    sizeof(FILE_XFER_StartFitp_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_START_BIN_FITP_CC, FITP_OBJ, FITP_StartBinTransferCmd, sizeof(FILE_XFER_StartFitp_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_SEND_FITP_DATA_CC, FITP_OBJ, FITP_ReceiveDataCmd,      sizeof(FILE_XFER_SendFitpData_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_FINISH_FITP_CC,    FITP_OBJ, FITP_FinishTransferCmd,   sizeof(FILE_XFER_FinishFitp_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_CANCEL_FITP_CC,    FITP_OBJ, FITP_CancelTransferCmd,   0);
 
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_FOTP_CC,     FOTP_OBJ, FOTP_StartTransferCmd,    sizeof(FILE_XFER_StartFotp_CmdPayload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_START_BIN_FOTP_CC, FOTP_OBJ, FOTP_StartBinTransferCmd, sizeof(FILE_XFER_StartFotp_CmdPayload_t));
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_CANCEL_FOTP_CC,    FOTP_OBJ, FOTP_CancelTransferCmd,   0);
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_PAUSE_FOTP_CC,     FOTP_OBJ, FOTP_PauseTransferCmd,    0);
-         CMDMGR_RegisterFunc(CMDMGR_OBJ, FILE_XFER_RESUME_FOTP_CC,    FOTP_OBJ, FOTP_ResumeTransferCmd,   0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_START_FOTP_CC,     FOTP_OBJ, FOTP_StartTransferCmd,    sizeof(FILE_XFER_StartFotp_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_START_BIN_FOTP_CC, FOTP_OBJ, FOTP_StartBinTransferCmd, sizeof(FILE_XFER_StartFotp_CmdPayload_t));
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_CANCEL_FOTP_CC,    FOTP_OBJ, FOTP_CancelTransferCmd,   0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_PAUSE_FOTP_CC,     FOTP_OBJ, FOTP_PauseTransferCmd,    0);
+         CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_FILE_XFER_RESUME_FOTP_CC,    FOTP_OBJ, FOTP_ResumeTransferCmd,   0);
 
          CFE_MSG_Init(CFE_MSG_PTR(FileXfer.HkPkt.TlmHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_FILE_XFER_HK_TLM_TOPICID)), sizeof(FILE_XFER_HkPkt_t));
 
@@ -390,3 +384,17 @@ static void SendHousekeepingPkt(void)
 
 } /* End SendHousekeepingPkt() */
 
+
+/******************************************************************************
+** Function: TaskDeleteCallback
+**
+** Notes:
+**   1. Manage app clean for all contained objects.
+*/
+static void TaskDeleteCallback(void)
+{
+   
+   FITP_Destructor();
+   FOTP_Destructor();
+   
+} /* End TaskDeleteCallback() */

@@ -25,7 +25,7 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["file_xfer_ini.json"]
+      "json-tables": ["file_xfer_ini.json"]
    },
    
    "requires": ["app_c_fw"]

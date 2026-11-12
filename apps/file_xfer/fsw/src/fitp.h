@@ -73,67 +73,12 @@
 /** Type Definitions **/
 /**********************/
 
+
 /******************************************************************************
-** Command Packets
+** Command & Telemetry Packets
+** See file_xfer.xml
 */
 
-/* TODO - Delete
-typedef struct
-{
-
-   char    DestFilename[FITP_FILENAME_LEN];
-
-} FITP_StartTransferCmdPayload_t;
-
-typedef struct
-{
-
-   CFE_MSG_CommandHeader_t        CmdHeader;
-   FITP_StartTransferCmdPayload_t Payload;
-
-} FITP_StartTransferCmdMsg_t;
-#define FITP_START_TRANSFER_CMD_DATA_LEN  (sizeof(FITP_StartTransferCmdMsg_t) - sizeof(CFE_MSG_CommandHeader_t))
-
-
-typedef struct
-{
-
-   uint16  Id;
-   uint16  Len;
-   uint8   Data[FITP_DATA_SEG_MAX_LEN];
-
-} FITP_DataSegmentCmdPayload_t;
-
-typedef struct
-{
-
-   CFE_MSG_CommandHeader_t      CmdHeader;
-   FITP_DataSegmentCmdPayload_t Payload;
-
-} FITP_DataSegmentCmdMsg_t;
-#define FITP_DATA_SEGMENT_CMD_DATA_LEN  (sizeof(FITP_DataSegmentCmdMsg_t) - sizeof(CFE_MSG_CommandHeader_t))
-
-
-typedef struct
-{
-
-   uint32  FileLen;
-   uint32  FileCrc;
-   uint16  LastDataSegmentId;
-
-} FITP_FinishTransferCmdPayload_t;
-
-typedef struct
-{
-
-   CFE_MSG_CommandHeader_t         CmdHeader;
-   FITP_FinishTransferCmdPayload_t Payload; 
-
-} FITP_FinishTransferCmdMsg_t;
-#define FITP_FINISH_TRANSFER_CMD_DATA_LEN  (sizeof(FITP_FinishTransferCmdMsg_t) - sizeof(CFE_MSG_CommandHeader_t))
-
-#define FITP_CANCEL_TRANSFER_CMD_DATA_LEN  PKTUTIL_NO_PARAM_CMD_DATA_LEN
-*/
 
 /******************************************************************************
 ** FITP Class
@@ -179,8 +124,6 @@ void FITP_Constructor(FITP_Class_t *FitpPtr);
 /******************************************************************************
 ** Function: FITP_CancelTransferCmd
 **
-** 
-**
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
@@ -188,20 +131,28 @@ bool FITP_CancelTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
-** Function: FITP_DataSegmentCmd
+** Function: FITP_Destructor
 **
-** 
+** This function should be called when the app is terminated. 
+*/
+void FITP_Destructor(void);
+
+
+/******************************************************************************
+** Function: FITP_ReceiveDataCmd
 **
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
+**   2. The function name breaks the object/function naming standard because it
+**      would be confusing. If the naming standard were follwed this function 
+**      name would be FITP_SendDataCmd. From an app perspective the name is
+**      FILE_XFE_SendFitpData which is not confusing.
 */
-bool FITP_DataSegmentCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool FITP_ReceiveDataCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
 ** Function: FITP_FinishTransferCmd
-**
-** 
 **
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
@@ -219,8 +170,6 @@ void FITP_ResetStatus(void);
 /******************************************************************************
 ** Function: FITP_StartBinTransferCmd
 **
-** 
-**
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
 */
@@ -229,8 +178,6 @@ bool FITP_StartBinTransferCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 
 /******************************************************************************
 ** Function: FITP_StartTransferCmd
-**
-** 
 **
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr_t function signature
