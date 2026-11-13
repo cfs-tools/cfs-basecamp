@@ -39,11 +39,11 @@
 ** Events
 */
 
-#define @TEMPLATE@_INIT_APP_EID    (@TEMPLATE@_BASE_EID + 0)
-#define @TEMPLATE@_NOOP_EID        (@TEMPLATE@_BASE_EID + 1)
-#define @TEMPLATE@_EXIT_EID        (@TEMPLATE@_BASE_EID + 2)
-#define @TEMPLATE@_INVALID_MID_EID (@TEMPLATE@_BASE_EID + 3)
-#define @TEMPLATE@_SET_PARAM_EID   (@TEMPLATE@_BASE_EID + 4)
+#define @TEMPLATE@_INIT_APP_EID      (@TEMPLATE@_BASE_EID + 0)
+#define @TEMPLATE@_NOOP_EID          (@TEMPLATE@_BASE_EID + 1)
+#define @TEMPLATE@_EXIT_EID          (@TEMPLATE@_BASE_EID + 2)
+#define @TEMPLATE@_INVALID_MID_EID   (@TEMPLATE@_BASE_EID + 3)
+#define @TEMPLATE@_EXAMPLE_PARAM_EID (@TEMPLATE@_BASE_EID + 4)
 
 
 /**********************/
@@ -92,7 +92,7 @@ typedef struct
    ** @TEMPLATE@ State & Contained Objects
    */ 
    
-   uint16           SetParamCmdVal;   
+   uint16           ExampleParamCmdVal;   
    uint32           PerfId;
    CFE_SB_PipeId_t  CmdPipe;
    CFE_SB_MsgId_t   CmdMid;
@@ -122,6 +122,13 @@ void @TEMPLATE@_AppMain(void);
 
 
 /******************************************************************************
+** Function: @TEMPLATE@_ExampleParamCmd
+**
+*/
+bool @TEMPLATE@_ExampleParamCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+
+
+/******************************************************************************
 ** Function: @TEMPLATE@_NoOpCmd
 **
 */
@@ -134,14 +141,6 @@ bool @TEMPLATE@_NoOpCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 **
 */
 bool @TEMPLATE@_ResetAppCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
-
-
-
-/******************************************************************************
-** Function: @TEMPLATE@_SetParam
-**
-*/
-bool @TEMPLATE@_SetParamCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 #endif /* _@template@_ */

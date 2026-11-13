@@ -39,7 +39,7 @@
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
 
-      <ContainerDataType name="SetParam_CmdPayload" shortDescription="Example command payload">
+      <ContainerDataType name="ExampleParam_CmdPayload" shortDescription="Example command payload">
         <EntryList>
           <Entry name="Param" type="BASE_TYPES/uint16" shortDescription="" />
        </EntryList>
@@ -77,12 +77,12 @@
         </ConstraintSet>
       </ContainerDataType>
 
-      <ContainerDataType name="SetParam" baseType="CommandBase" shortDescription="">
+      <ContainerDataType name="ExampleParam" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SetParam_CmdPayload" name="Payload" />
+          <Entry type="ExampleParam_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
       <!-- EX2 -->

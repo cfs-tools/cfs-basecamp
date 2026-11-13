@@ -53,7 +53,7 @@
         <EntryList>
           <Entry name="ValidCmdCnt"         type="BASE_TYPES/uint16" />
           <Entry name="InvalidCmdCnt"       type="BASE_TYPES/uint16" />
-          <Entry name="SetParamCmdVal"      type="BASE_TYPES/uint16" />
+          <Entry name="ExampleParamCmdVal"  type="BASE_TYPES/uint16" />
         </EntryList>
       </ContainerDataType>
       <!-- EX1 -->
@@ -77,12 +77,12 @@
         </ConstraintSet>
       </ContainerDataType>
 
-      <ContainerDataType name="SetParam" baseType="CommandBase" shortDescription="">
+      <ContainerDataType name="ExampleParam" baseType="CommandBase" shortDescription="">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="SetParam_CmdPayload" name="Payload" />
+          <Entry type="ExampleParam_CmdPayload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 

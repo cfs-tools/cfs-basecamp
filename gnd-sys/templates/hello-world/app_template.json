@@ -1,6 +1,6 @@
 {
    "title": "Hello World",
-   "version": "1.0",
+   "version": "4.0",
    "short-descr": "Minimal Basecamp style app with command and telemetry interfaces",
    "default-app-name": "hi_world",
    "description": [

@@ -42,9 +42,10 @@
 ** Versions
 **
 ** 1.0 - Initial version, compatible with cFE Caelum
+** 4.0 - Compatible with Basecamp 4.0(cFS 7.0.1)
 */
 
-#define  @TEMPLATE@_MAJOR_VER   1
+#define  @TEMPLATE@_MAJOR_VER   4
 #define  @TEMPLATE@_MINOR_VER   0
 
 
@@ -126,9 +127,9 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define @TEMPLATE@_BASE_EID  (APP_C_FW_APP_BASE_EID +  0)
-#define EXOBJ_BASE_EID       (APP_C_FW_APP_BASE_EID + 20)
-#define EXOBJTBL_BASE_EID    (APP_C_FW_APP_BASE_EID + 40)
+#define @TEMPLATE@_BASE_EID  (EdsParam_APP_C_FW_APP_BASE_EID +  0)
+#define EXOBJ_BASE_EID       (EdsParam_APP_C_FW_APP_BASE_EID + 20)
+#define EXOBJTBL_BASE_EID    (EdsParam_APP_C_FW_APP_BASE_EID + 40)
 
 
 /******************************************************************************

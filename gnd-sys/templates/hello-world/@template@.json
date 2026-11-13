@@ -1,7 +1,7 @@
 { "app": {
    
    "title": "@TEMPLATE@",
-   "version": "1.0.0",
+   "version": "4.0.0",
    "supplier": "bitValence",
    "url": "",
 
@@ -19,7 +19,7 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "osk",
-      "tables": ["hi_world_ini.json"]
+      "json-tables": ["hi_world_ini.json"]
    },
 
    "requires": ["app_c_fw"]

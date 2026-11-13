@@ -174,8 +174,8 @@ static int32 InitApp(void)
       CFE_SB_Subscribe(@Template@.SendStatusMid, @Template@.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_NOOP_CC,  NULL, @TEMPLATE@_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_RESET_CC, NULL, @TEMPLATE@_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_NOOP_CC,  NULL, @TEMPLATE@_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_RESET_CC, NULL, @TEMPLATE@_ResetAppCmd, 0);
       
       /*
       ** Initialize app messages 

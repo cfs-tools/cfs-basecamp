@@ -101,6 +101,33 @@ void @TEMPLATE@_AppMain(void)
 
 } /* End of @TEMPLATE@_AppMain() */
 
+//EX1,19,1,
+/******************************************************************************
+** Function: @TEMPLATE@_ExampleParamCmd
+**
+** Notes:
+**   1. @TEMPLATE@_ExampleParamCmd_Payload_t and @TEMPLATE@_ExampleParamCmd_t
+**      are generated from the EDS file @template@.xml
+**   2. CMDMGR_PAYLOAD_PTR is a macro defined by app_c_fw's cmdmgr component
+**      that returns a pointer to the payload structure and it inforces the
+**      the 'Payload' naming convention. 
+*/
+bool @TEMPLATE@_ExampleParamCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+{
+   const @TEMPLATE@_ExampleParam_CmdPayload_t *CmdPayload = CMDMGR_PAYLOAD_PTR(MsgPtr, @TEMPLATE@_ExampleParam_t);
+   
+   CFE_EVS_SendEvent (@TEMPLATE@_EXAMPLE_PARAM_EID, CFE_EVS_EventType_INFORMATION,
+                      "Example parameter commmand received a parameter value %d",
+                      CmdPayload->Param);
+
+   @Template@.ExampleParamCmdVal = CmdPayload->Param;
+   
+   return true;
+
+
+} /* End @TEMPLATE@_ExampleParamCmd() */
+//EX1
+
 
 /******************************************************************************
 ** Function: @TEMPLATE@_NoOpCmd
@@ -135,33 +162,6 @@ bool @TEMPLATE@_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    return true;
 
 } /* End @TEMPLATE@_ResetAppCmd() */
-
-//EX1,19,1,
-/******************************************************************************
-** Function: @TEMPLATE@_SetParamCmd
-**
-** Notes:
-**   1. @TEMPLATE@_SetParamCmd_Payload_t and @TEMPLATE@_SetParamCmd_t
-**      are generated from the EDS file @template@.xml
-**   2. CMDMGR_PAYLOAD_PTR is a macro defined by app_c_fw's cmdmgr component
-**      that returns a pointer to the payload structure and it inforces the
-**      the 'Payload' naming convention. 
-*/
-bool @TEMPLATE@_SetParamCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
-{
-   const @TEMPLATE@_SetParam_CmdPayload_t *CmdPayload = CMDMGR_PAYLOAD_PTR(MsgPtr, @TEMPLATE@_SetParam_t);
-   
-   CFE_EVS_SendEvent (@TEMPLATE@_SET_PARAM_EID, CFE_EVS_EventType_INFORMATION,
-                      "Set Parameter commmand received a parameter value %d",
-                      CmdPayload->Param);
-
-   @Template@.SetParamCmdVal = CmdPayload->Param;
-   
-   return true;
-
-
-} /* End @TEMPLATE@_SetParamCmd() */
-//EX1
 
 
 /******************************************************************************
@@ -201,9 +201,9 @@ static int32 InitApp(void)
       CFE_SB_Subscribe(@Template@.SendStatusMid, @Template@.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_NOOP_CC,      NULL, @TEMPLATE@_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_RESET_CC,     NULL, @TEMPLATE@_ResetAppCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_SET_PARAM_CC, NULL, @TEMPLATE@_SetParamCmd, sizeof(@TEMPLATE@_SetParam_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_NOOP_CC,          NULL, @TEMPLATE@_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_RESET_CC,         NULL, @TEMPLATE@_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_EXAMPLE_PARAM_CC, NULL, @TEMPLATE@_ExampleParamCmd, sizeof(@TEMPLATE@_ExampleParam_CmdPayload_t));
       
       /*
       ** Initialize app messages 
@@ -298,7 +298,7 @@ static void SendStatusTlm(void)
    Payload->ValidCmdCnt   = @Template@.CmdMgr.ValidCmdCnt;
    Payload->InvalidCmdCnt = @Template@.CmdMgr.InvalidCmdCnt;
    
-   Payload->SetParamCmdVal = @Template@.SetParamCmdVal;
+   Payload->ExampleParamCmdVal = @Template@.ExampleParamCmdVal;
       
    CFE_SB_TimeStampMsg(CFE_MSG_PTR(@Template@.StatusTlm.TelemetryHeader));
    CFE_SB_TransmitMsg(CFE_MSG_PTR(@Template@.StatusTlm.TelemetryHeader), true);

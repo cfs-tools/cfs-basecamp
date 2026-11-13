@@ -45,8 +45,8 @@
     
       <ContainerDataType name="StatusTlm_Payload" shortDescription="App's state and status summary, Historically known as 'housekeeping data'">
         <EntryList>
-          <Entry name="ValidCmdCnt"         type="BASE_TYPES/uint16" />
-          <Entry name="InvalidCmdCnt"       type="BASE_TYPES/uint16" />
+          <Entry name="ValidCmdCnt"     type="BASE_TYPES/uint16" />
+          <Entry name="InvalidCmdCnt"   type="BASE_TYPES/uint16" />
         </EntryList>
       </ContainerDataType>
       

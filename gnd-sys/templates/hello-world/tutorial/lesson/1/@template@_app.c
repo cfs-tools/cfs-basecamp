@@ -66,7 +66,7 @@ DEFINE_ENUM(Config,APP_CONFIG)
 
 @TEMPLATE@_Class_t  @Template@;
 
-
+//EX1,36,
 /******************************************************************************
 ** Function: @TEMPLATE@_AppMain
 **
@@ -103,6 +103,31 @@ void @TEMPLATE@_AppMain(void)
 
 
 /******************************************************************************
+** Function: @TEMPLATE@_ExampleParamCmd
+**
+** Notes:
+**   1. @TEMPLATE@_ExampleParamCmd_Payload_t and @TEMPLATE@_ExampleParamCmd_t
+**      are generated from the EDS file @template@.xml
+**   2. CMDMGR_PAYLOAD_PTR is a macro defined by app_c_fw's cmdmgr component
+**      that returns a pointer to the payload structure and it inforces the
+**      the 'Payload' naming convention. 
+*/
+bool @TEMPLATE@_ExampleParamCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+{
+   const @TEMPLATE@_ExampleParam_CmdPayload_t *CmdPayload = CMDMGR_PAYLOAD_PTR(MsgPtr, @TEMPLATE@_ExampleParam_t);
+   
+   CFE_EVS_SendEvent (@TEMPLATE@_EXAMPLE_PARAM_EID, CFE_EVS_EventType_INFORMATION,
+                      "Example parameter commmand received a parameter value %d",
+                      CmdPayload->Param);
+
+   return true;
+
+
+} /* End @TEMPLATE@_ExampleParamCmd() */
+//EX1
+
+
+/******************************************************************************
 ** Function: @TEMPLATE@_NoOpCmd
 **
 */
@@ -119,7 +144,6 @@ bool @TEMPLATE@_NoOpCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 } /* End @TEMPLATE@_NoOpCmd() */
 
 
-//EX1,18,
 /******************************************************************************
 ** Function: @TEMPLATE@_ResetAppCmd
 **
@@ -136,30 +160,6 @@ bool @TEMPLATE@_ResetAppCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
    return true;
 
 } /* End @TEMPLATE@_ResetAppCmd() */
-
-/******************************************************************************
-** Function: @TEMPLATE@_SetParamCmd
-**
-** Notes:
-**   1. @TEMPLATE@_SetParamCmd_Payload_t and @TEMPLATE@_SetParamCmd_t
-**      are generated from the EDS file @template@.xml
-**   2. CMDMGR_PAYLOAD_PTR is a macro defined by app_c_fw's cmdmgr component
-**      that returns a pointer to the payload structure and it inforces the
-**      the 'Payload' naming convention. 
-*/
-bool @TEMPLATE@_SetParamCmd(void* ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
-{
-   const @TEMPLATE@_SetParam_CmdPayload_t *CmdPayload = CMDMGR_PAYLOAD_PTR(MsgPtr, @TEMPLATE@_SetParam_t);
-   
-   CFE_EVS_SendEvent (@TEMPLATE@_SET_PARAM_EID, CFE_EVS_EventType_INFORMATION,
-                      "Set Parameter commmand received a parameter value %d",
-                      CmdPayload->Param);
-
-   return true;
-
-
-} /* End @TEMPLATE@_SetParamCmd() */
-//EX1
 
 
 /******************************************************************************
@@ -200,9 +200,9 @@ static int32 InitApp(void)
 
       //EX2,4,
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_NOOP_CC,      NULL, @TEMPLATE@_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_RESET_CC,     NULL, @TEMPLATE@_ResetAppCmd, 0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_SET_PARAM_CC, NULL, @TEMPLATE@_SetParamCmd, sizeof(@TEMPLATE@_SetParam_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_NOOP_CC,          NULL, @TEMPLATE@_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_RESET_CC,         NULL, @TEMPLATE@_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_EXAMPLE_PARAM_CC, NULL, @TEMPLATE@_ExampleParamCmd, sizeof(@TEMPLATE@_ExampleParam_CmdPayload_t));
       //EX2
       
       /*
