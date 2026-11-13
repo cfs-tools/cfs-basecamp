@@ -24,27 +24,26 @@
     as prescribed in CCSDS book 876.0.
 
     Purpose:
-      This describes all interface objects for the Hello Table app
+      This describes all interface objects for the Executive Services (CFE_ES)
+      core application
 
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
-  <Package name="@TEMPLATE@" shortDescription="Hello Table Application Package">
+  <Package name="@TEMPLATE@" shortDescription="Sample Application Package">
 
     <DataTypeSet>
 
-      <StringDataType name="ExampleString" length="${SAMPLE_APP/STRING_VAL_LEN}" />
-      
-      <ContainerDataType name="ExampleParamCmd_Payload" shortDescription="Payload for the example command with a parameter">
+      <ContainerDataType name="ExampleParam_Payload" shortDescription="Example Command with a payload/argument">
         <EntryList>
-          <Entry name="Param" type="BASE_TYPES/uint16" shortDescription="" />
-       </EntryList>
+          <Entry name="ValI16" type="BASE_TYPES/int16" shortDescription="16 bit signed integer value" />
+        </EntryList>
       </ContainerDataType>
-      
+
       <ContainerDataType name="HkTlm_Payload" shortDescription="Sample App Housekeeping Content">
         <EntryList>
-          <Entry name="CommandCounter" type="BASE_TYPES/uint8" />
+          <Entry name="CommandCounter"      type="BASE_TYPES/uint8" />
           <Entry name="CommandErrorCounter" type="BASE_TYPES/uint8" />
-          <Entry name="ExampleParamCmdVal" type="BASE_TYPES/uint16" />
+          <Entry name="ExampleCmdParam"     type="BASE_TYPES/int16" shortDescription="Example command parameter" />          
         </EntryList>
       </ContainerDataType>
 
@@ -75,22 +74,22 @@
       <ContainerDataType name="ExampleParamCmd" baseType="CommandBase">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="2" />
-          <EntryList>
-            <Entry type="ExampleParamCmd_Payload" name="Payload" />
-          </EntryList> 
         </ConstraintSet>
+        <EntryList>
+          <Entry type="ExampleParam_Payload" name="Payload" />
+        </EntryList>
       </ContainerDataType>
-      
-      <!-- EX1,9, -->
-      <!-- Note the type name here must be "ExampleTable" to match the C table definition file -->
-      <ContainerDataType name="ExampleTable" shortDescription="Example Table structure">
+      <!-- EX1,10,13, -->
+      <!-- Note the type name here must be "ExampleTable" to match the C table definition file,
+           but the source code uses the type "ExampleTable" -->
+      <ContainerDataType name="ExampleTable" shortDescription="Example ExampleTable structure">
         <EntryList>
           <Entry name="Int1" type="BASE_TYPES/uint16" />
           <Entry name="Int2" type="BASE_TYPES/uint16" />
         </EntryList>
       </ContainerDataType>
-
-      <ContainerDataType name="TblFile_Payload" shortDescription="Proxy telemetry payload">
+      
+      <ContainerDataType name="TblFile_Payload" shortDescription="BC: Table proxy telemetry payload">
         <EntryList>
           <Entry name="FileHdr" type="CFE_FS/Header"    shortDescription="cFE standard file header" />
           <Entry name="TblHdr"  type="CFE_TBL/File_Hdr" shortDescription="cFE standard table header" />
@@ -98,18 +97,21 @@
         </EntryList>
       </ContainerDataType>
       
-      <ContainerDataType name="TblFile" baseType="CFE_HDR/TelemetryHeader">
+      <ContainerDataType name="TblFile" baseType="CFE_HDR/TelemetryHeader" shortDescription="BC: Table proxy telemetry payload">
         <EntryList>
           <Entry type="TblFile_Payload" name="Payload" shortDescription="TblFile_Payload"/>
         </EntryList>
-      </ContainerDataType>
-      <!-- EX1 -->
-      
+      </ContainerDataType>      
     </DataTypeSet>
-
+    <!-- EX1 -->
     <ComponentSet>
       <Component name="Application">
         <RequiredInterfaceSet>
+          <Interface name="ExampleTable" shortDescription="Table interface" type="CFE_TBL/Table">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TableDataType" type="ExampleTable" />
+            </GenericTypeMapSet>
+          </Interface>
           <Interface name="CMD" shortDescription="Software bus telecommand interface" type="CFE_SB/Telecommand">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelecommandDataType" type="CommandBase" />
@@ -121,36 +123,36 @@
               <GenericTypeMap name="TelecommandDataType" type="SendHkCmd" />
             </GenericTypeMapSet>
           </Interface>
-          <!-- EX2,6, -->
+          <!-- EX2,6,5, -->
           <Interface name="HK_TLM" shortDescription="Software bus housekeeping telemetry interface" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
             </GenericTypeMapSet>
           </Interface>
-          <Interface name="TBL_FILE" shortDescription="Proxy telemetry for File System Table File" type="CFE_SB/Telemetry">
+          <Interface name="TBL_PROXY_TLM" shortDescription="BC: Proxy telemetry for Example Table File" type="CFE_SB/Telemetry">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelemetryDataType" type="TblFile" />
             </GenericTypeMapSet>
-          </Interface>
-          <!-- EX2 -->
+          </Interface>          
         </RequiredInterfaceSet>
-      <!-- EX3,6,8, -->
+        <!-- EX2 -->        
+        <!-- EX3,6,8, -->
         <Implementation>
           <VariableSet>
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"     initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId"  initialValue="${CFE_MISSION/@TEMPLATE@_SEND_HK_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"   initialValue="${CFE_MISSION/@TEMPLATE@_HK_TLM_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="TblFileTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_TBL_FILE_TOPICID}" />
-         </VariableSet>
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_SEND_HK_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_HK_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="TblProxyTlmTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_TBL_PROXY_TLM_TOPICID}" shortDescription="BC: Table proxy telemetry"/>
+          </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>
-            <ParameterMap interface="CMD"      parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="SEND_HK"  parameter="TopicId" variableRef="SendHkTopicId" />
-            <ParameterMap interface="HK_TLM"   parameter="TopicId" variableRef="HkTlmTopicId" />
-            <ParameterMap interface="TBL_FILE" parameter="TopicId" variableRef="TblFileTopicId" />
+            <ParameterMap interface="CMD" parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="SEND_HK" parameter="TopicId" variableRef="SendHkTopicId" />
+            <ParameterMap interface="HK_TLM" parameter="TopicId" variableRef="HkTlmTopicId" />
+            <ParameterMap interface="TBL_PROXY_TLM" parameter="TopicId" variableRef="TblProxyTlmTopicId" shortDescription="BC: Table proxy telemetry"/>
           </ParameterMapSet>
         </Implementation>
-      <!-- EX3 -->
+        <!-- EX3 -->
       </Component>
     </ComponentSet>
 

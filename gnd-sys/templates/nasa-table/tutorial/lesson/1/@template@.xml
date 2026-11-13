@@ -24,27 +24,26 @@
     as prescribed in CCSDS book 876.0.
 
     Purpose:
-      This describes all interface objects for the Hello Table app
+      This describes all interface objects for the Executive Services (CFE_ES)
+      core application
 
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
-  <Package name="@TEMPLATE@" shortDescription="Hello Table Application Package">
+  <Package name="@TEMPLATE@" shortDescription="Sample Application Package">
 
     <DataTypeSet>
 
-      <StringDataType name="ExampleString" length="${SAMPLE_APP/STRING_VAL_LEN}" />
-      
-      <ContainerDataType name="ExampleParamCmd_Payload" shortDescription="Payload for the example command with a parameter">
+      <ContainerDataType name="ExampleParam_Payload" shortDescription="Example Command with a payload/argument">
         <EntryList>
-          <Entry name="Param" type="BASE_TYPES/uint16" shortDescription="" />
-       </EntryList>
+          <Entry name="ValI16" type="BASE_TYPES/int16" shortDescription="16 bit signed integer value" />
+        </EntryList>
       </ContainerDataType>
-      
+
       <ContainerDataType name="HkTlm_Payload" shortDescription="Sample App Housekeeping Content">
         <EntryList>
-          <Entry name="CommandCounter" type="BASE_TYPES/uint8" />
+          <Entry name="CommandCounter"      type="BASE_TYPES/uint8" />
           <Entry name="CommandErrorCounter" type="BASE_TYPES/uint8" />
-          <Entry name="ExampleParamCmdVal" type="BASE_TYPES/uint16" />
+          <Entry name="ExampleCmdParam"     type="BASE_TYPES/int16" shortDescription="Example command parameter" />          
         </EntryList>
       </ContainerDataType>
 
@@ -71,36 +70,42 @@
           <ValueConstraint entry="Sec.FunctionCode" value="1" />
         </ConstraintSet>
       </ContainerDataType>
-
       <!-- EX1,10, -->
       <ContainerDataType name="ExampleParamCmd" baseType="CommandBase">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="2" />
-          <EntryList>
-            <Entry type="ExampleParamCmd_Payload" name="Payload" />
-          </EntryList> 
         </ConstraintSet>
+        <EntryList>
+          <Entry type="ExampleParam_Payload" name="Payload" />
+        </EntryList>
       </ContainerDataType>
-      
-      <!-- Note the type name here must be "ExampleTable" to match the C table definition file -->
-      <ContainerDataType name="ExampleTable" shortDescription="Example Table structure">
+
+      <!-- Note the type name here must be "ExampleTable" to match the C table definition file,
+           but the source code uses the type "ExampleTable" -->
+      <ContainerDataType name="ExampleTable" shortDescription="Example ExampleTable structure">
         <EntryList>
           <Entry name="Int1" type="BASE_TYPES/uint16" />
           <Entry name="Int2" type="BASE_TYPES/uint16" />
         </EntryList>
       </ContainerDataType>
-      <!-- EX1 -->
-      
+     <!-- EX1 -->
     </DataTypeSet>
 
     <ComponentSet>
       <Component name="Application">
+        <!-- EX2,2,5, -->
         <RequiredInterfaceSet>
+          <Interface name="ExampleTable" shortDescription="Table interface" type="CFE_TBL/Table">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TableDataType" type="ExampleTable" />
+            </GenericTypeMapSet>
+          </Interface>
           <Interface name="CMD" shortDescription="Software bus telecommand interface" type="CFE_SB/Telecommand">
             <GenericTypeMapSet>
               <GenericTypeMap name="TelecommandDataType" type="CommandBase" />
             </GenericTypeMapSet>
           </Interface>
+          <!-- EX2 -->        
           <Interface name="SEND_HK" shortDescription="Send telemetry command interface" type="CFE_SB/Telecommand">
             <!-- This uses a bare spacepacket with no payload -->
             <GenericTypeMapSet>
@@ -112,19 +117,18 @@
               <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
             </GenericTypeMapSet>
           </Interface>
-
-        </RequiredInterfaceSet>
+        </RequiredInterfaceSet>    
         <Implementation>
           <VariableSet>
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"     initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId"  initialValue="${CFE_MISSION/@TEMPLATE@_SEND_HK_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"   initialValue="${CFE_MISSION/@TEMPLATE@_HK_TLM_TOPICID}" />
-         </VariableSet>
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_SEND_HK_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_HK_TLM_TOPICID}" />
+          </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>
-            <ParameterMap interface="CMD"      parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="SEND_HK"  parameter="TopicId" variableRef="SendHkTopicId" />
-            <ParameterMap interface="HK_TLM"   parameter="TopicId" variableRef="HkTlmTopicId" />
+            <ParameterMap interface="CMD" parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="SEND_HK" parameter="TopicId" variableRef="SendHkTopicId" />
+            <ParameterMap interface="HK_TLM" parameter="TopicId" variableRef="HkTlmTopicId" />
           </ParameterMapSet>
         </Implementation>
       </Component>

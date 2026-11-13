@@ -1,17 +1,7 @@
-/*
-** Basecamp Notes:
-**   1. This file is replaced by code generated from the EDS file
-**         @template@.xml 
-**   2. The app includes the EDS generated header files
-**         @template@_eds_cc.h
-**         @template@_eds_typedefs.h
-**
-*/
-
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -28,28 +18,25 @@
 
 /**
  * @file
+ *   Specification for the @TEMPLATE@ command and telemetry
+ *   message data types.
  *
- * Define SAMPLE App  Messages and info
+ * @note
+ *   Constants and enumerated types related to these message structures
+ *   are defined in @TEMPLATE@_msgdefs.h.
  */
+#ifndef DEFAULT_@TEMPLATE@_MSGSTRUCT_H
+#define DEFAULT_@TEMPLATE@_MSGSTRUCT_H
 
-#ifndef @TEMPLATE@_MSG_H
-#define @TEMPLATE@_MSG_H
+/************************************************************************
+ * Includes
+ ************************************************************************/
 
-/*
-** @TEMPLATE@ command codes
-*/
-#define @TEMPLATE@_NOOP_CC           0
-#define @TEMPLATE@_RESET_COUNTERS_CC 1
+#include "@template@_mission_cfg.h"
+#include "@template@_msgdefs.h"
+#include "cfe_msg_hdr.h"
 
 /*************************************************************************/
-
-/*
-** Type definition (generic "no arguments" command)
-*/
-typedef struct
-{
-    CFE_MSG_CommandHeader_t CmdHeader; /**< \brief Command header */
-} @TEMPLATE@_NoArgsCmd_t;
 
 /*
 ** The following commands all share the "NoArgs" format
@@ -58,20 +45,31 @@ typedef struct
 ** allows them to change independently in the future without changing the prototype
 ** of the handler function
 */
-typedef @TEMPLATE@_NoArgsCmd_t @TEMPLATE@_NoopCmd_t;
-typedef @TEMPLATE@_NoArgsCmd_t @TEMPLATE@_ResetCountersCmd_t;
+typedef struct
+{
+    CFE_MSG_CommandHeader_t CommandHeader; /**< \brief Command header */
+} @TEMPLATE@_NoopCmd_t;
+
+typedef struct
+{
+    CFE_MSG_CommandHeader_t CommandHeader; /**< \brief Command header */
+} @TEMPLATE@_ResetCountersCmd_t;
+
+typedef struct
+{
+    CFE_MSG_CommandHeader_t           CommandHeader; /**< \brief Command header */
+    @TEMPLATE@_ExampleParam_Payload_t Payload;
+} @TEMPLATE@_ExampleParamCmd_t;
 
 /*************************************************************************/
 /*
-** Type definition (SAMPLE App housekeeping)
+** Type definition (@TEMPLATE@ App housekeeping)
 */
 
 typedef struct
 {
-    uint8 CommandCounter;
-    uint8 CommandErrorCounter;
-    uint8 spare[2];
-} @TEMPLATE@_HkTlm_Payload_t;
+    CFE_MSG_CommandHeader_t CommandHeader; /**< \brief Command header */
+} @TEMPLATE@_SendHkCmd_t;
 
 typedef struct
 {
@@ -79,4 +77,4 @@ typedef struct
     @TEMPLATE@_HkTlm_Payload_t Payload;         /**< \brief Telemetry payload */
 } @TEMPLATE@_HkTlm_t;
 
-#endif /* @TEMPLATE@_MSG_H */
+#endif /* @TEMPLATE@_MSGSTRUCT_H */

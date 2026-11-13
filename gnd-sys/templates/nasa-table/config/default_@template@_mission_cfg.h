@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -19,12 +19,18 @@
 /**
  * @file
  *
- * Define Sample App Performance IDs
+ * @TEMPLATE@ Application Mission Configuration Header File
+ *
+ * This is a compatibility header for the "mission_cfg.h" file that has
+ * traditionally provided public config definitions for each CFS app.
+ *
+ * @note This file may be overridden/superceded by mission-provided definitions
+ * either by overriding this header or by generating definitions from a command/data
+ * dictionary tool.
  */
+#ifndef DEFAULT_@TEMPLATE@_MISSION_CFG_H
+#define DEFAULT_@TEMPLATE@_MISSION_CFG_H
 
-#ifndef @TEMPLATE@_PERFIDS_H
-#define @TEMPLATE@_PERFIDS_H
+#include "@template@_interface_cfg.h"
 
-#define @TEMPLATE@_PERF_ID 91
-
-#endif /* @TEMPLATE@_PERFIDS_H */
+#endif

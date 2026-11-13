@@ -1,6 +1,6 @@
 {
    "title": "NASA Table",
-   "version": "1.0",
+   "version": "4.0",
    "short-descr": "Add a table to the NASA World app",
    "default-app-name": "nasa_table",
    "description": [
@@ -14,27 +14,27 @@
    "dir": [
       {
          "path": "",
-         "files": ["CMakeLists.txt", "@template@.json"]
-      },
+         "files": ["@template@.json", "CMakeLists.txt", "arch_build.cmake", "mission_build.cmake"]
+      },      
       {
-         "path": "fsw/mission_inc",
-         "files": ["@template@_perfids.h"]
-      },
-      {
-         "path": "fsw/platform_inc",
-         "files": ["@template@_msgids.h", "@template@_table.h"]
-      },
-      {
-         "path": "fsw/src",
-         "files": ["@template@_app.c", "@template@_app.h", "@template@_events.h", "@template@_msg.h", "@template@_version.h"]
-      },
-      {
-         "path": "fsw/tables",
-         "files": ["@template@_tbl.c"]
+         "path": "config",
+         "files": ["default_@template@_fcncode_values.h","default_@template@_interface_cfg_values.h","default_@template@_internal_cfg_values.h","default_@template@_mission_cfg.h","default_@template@_msg.h","default_@template@_msgdefs.h","default_@template@_msgid_values.h","default_@template@_msgids.h","default_@template@_msgstruct.h","default_@template@_perfids.h","default_@template@_platform_cfg.h","default_@template@_tbl.h","default_@template@_tbldefs.h","default_@template@_tblstruct.h","default_@template@_topicid_values.h","eds_@template@_fcncode_values.h","eds_@template@_interface_cfg_values.h","eds_@template@_msgdefs.h","eds_@template@_msgstruct.h","eds_@template@_tbldefs.h","eds_@template@_topicid_values.h"]
       },
       {
          "path": "eds",
          "files": ["@template@.xml"]
+      },
+      {
+         "path": "fsw/inc",
+         "files": ["@template@_eventids.h","@template@_fcncodes.h","@template@_interface_cfg.h","@template@_internal_cfg.h","@template@_topicids.h"]
+      },
+      {
+         "path": "fsw/src",
+         "files": ["@template@_app.c","@template@_app.h","@template@_cmds.c","@template@_cmds.h","@template@_dispatch.c","@template@_dispatch.h","@template@_eds_dispatch.c","@template@_utils.c","@template@_utils.h","@template@_version.h"]
+      },
+      {
+         "path": "fsw/tables",
+         "files": ["@template@_tbl.c"]
       },
       {
          "path": "tutorial",
@@ -46,11 +46,11 @@
       },
       {
          "path": "tutorial/lesson/1",
-         "files": ["lesson.json", "CMakeLists.txt", "@template@.xml", "@template@_table.h", "@template@_tbl.c", "@template@_app.h", "@template@_app.c"]
+         "files": ["lesson.json", "CMakeLists.txt", "@template@.xml", "@template@_internal_cfg.h", "default_@template@_tbldefs.h", "@template@_tbl.c", "@template@_app.h", "@template@_app.c", "@template@_cmds.c"]
       },
       {
          "path": "tutorial/lesson/2",
-         "files": ["lesson.json", "@template@_table.h", "@template@_events.h", "@template@_app.c"]
+         "files": ["lesson.json", "@template@_app.c", "@template@_cmds.c", "@template@_internal_cfg.h", "@template@_utils.h", "@template@_utils.c"]
       },
       {
          "path": "tutorial/lesson/3",
@@ -58,3 +58,4 @@
       }
    ]
 }
+

@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -19,7 +19,7 @@
 /**
  * @file
  *
- * Main header file for the SAMPLE application
+ * Main header file for the NASA_WORL application
  */
 
 #ifndef @TEMPLATE@_H
@@ -29,20 +29,14 @@
 ** Required header files.
 */
 #include "cfe.h"
-#include "cfe_error.h"
-#include "cfe_evs.h"
-#include "cfe_sb.h"
-#include "cfe_es.h"
+#include "cfe_config.h"
+
+#include "@template@_mission_cfg.h"
+#include "@template@_platform_cfg.h"
 
 #include "@template@_perfids.h"
 #include "@template@_msgids.h"
-// Replaced by EDS: #include "@template@_msg.h"
-#include "@template@_eds_cc.h"
-#include "@template@_eds_typedefs.h"
-
-/***********************************************************************/
-#define @TEMPLATE@_PIPE_DEPTH 32 /* Depth of the Command Pipe for Application */
-
+#include "@template@_msg.h"
 
 /************************************************************************
 ** Type Definitions
@@ -56,14 +50,9 @@ typedef struct
     /*
     ** Command interface counters...
     */
-    uint8 CmdCounter;
-    uint8 ErrCounter;
-    
-    /*
-    ** Example Param Command Data
-    */
-    uint16 ExampleParamCmdVal;
-    
+    uint8 CommandCounter;
+    uint8 CommandErrorCounter;
+
     /*
     ** Housekeeping telemetry packet...
     */
@@ -74,26 +63,21 @@ typedef struct
     */
     uint32 RunStatus;
 
+    //EX1,6,1,
     /*
     ** Operational data (not reported in housekeeping)...
     */
     CFE_SB_PipeId_t CommandPipe;
 
-//EX1,7,5,
-    /*
-    ** Initialization data (not reported in housekeeping)...
-    */
-    char   PipeName[CFE_MISSION_MAX_API_LEN];
-    uint16 PipeDepth;
-
-    /*
-    ** Table Management
-    */
-    
     CFE_TBL_Handle_t TblHandle;
     
 } @TEMPLATE@_Data_t;
 //EX1
+
+/*
+** Global data structure
+*/
+extern @TEMPLATE@_Data_t @TEMPLATE@_Data;
 
 /****************************************************************************/
 /*
@@ -102,15 +86,7 @@ typedef struct
 ** Note: Except for the entry point (@TEMPLATE@_Main), these
 **       functions are not called from any other source module.
 */
-void  @TEMPLATE@_AppMain(void);
-int32 @TEMPLATE@_Init(void);
-void  @TEMPLATE@_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr);
-void  @TEMPLATE@_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr);
-int32 @TEMPLATE@_ReportHousekeeping(const CFE_MSG_CommandHeader_t *Msg);
-int32 @TEMPLATE@_Noop(const @TEMPLATE@_NoopCmd_t *Msg);
-int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg);
-int32 @TEMPLATE@_ExampleParamCmd(const @TEMPLATE@_ExampleParamCmd_t *Msg);
-
-bool @TEMPLATE@_VerifyCmdLength(CFE_MSG_Message_t *MsgPtr, size_t ExpectedLength);
+void         @TEMPLATE@_AppMain(void);
+CFE_Status_t @TEMPLATE@_Init(void);
 
 #endif /* @TEMPLATE@_H */

@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -19,7 +19,7 @@
 /**
  * @file
  *
- *  The Sample App header file containing version information
+ *  The @TEMPLATE@ App header file containing version information
  */
 
 #ifndef @TEMPLATE@_VERSION_H
@@ -27,16 +27,23 @@
 
 /* Development Build Macro Definitions */
 
-#define @TEMPLATE@_BUILD_NUMBER 39 /*!< Development Build: Number of commits since baseline */
+#define @TEMPLATE@_BUILD_NUMBER 1
 #define @TEMPLATE@_BUILD_BASELINE \
-    "v1.3.0-rc4" /*!< Development Build: git tag that is the base for the current development */
+    "v7.0.0" /*!< Development Build: git tag that is the base for the current development */
+#define @TEMPLATE@_BUILD_DEV_CYCLE "v7.0.1" /**< @brief Development: Release name for current development cycle */
+#define @TEMPLATE@_BUILD_CODENAME  "Draco"  /**< @brief: Development: Code name for the current build */
 
 /*
  * Version Macros, see \ref cfsversions for definitions.
  */
-#define @TEMPLATE@_MAJOR_VERSION 1  /*!< @brief Major version number. */
-#define @TEMPLATE@_MINOR_VERSION 1  /*!< @brief Minor version number. */
-#define @TEMPLATE@_REVISION      99 /*!< @brief Revision version number. Value of 99 indicates a development version.*/
+#define @TEMPLATE@_MAJOR_VERSION 7 /*!< @brief Major version number. */
+#define @TEMPLATE@_MINOR_VERSION 0 /*!< @brief Minor version number. */
+#define @TEMPLATE@_REVISION      1 /*!< @brief Revision version number. Value of 0 indicates a development version.*/
+
+/**
+ * @brief Last official release.
+ */
+#define @TEMPLATE@_LAST_OFFICIAL "v7.0.1"
 
 /*!
  * @brief Mission revision.
@@ -57,12 +64,12 @@
  */
 #define @TEMPLATE@_VERSION @TEMPLATE@_BUILD_BASELINE "+dev" @TEMPLATE@_STR(@TEMPLATE@_BUILD_NUMBER)
 
-/*! @brief Development Build Version String.
- * @details Reports the current development build's baseline, number, and name. Also includes a note about the latest
- * official version. @n See @ref cfsversions for format differences between development and release versions.
+/**
+ * @brief Max Version String length.
+ *
+ * Maximum length that an OSAL version string can be.
+ *
  */
-#define @TEMPLATE@_VERSION_STRING                       \
-    " Sample App DEVELOPMENT BUILD " @TEMPLATE@_VERSION \
-    ", Last Official Release: v1.1.0" /* For full support please use this version */
+#define @TEMPLATE@_CFG_MAX_VERSION_STR_LEN 256
 
 #endif /* @TEMPLATE@_VERSION_H */

@@ -1,13 +1,13 @@
 { "app": {
    
-   "title": "@TEMPLATE@",
-   "version": "1.0.0",
+   "title": "NASA_WORLD",
+   "version": "4.0.0",
    "supplier": "Open STEMware",
    "copyright": "bitValence",
    "url": "",
 
    "description": [
-      "This app was generated using the NASA Table template"
+      "This app was generated using the NASA World template"
    ],
 
    "cfs": {
@@ -20,9 +20,12 @@
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "cfs",
-      "tables": []
+      "json-tables": []
    },
 
-   "requires": []
+   "requires": [],
    
+   "usrmsg-topics": ["@TEMPLATE@_SEND_HK_TOPICID,4"]
 }}
+
+

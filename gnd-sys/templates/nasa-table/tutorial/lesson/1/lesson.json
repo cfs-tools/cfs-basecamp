@@ -13,11 +13,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Add 'aux_source_directory(fsw/tables APP_TABLE_FILES)' so the table source file is included in the build."
-        },
-        {
-          "id": "EX2",
-          "instructions": "1. Add 'add_cfe_tables(@template@ ${APP_TABLE_FILES})' so the table tool creation tool is invoked to create the .tbl file."
+          "instructions": "1. Add 'add_cfe_tables(@template@ fsw/tables/@template@_tbl.c)' so the table source file is included in the build.\n\nfsw/tables/@template@_tbl.c was in the original but not included in the build"
         }
       ]
     },
@@ -27,21 +23,31 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the ExampleParamCmd definition in the '<DataTypeSet>' element. After this definiton, insert a new ExampleTable ContainerDataType definition as shown in the exercise window.\n\nNote the GUI needs to be restarted after building the new lesson cFS target.\nNote TODO explain why required."
+          "instructions": "1. Locate the ExampleParamCmd definition in the '<DataTypeSet>' element. After this definiton, insert a new ExampleTable ContainerDataType definition as shown in the exercise window.\n\nNote the GUI needs to be restarted after building this lesson's cFS target.\nRefer to the Tutorial Document for more information."
+        },
+        {
+          "id": "EX2",
+          "instructions": "1. Locate the '<RequiredInterfaceSet>' element and insert a new ExampleTable Interface definition as shown in the exercise window.\n\nNote the GUI needs to be restarted after building this lesson's cFS target.\nRefer to the Tutorial Document for more information."
         }
       ]
     },
     {
-      "path": "fsw/platform_inc",
-      "name": "@template@_table.h",
+      "path": "fsw/inc",
+      "name": "@template@_internal_cfg.h",
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Add macros that define the default table filename and cFE name\n    @TEMPLATE@_TABLE_FILE \"/cf/@template@_tbl.tbl\"\n    #define @TEMPLATE@_TBL_NAME   \"@TEMPLATE@.ExampleTable\"\n\nNote see the block comment above the macros for limitations imposed by the CFE_TBL_FILEDEF() macro."
-        },
+          "instructions": "1. Add the DEFAULT_@TEMPLATE@_PLATFORM_TABLE_FILE macro definition from the exercise window to define the table source filename."
+        }
+      ]
+    },
+    {
+      "path": "config",
+      "name": "default_@template@_tbldefs.h",
+      "exercise": [
         {
-          "id": "EX2",
-          "instructions": "1. Add the @TEMPLATE@_Table_t definition from the exercise window."
+          "id": "EX1",
+          "instructions": "1. Add the DEFAULT_@TEMPLATE@_PLATFORM_TABLE_FILE macro definitions from the exercise window to define the table source filename."
         }
       ]
     },
@@ -51,7 +57,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Add the code from the exercise window that includes the default table values and an invocation of the CFE_TBL_FILEDEF() macro to supply information to the table creation tool. "
+          "instructions": "1. Add the code from the exercise window that includes the default table values and an invocation of the CFE_TBL_FILEDEF() macro to supply information to the table creation tool.\n\nNote see the block comment above the macros for limitations imposed by the CFE_TBL_FILEDEF() macro."
         }
       ]
     },
@@ -71,25 +77,24 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. At the end of the @template@ includes add\n    #include \"@template@_table.h\""
+          "instructions": "1. In the header includes section add\n    #include \"@template@_tbl.h\""
         },
         {
           "id": "EX2",
-          "instructions": "1. After the global data @TEMPLATE@_Data is declared add\n    static int32 SendTblDataEvent(void);\n\nNote this does not follow the Sample App global function convention. This was done to show there are options as described in Basecamp's App Dev Guide."
-        },
-        {
-          "id": "EX3",
           "instructions": "1. Locate the @TEMPLATE@_Init() fucntion. At the end of the\nfunction before the initialization complete event message, add the code from the exercise window."
-        },
+        }
+      ]
+    },
+    {
+      "path": "fsw/src",
+      "name": "@template@_cmds.c",
+      "exercise": [
         {
-          "id": "EX4",
-          "instructions": "1. In the @TEMPLATE@_Noop() function add\n    SendTblDataEvent();\n\nThis function is added in the next exercise."
-        },
-        {
-          "id": "EX5",
-          "instructions": "1. Go to the end of the file and add the SendTblDataEvent() function from the exercise window."
+          "id": "EX1",
+          "instructions": "1. Locate the @TEMPLATE@_NoopCmd() function and insert the highlighted code as shown in the exercise window.\n\nNote this code is added to the Noop function for convenience so the table alues can be displayed with minal code changes."
         }
       ]
     }
+    
   ]
 }

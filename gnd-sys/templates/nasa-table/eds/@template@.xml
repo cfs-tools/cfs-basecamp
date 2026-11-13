@@ -24,27 +24,26 @@
     as prescribed in CCSDS book 876.0.
 
     Purpose:
-      This describes all interface objects for the Hello Table app
+      This describes all interface objects for the Executive Services (CFE_ES)
+      core application
 
 -->
 <PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
-  <Package name="@TEMPLATE@" shortDescription="Hello Table Application Package">
+  <Package name="@TEMPLATE@" shortDescription="Sample Application Package">
 
     <DataTypeSet>
 
-      <StringDataType name="ExampleString" length="${SAMPLE_APP/STRING_VAL_LEN}" />
-      
-      <ContainerDataType name="ExampleParamCmd_Payload" shortDescription="Payload for the example command with a parameter">
+      <ContainerDataType name="ExampleParam_Payload" shortDescription="Example Command with a payload/argument">
         <EntryList>
-          <Entry name="Param" type="BASE_TYPES/uint16" shortDescription="" />
-       </EntryList>
+          <Entry name="ValI16" type="BASE_TYPES/int16" shortDescription="16 bit signed integer value" />
+        </EntryList>
       </ContainerDataType>
-      
+
       <ContainerDataType name="HkTlm_Payload" shortDescription="Sample App Housekeeping Content">
         <EntryList>
-          <Entry name="CommandCounter" type="BASE_TYPES/uint8" />
+          <Entry name="CommandCounter"      type="BASE_TYPES/uint8" />
           <Entry name="CommandErrorCounter" type="BASE_TYPES/uint8" />
-          <Entry name="ExampleParamCmdVal" type="BASE_TYPES/uint16" />
+          <Entry name="ExampleCmdParam"     type="BASE_TYPES/int16" shortDescription="Example command parameter" />          
         </EntryList>
       </ContainerDataType>
 
@@ -75,12 +74,12 @@
       <ContainerDataType name="ExampleParamCmd" baseType="CommandBase">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="2" />
-          <EntryList>
-            <Entry type="ExampleParamCmd_Payload" name="Payload" />
-          </EntryList> 
         </ConstraintSet>
+        <EntryList>
+          <Entry type="ExampleParam_Payload" name="Payload" />
+        </EntryList>
       </ContainerDataType>
-            
+
     </DataTypeSet>
 
     <ComponentSet>
@@ -102,19 +101,18 @@
               <GenericTypeMap name="TelemetryDataType" type="HkTlm" />
             </GenericTypeMapSet>
           </Interface>
-
         </RequiredInterfaceSet>
         <Implementation>
           <VariableSet>
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"     initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId"  initialValue="${CFE_MISSION/@TEMPLATE@_SEND_HK_TOPICID}" />
-            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId"   initialValue="${CFE_MISSION/@TEMPLATE@_HK_TLM_TOPICID}" />
-         </VariableSet>
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SendHkTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_SEND_HK_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="HkTlmTopicId" initialValue="${CFE_MISSION/@TEMPLATE@_HK_TLM_TOPICID}" />
+          </VariableSet>
           <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
           <ParameterMapSet>
-            <ParameterMap interface="CMD"      parameter="TopicId" variableRef="CmdTopicId" />
-            <ParameterMap interface="SEND_HK"  parameter="TopicId" variableRef="SendHkTopicId" />
-            <ParameterMap interface="HK_TLM"   parameter="TopicId" variableRef="HkTlmTopicId" />
+            <ParameterMap interface="CMD" parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="SEND_HK" parameter="TopicId" variableRef="SendHkTopicId" />
+            <ParameterMap interface="HK_TLM" parameter="TopicId" variableRef="HkTlmTopicId" />
           </ParameterMapSet>
         </Implementation>
       </Component>

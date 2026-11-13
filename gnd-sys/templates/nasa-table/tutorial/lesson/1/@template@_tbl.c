@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -16,22 +16,22 @@
  * limitations under the License.
  ************************************************************************/
 
-//EX1,1,
 #include "cfe_tbl_filedef.h" /* Required to obtain the CFE_TBL_FILEDEF macro definition */
-#include "@template@_table.h"
+#include "@template@_tbl.h"
 
+//EX1,1,
 /*
 ** The following is an example of the declaration statement that defines the desired
 ** contents of the table image.
 */
-@TEMPLATE@_Table_t ExampleTable = {1, 2};   // Variable name must match the EDS definition
+@TEMPLATE@_ExampleTable_t ExampleTable = { 1, 2 };
 
 /*
 ** The macro below identifies:
 **    1) the data structure type to use as the table image format
-**    2) the name of the table to be placed into the cFE Table File Header
+**    2) the name of the table to be placed into the cFE Example Table File Header
 **    3) a brief description of the contents of the file image
 **    4) the desired name of the table image binary file that is cFE compatible
 */
-CFE_TBL_FILEDEF(ExampleTable, @TEMPLATE@.ExampleTable, Example Table, @template@_tbl.tbl)
+CFE_TBL_FILEDEF(ExampleTable, @TEMPLATE@.ExampleTable, Table Utility Test Table, @template@_tbl.tbl)
 //EX1

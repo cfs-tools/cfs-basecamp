@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -19,34 +19,20 @@
 /**
  * @file
  *
- * Define @TEMPLATE@ table
+ * Main header file for the @TEMPLATE@ application
  */
 
-//EX1,4,
-#ifndef @TEMPLATE@_TABLE_H
-#define @TEMPLATE@_TABLE_H
-
-#define @TEMPLATE@_TBL_FILE   "/cf/@template@_tbl.tbl"
+#ifndef @TEMPLATE@_DISPATCH_H
+#define @TEMPLATE@_DISPATCH_H
 
 /*
-** These macros are used in @template@_app.c but can not be used in 
-** @template@_tbl.c in the CFE_TBL_FILEDEF() macro so those hardcoded
-** parameters must match these definitions. 
+** Required header files.
 */
-#define @TEMPLATE@_APP_NAME          "@TEMPLATE@"
-#define @TEMPLATE@_EX_TBL_CFE_NAME   "ExampleTable"
-#define @TEMPLATE@_EX_TBL_NAME       @TEMPLATE@_APP_NAME##"."##@TEMPLATE@_EX_TBL_CFE_NAME
-//EX1
+#include "cfe.h"
+#include "@template@_msg.h"
 
-//EX2,1,
-/*
-** Table structure
-*/
-typedef struct
-{
-    uint16 Int1;
-    uint16 Int2;
-} @TEMPLATE@_Table_t;
-//EX2
+bool @TEMPLATE@_VerifyCmdLength(const CFE_MSG_Message_t *MsgPtr, size_t ExpectedLength);
+void @TEMPLATE@_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr);
+void @TEMPLATE@_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr);
 
-#endif /* @TEMPLATE@_TABLE_H */
+#endif /* @TEMPLATE@_DISPATCH_H */

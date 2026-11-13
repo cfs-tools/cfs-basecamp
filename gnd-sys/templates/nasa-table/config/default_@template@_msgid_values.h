@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -18,24 +18,15 @@
 
 /**
  * @file
- *
- * Define SAMPLE App Events IDs
+ *   @TEMPLATE@ Application Topic IDs
  */
+#ifndef DEFAULT_@TEMPLATE@_MSGID_VALUES_H
+#define DEFAULT_@TEMPLATE@_MSGID_VALUES_H
 
-#ifndef @TEMPLATE@_EVENTS_H
-#define @TEMPLATE@_EVENTS_H
+#include "cfe_core_api_base_msgids.h"
+#include "@template@_topicids.h"
 
-//EX1,10,
-#define @TEMPLATE@_RESERVED_EID          0
-#define @TEMPLATE@_STARTUP_INF_EID       1
-#define @TEMPLATE@_COMMAND_ERR_EID       2
-#define @TEMPLATE@_COMMANDNOP_INF_EID    3
-#define @TEMPLATE@_COMMANDRST_INF_EID    4
-#define @TEMPLATE@_INVALID_MSGID_ERR_EID 5
-#define @TEMPLATE@_LEN_ERR_EID           6
-#define @TEMPLATE@_PIPE_ERR_EID          7
-#define @TEMPLATE@_EXAMPLE_PARAM_CMD_INF_EID 8
-#define @TEMPLATE@_TABLE_VALIDATE_ERR_EID    9
-//EX1
+#define @TEMPLATE@_CMD_PLATFORM_MIDVAL(x) CFE_PLATFORM_CMD_TOPICID_TO_MIDV(@TEMPLATE@_MISSION_##x##_TOPICID)
+#define @TEMPLATE@_TLM_PLATFORM_MIDVAL(x) CFE_PLATFORM_TLM_TOPICID_TO_MIDV(@TEMPLATE@_MISSION_##x##_TOPICID)
 
-#endif /* @TEMPLATE@_EVENTS_H */
+#endif

@@ -1,17 +1,35 @@
 project(CFE_@TEMPLATE@ C)
 
-include_directories(fsw/mission_inc)
-include_directories(fsw/platform_inc)
-include_directories(fsw/src)
+set(APP_SRC_FILES
+  fsw/src/@template@_app.c
+  fsw/src/@template@_cmds.c
+  fsw/src/@template@_utils.c
+)
 
-#EX1,2,
-aux_source_directory(fsw/src APP_SRC_FILES)
-aux_source_directory(fsw/tables APP_TABLE_FILES)
-#EX1
+if (CFE_EDS_ENABLED)
+  list(APPEND APP_SRC_FILES
+    fsw/src/@template@_eds_dispatch.c
+  )
+else()
+  list(APPEND APP_SRC_FILES
+    fsw/src/@template@_dispatch.c
+  )
+endif()
 
-#EX2,3,
 # Create the app module
 add_cfe_app(@template@ ${APP_SRC_FILES})
-add_cfe_tables(@template@ ${APP_TABLE_FILES})
-#EX2
 
+#EX1,3,
+target_include_directories(@template@ PUBLIC fsw/inc)
+
+# Add table
+add_cfe_tables(@template@ fsw/tables/@template@_tbl.c)
+#EX1
+
+# If UT is enabled, then add the tests from the subdirectory
+# Note that this is an app, and therefore does not provide
+# stub functions, as other entities would not typically make
+# direct function calls into this application.
+if (ENABLE_UNIT_TESTS)
+  add_subdirectory(unit-test)
+endif (ENABLE_UNIT_TESTS)

@@ -14,27 +14,27 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Add the '...OUT_OF_RANGE_ERR_CODE' and '...ELEMENT_1_MAX' macro definitions from the exercise window."
+          "instructions": "1. Add the '...OUT_OF_RANGE_ERR_CODE' and the '...TBL_ELEMENT_1_MAX' macro definitions from the exercise window."
         }
       ]
     },
     {
-      "path": "fsw/inc",
+      "path": "fsw/src",
       "name": "@template@_utils.h",
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Add the table validation function prototype from the exercise window."
+          "instructions": "1. Add the table validation function prototype 'CFE_Status_t @TEMPLATE@_TblValidationFunc(void *TblData);'."
         }
       ]
     },
     {
-      "path": "fsw/inc",
+      "path": "fsw/src",
       "name": "@template@_utils.c",
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Add the table validation function from the exercise window."
+          "instructions": "1. Copy the table validation function @TEMPLATE@_TblValidationFunc() from the exercise window."
         }
       ]
     },
@@ -44,17 +44,18 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the @TEMPLATE@_SendHkCmd() function. Before the return statement add\n    CFE_TBL_Manage(@TEMPLATE@_Data.TblHandle);\n\nThis function checks for pending table loads. If one exists then\n the app's validation function is called if one was provided during registration."
+          "instructions": "1. Before the return statement in @TEMPLATE@_SendHkCmd() add:\n    CFE_TBL_Manage(@TEMPLATE@_Data.TblHandle);\n\nNote this allows the cFE to manage table validations and loads"
         }
       ]
     },
+    
     {
       "path": "fsw/src",
       "name": "@template@_app.c",
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the CFE_TBL_Register() added to @TEMPLATE@_Init in the previous lesson. Change the NULL parameter to\n    ValidateExampleTbl"
+          "instructions": "1. Locate the call to CFE_TBL_Register() added to @TEMPLATE@_Init() in the previous lesson. Change the NULL parameter to\n    @TEMPLATE@_TblValidationFunc"
         }
       ]
     }
