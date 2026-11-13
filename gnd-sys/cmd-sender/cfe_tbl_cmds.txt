@@ -7,8 +7,9 @@ License:
 
 Notes:
   1. Provides quick access to cFS table commands. Sample App's table
-     SAMPLE_APP.SampleAppTable is used as the default. Command values
-     can be edited by
+     SAMPLE_APP.ExampleTable is used as the default. Command values
+     can be edited by right clicking on a command and selecting
+     'Edit->Send'
       
 """
 ================================================================================
@@ -18,11 +19,11 @@ Notes:
 ># Use Tools->Manage cFS Tables to view and modified cFS binary tables
 ># Table load sequence: Load->Validate->Activate
 >#
-> 'CFE_TBL', 'DumpCmd', {'ActiveTableFlag': 'ACTIVE', 'TableName':'SAMPLE_APP.SampleAppTable', 'DumpFilename':'/cf/temp.tbl'} ## 
+> 'CFE_TBL', 'DumpCmd', {'ActiveTableFlag': 'ACTIVE', 'TableName':'SAMPLE_APP.ExampleTable', 'DumpFilename':'/cf/temp.tbl'} ## 
 
 > 'CFE_TBL', 'LoadCmd', {'LoadFilename':'/cf/temp.tbl'} ##  
 
-> 'CFE_TBL', 'ValidateCmd', {'ActiveTableFlag': 'INACTIVE', 'TableName':'SAMPLE_APP.SampleAppTable'} ##  
+> 'CFE_TBL', 'ValidateCmd', {'ActiveTableFlag': 'INACTIVE', 'TableName':'SAMPLE_APP.ExampleTable'} ##  
 
-> 'CFE_TBL', 'ActivateCmd', {'TableName':'SAMPLE_APP.SampleAppTable'} ##  
+> 'CFE_TBL', 'ActivateCmd', {'TableName':'SAMPLE_APP.ExampleTable'} ##  
 

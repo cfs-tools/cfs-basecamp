@@ -40,10 +40,11 @@ a comment on a command line
 
 ================================================================================
 >#
-># Send Noop command
+># Noop & Reset commands
 ># - An empty parameter list {} must be included for commands without parameters
 >#
-> 'APP_C_DEMO', 'Noop', {} ## Event message sent with app's version, APP_C_DEMO STATUS_TLM ValidCmdCnt increments 
+> 'APP_C_DEMO', 'Noop',  {} ## Event message sent with app's version, APP_C_DEMO STATUS_TLM ValidCmdCnt increments 
+> 'APP_C_DEMO', 'Reset', {} ## APP_C_DEMO STATUS_TLM ValidCmdCnt set to 1, InvalidCmdCnt set to 0
 >#
 ># Enable/Disable Demo App debug events
 ># - Command parameters are formatted as python dictionaries
@@ -63,3 +64,8 @@ a comment on a command line
 > 'APP_C_DEMO', 'StopHistogramLog', {}
 > 'APP_C_DEMO', 'StartHistogramLogPlaybk', {}  ## View Tlm: APP_C_DEMO/Application/BIN_PLAYBK_TLM to see playback entries
 > 'APP_C_DEMO', 'StopHistogramLogPlaybk', {}
+>#
+># Manage Histogram Table
+>#
+> 'APP_C_DEMO', 'DumpTbl', {'Id': 'HISTOGRAM_BIN', 'Filename': '/cf/hist_tbl~.json'}
+> 'APP_C_DEMO', 'LoadTbl', {'Id': 'HISTOGRAM_BIN', 'Type': 'REPLACE', 'Filename': '/cf/hist_tbl~.json'}

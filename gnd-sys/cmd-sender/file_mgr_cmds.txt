@@ -1,0 +1,42 @@
+"""
+File Manager Commands
+
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+Notes:
+  1. Provides quick access to FILE_MGR commands
+  2. Telemetry message base string is FILE_MGR/Application/
+      
+"""
+================================================================================
+> 'FILE_MGR', 'Noop', {}  ## HK_TLM: ValidCmdCnt increments & event message with version number
+> 'FILE_MGR', 'Reset', {} ## HK_TLM: ValidCmdCnt set 1 and InvalidCmdCnt set to 0
+>#
+> 'FILE_MGR', 'SendOpenFileTlm', {}            ## View in OPEN_FILE_TLM
+> 'FILE_MGR', 'SendDirTlm', {'IncludeSizeTime': 'TRUE', 'DirName': '/cf'} ## View in DIR_LIST_TLM
+> 'FILE_MGR', 'SendDirListTlm',  {'IncludeSizeTime': 'TRUE', 'DirName': '/cf', 'DirListOffset': 0} ## View in DIR_LIST_TLM
+> 'FILE_MGR', 'SendFileInfoTlm', {'ComputeCrc': 'FALSE', 'CrcType': 'CRC_16', 'Filename': '/cf/cfe_es_startup.scr'}  ## View in FILE_MGR/Application/FILE_INFO_TLM
+> 'FILE_MGR', 'SendOpenFileTlm', {}        ## View in OPEN_FILE_TLM
+> 'FILE_MGR', 'SetFileSysTblState', {'TblEntryState': 'DISABLED', 'TblEntryIndex': 2}
+> 'FILE_MGR', 'SendFileSysEstSpaceTlm', {} ## View in FILE_SYS_EST_SPACE_TLM
+>#
+> 'FILE_MGR', 'DumpTbl', {'Id': 'FILE_SYS', 'Filename': '/cf/file_sys_tbl~.json'}
+> 'FILE_MGR', 'LoadTbl', {'Id': 'FILE_SYS', 'Type': 'REPLACE', 'Filename': '/cf/file_sys_tbl~.json'}
+>#
+># Directory and File Management
+># - These commands can be used sequentially to exercise
+># - /cf/temp 
+>#
+> 'FILE_MGR', 'CreateDir',  {'DirName': '/cf/temp'} ## View in FileBrowser or use SendDirTlm command
+> 'FILE_MGR', 'SendDirListTlm',  {'IncludeSizeTime': 'TRUE', 'DirName': '/cf/temp', 'DirListOffset': 0} ## View in DIR_LIST_TLM
+> 'FILE_MGR', 'CopyFile',   {'Overwrite': 'FALSE', 'SourceFilename': '/cf/file_mgr_ini.json', 'TargetFilename': '/cf/temp/fm_ini_1.json'} ##
+> 'FILE_MGR', 'CopyFile',   {'Overwrite': 'FALSE', 'SourceFilename': '/cf/file_mgr_ini.json', 'TargetFilename': '/cf/temp/fm_ini_2.json'} ## 
+> 'FILE_MGR', 'ConcatenateFiles', {'Source1Filename': '/cf/temp/fm_ini_1.json', 'Source2Filename': '/cf/temp/fm_ini_2.json', 'TargetFilename': '/cf/temp/fm_ini_1_2.json'} ## 
+> 'FILE_MGR', 'MoveFile',   {'Overwrite': 'FALSE', 'SourceFilename': '/cf/temp/fm_ini_1_2.json', 'TargetFilename': '/cf/fm_ini_ttemp.json'} ## 
+> 'FILE_MGR', 'RenameFile', {'SourceFilename': '/cf/fm_ini_ttemp.json', 'TargetFilename': '/cf/fm_ini_temp.json'} ## 
+> 'FILE_MGR', 'CopyFile',   {'Overwrite': 'TRUE', 'SourceFilename': '/cf/fm_ini_temp.json', 'TargetFilename': '/cf/temp/fm_ini_1_2.json'} ## 
+> 'FILE_MGR', 'DeleteFile', {'Filename': '/cf/temp/fm_ini_temp.json'} ## 
+> 'FILE_MGR', 'DeleteAllDir', {'DirName': '/cf/temp/'} ## 
+> 'FILE_MGR', 'DeleteDir',    {'DirName': '/cf/temp'}  ## 

@@ -1,0 +1,35 @@
+"""
+Kit Scheduler Commands
+
+License:
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+Notes:
+  1. Provides quick access to KIT_SCH commands
+  2. Telemetry message base string is KIT_SCH/Application/
+      
+"""
+================================================================================
+> 'KIT_SCH', 'Noop', {}  ## HK_TLM: ValidCmdCnt increments & event message with version number
+> 'KIT_SCH', 'Reset', {} ## HK_TLM: ValidCmdCnt set 1 and InvalidCmdCnt set to 0
+>#
+> 'KIT_SCH', 'DumpTbl', {'Id': 'MESSAGE', 'Filename': '/cf/sch_msg_tbl~.json'}
+> 'KIT_SCH', 'LoadTbl', {'Id': 'MESSAGE', 'Type': 'REPLACE', 'Filename': '/cf/sch_msg_tbl~.json'}
+>#
+> 'KIT_SCH', 'DumpTbl', {'Id': 'SCHEDULE', 'Filename': '/cf/sch_sch_tbl~.json'}
+> 'KIT_SCH', 'LoadTbl', {'Id': 'SCHEDULE', 'Type': 'REPLACE', 'Filename': '/cf/sch_sch_tbl~.json'}
+>#
+># BC_SCH_1_HZ_TOPICID (Used for Demo App Status telemetry)
+># - Message table index 10
+># - Scheduler table Slot 0, Activity 1
+>#
+> 'KIT_SCH', 'SendDiagTlm', {'Slot': 1}                    ## View in DIAG_TLM
+> 'KIT_SCH', 'SendMsgTblEntry', {'Index': 10}              ## View in TBL_ENTRY_TLM
+> 'KIT_SCH', 'SendSchTblEntry', {'Slot': 0, 'Activity': 1} ## View in TBL_ENTRY_TLM & event message
+>#
+> 'KIT_SCH', 'CfgSchTblEntry', {'Enabled': 'TRUE',  'Slot': 0, 'Activity': 1} ## Restore entry
+> 'KIT_SCH', 'CfgSchTblEntry', {'Enabled': 'FALSE', 'Slot': 0, 'Activity': 1} ## Edit parameters before sending
+>#
+> 'KIT_SCH', 'LoadMsgTblEntry', {'Enabled': 'TRUE',  'Slot': 0, 'Activity': 1, 'Period': 1, 'Offset': 0, 'MsgTblIdx': 10} ## Restore entry
+> 'KIT_SCH', 'LoadMsgTblEntry', {'Enabled': 'FALSE', 'Slot': 0, 'Activity': 1, 'Period': 1, 'Offset': 0, 'MsgTblIdx': 10} ## Edit parameters before sending
