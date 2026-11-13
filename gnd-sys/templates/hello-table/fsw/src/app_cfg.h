@@ -42,9 +42,10 @@
 ** Versions
 **
 ** 1.0 - Initial version, compatible with cFE Caelum
+** 4.0 - Compatible with Basecamp 4.0(cFS 7.0.1)
 */
 
-#define  @TEMPLATE@_MAJOR_VER   1
+#define  @TEMPLATE@_MAJOR_VER   4
 #define  @TEMPLATE@_MINOR_VER   0
 
 
@@ -103,7 +104,7 @@
 #define CFG_APP_CMD_PIPE_DEPTH  APP_CMD_PIPE_DEPTH
 
 #define CFG_@TEMPLATE@_CMD_TOPICID          @TEMPLATE@_CMD_TOPICID
-#define CFG_@TEMPLATE@_EXE_TOPICID          BC_SCH_1_HZ_TOPICID
+#define CFG_@TEMPLATE@_EXE_TOPICID          BC_SCH_1_SEC_TOPICID
 #define CFG_@TEMPLATE@_SEND_STATUS_TOPICID  BC_SCH_4_SEC_TOPICID
 #define CFG_@TEMPLATE@_STATUS_TLM_TOPICID   @TEMPLATE@_STATUS_TLM_TOPICID
 
@@ -116,7 +117,7 @@
    XX(APP_CMD_PIPE_NAME,char*) \
    XX(APP_CMD_PIPE_DEPTH,uint32) \
    XX(@TEMPLATE@_CMD_TOPICID,uint32) \
-   XX(BC_SCH_1_HZ_TOPICID,uint32) \
+   XX(BC_SCH_1_SEC_TOPICID,uint32) \
    XX(BC_SCH_4_SEC_TOPICID,uint32) \
    XX(@TEMPLATE@_STATUS_TLM_TOPICID,uint32) \
    XX(TBL_LOAD_FILE,char*) \
@@ -133,9 +134,9 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define @TEMPLATE@_BASE_EID  (APP_C_FW_APP_BASE_EID +  0)
-#define EXOBJ_BASE_EID       (APP_C_FW_APP_BASE_EID + 20)
-#define EXOBJTBL_BASE_EID    (APP_C_FW_APP_BASE_EID + 40)
+#define @TEMPLATE@_BASE_EID  (EdsParam_APP_C_FW_APP_BASE_EID +  0)
+#define EXOBJ_BASE_EID       (EdsParam_APP_C_FW_APP_BASE_EID + 20)
+#define EXOBJTBL_BASE_EID    (EdsParam_APP_C_FW_APP_BASE_EID + 40)
 
 
 /******************************************************************************

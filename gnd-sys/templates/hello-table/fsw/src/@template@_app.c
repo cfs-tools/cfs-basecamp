@@ -194,13 +194,13 @@ static int32 InitApp(void)
       CFE_SB_Subscribe(@Template@.SendStatusMid, @Template@.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_NOOP_CC,  NULL, @TEMPLATE@_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_RESET_CC, NULL, @TEMPLATE@_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_NOOP_CC,  NULL, @TEMPLATE@_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_RESET_CC, NULL, @TEMPLATE@_ResetAppCmd, 0);
       
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd, sizeof(@TEMPLATE@_LoadTbl_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd, sizeof(@TEMPLATE@_DumpTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_LOAD_TBL_CC, TBLMGR_OBJ, TBLMGR_LoadTblCmd, sizeof(@TEMPLATE@_LoadTbl_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_DUMP_TBL_CC, TBLMGR_OBJ, TBLMGR_DumpTblCmd, sizeof(@TEMPLATE@_DumpTbl_CmdPayload_t));
 
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_SET_COUNTER_MODE_CC, EXOBJ_OBJ, EXOBJ_SetModeCmd, sizeof(@TEMPLATE@_SetCounterMode_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_SET_COUNTER_MODE_CC, EXOBJ_OBJ, EXOBJ_SetModeCmd, sizeof(@TEMPLATE@_SetCounterMode_CmdPayload_t));
       /*
       ** Initialize app messages 
       */
