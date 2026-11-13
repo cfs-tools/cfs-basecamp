@@ -182,7 +182,7 @@ static int32 InitApp(void)
       ** Constuct app's contained objects
       */
       
-      OS_CountSemCreate(&@Template@.ChildExecSemaphore, "HELLO_CHILD_EXEC", 0, 0);
+      OS_CountSemCreate(&@Template@.ChildExecSemaphore, "HI_CHILD_EXEC", 0, 0);
       EXOBJ_Constructor(EXOBJ_OBJ, INITBL_OBJ, @Template@.ChildExecSemaphore);
       
       CFE_ES_CreateChildTask(&@Template@.ChildTaskId, 
@@ -201,11 +201,11 @@ static int32 InitApp(void)
       CFE_SB_Subscribe(@Template@.SendStatusMid, @Template@.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_NOOP_CC,  NULL, @TEMPLATE@_NoOpCmd,     0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_RESET_CC, NULL, @TEMPLATE@_ResetAppCmd, 0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_NOOP_CC,  NULL, @TEMPLATE@_NoOpCmd,     0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_RESET_CC, NULL, @TEMPLATE@_ResetAppCmd, 0);
       
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_SET_CHILD_DELAY_CC,  EXOBJ_OBJ, EXOBJ_SetChildDelayCmd,  sizeof(@TEMPLATE@_SetChildDelay_CmdPayload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, @TEMPLATE@_SET_COUNTER_MODE_CC, EXOBJ_OBJ, EXOBJ_SetCounterModeCmd, sizeof(@TEMPLATE@_SetCounterMode_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_SET_CHILD_DELAY_CC,  EXOBJ_OBJ, EXOBJ_SetChildDelayCmd,  sizeof(@TEMPLATE@_SetChildDelay_CmdPayload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_@TEMPLATE@_SET_COUNTER_MODE_CC, EXOBJ_OBJ, EXOBJ_SetCounterModeCmd, sizeof(@TEMPLATE@_SetCounterMode_CmdPayload_t));
 
       /*
       ** Initialize app messages 

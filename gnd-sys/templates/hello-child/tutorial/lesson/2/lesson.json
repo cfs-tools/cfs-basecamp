@@ -41,7 +41,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the @TEMPLATE@_Class_t typedef:\n    Add 'uint32  ChildExecSemaphore;' below the 'uin32 ChildTaskDelay' line"
+          "instructions": "1. Locate the @TEMPLATE@_Class_t typedef:\n    Add 'uint32  ChildExecSemaphore;' below the 'CFE_ES_TaskId_t  ChildTaskId' line"
         }
       ]
     },
@@ -51,7 +51,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "Locate the EXOBJ_Constructor() in the InitApp() function:\n    A. Before the EXOBJ_Constructor() call add 'OS_CountSemCreate(&@Template@.ChildExecSemaphore, \"HELLO_CHILD_EXEC\", 0, 0);'\n    B. Add '@Template@.ChildExecSemaphore' as the last parameter in the EXOBJ_Constructor() call"
+          "instructions": "Locate the EXOBJ_Constructor() in the InitApp() function:\n    A. Before the EXOBJ_Constructor() call add 'OS_CountSemCreate(&@Template@.ChildExecSemaphore, \"HI_CHILD_EXEC\", 0, 0);'\n    B. Add '@Template@.ChildExecSemaphore' as the last parameter in the EXOBJ_Constructor() call"
         },
         {
           "id": "EX2",

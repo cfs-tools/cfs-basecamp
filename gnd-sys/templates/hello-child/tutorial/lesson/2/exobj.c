@@ -69,7 +69,7 @@ void EXOBJ_Constructor(EXOBJ_Class_t *ExObjPtr,
    ExObj->CounterValue = ExObj->CounterLoLim;
    
    ExObj->ChildExecSemaphore = ChildExecSemaphore;
-   OS_MutSemCreate(&ExObj->ChildDataSemaphore, "HELLO_CHILD_DATA", 0);
+   OS_MutSemCreate(&ExObj->ChildDataSemaphore, "HI_CHILD_DATA", 0);
    ExObj->ChildTaskDelay = INITBL_GetIntConfig(IniTbl, CFG_CHILD_DELAY);
    
    

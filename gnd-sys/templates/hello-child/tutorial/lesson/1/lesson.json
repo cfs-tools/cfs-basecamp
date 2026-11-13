@@ -27,7 +27,7 @@
         },
         {
           "id": "EX2",
-          "instructions": "1. Locate the EXOBJ_Constructor() function:\n    Add 'OS_MutSemCreate(&ExObj->ChildDataSemaphore, \"HELLO_CHILD_DATA\", 0);' after the CounterValue line"
+          "instructions": "1. Locate the EXOBJ_Constructor() function:\n    Add 'OS_MutSemCreate(&ExObj->ChildDataSemaphore, \"HI_CHILD_DATA\", 0);' after the CounterValue line"
         },
         {
           "id": "EX3",

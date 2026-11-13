@@ -1,6 +1,6 @@
 {
    "title": "Hello Child",
-   "version": "1.0",
+   "version": "4.0",
    "short-descr": "'Hello Object' app plus a child task",
    "default-app-name": "hi_child",
    "description": [
