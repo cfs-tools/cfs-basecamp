@@ -2,7 +2,7 @@
   "time-stamp": "",
   "title": "Add Object Reset Functionality",
   "objective": [
-    "Demonstrate object-specific object reset behavior"
+    "Demonstrate object-specific reset behavior"
   ],
   "current-file": "Undefined",
   "complete": false,
@@ -27,7 +27,7 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. In 'StatusTlm_Payload':\n    Change CounterMode type from 'BASE_TYPES/uint16' to 'CounterMode'\n\nNote the GUI needs to be restarted after building the new lesson cFS target."
+          "instructions": "1. Locate the 'DataTypeSet: Telemetry Payloads' comment block. In 'StatusTlm_Payload':\n    Add the CounterLoLim and CounterHiLim as shown in the exercise window\n\nNote the GUI needs to be restarted after building the new lesson cFS target."
         }
       ]
     },

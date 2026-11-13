@@ -8,7 +8,7 @@
   "complete": false,
   "file": [
     {
-      "path": "../../../cfe-eds-framework/basecamp_defs",
+      "path": "../../../cFS/basecamp_defs",
       "name": "cpu1_hi_object_ini.json",
       "exercise": [
         {

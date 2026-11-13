@@ -47,7 +47,7 @@
 
       <ContainerDataType name="SetCounterMode_CmdPayload" shortDescription="Set Counter Mode payload">
         <EntryList>
-          <Entry name="Mode" type="CounterMode" shortDescription="" />
+          <Entry name="Mode" type="CounterMode" />
        </EntryList>
       </ContainerDataType>
 
@@ -60,10 +60,10 @@
         <EntryList>
           <Entry name="ValidCmdCnt"         type="BASE_TYPES/uint16" />
           <Entry name="InvalidCmdCnt"       type="BASE_TYPES/uint16" />
-          <Entry name="CounterMode"         type="CounterMode"       shortDescription="" />
-          <Entry name="CounterValue"        type="BASE_TYPES/uint16" shortDescription="" />
-          <Entry name="CounterLoLim"        type="BASE_TYPES/uint16" shortDescription="Automatically added in lesson 2 (not an exercise)" />
-          <Entry name="CounterHiLim"        type="BASE_TYPES/uint16" shortDescription="Automatically added in lesson 2 (not an exercise)" />
+          <Entry name="CounterMode"         type="CounterMode"       />
+          <Entry name="CounterValue"        type="BASE_TYPES/uint16" />
+          <Entry name="CounterLoLim"        type="BASE_TYPES/uint16" />
+          <Entry name="CounterHiLim"        type="BASE_TYPES/uint16" />
         </EntryList>
       </ContainerDataType>
       <!-- EX1 -->
