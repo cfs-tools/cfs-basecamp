@@ -19,23 +19,23 @@
    "dir": [
       {
          "path": "",
-         "files": ["CMakeLists.txt", "@template@.json"]
-      },
+         "files": ["@template@.json", "CMakeLists.txt", "arch_build.cmake", "mission_build.cmake"]
+      },      
       {
-         "path": "fsw/mission_inc",
-         "files": ["@template@_perfids.h"]
-      },
-      {
-         "path": "fsw/platform_inc",
-         "files": ["@template@_msgids.h"]
-      },
-      {
-         "path": "fsw/src",
-         "files": ["@template@_app.c", "@template@_app.h", "@template@_events.h", "@template@_msg.h", "@template@_version.h"]
+         "path": "config",
+         "files": ["default_@template@_fcncode_values.h","default_@template@_interface_cfg_values.h","default_@template@_internal_cfg_values.h","default_@template@_mission_cfg.h","default_@template@_msg.h","default_@template@_msgdefs.h","default_@template@_msgid_values.h","default_@template@_msgids.h","default_@template@_msgstruct.h","default_@template@_perfids.h","default_@template@_platform_cfg.h","default_@template@_topicid_values.h","eds_@template@_fcncode_values.h","eds_@template@_interface_cfg_values.h","eds_@template@_msgdefs.h","eds_@template@_msgstruct.h","eds_@template@_topicid_values.h"]
       },
       {
          "path": "eds",
          "files": ["@template@.xml"]
+      },
+      {
+         "path": "fsw/inc",
+         "files": ["@template@_eventids.h","@template@_fcncodes.h","@template@_interface_cfg.h","@template@_internal_cfg.h","@template@_topicids.h"]
+      },
+      {
+         "path": "fsw/src",
+         "files": ["@template@_app.c","@template@_app.h","@template@_cmds.c","@template@_cmds.h","@template@_dispatch.c","@template@_dispatch.h","@template@_eds_dispatch.c","@template@_utils.c","@template@_utils.h","@template@_version.h"]
       },
       {
          "path": "tutorial",
@@ -47,11 +47,11 @@
       },
       {
          "path": "tutorial/lesson/1",
-         "files": ["lesson.json", "@template@_msg.h", "@template@.xml", "@template@_events.h", "@template@_app.h", "@template@_app.c"]
+         "files": ["lesson.json", "@template@.xml", "@template@_cmds.h", "@template@_cmds.c", "@template@_eds_dispatch.c"]
       },
       {
          "path": "tutorial/lesson/2",
-         "files": ["lesson.json", "@template@.xml", "@template@_app.h", "@template@_app.c"]
+         "files": ["lesson.json", "@template@.xml", "@template@_app.h", "@template@_cmds.c"]
       }
    ]
 }

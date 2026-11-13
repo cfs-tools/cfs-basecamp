@@ -1,6 +1,6 @@
 {
    "title": "App Template Configuration",
-   "version": "1.0",
+   "version": "4.0",
 
    "description": [
       "Defines default configuration parameters for the app_template processing",

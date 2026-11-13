@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -19,7 +19,7 @@
 /**
  * @file
  *
- * Main header file for the SAMPLE application
+ * Main header file for the NASA_WORL application
  */
 
 #ifndef @TEMPLATE@_H
@@ -29,28 +29,15 @@
 ** Required header files.
 */
 #include "cfe.h"
-#include "cfe_error.h"
-#include "cfe_evs.h"
-#include "cfe_sb.h"
-#include "cfe_es.h"
+#include "cfe_config.h"
+
+#include "@template@_mission_cfg.h"
+#include "@template@_platform_cfg.h"
 
 #include "@template@_perfids.h"
 #include "@template@_msgids.h"
-// Replaced by EDS: #include "@template@_msg.h"
-#include "@template@_eds_cc.h"
-#include "@template@_eds_typedefs.h"
+#include "@template@_msg.h"
 
-/***********************************************************************/
-#define @TEMPLATE@_PIPE_DEPTH 32 /* Depth of the Command Pipe for Application */
-
-#define @TEMPLATE@_NUMBER_OF_TABLES 1 /* Number of Table(s) */
-
-/* Define filenames of default data images for tables */
-#define @TEMPLATE@_TABLE_FILE "/cf/@template@_tbl.tbl"
-
-#define @TEMPLATE@_TABLE_OUT_OF_RANGE_ERR_CODE -1
-
-#define @TEMPLATE@_TBL_ELEMENT_1_MAX 10
 /************************************************************************
 ** Type Definitions
 *************************************************************************/
@@ -60,18 +47,18 @@
 */
 typedef struct
 {
-
-    //EX1,7,
+   
+    //EX1,7,   
     /*
     ** Command interface counters...
     */
-    uint8 CmdCounter;
-    uint8 ErrCounter;
+    uint8 CommandCounter;
+    uint8 CommandErrorCounter;
     
     /*
-    ** Example Param Command Data
+    ** Example Command Param Data
     */
-    uint16 ExampleParamCmdVal;
+    int16 ExampleCmdParam;
     //EX1
     
     /*
@@ -89,36 +76,21 @@ typedef struct
     */
     CFE_SB_PipeId_t CommandPipe;
 
-    /*
-    ** Initialization data (not reported in housekeeping)...
-    */
-    char   PipeName[CFE_MISSION_MAX_API_LEN];
-    uint16 PipeDepth;
-
-    CFE_TBL_Handle_t TblHandles[@TEMPLATE@_NUMBER_OF_TABLES];
 } @TEMPLATE@_Data_t;
 
-/****************************************************************************/
+/*
+** Global data structure
+*/
+extern @TEMPLATE@_Data_t @TEMPLATE@_Data;
 
+/****************************************************************************/
 /*
 ** Local function prototypes.
 **
 ** Note: Except for the entry point (@TEMPLATE@_Main), these
 **       functions are not called from any other source module.
 */
-void  @TEMPLATE@_AppMain(void);
-int32 @TEMPLATE@_Init(void);
-void  @TEMPLATE@_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr);
-void  @TEMPLATE@_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr);
-int32 @TEMPLATE@_ReportHousekeeping(const CFE_MSG_CommandHeader_t *Msg);
-int32 @TEMPLATE@_Noop(const @TEMPLATE@_NoopCmd_t *Msg);
-int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg);
-int32 @TEMPLATE@_ExampleParamCmd(const @TEMPLATE@_ExampleParamCmd_t *Msg);
-void  @TEMPLATE@_GetCrc(const char *TableName);
-
-int32 @TEMPLATE@_TblValidationFunc(void *TblData);
-
-bool @TEMPLATE@_VerifyCmdLength(CFE_MSG_Message_t *MsgPtr, size_t ExpectedLength);
-
+void         @TEMPLATE@_AppMain(void);
+CFE_Status_t @TEMPLATE@_Init(void);
 
 #endif /* @TEMPLATE@_H */

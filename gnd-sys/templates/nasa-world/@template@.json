@@ -1,7 +1,7 @@
 { "app": {
    
-   "title": "@TEMPLATE@",
-   "version": "1.0.0",
+   "title": "NASA_WORLD",
+   "version": "4.0.0",
    "supplier": "Open STEMware",
    "copyright": "bitValence",
    "url": "",
@@ -12,19 +12,20 @@
 
    "cfs": {
       "cfe-type": "CFE_APP",
-      "obj-file": "@template@",
-      "entry-symbol": "@TEMPLATE@_AppMain",
-      "name": "@TEMPLATE@",
+      "obj-file": "nasa_world",
+      "entry-symbol": "NASA_WORLD_AppMain",
+      "name": "NASA_WORLD",
       "priority": 70,
       "stack": 16384,
       "load_addr": 0,
       "exception-action": 0,
       "app-framework": "cfs",
-      "tables": []
+      "json-tables": []
    },
 
-   "requires": []
+   "requires": [],
    
+   "usrmsg-topics": ["NASA_WORLD_SEND_HK_TOPICID,4"]
 }}
 
 

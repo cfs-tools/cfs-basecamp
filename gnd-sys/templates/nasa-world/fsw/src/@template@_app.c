@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -18,17 +18,18 @@
 
 /**
  * \file
- *   This file contains the source code for the Sample App.
+ *   This file contains the source code for the @TEMPLATE@ App.
  */
 
 /*
 ** Include Files:
 */
-#include "@template@_events.h"
-#include "@template@_version.h"
 #include "@template@_app.h"
-
-#include <string.h>
+#include "@template@_cmds.h"
+#include "@template@_utils.h"
+#include "@template@_eventids.h"
+#include "@template@_dispatch.h"
+#include "@template@_version.h"
 
 /*
 ** global data
@@ -42,7 +43,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * *  * * * * **/
 void @TEMPLATE@_AppMain(void)
 {
-    int32            status;
+    CFE_Status_t     status;
     CFE_SB_Buffer_t *SBBufPtr;
 
     /*
@@ -51,7 +52,7 @@ void @TEMPLATE@_AppMain(void)
     CFE_ES_PerfLogEntry(@TEMPLATE@_PERF_ID);
 
     /*
-    ** Perform application specific initialization
+    ** Perform application-specific initialization
     ** If the Initialization fails, set the RunStatus to
     ** CFE_ES_RunStatus_APP_ERROR and the App will not enter the RunLoop
     */
@@ -62,7 +63,7 @@ void @TEMPLATE@_AppMain(void)
     }
 
     /*
-    ** @TEMPLATE@ Runloop
+    ** @TEMPLATE@ App Runloop
     */
     while (CFE_ES_RunLoop(&@TEMPLATE@_Data.RunStatus) == true)
     {
@@ -81,12 +82,13 @@ void @TEMPLATE@_AppMain(void)
 
         if (status == CFE_SUCCESS)
         {
-            @TEMPLATE@_ProcessCommandPacket(SBBufPtr);
+            @TEMPLATE@_TaskPipe(SBBufPtr);
         }
         else
         {
-            CFE_EVS_SendEvent(@TEMPLATE@_PIPE_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "@TEMPLATE@: SB Pipe Read Error, App Will Exit");
+            CFE_EVS_SendEvent(@TEMPLATE@_PIPE_ERR_EID,
+                              CFE_EVS_EventType_ERROR,
+                              "@TEMPLATE@ App: SB Pipe Read Error, App Will Exit");
 
             @TEMPLATE@_Data.RunStatus = CFE_ES_RunStatus_APP_ERROR;
         }
@@ -105,25 +107,15 @@ void @TEMPLATE@_AppMain(void)
 /* Initialization                                                             */
 /*                                                                            */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
-int32 @TEMPLATE@_Init(void)
+CFE_Status_t @TEMPLATE@_Init(void)
 {
-    int32 status;
+    CFE_Status_t status;
+    char         VersionString[@TEMPLATE@_CFG_MAX_VERSION_STR_LEN];
+
+    /* Zero out the global data structure */
+    memset(&@TEMPLATE@_Data, 0, sizeof(@TEMPLATE@_Data));
 
     @TEMPLATE@_Data.RunStatus = CFE_ES_RunStatus_APP_RUN;
-
-    /*
-    ** Initialize app command execution counters
-    */
-    @TEMPLATE@_Data.CmdCounter = 0;
-    @TEMPLATE@_Data.ErrCounter = 0;
-
-    /*
-    ** Initialize app configuration data
-    */
-    @TEMPLATE@_Data.PipeDepth = @TEMPLATE@_PIPE_DEPTH;
-
-    strncpy(@TEMPLATE@_Data.PipeName, "@TEMPLATE@_CMD_PIPE", sizeof(@TEMPLATE@_Data.PipeName));
-    @TEMPLATE@_Data.PipeName[sizeof(@TEMPLATE@_Data.PipeName) - 1] = 0;
 
     /*
     ** Register the events
@@ -131,213 +123,77 @@ int32 @TEMPLATE@_Init(void)
     status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);
     if (status != CFE_SUCCESS)
     {
-        CFE_ES_WriteToSysLog("@TEMPLATE@: Error Registering Events, RC = 0x%08lX\n", (unsigned long)status);
-        return status;
+        CFE_ES_WriteToSysLog("@TEMPLATE@ App: Error Registering Events, RC = 0x%08lX\n", (unsigned long)status);
     }
-
-    /*
-    ** Initialize housekeeping packet (clear user data area).
-    */
-    CFE_MSG_Init(CFE_MSG_PTR(@TEMPLATE@_Data.HkTlm.TelemetryHeader), CFE_SB_ValueToMsgId(@TEMPLATE@_HK_TLM_MID),
-                 sizeof(@TEMPLATE@_Data.HkTlm));
-
-    /*
-    ** Create Software Bus message pipe.
-    */
-    status = CFE_SB_CreatePipe(&@TEMPLATE@_Data.CommandPipe, @TEMPLATE@_Data.PipeDepth, @TEMPLATE@_Data.PipeName);
-    if (status != CFE_SUCCESS)
+    else
     {
-        CFE_ES_WriteToSysLog("@TEMPLATE@: Error creating pipe, RC = 0x%08lX\n", (unsigned long)status);
-        return status;
+        /*
+         ** Initialize housekeeping packet (clear user data area).
+         */
+        CFE_MSG_Init(CFE_MSG_PTR(@TEMPLATE@_Data.HkTlm.TelemetryHeader),
+                     CFE_SB_ValueToMsgId(@TEMPLATE@_HK_TLM_MID),
+                     sizeof(@TEMPLATE@_Data.HkTlm));
+
+        /*
+         ** Create Software Bus message pipe.
+         */
+        status = CFE_SB_CreatePipe(&@TEMPLATE@_Data.CommandPipe,
+                                   @TEMPLATE@_PLATFORM_PIPE_DEPTH,
+                                   @TEMPLATE@_PLATFORM_PIPE_NAME);
+        if (status != CFE_SUCCESS)
+        {
+            CFE_EVS_SendEvent(@TEMPLATE@_CR_PIPE_ERR_EID,
+                              CFE_EVS_EventType_ERROR,
+                              "@TEMPLATE@ App: Error creating SB Command Pipe, RC = 0x%08lX",
+                              (unsigned long)status);
+        }
     }
 
-    /*
-    ** Subscribe to Housekeeping request commands
-    */
-    status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(@TEMPLATE@_SEND_HK_MID), @TEMPLATE@_Data.CommandPipe);
-    if (status != CFE_SUCCESS)
+    if (status == CFE_SUCCESS)
     {
-        CFE_ES_WriteToSysLog("@TEMPLATE@: Error Subscribing to HK request, RC = 0x%08lX\n", (unsigned long)status);
-        return status;
+        /*
+        ** Subscribe to Housekeeping request commands
+        */
+        status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(@TEMPLATE@_SEND_HK_MID), @TEMPLATE@_Data.CommandPipe);
+        if (status != CFE_SUCCESS)
+        {
+            CFE_EVS_SendEvent(@TEMPLATE@_SUB_HK_ERR_EID,
+                              CFE_EVS_EventType_ERROR,
+                              "@TEMPLATE@ App: Error Subscribing to HK request, RC = 0x%08lX",
+                              (unsigned long)status);
+        }
     }
 
-    /*
-    ** Subscribe to ground command packets
-    */
-    status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(@TEMPLATE@_CMD_MID), @TEMPLATE@_Data.CommandPipe);
-    if (status != CFE_SUCCESS)
+    if (status == CFE_SUCCESS)
     {
-        CFE_ES_WriteToSysLog("@TEMPLATE@: Error Subscribing to Command, RC = 0x%08lX\n", (unsigned long)status);
-
-        return status;
+        /*
+        ** Subscribe to ground command packets
+        */
+        status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(@TEMPLATE@_CMD_MID), @TEMPLATE@_Data.CommandPipe);
+        if (status != CFE_SUCCESS)
+        {
+            CFE_EVS_SendEvent(@TEMPLATE@_SUB_CMD_ERR_EID,
+                              CFE_EVS_EventType_ERROR,
+                              "@TEMPLATE@ App: Error Subscribing to Commands, RC = 0x%08lX",
+                              (unsigned long)status);
+        }
     }
 
-    CFE_EVS_SendEvent(@TEMPLATE@_STARTUP_INF_EID, CFE_EVS_EventType_INFORMATION, "@TEMPLATE@ Initialized.%s",
-                      @TEMPLATE@_VERSION_STRING);
-
-    return CFE_SUCCESS;
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
-/*                                                                            */
-/*  Purpose:                                                                  */
-/*     This routine will process any packet that is received on the           */
-/*     @TEMPLATE@ command pipe.                                               */
-/*                                                                            */
-/* * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * *  * *  * * * * */
-void @TEMPLATE@_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr)
-{
-    CFE_SB_MsgId_t MsgId = CFE_SB_INVALID_MSG_ID;
-
-    CFE_MSG_GetMsgId(&SBBufPtr->Msg, &MsgId);
-
-    switch (CFE_SB_MsgIdToValue(MsgId))
+    if (status == CFE_SUCCESS)
     {
-        case @TEMPLATE@_CMD_MID:
-            @TEMPLATE@_ProcessGroundCommand(SBBufPtr);
-            break;
 
-        case @TEMPLATE@_SEND_HK_MID:
-            @TEMPLATE@_ReportHousekeeping((CFE_MSG_CommandHeader_t *)SBBufPtr);
-            break;
+        CFE_Config_GetVersionString(VersionString,
+                                    @TEMPLATE@_CFG_MAX_VERSION_STR_LEN,
+                                    "@TEMPLATE@ App",
+                                    @TEMPLATE@_VERSION,
+                                    @TEMPLATE@_BUILD_CODENAME,
+                                    @TEMPLATE@_LAST_OFFICIAL);
 
-        default:
-            CFE_EVS_SendEvent(@TEMPLATE@_INVALID_MSGID_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "@TEMPLATE@: invalid command packet,MID = 0x%x", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
-            break;
-    }
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
-/*                                                                            */
-/* @TEMPLATE@ ground commands                                                 */
-/*                                                                            */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
-void @TEMPLATE@_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr)
-{
-    CFE_MSG_FcnCode_t CommandCode = 0;
-
-    CFE_MSG_GetFcnCode(&SBBufPtr->Msg, &CommandCode);
-
-    /*
-    ** Process "known" @TEMPLATE@ ground commands
-    */
-    switch (CommandCode)
-    {
-        case @TEMPLATE@_NOOP_CC:
-            if (@TEMPLATE@_VerifyCmdLength(&SBBufPtr->Msg, sizeof(@TEMPLATE@_NoopCmd_t)))
-            {
-                @TEMPLATE@_Noop((@TEMPLATE@_NoopCmd_t *)SBBufPtr);
-            }
-
-            break;
-
-        case @TEMPLATE@_RESET_COUNTERS_CC:
-            if (@TEMPLATE@_VerifyCmdLength(&SBBufPtr->Msg, sizeof(@TEMPLATE@_ResetCountersCmd_t)))
-            {
-                @TEMPLATE@_ResetCounters((@TEMPLATE@_ResetCountersCmd_t *)SBBufPtr);
-            }
-
-            break;
-
-        /* default case already found during FC vs length test */
-        default:
-            CFE_EVS_SendEvent(@TEMPLATE@_COMMAND_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "Invalid ground command code: CC = %d", CommandCode);
-            break;
-    }
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
-/*                                                                            */
-/*  Purpose:                                                                  */
-/*         This function is triggered in response to a task telemetry request */
-/*         from the housekeeping task. This function will gather the Apps     */
-/*         telemetry, packetize it and send it to the housekeeping task via   */
-/*         the software bus                                                   */
-/* * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * *  * *  * * * * */
-int32 @TEMPLATE@_ReportHousekeeping(const CFE_MSG_CommandHeader_t *Msg)
-{
-
-    /*
-    ** Get command execution counters...
-    */
-    @TEMPLATE@_Data.HkTlm.Payload.CommandErrorCounter = @TEMPLATE@_Data.ErrCounter;
-    @TEMPLATE@_Data.HkTlm.Payload.CommandCounter      = @TEMPLATE@_Data.CmdCounter;
-
-    /*
-    ** Send housekeeping telemetry packet...
-    */
-    CFE_SB_TimeStampMsg(CFE_MSG_PTR(@TEMPLATE@_Data.HkTlm.TelemetryHeader));
-    CFE_SB_TransmitMsg(CFE_MSG_PTR(@TEMPLATE@_Data.HkTlm.TelemetryHeader), true);
-
-    return CFE_SUCCESS;
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
-/*                                                                            */
-/* @TEMPLATE@ NOOP commands                                                   */
-/*                                                                            */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
-int32 @TEMPLATE@_Noop(const @TEMPLATE@_NoopCmd_t *Msg)
-{
-    @TEMPLATE@_Data.CmdCounter++;
-
-    CFE_EVS_SendEvent(@TEMPLATE@_COMMANDNOP_INF_EID, CFE_EVS_EventType_INFORMATION, "@TEMPLATE@: NOOP command %s",
-                      @TEMPLATE@_VERSION);
-
-    return CFE_SUCCESS;
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
-/*                                                                            */
-/*  Purpose:                                                                  */
-/*         This function resets all the global counter variables that are     */
-/*         part of the task telemetry.                                        */
-/*                                                                            */
-/* * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * *  * *  * * * * */
-int32 @TEMPLATE@_ResetCounters(const @TEMPLATE@_ResetCountersCmd_t *Msg)
-{
-    @TEMPLATE@_Data.CmdCounter = 0;
-    @TEMPLATE@_Data.ErrCounter = 0;
-
-    CFE_EVS_SendEvent(@TEMPLATE@_COMMANDRST_INF_EID, CFE_EVS_EventType_INFORMATION, "@TEMPLATE@: RESET command");
-
-    return CFE_SUCCESS;
-}
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
-/*                                                                            */
-/* Verify command packet length                                               */
-/*                                                                            */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
-bool @TEMPLATE@_VerifyCmdLength(CFE_MSG_Message_t *MsgPtr, size_t ExpectedLength)
-{
-    bool              result       = true;
-    size_t            ActualLength = 0;
-    CFE_SB_MsgId_t    MsgId        = CFE_SB_INVALID_MSG_ID;
-    CFE_MSG_FcnCode_t FcnCode      = 0;
-
-    CFE_MSG_GetSize(MsgPtr, &ActualLength);
-
-    /*
-    ** Verify the command packet length.
-    */
-    if (ExpectedLength != ActualLength)
-    {
-        CFE_MSG_GetMsgId(MsgPtr, &MsgId);
-        CFE_MSG_GetFcnCode(MsgPtr, &FcnCode);
-
-        CFE_EVS_SendEvent(@TEMPLATE@_LEN_ERR_EID, CFE_EVS_EventType_ERROR,
-                          "Invalid Msg length: ID = 0x%X,  CC = %u, Len = %u, Expected = %u",
-                          (unsigned int)CFE_SB_MsgIdToValue(MsgId), (unsigned int)FcnCode, (unsigned int)ActualLength,
-                          (unsigned int)ExpectedLength);
-
-        result = false;
-
-        @TEMPLATE@_Data.ErrCounter++;
+        CFE_EVS_SendEvent(@TEMPLATE@_INIT_INF_EID,
+                          CFE_EVS_EventType_INFORMATION,
+                          "@TEMPLATE@ App Initialized.%s",
+                          VersionString);
     }
 
-    return result;
+    return status;
 }

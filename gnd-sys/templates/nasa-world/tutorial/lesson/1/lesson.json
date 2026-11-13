@@ -14,61 +14,43 @@
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. Locate the '<DataTypeSet>' element.\n2. Within this element create a new 'ContainerDataType':\n    Named 'ExampleParamCmd_Payload'\n    EntryList entry named 'Param' with type 'BASE_TYPES/uint16'\n\nNote BASE_TYPES is defined in cfe/modules/core_api/eds/base_types.xml"
+          "instructions": "1. Locate the '<DataTypeSet>' element.\n2. Within this element create a new 'ContainerDataType':\n    Named 'ExampleParam_Payload'\n    EntryList entry named 'ValI16' with type 'BASE_TYPES/int16'\n\nNote BASE_TYPES is defined in cfe/modules/core_api/eds/base_types.xml"
         },
         {
           "id": "EX2",
-          "instructions": "1. Locate the 'ResetCountersCmd' ContainerDataType.\n2. After this entry create a new 'ContainerDataType':\n    Named 'ExampleParamCmd'\n    FunctionCode value of '2'\n    EntryList entry named 'Payload' with type 'ExampleParamCmd_Payload'\n\nNote the GUI needs to be restarted after building the new lesson cFS target."
+          "instructions": "1. Locate the 'ResetCountersCmd' ContainerDataType.\n2. After this entry create a new 'ContainerDataType':\n    Named 'ExampleParamCmd'\n    FunctionCode value of '2'\n    EntryList entry named 'Payload' with type 'ExampleParam_Payload'\n\nNote the GUI needs to be restarted after building the new lesson cFS target."
         }
       ]
     },
     {
       "path": "fsw/src",
-      "name": "@template@_msg.h",
+      "name": "@template@_cmds.h",
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "Read the exercise comment block. There are no code changes for this exercise."
+          "instructions": "1. After the @TEMPLATE@_ResetCountersCmd() function prototype add\n    CFE_Status_t @TEMPLATE@_ExampleParamCmd(const @TEMPLATE@_ExampleParamCmd_t *Msg);"
         }
       ]
     },
     {
       "path": "fsw/src",
-      "name": "@template@_events.h",
+      "name": "@template@_cmds.c",
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "1. At the end of the event message identifier list add:\n    #define @TEMPLATE@_EXAMPLE_PARAM_CMD_INF_EID 8\n\nNote this is the event ID for the event message sent when the command is processed.\nNote Basecamp does not recommend the '_INF' substring convention in NASA's Sample App. If the SendEvent() event type changes then the macro string also needs to change."
+          "instructions": "1. After the @TEMPLATE@_ResetCountersCmd() command fucntion add\n    The @TEMPLATE@_ExampleParamCmd code from the exercise window"
         }
       ]
     },
     {
       "path": "fsw/src",
-      "name": "@template@_app.h",
+      "name": "@template@_eds_dispatch.c",
       "exercise": [
         {
           "id": "EX1",
-          "instructions": "Read the exercise comment block. There are no code changes for this exercise."
-        },
-        {
-          "id": "EX2",
-          "instructions": "1. After the @TEMPLATE@_Noop() function protoype definition add the @TEMPLATE@_ExampleParamCmd() definition:\n    int32 @TEMPLATE@_ExampleParamCmd(const @TEMPLATE@_ExampleParamCmd_t *Msg);\n    Note the function is globally defined (as opposed to statically in @template@_app.c) so it can be accessed by a unit test."
+          "instructions": "1. Locate the @TEMPLATE@_TC_DISPATCH_TABLE\n2. After the @TEMPLATE@_ResetCountersCmd entry add\n    ,.ExampleParamCmd_indication  = @TEMPLATE@_ExampleParamCmd\n\nNote @template@_dispatch.c is not modified since EDS is being used."
         }
       ]
-    },
-    {
-      "path": "fsw/src",
-      "name": "@template@_app.c",
-      "exercise": [
-        {
-          "id": "EX1",
-          "instructions": "1. In function @TEMPLATE@_ProcessGroundCommand() after the case statement for @TEMPLATE@_RESET_COUNTERS_CC add\n    The @TEMPLATE@_EXAMPLE_PARAM_CC case statement code from the exercise window"
-        },
-        {
-          "id": "EX2",
-          "instructions": "1. After the NASA_WORLD_ResetCounters() command fucntion add\n    The @TEMPLATE@_ExampleParamCmd() code from the exercise window\n\n    Note this file location was chosen because it keeps the command functions together."
-        }
-      ]
-    }
+    }    
   ]
 }

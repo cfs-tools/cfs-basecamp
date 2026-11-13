@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -18,20 +18,22 @@
 
 /**
  * @file
- *
- * Define SAMPLE App Events IDs
+ *   This file contains the prototypes for the @TEMPLATE@ Ground Command-handling functions
  */
 
-#ifndef @TEMPLATE@_EVENTS_H
-#define @TEMPLATE@_EVENTS_H
+#ifndef @TEMPLATE@_CMDS_H
+#define @TEMPLATE@_CMDS_H
 
-#define @TEMPLATE@_RESERVED_EID          0
-#define @TEMPLATE@_STARTUP_INF_EID       1
-#define @TEMPLATE@_COMMAND_ERR_EID       2
-#define @TEMPLATE@_COMMANDNOP_INF_EID    3
-#define @TEMPLATE@_COMMANDRST_INF_EID    4
-#define @TEMPLATE@_INVALID_MSGID_ERR_EID 5
-#define @TEMPLATE@_LEN_ERR_EID           6
-#define @TEMPLATE@_PIPE_ERR_EID          7
+/*
+** Required header files.
+*/
+#include "cfe_error.h"
+#include "@template@_msg.h"
+//EX1,4,
+CFE_Status_t @TEMPLATE@_SendHkCmd(const @TEMPLATE@_SendHkCmd_t *Msg);
+CFE_Status_t @TEMPLATE@_NoopCmd(const @TEMPLATE@_NoopCmd_t *Msg);
+CFE_Status_t @TEMPLATE@_ResetCountersCmd(const @TEMPLATE@_ResetCountersCmd_t *Msg);
+CFE_Status_t @TEMPLATE@_ExampleParamCmd(const @TEMPLATE@_ExampleParamCmd_t *Msg);
+//EX1
 
-#endif /* @TEMPLATE@_EVENTS_H */
+#endif /* @TEMPLATE@_CMDS_H */
