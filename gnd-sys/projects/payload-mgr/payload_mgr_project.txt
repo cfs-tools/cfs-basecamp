@@ -14,20 +14,22 @@ License:
     All Rights Reserved.
 
 """
-
-
+># For detailed exercies steps and design information refer to 
+>#    https://spacesteps.com/2024/10/12/cfs-payload-manager-app/
+>#    Basecamps GUI: Help->Project Docs... pl_mgr-project.pdf
 ================================================================================
 Exercise 1. Nominal Operations
 
+>#
 ># Nominal Operations
 > 'PL_SIM', 'PowerOn', {}  ## Wait for PL_MGR status telemetry to indicate power state is Ready
 > 'PL_MGR', 'StartSci', {} ## Wait for at least one science file to be created (~30 seconds). An event message is sent when each science file is created and closed.
 > 'PL_MGR', 'StopSci', {}  ## Use the File Browser to transfer pl_sci_xxx.txt to the ground, right click to edit/view the file
 
-
 ================================================================================
 Exercise 2. Anomalous Operations
 
+>#
 ># Anomalous Operations
 > 'PL_SIM', 'SetFault', {}      ## Fault present is set in PL_SIM status telemetry and not in PL_MGR status telemetry because science is off
 > 'PL_MGR', 'StartSci', {}      ## Wait for at least one science file to be created (~30 seconds) and note the filename so you observe the fault in the detector data

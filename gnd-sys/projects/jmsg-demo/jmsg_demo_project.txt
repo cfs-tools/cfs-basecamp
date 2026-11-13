@@ -23,7 +23,7 @@ License:
 ># The UDP_SCRIPT use case demonstrates how to control Python script
 ># execution over a UDP connection. A JMSG command is sent from the 
 ># cFS JMSG_DEMO app to the Python jmsg_demo script. The demo alternates
-># bewteen teh following JMSG commands:
+># between the following JMSG commands:
 ># - Embed a Python script in the JMSG that is executed
 ># - Specify the filename of a Python script that is executed
 >#
@@ -31,62 +31,60 @@ License:
 ># 1. Open a terminal window and navigate to cfs-basecamp/usr/apps/jmsg_lib/scripts
 >#    - Issue the follow command 'python3 jmsg_demo.py' (without quotes)
 >#    - Select use case SCRIPT_CMD
+>#    - A pending message is displayed indicating the python script is waiting for
+>#      a JMSG from the JMSG_DEMO app
 >#
-># 2. From Basecamp GUI open telemetry window JMSG_LIB/Application/TOPIC_SCRIPT_CMD
+># 2. From Basecamp GUI open telemetry window JMSG_DEMO/Application/STATUS_TLM
+>#    - Observe telemetry points updating for each step below
 >#
 ># 3. Send the StartUseCase command below and observe outputs in jmsg_demo.py terminal
+>#
 ># 4. Send StopUseCase command to end the demo
 >#
-> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'UDP_SCRIPT'} ## jmsg_demo.py will print script outputs
+> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'UDP_SCRIPT'} ## jmsg_demo.py prints script outputs from
 > 'JMSG_DEMO', 'StopUseCase', {} 
 
 >#================================================================================
 ># Demo 2. Transfer CSV Commands and Telemetry JMSGs
 >#
 ># The UDP_RPI use case demonstrates how command and telemetry JMSGs with Comma
-># Separated Variable (CSV) parameters are used. Separate CSV_CMD and CSV_TLM 
-># demos can be run, however the Raspberry Pi (RPI) use case is used because it 
-># exercises both commands & telemetry.
+># Separated Variable (CSV) parameters are used. Individual CSV_CMD and CSV_TLM 
+># demos are available, however the Raspberry Pi (RPI) use case is used here 
+># because it exercises both CSV commands & telemetry in the same demo.
 >#
 ># STEPS
 ># 1. Open a terminal window and navigate to cfs-basecamp\usr\apps\jmsg_lib\scripts
 >#    - Issue the follow command 'python3 jmsg_demo.py' (without quotes)
 >#    - Select use case UDP_RPI
 >#
-># 2. From Basecamp GUI open the followng telemetry windows
->#    - JMSG_LIB/Application/TOPIC_CSV_CMD
+># 2. From Basecamp GUI open the following telemetry windows
 >#    - JMSG_LIB/Application/TOPIC_CSV_TLM
 >#    - JMSG_DEMO/Application/UDP_RPI_TLM
 >#
 ># 3. Send the StartUseCase command below and observe outputs in jmsg_demo.py terminal
+>#    - Press <Enter> in the terminal window to send a CSV telemetry message to 
+>#      JMSG_DEMO
+>#
 ># 4. Send StopUseCase command to end the demo
 >#
-> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'UDP_RPI'} ## 
+> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'UDP_RPI'} ## jmsg_demo.py will print script outputs
 > 'JMSG_DEMO', 'StopUseCase', {} 
 
 >#================================================================================
 ># Demo 3. MQTT: Send Commands & Receive Telemetry
 >#
-># The UDP_RPI use case demonstrates how command and telemetry JMSGs with Comma
-># Separated Variable (CSV) parameters are used. Separate CSV_CMD and CSV_TLM 
-># demos can be run, however the Raspberry Pi (RPI) use case is used because it 
-># exercises both commands & telemetry.
+># TODO
 >#
 ># STEPS
-># 1. Open a terminal window and navigate to cfs-basecamp\usr\apps\jmsg_lib\scripts
->#    - Issue the follow command 'python3 jmsg_demo.py' (without quotes)
->#    - Select use case UDP_RPI
+># 1. TODO
 >#
-># 2. From Basecamp GUI open the followng telemetry windows
->#    - JMSG_LIB/Application/TOPIC_CSV_CMD
->#    - JMSG_LIB/Application/TOPIC_CSV_TLM
->#    - JMSG_DEMO/Application/UDP_RPI_TLM
+># 2. TODO
 >#
-># 3. Send the StartUseCase command below and observe outputs in jmsg_demo.py terminal
-># 4. Send StopUseCase command to end the demo
+># 3. TODO
 >#
-> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'MQTT_DISCRETE'} ##
-> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'MQTT_RATE'} ##
+>#
+> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'MQTT_DISCRETE'} ## TODO
+> 'JMSG_DEMO', 'StartUseCase', {'UseCase': 'MQTT_RATE'} ## TODO
 > 'JMSG_DEMO', 'StopUseCase', {}
 
 >#================================================================================

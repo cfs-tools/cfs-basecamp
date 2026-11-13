@@ -16,14 +16,15 @@
    
    "app-list": "bc42_lib,bc42_intf,bc42_ctrl",
 
+   "install-script": "42_sim_project.sh,sudo",
+   
    "support-files":
       { 
          "cmd-sender":     "42_sim_project.txt",
          "file-server":    "",
          "scripts":        "",
          "templates":      "",
-         "tutorials":      "",
-         "install-script": "42_sim_project.sh,sudo" 
+         "tutorials":      ""
       }
 }
 

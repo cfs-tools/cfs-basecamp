@@ -1,0 +1,7 @@
+"""
+Sample App Commands
+"""
+> 'SAMPLE_APP', 'NoopCmd', {} ## Response: Event message with app version, SAMPLE_APP_HK_TLM_TOPICID CommandCounter increments 
+> 'SAMPLE_APP', 'ResetCountersCmd', {} ## Response: SAMPLE_APP_HK_TLM_TOPICID CommandCounter & CommandErrorCounter set to zero in 
+> 'SAMPLE_APP', 'ProcessCmd', {} ## Response: Example Table values and CRC displayed in event message, SAMPLE_LIB function called event message 
+> 'SAMPLE_APP', 'DisplayParamCmd', {'ValU32':1234, 'ValI16': -89, 'ValStr': 'Hello'} ## Response: Command parameter displayed in an event message 
