@@ -1,0 +1,66 @@
+name: cFS Documentation and Guides
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+  schedule:
+    # 11:00 PM UTC every Sunday
+    - cron:  '0 23 * * 0'
+
+env:
+  WORK_PATH: ${{ github.workspace }}
+
+jobs:
+  checkout-and-cache:
+    name: Custom checkout and cache for cFS documents
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout cFE
+        uses: actions/checkout@v6
+        with:
+          path: cfe
+
+      - name: Set up Dependencies
+        uses: ./cfe/.github/actions/setup-cfe
+        with:
+          source-dir: .
+          preferred-ref: ${{ github.head_ref }}
+          org: 'nasa'
+
+      # Setup the build system
+      - name: Set up for build
+        run: make SIMULATION=native prep
+
+      - name: Cache Source and Build
+        id: cache-src-bld
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.WORK_PATH }}/
+          key: cfs-doc-${{ github.run_id }}
+
+  build-cfe-usersguide:
+    needs: checkout-and-cache
+    name: Build and deploy cFE Docs
+    uses: nasa/cFS/.github/workflows/build-doc-reusable.yml@dev
+    with:
+      target: "[\"cfe-usersguide\"]"
+      cache-key: cfs-doc-${{ github.run_id }}
+      buildpdf: ${{ github.event_name == 'push' && contains(github.ref, 'main')}}
+
+  build-mission-doc:
+    needs: checkout-and-cache
+    name: Build Mission Doc
+    uses: nasa/cFS/.github/workflows/build-doc-reusable.yml@dev
+    with:
+      target: "[\"mission-doc\"]"
+      cache-key: cfs-doc-${{ github.run_id }}
+      buildpdf: false # No need for mission pdf within cFE, done at bundle level
