@@ -1,0 +1,22 @@
+name: "CodeQL Analysis"
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    uses: nasa/cFS/.github/workflows/codeql-reusable.yml@dev
+    with:
+      component-path: apps/ci_lab
+      prep: 'make prep; make -C build/tools/elf2cfetbl'
+      make: 'make -C build/native/default_cpu1/apps/ci_lab'
