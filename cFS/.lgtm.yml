@@ -1,0 +1,21 @@
+queries:
+- include: "*"
+- exclude: "cpp/class-many-fields"
+- exclude: "cpp/long-switch"
+- exclude: "cpp/trivial-switch"
+
+path_classifiers:
+  generated:
+    - "**/Ui_*"
+
+extraction:
+  python:
+    python_setup:
+      version: "3"
+    index:
+      include: "tools/cFS-GroundSystem"
+  cpp:
+    index:
+      build_command:
+      - "make native_std.install"
+
