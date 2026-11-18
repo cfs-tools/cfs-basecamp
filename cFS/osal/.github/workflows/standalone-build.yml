@@ -1,0 +1,129 @@
+name: Build and Test Standalone OSAL package
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  allowed_ncov_lines: 0
+  allowed_ncov_branches: 0
+  allowed_ncov_functions: 0
+
+jobs:
+  build-and-test:
+    name: Build and Execute Tests
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/core-flight-system/cfsbuildenv-linux:latest
+      options: --sysctl fs.mqueue.queues_max=512 --sysctl fs.mqueue.msg_max=512
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout OSAL
+        uses: actions/checkout@v6
+        with:
+          path: source
+
+      - name: Set CXX environment variable
+        run: echo "CXX=/usr/bin/g++" >> $GITHUB_ENV
+
+      - name: Set run_lcov=TRUE
+        run: echo "run_lcov=TRUE" >> $GITHUB_ENV
+
+      - name: Set up debug environment
+        run: |
+          echo "DESTDIR=${{ github.workspace }}/staging-debug" >> $GITHUB_ENV
+
+      - name: Set up build
+        run: cmake
+          -DCMAKE_BUILD_TYPE=Debug
+          -DENABLE_UNIT_TESTS=TRUE
+          -DOSAL_OMIT_DEPRECATED=FALSE
+          -DOSAL_VALIDATE_API=FALSE
+          -DOSAL_INSTALL_LIBRARIES=FALSE
+          -DOSAL_CONFIG_DEBUG_PERMISSIVE_MODE=TRUE
+          -DOSAL_SYSTEM_BSPTYPE=generic-linux
+          -DCMAKE_PREFIX_PATH=/usr/lib/cmake
+          -DCMAKE_INSTALL_PREFIX=/usr
+          -S source
+          -B build
+
+      - name: Build OSAL
+        working-directory: build
+        run: make ${{ env.build_tgt }} -j2
+
+      - name: Execute Tests
+        working-directory: build
+        run: ctest --output-on-failure -j4 2>&1 | tee ../ctest.log
+
+      - name: Check Coverage
+        id: stats
+        uses: ./source/.github/actions/check-coverage
+        with:
+          binary-dir: build
+
+      - name: Enforce coverage function minimum
+        if: ${{ always() && steps.stats.outputs.ncov_functions > env.allowed_ncov_functions }}
+        run: |
+          echo "::error::Too many uncovered functions (${{ steps.stats.outputs.ncov_functions }})"
+          /bin/false
+
+      - name: Enforce coverage line minimum
+        if: ${{ always() && steps.stats.outputs.ncov_lines > env.allowed_ncov_lines }}
+        run: |
+          echo "::error::Too many uncovered lines (${{ steps.stats.outputs.ncov_lines }})"
+          /bin/false
+
+      - name: Enforce coverage branch minimum
+        if: ${{ always() && steps.stats.outputs.ncov_branches > env.allowed_ncov_branches }}
+        run: |
+          echo "::error::Too many uncovered branches (${{ steps.stats.outputs.ncov_branches }})"
+          /bin/false
+
+      - name: Enforce keeping coverage function minimum up-to-date
+        if: ${{ always() && steps.stats.outputs.ncov_functions < env.allowed_ncov_functions }}
+        run: |
+          echo "::error::${{ steps.stats.outputs.ncov_functions }} uncovered function${{ steps.stats.outputs.ncov_functions == 1 && '' || 's' }} reported, but ${{ env.allowed_ncov_functions }} ${{ env.allowed_ncov_functions == 1 && 'is' || 'are' }} allowed."
+          echo "::error::Please update the 'allowed_ncov_functions' variable to ${{ steps.stats.outputs.ncov_functions }} in order to match the new coverage level."
+          /bin/false
+
+      - name: Enforce keeping coverage line minimum up-to-date
+        if: ${{ always() && steps.stats.outputs.ncov_lines < env.allowed_ncov_lines }}
+        run: |
+          echo "::error::${{ steps.stats.outputs.ncov_lines }} uncovered line${{ steps.stats.outputs.ncov_lines == 1 && '' || 's' }} reported, but ${{ env.allowed_ncov_lines }} ${{ env.allowed_ncov_lines == 1 && 'is' || 'are' }} allowed."
+          echo "::error::Please update the 'allowed_ncov_lines' variable to ${{ steps.stats.outputs.ncov_lines }} in order to match the new coverage level."
+          /bin/false
+
+      - name: Enforce keeping coverage branch minimum up-to-date
+        if: ${{ always() && steps.stats.outputs.ncov_branches < env.allowed_ncov_branches }}
+        run: |
+          echo "::error::${{ steps.stats.outputs.ncov_branches }} uncovered branch${{ steps.stats.outputs.ncov_branches == 1 && '' || 'es' }} reported, but ${{ env.allowed_ncov_branches }} ${{ env.allowed_ncov_branches == 1 && 'is' || 'are' }} allowed."
+          echo "::error::Please update the 'allowed_ncov_branches' variable to ${{ steps.stats.outputs.ncov_branches }} in order to match the new coverage level."
+          /bin/false
+
+      - name: Assemble Results
+        if: ${{ always() }}
+        run: |
+          if [ -s ctest.log ]; then
+            echo '<h2>CTest Execution</h2>' >> $GITHUB_STEP_SUMMARY
+            echo '<pre>' >> $GITHUB_STEP_SUMMARY
+            cat ctest.log >> $GITHUB_STEP_SUMMARY
+            echo '</pre>' >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -s 'build/lcov-summary.xml' ]; then
+            cat 'build/lcov-summary.xml' >> $GITHUB_STEP_SUMMARY
+          fi

@@ -1,0 +1,22 @@
+name: "CodeQL Analysis OSAL Default Build"
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+
+jobs:
+  codeql:
+    name: CodeQl Analysis
+    uses: nasa/cFS/.github/workflows/codeql-reusable.yml@dev
+    with:
+      component-path: osal
+      setup: 'cp Makefile.sample Makefile'
+      make: 'make'

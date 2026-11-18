@@ -1,0 +1,204 @@
+name: MCDC Analysis
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+
+# Force bash to apply pipefail option so pipeline failures aren't masked
+defaults:
+  run:
+    shell: bash
+
+env:
+  SIMULATION: native
+  TESTS_RAN: false
+
+jobs:
+  # Checks for duplicate actions. Skips push actions if there is a matching or
+  # duplicate pull-request action.
+  checks-for-duplicates:
+    runs-on: ubuntu-22.04
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          concurrent_skipping: 'same_content'
+          skip_after_successful_duplicate: 'true'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+
+  mcdc:
+    needs: checks-for-duplicates
+    if: ${{ needs.checks-for-duplicates.outputs.should_skip != 'true' || contains(github.ref, 'dev') || contains(github.ref, 'main') }}
+    name: Build and Run MCDC
+    runs-on: ubuntu-22.04
+    container: ghcr.io/core-flight-system/mcdc:latest
+
+    steps:
+      - name: Checkout MCDC Script
+        uses: actions/checkout@v6
+        with:
+          repository: nasa/cFS
+          path: mcdc
+          ref: dev
+
+      - name: Checkout OSAL
+        uses: actions/checkout@v6
+        with:
+          path: source
+
+      - name: Modify osal to include coverage flags
+        run: |
+          sed -i 's/target_compile_options.*)/target_compile_options(ut_coverage_compile INTERFACE -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' source/src/bsp/generic-linux/CMakeLists.txt
+          sed -i 's/set(UT_COVERAGE_COMPILE_FLAGS.*)/set(UT_COVERAGE_COMPILE_FLAGS -pg --coverage -O0 -fcondition-coverage -fprofile-abs-path)/' source/src/bsp/generic-linux/build_options.cmake
+          sed -i 's/set(UT_COVERAGE_LINK_FLAGS.*)/set(UT_COVERAGE_LINK_FLAGS -pg --coverage -O0 -fcondition-coverage -fprofile-abs-path)/' source/src/bsp/generic-linux/build_options.cmake
+
+      - name: Set up build
+        run: cmake
+          -DCMAKE_BUILD_TYPE=Debug
+          -DENABLE_UNIT_TESTS=TRUE
+          -DOSAL_OMIT_DEPRECATED=FALSE
+          -DOSAL_VALIDATE_API=FALSE
+          -DOSAL_INSTALL_LIBRARIES=FALSE
+          -DOSAL_CONFIG_DEBUG_PERMISSIVE_MODE=TRUE
+          -DOSAL_SYSTEM_BSPTYPE=generic-linux
+          -DCMAKE_PREFIX_PATH=/usr/lib/cmake
+          -DCMAKE_INSTALL_PREFIX=/usr
+          -S source
+          -B build
+
+      - name: Build OSAL
+        working-directory: build
+        run: make VERBOSE=1
+
+      - name: Execute Tests
+        working-directory: build
+        run: |
+          echo "BASE_DIR=build/unit-test-coverage" >> $GITHUB_ENV
+          (ctest --output-on-failure -j4 2>&1 || true) | tee ../test_results.txt
+          echo "TESTS_RAN=true" >> $GITHUB_ENV
+
+      - name: Grab test modules
+        if: ${{ env.TESTS_RAN == 'true' }}
+        run: |
+          echo "MODULES=$(grep -oP 'Test\s+#\d+: \K[\w\-\_]+(?= )' test_results.txt | tr '\n' ' ' | sed 's/ $//')" >> $GITHUB_ENV
+          grep -oP 'Test #\d+: \K[\w\-\_]+' test_results.txt | tr '\n' ' ' | sed 's/ $//' >> modules.txt
+
+      - name: Run mcdc analysis
+        if: ${{ env.TESTS_RAN == 'true' }}
+        run: bash mcdc/.github/scripts/mcdc-analyze.sh
+
+      - name: Save PR number
+        if: github.event_name == 'pull_request' && always()
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: echo $PR_NUMBER > pr_number
+
+      - name: Archive unit test results
+        # Upload if success or failure which supports skipping, unlike always()
+        if: ${{ env.TESTS_RAN == 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: Unit test results
+          path: |
+            test_results.txt
+
+      - name: Archive mcdc results
+        # Upload if success or failure which supports skipping, unlike always()
+        if: ${{ env.TESTS_RAN == 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: MCDC results
+          path: |
+            **/*.gcov.json.gz
+            mcdc_results.txt
+            pr_number
+            modules.txt
+
+  summary-mcdc:
+    needs: mcdc
+    if: github.event_name == 'pull_request' && always()
+    name: Generate MCDC Comparison Summary
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout MCDC Script
+        uses: actions/checkout@v6
+        with:
+          repository: nasa/cFS
+          path: mcdc
+          ref: dev
+
+      - name: Download latest main branch artifact
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: mcdc-internal.yml
+          search_artifacts: true
+          branch: dev
+          name: MCDC results
+          path: main-branch-results
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: MCDC results
+
+      - name: Compare main and PR artifacts
+        run: |
+          if [ -f "main-branch-results/mcdc_results.txt" ]; then
+            echo "Main branch artifact found. Running comparison."
+            bash mcdc/.github/scripts/mcdc-compare.sh main-branch-results/mcdc_results.txt mcdc_results.txt main-branch-results/modules.txt
+          else
+            echo "Main branch artifact not found. Skipping comparison step."
+          fi
+
+      - name: Output summary to workflow
+        run: |
+          if [ -s "mcdc_comment.txt" ]; then
+            echo "### MC/DC Results (Comparison with dev branch)" >> $GITHUB_STEP_SUMMARY
+            echo '```plaintext' >> $GITHUB_STEP_SUMMARY
+            cat mcdc_comment.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          elif [ -s "mcdc_results.txt" ]; then
+            echo "### MC/DC Results (Current PR)" >> $GITHUB_STEP_SUMMARY
+            echo '```plaintext' >> $GITHUB_STEP_SUMMARY
+            cat mcdc_results.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No MCDC results found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Output uncovered branches if the file exists and is not empty
+          if [ -s "uncovered.json" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "<details>" >> $GITHUB_STEP_SUMMARY
+            echo "<summary>Click to view uncovered branches (uncovered.json)</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat uncovered.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Archive mcdc comparison
+        # Upload if success or failure which supports skipping, unlike always()
+        if: success() || failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: MCDC main branch comparison
+          path: |
+            mcdc_comment.txt
+            mcdc_compare.txt
