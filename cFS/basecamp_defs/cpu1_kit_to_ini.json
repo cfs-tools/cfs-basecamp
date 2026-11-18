@@ -1,0 +1,52 @@
+{
+   "title": "Telemetry Output",
+   "description": [ "Define runtime configurations. See kit_to::app_cfg.h for definitions"],
+   "config": {
+      
+      "APP_CFE_NAME":     "KIT_TO",
+      "APP_PERF_ID":      92,
+           
+      "APP_CMD_PIPE_NAME":  "KIT_TO_CMD",
+      "APP_CMD_PIPE_DEPTH": 5,
+
+      "APP_RUN_LOOP_DELAY":     250,
+      "APP_RUN_LOOP_DELAY_MIN": 200,
+      "APP_RUN_LOOP_DELAY_MAX": 1000,
+
+      "KIT_TO_CMD_TOPICID": 0,
+      "BC_SCH_1_SEC_TOPICID": 0,
+      "KIT_TO_HK_TLM_TOPICID": 0,
+      "KIT_TO_DATA_TYPES_TOPICID": 0,
+      "KIT_TO_PKT_TBL_TLM_TOPICID": 0,
+      "KIT_TO_EVENT_PLBK_TLM_TOPICID": 0,
+      "KIT_TO_SUB_WRAPPED_TLM_TOPICID": 0,
+      "KIT_TO_PUB_WRAPPED_TLM_TOPICID": 0,
+
+      "PKTMGR_UDP_TLM_PORT": 1235,
+
+      "PKTMGR_VC1_PIPE_DEPTH": 10,
+      "PKTMGR_VC1_PIPE_NAME":  "KIT_TO_VC1",
+      "PKTMGR_VC1_SEMAPHORE_NAME": "KIT_TO_VC1_SEM",
+
+      "PKTMGR_VC2_PIPE_DEPTH": 50,
+      "PKTMGR_VC2_PIPE_NAME":  "KIT_TO_VC2",
+
+      "PKTMGR_PIPE_DEPTH":   50,
+      "PKTMGR_PIPE_NAME":    "KIT_TO_PKT",
+      "PKTMGR_UDP_TLM_PORT": 1235,
+
+      "PKTMGR_STATS_INIT_DELAY":   20000,
+      "PKTMGR_STATS_CONFIG_DELAY": 5000,
+      "PKTMGR_EDS_ENCODE_ERR_LIM": 2,
+
+      "PKTTBL_LOAD_FILE":  "/cf/kit_to_pkt_tbl.json",
+      "PKTTBL_DUMP_FILE":  "/cf/kit_to_pkt_tbl~.json",
+
+      "EVT_PLBK_HK_PERIOD": 2,
+      "EVT_PLBK_LOG_FILE":  "/cf/kit_to_evt_log.dat",
+
+      "EVS_CMD_TOPICID": 0,
+      "FILE_XFER_FOTP_DATA_SEGMENT_TLM_TOPICID": 0
+
+   }
+}
