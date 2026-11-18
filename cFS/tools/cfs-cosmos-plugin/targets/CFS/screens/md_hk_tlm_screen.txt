@@ -1,0 +1,44 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> MD Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  MD_HK COMMAND_COUNTER  "Command Count:"
+  LABELVALUEDESC <%= target_name %>  MD_HK COMMAND_ERROR_COUNTER  "Command Error Count:"
+  LABELVALUEDESC <%= target_name %>  MD_HK DWELL_ENABLED_MASK "Mask of Enabled Dwell Tables:"
+
+  TABBOOK
+  <% $md_num_dwell_tables.times do |tbl_idx| %>
+    TABITEM "Dwell Table <%= tbl_idx+1 %> Info" 
+      LABELVALUEDESC <%= target_name %> MD_HK DWELL_TBL_ADDR_COUNT_<%= tbl_idx+1 %> "Dwell Addresses Count:"
+      LABELVALUEDESC <%= target_name %> MD_HK NUM_WAITS_PER_PKT_<%= tbl_idx+1 %> "Delay Counts:"
+      LABELVALUEDESC <%= target_name %> MD_HK BYTE_COUNT_<%= tbl_idx+1 %> "Data Specified Count:"
+      LABELVALUEDESC <%= target_name %> MD_HK DWELL_PKT_OFFSET_<%= tbl_idx+1 %> "Current Write Offset:"
+      LABELVALUEDESC <%= target_name %> MD_HK DWELL_TBL_ENTRY_<%= tbl_idx+1 %> "Next Entry to Process:"
+      LABELVALUEDESC <%= target_name %> MD_HK COUNTDOWN_<%= tbl_idx+1 %> "Countdown Timer Value:"      
+	  END
+  <% end %>
+  END
+
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> MD_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> MD_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> MD_HK RECEIVED_COUNT 
+  END 
+ END
+
+

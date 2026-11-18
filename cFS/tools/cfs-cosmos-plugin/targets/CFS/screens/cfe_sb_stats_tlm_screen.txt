@@ -1,0 +1,54 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> cFE SB Pipe Statistics Telemetry" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  BUTTON 'Send SB Statistics Telemetry' 'api.cmd("<%= target_name %>  CFE_SB_CMD_SEND_SB_STATS")'
+
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS MSG_IDS_IN_USE "Number of MsgIDs in Use:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS PEAK_MSG_IDS_IN_USE "Peak MsgIDs in Use:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS MAX_MSG_IDS_ALLOWED "Maximum MsgIDs Allowed:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS PIPES_IN_USE "Number of Pipes in Use:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS MAX_PIPES_ALLOWED "Maximum Pipes Allowed:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS MEM_IN_USE "Memory in Use (in bytes):"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS PEAK_MEM_IN_USE "Peak Memory in Use (in bytes):"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS MAX_MEM_ALLOWED "Maximum Memory Allowed (in bytes):"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS SUBSCRIPTIONS_IN_USE "Number of Subscriptions in Use:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS PEAK_SUBSCRIPTIONS_IN_USE "Peak Subscriptions in Use:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS MAX_SUBSCRIPTIONS_ALLOWED "Maximum Subscriptions Allowed:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS SB_BUFFERS_IN_USE "Number of SB Buffers in Use:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS PEAK_SB_BUFFERS_IN_USE "Peak SB Buffers in Use:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_STATS MAX_PIPE_DEPTH_ALLOWED "Maximum Pipe Depth Allowed:"
+
+  <% 4.times do |tab_num| %>
+  TABBOOK
+  <% 8.times do |pipe_index| %>
+      TABITEM "Pipe Stats <%= pipe_index + (8 * tab_num) %>" 
+          LABELVALUEDESC <%= target_name %>  CFE_SB_STATS PIPE_DEPTH_STATS_<%= pipe_index + (8 * tab_num) %>_PIPE_ID "Pipe ID:"
+          LABELVALUEDESC <%= target_name %>  CFE_SB_STATS PIPE_DEPTH_STATS_<%= pipe_index + (8 * tab_num) %>_MAX_QUEUE_DEPTH "Maximum Queue Depth:"
+          LABELVALUEDESC <%= target_name %>  CFE_SB_STATS PIPE_DEPTH_STATS_<%= pipe_index + (8 * tab_num) %>_CURRENT_QUEUE_DEPTH "Current Queue Depth:" 
+          LABELVALUEDESC <%= target_name %>  CFE_SB_STATS PIPE_DEPTH_STATS_<%= pipe_index + (8 * tab_num) %>_PEAK_QUEUE_DEPTH "Peak Queue Depth:"
+      END
+    <% end %>
+  END
+  <% end %>
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> CFE_SB_STATS PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CFE_SB_STATS RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CFE_SB_STATS RECEIVED_COUNT 
+  END   
+END

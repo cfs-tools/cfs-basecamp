@@ -1,0 +1,38 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> CFDP End of Transmission" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  CF_EOT SEQ_NUM  "Sequence Number:"
+  LABELVALUEDESC <%= target_name %>  CF_EOT CHANNEL  "Channel:"
+  LABELVALUEDESC <%= target_name %>  CF_EOT DIRECTION "Direction:"
+  LABELVALUEDESC <%= target_name %>  CF_EOT STATE "State:"
+  LABELVALUEDESC <%= target_name %>  CF_EOT TXN_STAT "Transmission Status:"
+  LABELVALUEDESC <%= target_name %>  CF_EOT SRC_EID "Source EID:"
+  LABELVALUEDESC <%= target_name %>  CF_EOT PEER_EID "Peer EID:"
+  LABELVALUEDESC <%= target_name %>  CF_EOT FSIZE "File Size:"
+  LABELVALUEDESC <%= target_name %>  CF_EOT CRC_RESULT "CRC Result:"
+  LABELVALUEDESC <%= target_name %>  CF_EOT FNAMES_SRC_FILENAME "Source File Name:"
+  LABELVALUEDESC <%= target_name %>  CF_EOT FNAMES_DST_FILENAME "Destination File Name:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> CF_EOT PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CF_EOT RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CF_EOT RECEIVED_COUNT 
+  END 
+ END
+
+

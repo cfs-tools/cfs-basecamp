@@ -1,0 +1,52 @@
+<%= cfs_tlm_hdr(target_name, 'SC_HK', "SC Hk Tlm") %>
+  APPEND_ITEM CURR_ATS_NUM        8 UINT "Current ATS number 1 = ATS A, 2 = ATS B"
+  APPEND_ITEM ATP_STATE           8 UINT "Current ATP state"
+    STATE EMPTY        0
+    STATE LOADED       1
+    STATE IDLE         2
+    STATE EXECUTED     3
+    STATE SKIPPED      4
+    STATE EXECUTING    5
+    STATE FAILED_CS    6
+    STATE FAILED_DSTRB 7
+    STATE STARTING     8
+  APPEND_ITEM CONT_ATS_ON_FAIL    8 UINT "In the event of ATS execution failure (ats command fails checksum) , the ATS execution will continue if this flag is set to TRUE and will stop if this flag is set to FALSE"
+    STATE FALSE 0
+    STATE TRUE  1
+  APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "Counts Request Errors"
+  APPEND_ITEM COMMAND_COUNTER     8 UINT "Counts Ground Requests"
+  APPEND_ITEM PADDING1            8 UINT ""
+  APPEND_ITEM SWITCH_PEND_FLAG   16 UINT "Is an ats switch pending? 0 = NO, 1 = YES This means that the ATS switch is waiting until a safe time"
+    STATE NO  0
+    STATE YES 1
+  APPEND_ITEM NUM_RTS_ACTIVE     16 UINT "Number of RTSs currently active"
+  APPEND_ITEM NEXT_RTS_NUM       16 UINT "Next RTS number"
+  APPEND_ITEM RTS_ACTIVE_CTR     16 UINT "Increments when an RTS is started without error"
+  APPEND_ITEM RTS_ACTIVE_ERR_CTR 16 UINT "Increments when an attempt to start an RTS fails"
+  APPEND_ITEM ATS_CMD_CTR        16 UINT "Total ATS cmd cnter counts commands sent by the ATS"
+  APPEND_ITEM ATS_CMD_ERR_CTR    16 UINT "Total ATS cmd Error ctr command errors in the ATS"
+  APPEND_ITEM RTS_CMD_CTR        16 UINT "Counts TOTAL rts cmds that were sent out from ALL active RTSs"
+  APPEND_ITEM RTS_CMD_ERR_CTR    16 UINT "Counts TOTAL number of errs from ALL RTSs that are active"
+  APPEND_ITEM LAST_ATS_ERR_SEQ   16 UINT "Last ATS Errant Sequence Num Values: 1 or 2"
+  APPEND_ITEM LAST_ATS_ERR_CMD   16 UINT "Last ATS Errant Command Num"
+  APPEND_ITEM LAST_RTS_ERR_SEQ   16 UINT "Last RTS Errant Sequence Num"
+  APPEND_ITEM LAST_RTS_ERR_CMD   16 UINT "The OFFSET in the RTS buffer of the command that had an error It will be a WORD value i.e. 1st command had an error, this value would be 0, if the 2nd command started at int8 10 in the buffer, this value would be 5"
+  APPEND_ITEM APPEND_CMD_ARG     16 UINT "ATS selection argument from most recent Append ATS command"
+  APPEND_ITEM APPEND_ENTRY_COUNT 16 UINT "Number of cmd entries in current Append ATS table"
+  APPEND_ITEM APPEND_BYTE_COUNT  16 UINT "Size of cmd entries in current Append ATS table"
+  APPEND_ITEM APPEND_LOAD_COUNT  16 UINT "Total number of Append ATS table loads"
+  APPEND_ITEM ATP_CMD_NUMBER     32 UINT "Current command number"
+<% $sc_num_ats.times do |n|  %>
+  APPEND_ITEM ATP_<%=n+1%>_FREE_BYTES 32 UINT "Free Bytes in ATS <%=n+1%>"
+<% end %>
+  APPEND_ITEM NEXT_RTS_TIME      32 UINT "Next RTS cmd Absolute Time"
+  APPEND_ITEM NEXT_ATS_TIME      32 UINT "Next ATS Command Time (seconds)"
+<% $sc_num_rts_status_fields.times do |n|  %>
+  APPEND_ITEM RTS_W<%=n%>_EXE_STATUS 8 UINT "RTS Executing Status Word <%=n%> Bit Map"
+    FORMAT_STRING "0x%02X"
+<% end %>
+<% $sc_num_rts_status_fields.times do |n|  %>
+  APPEND_ITEM RTS_W<%=n%>_DIS_STATUS 8 UINT "RTS Disabled Status Word <%=n%> Bit Map"
+    FORMAT_STRING "0x%02X"
+<% end %>
+  APPEND_ARRAY_ITEM PADDING2 8 UINT 16

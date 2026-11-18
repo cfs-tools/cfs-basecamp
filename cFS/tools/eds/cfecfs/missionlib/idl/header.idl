@@ -1,0 +1,35 @@
+// Annotations used by generated IDLs
+@annotation ccsds_msg {
+    unsigned short id;
+};
+
+@annotation command {
+    unsigned short fn_code;
+};
+
+bitset Identification {
+    bitfield<3> packet_version_number;
+    bitfield<1> packet_type;
+    bitfield<1> sec_hdr_flag;
+    bitfield<11> app_id;
+};
+
+bitset SequenceControl {
+    bitfield<2> seq_flags;
+    bitfield<14> seq_count_name;
+};
+
+struct PrimaryHeader {
+    Identification identification;
+    SequenceControl sequence_control;
+    unsigned short data_length;
+};
+
+struct CommandHeader : PrimaryHeader {
+    octet func_code;
+    octet checksum;
+};
+
+struct TelemetryHeader : PrimaryHeader {
+    octet time[6];
+};

@@ -1,0 +1,27 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> Sample App Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  SAMPLE_APP_HK COMMAND_COUNTER "Command Counter:"
+  LABELVALUEDESC <%= target_name %>  SAMPLE_APP_HK COMMAND_ERROR_COUNTER "Command Error Counter:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  SAMPLE_APP_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  SAMPLE_APP_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  SAMPLE_APP_HK RECEIVED_COUNT 
+  END
+END
+

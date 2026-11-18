@@ -1,0 +1,33 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> HK Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  HK_HK COMMAND_COUNTER  "Command Count:"
+  LABELVALUEDESC <%= target_name %>  HK_HK COMMAND_ERROR_COUNTER  "Command Error Count:"
+  LABELVALUEDESC <%= target_name %>  HK_HK COMBINED_PKTS_SENT "Combined Packets Sent:"
+  LABELVALUEDESC <%= target_name %>  HK_HK MISSING_DATA_CTR "Missing Data Detected Count:"
+  LABELVALUEDESC <%= target_name %>  HK_HK MEM_POOL_HANDLE "Memory Pool Handle:"
+
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> HK_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> HK_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> HK_HK RECEIVED_COUNT 
+  END 
+ END
+
+

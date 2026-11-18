@@ -1,0 +1,3 @@
+<%= cfs_tbl_hdr('SC_RTS', 'SC RTS table', 'SC') %>
+  APPEND_ARRAY_PARAMETER RTS_BUFFER 16 UINT 2400
+    FORMAT_STRING "0x%04X"

@@ -1,0 +1,74 @@
+<%= cfs_tlm_hdr(target_name, 'LC_HK', "LC Hk Tlm") %>
+  APPEND_ITEM COMMAND_COUNTER     8 UINT "LC Application Command Counter"
+  APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "LC Application Command Error Counter"
+  APPEND_ITEM CURRENT_LC_STATE    8 UINT "Current LC application operating state"
+    STATE UNDEF    0
+    STATE ACTIVE   1
+    STATE PASSIVE  2
+    STATE DISABLED 3
+    STATE PERM_OFF 4
+  APPEND_ITEM PAD8                 8 UINT "8-bit pad"
+  APPEND_ARRAY_ITEM WP_RESULTS     8 UINT 352 "Packed watchpoint results data, 2 bits per watchpoint."
+
+# Decompose WP_RESULTS packed data into discrete values
+<% 4.times do |data_idx| %>
+    ITEM WP_<%=(data_idx*4)+3%>_RESULT  <%=0+160+(data_idx*8)%> 2 UINT
+        OVERLAP    
+        STATE FALSE 0
+        STATE TRUE  1
+        STATE ERROR 2
+        STATE STALE 3
+    ITEM WP_<%=(data_idx*4)+2%>_RESULT  <%=2+160+(data_idx*8)%> 2 UINT
+        OVERLAP    
+        STATE FALSE 0
+        STATE TRUE  1
+        STATE ERROR 2
+        STATE STALE 3
+    ITEM WP_<%=(data_idx*4)+1%>_RESULT  <%=4+160+(data_idx*8)%> 2 UINT
+        OVERLAP    
+        STATE FALSE 0
+        STATE TRUE  1
+        STATE ERROR 2
+        STATE STALE 3
+    ITEM WP_<%=(data_idx*4)+0%>_RESULT  <%=6+160+(data_idx*8)%> 2 UINT
+        OVERLAP    
+        STATE FALSE 0
+        STATE TRUE  1
+        STATE ERROR 2
+        STATE STALE 3
+<% end %>
+  APPEND_ARRAY_ITEM AP_RESULTS     8 UINT 704 "Packed actionpoint results data, 4 bits per actionpoint."
+# Decompose AP_RESULTS packed data into discrete values
+<% 2.times do |data_idx| %>
+    ITEM AP_<%=(data_idx*2)+1%>_STATE  <%=0+512+(data_idx*8)%> 2 UINT
+        OVERLAP
+        STATE UNUSED   0
+        STATE ACTIVE   1
+        STATE PASSIVE  2
+        STATE DISABLED 3
+    ITEM AP_<%=(data_idx*2)+1%>_RESULT <%=2+512+(data_idx*8)%> 2 UINT
+        OVERLAP
+        STATE PASS  0
+        STATE FAIL  1
+        STATE ERROR 2
+        STATE STALE 3
+    ITEM AP_<%=(data_idx*2)+0%>_STATE  <%=4+512+(data_idx*8)%> 2 UINT
+        OVERLAP
+        STATE UNUSED   0
+        STATE ACTIVE   1
+        STATE PASSIVE  2
+        STATE DISABLED 3
+    ITEM AP_<%=(data_idx*2)+0%>_RESULT <%=6+512+(data_idx*8)%> 2 UINT
+        OVERLAP
+        STATE PASS  0
+        STATE FAIL  1
+        STATE ERROR 2
+        STATE STALE 3
+<% end %>
+  APPEND_ITEM PASSIVE_RTS_EXEC_CNT 16 UINT "Total count of RTS sequences not initiated because the LC state is set to LC_STATE_PASSIVE."
+  APPEND_ITEM WPS_IN_USE           16 UINT "How many watchpoints are currently in effect."
+  APPEND_ITEM ACTIVE_APS           16 UINT "How many actionpoints are currently active."
+  APPEND_ITEM PAD16                16 UINT "16 bit pad"
+  APPEND_ITEM AP_SAMPLE_CNT        32 UINT "Total count of Actionpoints sampled."
+  APPEND_ITEM MONITORED_MSG_CNT    32 UINT "Total count of messages monitored for watchpoints."
+  APPEND_ITEM RTS_EXEC_CNT         32 UINT "Total count of RTS sequences initiated."

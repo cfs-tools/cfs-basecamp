@@ -1,0 +1,11 @@
+<%= cfs_tbl_hdr('HS_AppMon_tbl', 'HS app monitor table', 'HS') %>
+<% 32.times do |entry_idx| %>
+  APPEND_PARAMETER APP_NAME_<%= entry_idx %> 160 STRING ""
+  APPEND_PARAMETER NULL_TERM_<%= entry_idx %> 16 UINT 0 MAX_UINT16 0
+  APPEND_PARAMETER CYCLE_COUNT_<%= entry_idx %> 16 UINT 0 MAX_UINT16 0
+  APPEND_PARAMETER ACTION_TYPE_<%= entry_idx %> 16 UINT 0 3 0
+    STATE NO_ACTION   0
+    STATE PROC_RESET  1
+    STATE APP_RESTART 2
+    STATE EVENT       3
+<% end %>

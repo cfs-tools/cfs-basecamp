@@ -1,0 +1,80 @@
+<%= cfs_tlm_hdr(target_name, 'CFE_TBL_HK', "CFE_TBL Hk Tlm") %>
+   APPEND_ITEM COMMAND_COUNTER 8 UINT "Count of valid commands received"
+   APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "Command error counter"
+   APPEND_ITEM NUM_TABLES 16 UINT "Number of Tables Registered"
+   APPEND_ITEM NUM_LOAD_PENDING 16 UINT "Number of Pending Loads"
+   APPEND_ITEM VALIDATION_COUNTER 16 UINT "Number of completed table validations"
+   APPEND_ITEM LAST_VAL_CRC 32 UINT "Data Integrity Value computed for last table validated"
+   APPEND_ITEM LAST_VAL_STATUS 32 INT "Returned status from validation function for last table validated"
+   APPEND_ITEM ACTIVE_BUFFER 8 UINT "Indicator of whether last table validated was active or not"
+      STATE INACTIVE 0
+      STATE ACTIVE   1
+   APPEND_ITEM LAST_VAL_TABLE_NAME 320 STRING "Name of last table validated"
+   APPEND_ITEM SUCCESS_VAL_COUNTER 8 UINT "Total number of successful table validations"
+   APPEND_ITEM FAILED_VAL_COUNTER 8 UINT "Total number of unsuccessful table validations"
+   APPEND_ITEM NUM_VAL_REQUESTS 8 UINT "Unsigned 8 bit integer"
+   APPEND_ITEM NUM_FREE_SHARED_BUFS 8 UINT "Number of free Shared Working Buffers"
+   APPEND_ARRAY_ITEM PADDING 8 UINT 24 "Padding for alignment"
+   APPEND_ITEM MEM_POOL_HANDLE 32 UINT "Handle to TBL's memory pool"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM LAST_UPDATE_TIME_SECONDS 32 UINT "Time of last table update (seconds)"
+   APPEND_ITEM LAST_UPDATE_TIME_SUBSECONDS 32 UINT "Time of last table update (subseconds)"
+   ITEM LAST_UPDATE_TIME 0 0 DERIVED "Ruby time based on cFE timestamp"
+      READ_CONVERSION unix_time_conversion_epoch_offset.rb LAST_UPDATE_TIME_SECONDS LAST_UPDATE_TIME_SUBSECONDS
+   APPEND_ITEM LAST_UPDATED_TABLE 320 STRING "Name of the last table updated"
+   APPEND_ITEM LAST_FILE_LOADED 512 STRING "Path and Name of last table image file loaded"
+   APPEND_ITEM LAST_FILE_DUMPED 512 STRING "Path and Name of last file dumped to"
+   APPEND_ITEM LAST_TABLE_LOADED 320 STRING "Name of the last table loaded"
+
+<%= cfs_tlm_hdr(target_name, 'CFE_TBL_REG', "CFE_TBL Reg Tlm") %>
+<% if $cfs_globals_mem_addr_size == 64 %>
+   APPEND_ITEM SIZE 64 UINT "Size, in bytes, of Table"
+<% else %>
+   APPEND_ITEM SIZE 32 UINT "Size, in bytes, of Table"
+<% end %>
+   APPEND_ITEM CRC 32 UINT "Most recently calculated CRC of Table"
+      FORMAT_STRING "0x%08X"
+<% if $cfs_globals_mem_addr_size == 64 %>
+   APPEND_ITEM PADDING1 32 UINT
+   APPEND_ITEM ACTIVE_BUFFER_ADDR 64 UINT "Address of Active Buffer"
+      FORMAT_STRING "0x%016X"
+   APPEND_ITEM INACTIVE_BUFFER_ADDR 64 UINT "Address of Inactive Buffer"
+      FORMAT_STRING "0x%016X"
+   APPEND_ITEM VALIDATION_FUNC_PTR 64 UINT "Ptr to Owner App's function that validates tbl contents"
+      FORMAT_STRING "0x%016X"
+<% else %>
+   APPEND_ITEM ACTIVE_BUFFER_ADDR 32 UINT "Address of Active Buffer"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM INACTIVE_BUFFER_ADDR 32 UINT "Address of Inactive Buffer"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM VALIDATION_FUNC_PTR 32 UINT "Ptr to Owner App's function that validates tbl contents"
+      FORMAT_STRING "0x%08X"
+<% end %>
+   APPEND_ITEM TIME_OF_LAST_UPDATE_SECONDS 32 UINT "Time when Table was last updated"
+   APPEND_ITEM TIME_OF_LAST_UPDATE_SUBSECONDS 32 UINT "Time when Table was last updated"
+   APPEND_ITEM FILE_CREATE_TIME_SECONDS 32 UINT "File creation time from last file loaded into table"
+   APPEND_ITEM FILE_CREATE_TIME_SUB_SECONDS 32 UINT "File creation time from last file loaded into table"
+   APPEND_ITEM TABLE_LOADED_ONCE 8 UINT "Flag indicating whether table has been loaded once or not"
+      STATE FALSE 0
+      STATE TRUE  1
+   APPEND_ITEM LOAD_PENDING 8 UINT "Flag indicating an inactive buffer is ready to be copied"
+      STATE FALSE 0
+      STATE TRUE  1
+   APPEND_ITEM DUMP_ONLY 8 UINT "Flag indicating Table is NOT to be loaded"
+      STATE FALSE 0
+      STATE TRUE  1
+   APPEND_ITEM DOUBLE_BUFFERED 8 UINT "Flag indicating Table has a dedicated inactive buffer"
+      STATE FALSE 0
+      STATE TRUE  1
+   APPEND_ITEM NAME 320 STRING "Processor specific table name"
+   APPEND_ITEM LAST_FILE_LOADED 512 STRING "Filename of last file loaded into table"
+   APPEND_ITEM OWNER_APP_NAME 160 STRING "Name of owning application"
+   APPEND_ITEM CRITICAL 8 UINT "Indicates whether table is Critical or not"
+      STATE FALSE 0
+      STATE TRUE  1
+   APPEND_ARRAY_ITEM PADDING 8 UINT 56 "Padding for alignment"
+   ITEM TIME_OF_LAST_UPDATE 0 0 DERIVED "Ruby time based on cFE timestamp"
+      READ_CONVERSION unix_time_conversion_epoch_offset.rb TIME_OF_LAST_UPDATE_SECONDS TIME_OF_LAST_UPDATE_SUBSECONDS
+   ITEM FILE_CREATE_TIME 0 0 DERIVED "Ruby time based on cFE timestamp"
+      READ_CONVERSION unix_time_conversion_epoch_offset.rb FILE_CREATE_TIME_SECONDS FILE_CREATE_TIME_SUB_SECONDS
+   

@@ -1,0 +1,81 @@
+<%= cfs_cmd_hdr(target_name, 'DS_SEND_HK_CMD', 0, 'DS housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_NOOP', 0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_RESET_COUNTERS', 1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_APP_STATE', 2, "Telecommand Message") %>
+   APPEND_PARAMETER ENABLE_STATE 16 UINT 0 1 0 "Application enable/disable state"
+      STATE DISABLED 0
+      STATE ENABLED  1
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_FILTER_FILE', 3, "Telecommand Message") %>
+   APPEND_PARAMETER MESSAGE_ID        32 UINT 0 MAX_UINT32 0 "Message ID of existing entry in Packet Filter Table"
+   APPEND_PARAMETER FILTER_PARAMS_IDX 16 UINT 0 MAX_UINT16 0 "Index into Filter Params Array"
+   APPEND_PARAMETER FILE_TABLE_IDX    16 UINT 0 MAX_UINT16 0 "Index into Destination File Table"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_FILTER_TYPE', 4, "Telecommand Message") %>
+   APPEND_PARAMETER MESSAGE_ID        32 UINT 0 MAX_UINT32 0 "Message ID of existing entry in Packet Filter Table"
+   APPEND_PARAMETER FILTER_PARAMS_IDX 16 UINT 0 MAX_UINT16 0 "Index into Filter Params Array"
+   APPEND_PARAMETER FILTER_TYPE       16 UINT 0 MAX_UINT16 0 "Filter type (packet count or time)"
+      STATE BY_COUNT 1
+      STATE BY_TIME  2
+      
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_FILTER_PARAMS', 5, "Telecommand Message") %>
+   APPEND_PARAMETER MESSAGE_ID        32 UINT 0 MAX_UINT32 0 "Message ID of existing entry in Packet Filter Table"
+   APPEND_PARAMETER FILTER_PARAMS_IDX 16 UINT 0 MAX_UINT16 0 "Index into Filter Params Array"
+   APPEND_PARAMETER ALGORITHM_N       16 UINT 0 MAX_UINT16 0 "Algorithm value N (pass this many)"
+   APPEND_PARAMETER ALGORITHM_X       16 UINT 0 MAX_UINT16 0 "Algorithm value N (out of this many)"
+   APPEND_PARAMETER ALGORITHM_O       16 UINT 0 MAX_UINT16 0 "Algorithm value N (at this offset)"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_DEST_TYPE', 6, "Telecommand Message") %>
+   APPEND_PARAMETER FILE_TABLE_IDX    16 UINT 0 MAX_UINT16 0 "Index into Destination File Table"
+   APPEND_PARAMETER FILE_NAME_TYPE    16 UINT 0 MAX_UINT16 0 "Filename type - count vs time"
+      STATE BY_COUNT 1
+      STATE BY_TIME  2
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_DEST_STATE', 7, "Telecommand Message") %>
+   APPEND_PARAMETER FILE_TABLE_IDX    16 UINT 0 MAX_UINT16 0 "Index into Destination File Table"
+   APPEND_PARAMETER ENABLE_STATE      16 UINT 0 1 0          "File enable/disable state"
+      STATE DISABLED 0
+      STATE ENABLED  1
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_DEST_PATH', 8, "Telecommand Message") %>
+   APPEND_PARAMETER FILE_TABLE_IDX    16 UINT 0 MAX_UINT16 0 "Index into Destination File Table"
+   APPEND_PARAMETER PATHNAME         512 STRING ""           "Path portion of filename"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_DEST_BASE', 9, "Telecommand Message") %>
+   APPEND_PARAMETER FILE_TABLE_IDX    16 UINT 0 MAX_UINT16 0 "Index into Destination File Table"
+   APPEND_PARAMETER BASENAME         160 STRING ""           "Base portion of filename"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_DEST_EXT', 10, "Telecommand Message") %>
+   APPEND_PARAMETER FILE_TABLE_IDX    16 UINT 0 MAX_UINT16 0 "Index into Destination File Table"
+   APPEND_PARAMETER EXTENSION         64 STRING ""           "Extension portion of filename"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_DEST_SIZE', 11, "Telecommand Message") %>
+   APPEND_PARAMETER       FILE_TABLE_IDX 16 UINT 0 MAX_UINT16 0 "Index into Destination File Table"
+   APPEND_ARRAY_PARAMETER PADDING         8 UINT 16 "Padding"
+   APPEND_PARAMETER       MAX_FILE_SIZE  32 UINT 0 MAX_UINT32 0 "Max file size (bytes) before reopen"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_DEST_AGE', 12, "Telecommand Message") %>
+   APPEND_PARAMETER       FILE_TABLE_IDX 16 UINT 0 MAX_UINT16 0 "Index into Destination File Table"
+   APPEND_ARRAY_PARAMETER PADDING         8 UINT 16 "Padding"
+   APPEND_PARAMETER       MAX_FILE_AGE   32 UINT 0 MAX_UINT32 0 "Max file age (seconds)"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_SET_DEST_COUNT', 13, "Telecommand Message") %>
+   APPEND_PARAMETER       FILE_TABLE_IDX 16 UINT 0 MAX_UINT16 0 "Index into Destination File Table"
+   APPEND_ARRAY_PARAMETER PADDING         8 UINT 16 "Padding"
+   APPEND_PARAMETER       SEQUENCE_COUNT 32 UINT 0 MAX_UINT32 0 "Sequence count portion of filename"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_CLOSE_FILE', 14, "Telecommand Message") %>
+   APPEND_PARAMETER FILE_TABLE_IDX    16 UINT 0 MAX_UINT16 0 "Index into Destination File Table"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_GET_FILE_INFO', 15, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_ADD_MID', 16, "Telecommand Message") %>
+   APPEND_PARAMETER MESSAGE_ID 32 UINT 0 MAX_UINT32 0 "Message ID to add to Packet Filter Table"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_REMOVE_MID', 17, "Telecommand Message") %>
+   APPEND_PARAMETER MESSAGE_ID 32 UINT 0 MAX_UINT32 0 "Message ID to remove from Packet Filter Table"
+
+<%= cfs_cmd_hdr(target_name, 'DS_CMD_CLOSE_ALL', 18, "Telecommand Message") %>

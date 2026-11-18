@@ -1,0 +1,24 @@
+# Template for build environment variables
+# See also: https://cmake.org/cmake/help/latest/manual/cmake-variables.7.html
+
+# Capture critical build flags and compiler command (CC)
+export CC      := ${CMAKE_C_COMPILER}
+export AR      := ${CMAKE_AR}
+export LD      := ${CMAKE_LINKER}
+
+# The link flags may be different (or empty) depending on
+# what type of target is being linked.
+export EXE_LDFLAGS    := ${CMAKE_EXE_LINKER_FLAGS}
+export EXE_SUFFIX     := ${CMAKE_EXECUTABLE_SUFFIX}
+export SHARED_LDFLAGS := ${CMAKE_SHARED_LINKER_FLAGS}
+export SHARED_SUFFIX  := ${CMAKE_SHARED_LIBRARY_SUFFIX}
+export STATIC_LDFLAGS := ${CMAKE_STATIC_LINKER_FLAGS}
+export STATIC_SUFFIX  := ${CMAKE_STATIC_LIBRARY_SUFFIX}
+
+# Special treatment for CFLAGS - code compiled here 
+# will require access to the EdsLib API headers.  This assumes
+# a gnu-style compiler option (-I), but should with clang too.
+CFLAGS ?= ${CMAKE_C_FLAGS} ${EDSLIB_C_FLAGS}
+CFLAGS ?= -Wall -Werror -std=c99 -pedantic
+CFLAGS += -I$(EDS_REPO_SOURCE_DIR)/edslib/fsw/inc
+export CFLAGS

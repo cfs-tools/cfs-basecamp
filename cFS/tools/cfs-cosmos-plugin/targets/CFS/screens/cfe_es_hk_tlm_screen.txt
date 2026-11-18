@@ -1,0 +1,79 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> cFE ES Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK COMMAND_COUNTER "Command Counter:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK COMMAND_ERROR_COUNTER "Command Error Counter:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK CFE_CORE_CHECKSUM "cFE Core Checksum:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK CFE_MAJOR_VERSION "cFE Major Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK CFE_MINOR_VERSION "cFE Minor Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK CFE_REVISION "cFE Revision Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK CFE_MISSION_REVISION "cFE Mission Revision Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK OSAL_MAJOR_VERSION "OSAL Major Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK OSAL_MINOR_VERSION "OSAL Minor Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK OSAL_REVISION "OSAL Revision Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK OSAL_MISSION_REVISION "OSAL Mission Revision Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PSP_MAJOR_VERSION "PSP Major Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PSP_MINOR_VERSION "PSP Minor Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PSP_REVISION "PSP Revision Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PSP_MISSION_REVISION "PSP Mission Revision Version:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK SYS_LOG_BYTES_USED "Number of Bytes Used by SysLog:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK SYS_LOG_SIZE "Total Bytes Used by SysLog:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK SYS_LOG_ENTRIES "Number of Entries in SysLog:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK SYS_LOG_MODE "SysLog Write/Overwrite Mode:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK ER_LOG_INDEX "Current ER Log Index:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK ER_LOG_ENTRIES "Number of Entries in ER Log:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK REGISTERED_CORE_APPS "Number of Registered Core Apps:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK REGISTERED_EXTERNAL_APPS "Number of Registered External Apps:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK REGISTERED_TASKS "Number of Registered Tasks:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK REGISTERED_LIBS "Number of Registered Libraries:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK RESET_TYPE "Reset Type:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK RESET_SUBTYPE "Reset Subtype:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PROCESSOR_RESETS "Number of Processor Resets since Last Power On:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK MAX_PROCESSOR_RESETS "Maximum Processor Resets until a Power On:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK BOOT_SOURCE "Boot Source:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK HEAP_BYTES_FREE "Number of Free Bytes Left in Heap:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK HEAP_BLOCKS_FREE "Number of Free Blocks Left in Heap:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK HEAP_MAX_BLOCK_SIZE "Number of Bytes in Largest Free Block:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PERF_DATA_START "First Stored Entry in PerfLog:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PERF_DATA_END "Last Stored Entry in PerfLog:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PERF_DATA_COUNT "Number of Entries in PerfLog:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PERF_DATA_TO_WRITE "Number of Entries in PerfLog Left to Dump:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PERF_STATE "PerfLog State:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PERF_MODE "PerfLog Mode:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_HK PERF_TRIGGER_COUNT "PerfLog Trigger Count:"
+
+  # COSMOS has trouble with tabbooks with more than 17 items so the entries are split
+  # here into multiple tabbooks
+  <% 16.times do |tab_num| %>
+  TABBOOK
+    <% 8.times do |perf_id_index| %>   
+    TABITEM "PerfID <%= perf_id_index + (8 * tab_num) %>" 
+      LABELVALUEDESC <%= target_name %> CFE_ES_HK PERF_FILTER_MASK_<%= perf_id_index + (8 * tab_num) %> "Filter Mask:"
+      LABELVALUEDESC <%= target_name %> CFE_ES_HK PERF_TRIGGER_MASK_<%= perf_id_index + (8 * tab_num) %> "Trigger Mask:"
+    END
+    <% end %>
+  END
+  <% end %>
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  CFE_ES_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_ES_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_ES_HK RECEIVED_COUNT 
+  END  
+END
+
+

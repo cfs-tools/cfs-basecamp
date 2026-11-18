@@ -1,0 +1,31 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> CI Lab Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  CI_LAB_HK COMMAND_COUNTER "Command Counter:"
+  LABELVALUEDESC <%= target_name %>  CI_LAB_HK COMMAND_ERROR_COUNTER "Command Error Counter:"
+  LABELVALUEDESC <%= target_name %>  CI_LAB_HK ENABLE_CHECKSUMS "Checksums Enabled:"
+  LABELVALUEDESC <%= target_name %>  CI_LAB_HK SOCKET_CONNECTED "Command Socket Connected:"
+  LABELVALUEDESC <%= target_name %>  CI_LAB_HK INGEST_PACKETS "Ingested Command Packets:"
+  LABELVALUEDESC <%= target_name %>  CI_LAB_HK INGEST_ERRORS "Ingestion Errors:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  CI_LAB_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CI_LAB_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CI_LAB_HK RECEIVED_COUNT 
+  END  
+END
+

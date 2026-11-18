@@ -1,0 +1,57 @@
+<%= cfs_tlm_hdr(target_name, 'CFE_EVS_HK', "CFE_EVS Hk Tlm") %>
+   APPEND_ITEM COMMAND_COUNTER 8 UINT "EVS Command Counter"
+   APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "EVS Command Error Counter"
+   APPEND_ITEM MESSAGE_FORMAT_MODE 8 UINT "Event message format mode"
+      STATE SHORT 0
+      STATE LONG  1
+   APPEND_ITEM MESSAGE_TRUNC_COUNTER 8 UINT "Event message truncation counter"
+   APPEND_ITEM UNREGISTERED_APP_COUNTER 8 UINT "Unregistered application message send counter"
+   APPEND_ITEM OUTPUT_PORT 8 UINT "Output port mask"
+      FORMAT_STRING "0x%02X"
+   APPEND_ITEM LOG_FULL_FLAG 8 UINT "Local event log full flag"
+      STATE FALSE 0
+      STATE TRUE  1
+   APPEND_ITEM LOG_MODE 8 UINT "Local event logging mode"
+      STATE OVERWRITE 0
+      STATE DISCARD   1
+   APPEND_ITEM MESSAGE_SEND_COUNTER 16 UINT "Event message send counter"
+   APPEND_ITEM LOG_OVERFLOW_COUNTER 16 UINT "Local event log overflow counter"
+   APPEND_ITEM LOG_ENABLED 8 UINT "Current event log enable/disable state"
+      STATE FALSE 0
+      STATE TRUE  1
+   APPEND_ITEM PADDING_1 8 UINT "Spare Alignment Byte 1"
+   APPEND_ITEM PADDING_2 8 UINT "Spare Alignment Byte 2"
+   APPEND_ITEM PADDING_3 8 UINT "Spare Alignment Byte 3"
+<% 16.times do |app_data_index| %>
+   APPEND_ITEM APP_DATA_<%= app_data_index %>_APP_ID 32 UINT "Numerical application identifier"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM APP_DATA_<%= app_data_index %>_APP_MESSAGE_SENT_COUNTER 16 UINT "Application message sent counter"
+   APPEND_ITEM APP_DATA_<%= app_data_index %>_APP_ENABLED 8 UINT "Application event service enable status"
+      STATE FALSE 0
+      STATE TRUE  1      
+   APPEND_ITEM APP_DATA_<%= app_data_index %>_APP_MESSAGE_SQUELCHED_COUNTER 8 UINT "Application event squelch count"
+<% end %>
+
+<%= cfs_tlm_hdr(target_name, 'CFE_EVS_LONG_EVENT_MSG', "Long Event Message") %>
+   APPEND_ITEM PACKET_ID_APP_NAME 160 STRING "Application name"
+   APPEND_ITEM PACKET_ID_EVENT_ID 16 UINT "Numerical event identifier"
+   APPEND_ITEM PACKET_ID_EVENT_TYPE 16 UINT "Numerical event type identifier"
+      STATE DEBUG 1
+      STATE INFO 2
+      STATE ERROR 3
+      STATE CRIT 4
+   APPEND_ITEM PACKET_ID_SPACECRAFT_ID 32 UINT "Spacecraft identifier"
+   APPEND_ITEM PACKET_ID_PROCESSOR_ID 32 UINT "Numeric processor identifier"
+   APPEND_ITEM MESSAGE 976 STRING "Event message string"
+   APPEND_ARRAY_ITEM PADDING 8 UINT 16 "Packet alignment padding"
+
+<%= cfs_tlm_hdr(target_name, 'CFE_EVS_SHORT_EVENT_MSG', "Short Event Message") %>
+   APPEND_ITEM PACKET_ID_APP_NAME 160 STRING "Application name"
+   APPEND_ITEM PACKET_ID_EVENT_ID 16 UINT "Numerical event identifier"
+   APPEND_ITEM PACKET_ID_EVENT_TYPE 16 UINT "Numerical event type identifier"
+      STATE DEBUG 1
+      STATE INFO 2
+      STATE ERROR 3
+      STATE CRIT 4   
+   APPEND_ITEM PACKET_ID_SPACECRAFT_ID 32 UINT "Spacecraft identifier"
+   APPEND_ITEM PACKET_ID_PROCESSOR_ID 32 UINT "Numeric processor identifier"

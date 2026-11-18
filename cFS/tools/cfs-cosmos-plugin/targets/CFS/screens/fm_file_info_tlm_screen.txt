@@ -1,0 +1,32 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> FM File Info" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  FM_FILE_INFO FILE_STATUS "Open/Close Status:"
+  LABELVALUEDESC <%= target_name %>  FM_FILE_INFO CRC_COMPUTED "CRC Computed?"
+  LABELVALUEDESC <%= target_name %>  FM_FILE_INFO CRC "CRC Value:"
+  LABELVALUEDESC <%= target_name %>  FM_FILE_INFO FILE_SIZE "File Size:"
+  LABELVALUEDESC <%= target_name %>  FM_FILE_INFO LAST_MODIFIED_TIME "Last Modification Time:"
+  LABELVALUEDESC <%= target_name %>  FM_FILE_INFO MODE "Mode/Permissions:"
+  LABELVALUEDESC <%= target_name %>  FM_FILE_INFO FILENAME "File Name:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  FM_FILE_INFO PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  FM_FILE_INFO RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  FM_FILE_INFO RECEIVED_COUNT 
+  END
+END
+

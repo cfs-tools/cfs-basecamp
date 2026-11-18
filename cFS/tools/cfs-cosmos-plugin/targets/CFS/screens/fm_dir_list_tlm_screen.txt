@@ -1,0 +1,44 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> FM Directory Listing Telemetry" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  FM_DIR_LIST DIR_NAME "Directory Name:"
+  LABELVALUEDESC <%= target_name %>  FM_DIR_LIST TOTAL_FILES "Number of Files in Directory:"
+  LABELVALUEDESC <%= target_name %>  FM_DIR_LIST PACKET_FILES "Number of Files in Packet:"
+  LABELVALUEDESC <%= target_name %>  FM_DIR_LIST FIRST_FILE "Index into First File:"
+
+  # COSMOS has trouble with tabbooks with more than 17 items so the entries are split
+  # here into multiple tabbooks
+  <% 2.times do |tab_num| %>
+  TABBOOK
+    <% 10.times do |entry_idx| %>
+    TABITEM "File <%= entry_idx + (10 * tab_num) %>" 
+      LABELVALUEDESC <%= target_name %> FM_DIR_LIST FILE_LIST_<%= entry_idx + (10 * tab_num) %>_ENTRY_NAME "File Name:"
+      LABELVALUEDESC <%= target_name %> FM_DIR_LIST FILE_LIST_<%= entry_idx + (10 * tab_num) %>_ENTRY_SIZE "File Size:"
+      LABELVALUEDESC <%= target_name %> FM_DIR_LIST FILE_LIST_<%= entry_idx + (10 * tab_num) %>_MODIFY_TIME "Last Modification Time:"
+      LABELVALUEDESC <%= target_name %> FM_DIR_LIST FILE_LIST_<%= entry_idx + (10 * tab_num) %>_MODE "File Mode:"
+  	END
+    <% end %>
+  END
+  <% end %>
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  FM_DIR_LIST PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  FM_DIR_LIST RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  FM_DIR_LIST RECEIVED_COUNT 
+  END
+END
+

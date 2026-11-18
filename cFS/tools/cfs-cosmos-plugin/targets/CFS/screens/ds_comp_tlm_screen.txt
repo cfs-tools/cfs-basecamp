@@ -1,0 +1,31 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> DS Single File Info Telemetry" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+    LABELVALUEDESC <%= target_name %> DS_COMP FILE_AGE "File Age (secs):"
+    LABELVALUEDESC <%= target_name %> DS_COMP FILE_SIZE "File Size (bytes):"
+    LABELVALUEDESC <%= target_name %> DS_COMP FILE_RATE "Data Rate:"
+    LABELVALUEDESC <%= target_name %> DS_COMP SEQUENCE_COUNT "Sequence Count:"
+    LABELVALUEDESC <%= target_name %> DS_COMP ENABLE_STATE "File State:"
+    LABELVALUEDESC <%= target_name %> DS_COMP OPEN_STATE "Open:"
+    LABELVALUEDESC <%= target_name %> DS_COMP FILENAME "File Name:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  DS_COMP PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  DS_COMP RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  DS_COMP RECEIVED_COUNT 
+  END  
+END

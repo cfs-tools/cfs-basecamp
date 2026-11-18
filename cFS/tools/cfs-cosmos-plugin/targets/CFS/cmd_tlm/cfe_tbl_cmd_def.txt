@@ -1,0 +1,36 @@
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_SEND_HK_CMD', 0, 'CFE_TBL housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_CMD_NOOP',  0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_CMD_RESET_COUNTERS',  1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_CMD_LOAD',  2, "Telecommand Message") %>
+   APPEND_PARAMETER LOAD_FILENAME 512 STRING "" "Filename (and path) of data to be loaded"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_CMD_DUMP',  3, "Telecommand Message") %>
+   APPEND_PARAMETER ACTIVE_TABLE_FLAG 16 UINT 0 1 0 "Selects the buffer to operate on for validate or dump commands"
+      STATE INACTIVE 0
+      STATE ACTIVE   1
+   APPEND_PARAMETER TABLE_NAME 320 STRING "" "Full name of table to be dumped"
+   APPEND_PARAMETER DUMP_FILENAME 512 STRING "" "Full Filename where data is to be written"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_CMD_VALIDATE',  4, "Telecommand Message") %>
+   APPEND_PARAMETER ACTIVE_TABLE_FLAG 16 UINT 0 1 0 "Selects the buffer to operate on for validate or dump commands"
+      STATE INACTIVE 0
+      STATE ACTIVE   1
+   APPEND_PARAMETER TABLE_NAME 320 STRING "" "Full Name of Table to be validated"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_CMD_ACTIVATE',  5, "Telecommand Message") %>
+   APPEND_PARAMETER TABLE_NAME 320 STRING "" "Full Name of Table to be activated"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_CMD_DUMP_REGISTRY',  6,  "#CFE_TBL_DumpRegistryCmd_t") %>
+   APPEND_PARAMETER DUMP_FILENAME 512 STRING "" "Full Filename where dumped data is to be"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_CMD_SEND_REGISTRY',  7, "Telecommand Message") %>
+   APPEND_PARAMETER TABLE_NAME 320 STRING "" "Full Name of Table whose registry entry"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_CMD_DELETE_CDS',  8, "Telecommand Message") %>
+   APPEND_PARAMETER TABLE_NAME 320 STRING "" "Full Name of Table whose CDS is to be deleted"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TBL_CMD_ABORT_LOAD',  9, "Telecommand Message") %>
+   APPEND_PARAMETER TABLE_NAME 320 STRING "" "Full Name of Table whose load is to be aborted"

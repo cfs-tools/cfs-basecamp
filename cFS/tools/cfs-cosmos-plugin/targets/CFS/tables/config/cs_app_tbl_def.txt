@@ -1,0 +1,9 @@
+<%= cfs_tbl_hdr('CS_AppTable', 'CS app table', 'CS') %>
+<% 24.times do |entry_idx| %>
+  APPEND_PARAMETER STATE_<%= entry_idx %> 16 UINT 0 3 0
+    STATE EMPTY    0
+    STATE ENABLED  1
+    STATE DISABLED 2
+    STATE UNDEF    3
+  APPEND_PARAMETER NAME_<%= entry_idx %> 160 STRING ""
+<% end %>

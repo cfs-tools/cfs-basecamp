@@ -1,0 +1,45 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> cFE TIME Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK COMMAND_COUNTER "Command Counter:"
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK COMMAND_ERROR_COUNTER "Command Error Counter:"
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK CLOCK_STATE_FLAGS "Clock State Flags"
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK CLOCK_STATE_API "Clock State:"
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK LEAP_SECONDS "Leap (seconds):"
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK SECONDS_MET "MET (seconds)"
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK SUBSECS_MET "MET (subseconds):"
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK SECONDS_STCF "STCF (seconds):"
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK SUBSECS_STCF "STCF (subseconds):"
+
+<% if $cfs_time_server_config == false %>
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK ADJUSTMENT_FACTOR_SECONDS "1Hz STCF Adjustment Factor (seconds):"
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK ADJUSTMENT_FACTOR_SUBSECONDS "1Hz STCF Adjustment Factor (subseconds):"
+<% end %>
+<% if $cfs_time_client_config == false %>
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK SECONDS_DELAY "1Hz STCF Delay (seconds):"
+  LABELVALUEDESC <%= target_name %>  CFE_TIME_HK SUBSECONDS_DELAY "1Hz STCF Delay (subseconds):"
+<% end %>
+
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  CFE_TIME_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_TIME_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_TIME_HK RECEIVED_COUNT 
+  END  
+END
+

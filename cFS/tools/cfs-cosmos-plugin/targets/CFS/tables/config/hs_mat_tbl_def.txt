@@ -1,0 +1,10 @@
+<%= cfs_tbl_hdr('HS_MsgActs_Tbl', 'HS message actions table', 'HS') %>
+<% 8.times do |entry_idx| %>
+  APPEND_PARAMETER ENABLE_STATE_<%= entry_idx %> 16 UINT 0 2 0
+    STATE DISABLED 0
+    STATE ENABLED  1
+    STATE NO_EVENT 2
+  APPEND_PARAMETER COOLDOWN_<%= entry_idx %> 16 UINT 0 MAX_UINT16 0
+  APPEND_ARRAY_PARAMETER MSG_BUF_<%= entry_idx %> 8 UINT 224
+    FORMAT_STRING "0x%02X"
+<% end %>

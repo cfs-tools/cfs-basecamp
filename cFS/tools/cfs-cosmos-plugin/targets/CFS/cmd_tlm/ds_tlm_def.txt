@@ -1,0 +1,38 @@
+<%= cfs_tlm_hdr(target_name, 'DS_HK', "DS Hk Tlm") %>
+   APPEND_ITEM COMMAND_COUNTER 8 UINT "Command Counter"
+   APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "Command Error Counter"
+   APPEND_ITEM DEST_TBL_LOAD_COUNTER 8 UINT "Count of destination file table loads"
+   APPEND_ITEM DEST_TBL_ERR_COUNTER 8 UINT "Count of failed attempts to get table data pointer"
+   APPEND_ITEM FILTER_TBL_LOAD_COUNTER 8 UINT "Count of packet filter table loads"
+   APPEND_ITEM FILTER_TBL_ERR_COUNTER 8 UINT "Count of failed attempts to get table data pointer"
+   APPEND_ITEM APP_ENABLE_STATE 8 UINT "App enable/disable state"
+   APPEND_ITEM PADDING 8 UINT "Padding"
+   APPEND_ITEM FILE_WRITE_COUNTER 16 UINT "Count of good destination file writes"
+   APPEND_ITEM FILE_WRITE_ERR_COUNTER 16 UINT "Count of bad destination file writes"
+   APPEND_ITEM FILE_UPDATE_COUNTER 16 UINT "Count of good updates to secondary header"
+   APPEND_ITEM FILE_UPDATE_ERR_COUNTER 16 UINT "Count of bad updates to secondary header"
+   APPEND_ITEM DISABLED_PKT_COUNTER 32 UINT "Count of packets discarded (DS was disabled)"
+   APPEND_ITEM IGNORED_PKT_COUNTER 32 UINT "Count of packets discarded"
+   APPEND_ITEM FILTERED_PKT_COUNTER 32 UINT "Count of packets discarded (failed filter test)"
+   APPEND_ITEM PASSED_PKT_COUNTER 32 UINT "Count of packets that passed filter test"
+   APPEND_ITEM FILTER_TBL_FILENAME 512 STRING "Name of filter table file"
+
+<%= cfs_tlm_hdr(target_name, 'DS_DIAG', "DS Diagnostic Tlm") %>
+<% 16.times do |file_idx| %>
+   APPEND_ITEM FILE_AGE_<%= file_idx %> 32 UINT "Current file age in seconds"
+   APPEND_ITEM FILE_SIZE_<%= file_idx %> 32 UINT "Current file size in bytes"
+   APPEND_ITEM FILE_RATE_<%= file_idx %> 32 UINT "Current file data rate (avg since HK)"
+   APPEND_ITEM SEQUENCE_COUNT_<%= file_idx %> 32 UINT "Sequence count portion of filename"
+   APPEND_ITEM ENABLE_STATE_<%= file_idx %> 16 UINT "Current file enable/disable state"
+   APPEND_ITEM OPEN_STATE_<%= file_idx %> 16 UINT "Current file open/close state"
+   APPEND_ITEM FILENAME_<%= file_idx %> 512 STRING "Current filename (path+base+seq+ext)"
+<% end %>
+
+<%= cfs_tlm_hdr(target_name, 'DS_COMP', "DS Single File Info Tlm") %>
+   APPEND_ITEM FILE_AGE 32 UINT "Current file age in seconds"
+   APPEND_ITEM FILE_SIZE 32 UINT "Current file size in bytes"
+   APPEND_ITEM FILE_RATE 32 UINT "Current file data rate (avg since HK)"
+   APPEND_ITEM SEQUENCE_COUNT 32 UINT "Sequence count portion of filename"
+   APPEND_ITEM ENABLE_STATE 32 UINT "Current file enable/disable state"
+   APPEND_ITEM OPEN_STATE 32 UINT "Current file open/close state"
+   APPEND_ITEM FILENAME 512 STRING "Current filename (path+base+seq+ext)"

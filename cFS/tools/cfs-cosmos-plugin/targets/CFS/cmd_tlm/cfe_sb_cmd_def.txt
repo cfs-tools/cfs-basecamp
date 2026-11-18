@@ -1,0 +1,32 @@
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_SEND_HK_CMD', 0, 'CFE_SB housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_CMD_NOOP',  0, "SB task command packet command codes") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_CMD_RESET_COUNTERS',  1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_CMD_SEND_SB_STATS',  2, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_CMD_WRITE_ROUTING_INFO',  3, "Telecommand Message") %>
+   APPEND_PARAMETER FILENAME 512 STRING "" "Path and Filename of data to be loaded"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_CMD_ENABLE_ROUTE',  4, "Telecommand Message") %>
+   APPEND_PARAMETER MSG_ID_VALUE 32 UINT 0 0xFFFF 0 "MsgId Value"
+   APPEND_PARAMETER PIPE 32 UINT 0 MAX_UINT32 0 "Pipe ID of route to be enabled or disabled"
+   APPEND_PARAMETER PADDING 32 UINT 0 0 0 "Spare bytes to make command even number of bytes"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_CMD_DISABLE_ROUTE',  5, "Telecommand Message") %>
+   APPEND_PARAMETER MSG_ID_VALUE 32 UINT 0 0xFFFF 0 "MsgId Value"
+   APPEND_PARAMETER PIPE 32 UINT 0 MAX_UINT32 0 "Pipe ID of route to be enabled or disabled"
+   APPEND_PARAMETER PADDING 32 UINT 0 0 0 "Spare bytes to make command even number of bytes"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_CMD_WRITE_PIPE_INFO',  7, "Telecommand Message") %>
+   APPEND_PARAMETER FILENAME 512 STRING "" "Path and Filename of data to be loaded"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_CMD_WRITE_MAP_INFO',  8, "Telecommand Message") %>
+   APPEND_PARAMETER FILENAME 512 STRING "" "Path and Filename of data to be loaded"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_SUB_RPT_CTRL_ENABLE_SUB_REPORTING', 9, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_SUB_RPT_CTRL_DISABLE_SUB_REPORTING', 10, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_SB_SUB_RPT_CTRL_SEND_PREV_SUBS', 11, "Telecommand Message") %>

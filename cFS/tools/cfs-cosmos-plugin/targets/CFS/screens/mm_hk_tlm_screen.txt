@@ -1,0 +1,35 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> MM Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  MM_HK COMMAND_COUNTER  "Command Count:"
+  LABELVALUEDESC <%= target_name %>  MM_HK COMMAND_ERROR_COUNTER  "Command Error Count:"
+  LABELVALUEDESC <%= target_name %>  MM_HK LAST_ACTION "Last Command Action:"
+  LABELVALUEDESC <%= target_name %>  MM_HK MEM_TYPE "Last Command Memory Type:"
+  LABELVALUEDESC <%= target_name %>  MM_HK ADDRESS "Last Command Address:"
+  LABELVALUEDESC <%= target_name %>  MM_HK DATA_VALUE "Last Command Data:"
+  LABELVALUEDESC <%= target_name %>  MM_HK BYTES_PROCESSED "Last Command Bytes Processed:"
+  LABELVALUEDESC <%= target_name %>  MM_HK FILE_NAME "Last Command File Name:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> MM_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> MM_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> MM_HK RECEIVED_COUNT 
+  END 
+ END
+
+

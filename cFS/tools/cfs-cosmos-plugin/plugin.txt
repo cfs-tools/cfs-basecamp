@@ -1,0 +1,58 @@
+<% require 'cfs_packet_headers' %>
+<% require 'cfs_globals' %>
+<% require 'cfs_intf_configs' %>
+<% require 'cfs_fleet_globals' %>
+
+# To expose the EDS enabled flag to the plugin install, uncomment the lines below
+VARIABLE cfs_eds_enabled false
+<% cfs_globals_set_eds_enabled(cfs_eds_enabled) %>
+
+# To set the memory size, uncomment the lines below
+VARIABLE cfs_mem_addr_size 64
+<% cfs_globals_set_mem_addr_size(cfs_mem_addr_size) %>
+
+# To expose the endianness config to the plugin install, uncomment the lines below
+VARIABLE cfs_endianness LITTLE_ENDIAN
+<% cfs_globals_set_endianness(cfs_endianness) %>
+
+# This should map to the IP address that GSW sends commands to (and listens to telemetry on)
+VARIABLE cfs_1_intf_ip 172.17.0.1
+VARIABLE cfs_2_intf_ip 172.17.0.1
+
+# This should map to the IP address that FSW sends telemetry to
+# aka the IP address for the host that this COSMOS instance is running on
+VARIABLE global_tlm_output_ip 127.0.0.1
+
+<% (1..$cfs_fleet_globals_num_cfs_targets).each do |cfs_cpu_index| %>
+
+    # Declare a new instance of the CFS target
+    TARGET CFS <%= cfs_target_name_from_cpu_num(cfs_cpu_index) %>
+
+    # Select the appropriate IP config input variable (declared above) for this cpu number
+    <% if cfs_cpu_index == 1 %>
+        <% current_cfs_intf_ip = cfs_1_intf_ip %>
+    <% elsif cfs_cpu_index == 2 %>
+        <% current_cfs_intf_ip = cfs_2_intf_ip %>
+    <% else %>
+        # This line should cause a plugin compilation error
+        # If this line is hit, the loop count doesn't match the supported number of interfaces
+        <% current_cfs_intf_ip = error %>
+    <% end %>
+
+    # Set up the FSW cmd/tlm interface
+    INTERFACE CFS-<%= cfs_cpu_index %>_INTF udp_interface.rb &
+            <%= current_cfs_intf_ip %> &
+            <%= cfs_get_port_num_cmd(cfs_cpu_index) %> &
+            <%= cfs_get_port_num_tlm(cfs_cpu_index) %> &
+            nil nil 128 nil nil
+        MAP_TARGET <%= cfs_target_name_from_cpu_num(cfs_cpu_index) %>
+        PROTOCOL WRITE ProtocolCcsdsChecksum
+        PROTOCOL WRITE ProtocolCcsdsLength
+        PROTOCOL READ LengthProtocol 32 16 7 1 BIG_ENDIAN 0 nil
+        PROTOCOL READ ProtocolEvsLog
+<% end %>
+
+# Instantiate one "fleet" target
+# this target does not add new commands/telemetry,
+# it just contains procedures used to test multiple cFS instances
+TARGET CFS_FLEET CFS_FLEET

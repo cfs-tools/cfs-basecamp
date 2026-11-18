@@ -1,0 +1,44 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+	TITLE "<%= target_name %> cFE TBL Registration Telemetry" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG SIZE "Size (in bytes):"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG CRC "Most Recent CRC:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG ACTIVE_BUFFER_ADDR "Active Buffer Address:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG INACTIVE_BUFFER_ADDR "Inactive Buffer Address:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG VALIDATION_FUNC_PTR "Validation Function Pointer:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG TIME_OF_LAST_UPDATE_SECONDS "Time of Last Update (seconds):"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG TIME_OF_LAST_UPDATE_SUBSECONDS "Time of Last Update (subseconds):"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG FILE_CREATE_TIME_SECS "File Creation Time (seconds);"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG FILE_CREATE_TIME_SUB_SECS "File Creation Time (subseconds):"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG TABLE_LOADED_ONCE "Table Loaded Once:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG LOAD_PENDING "Load Pending:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG DUMP_ONLY "Dump Only:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG DOUBLE_BUFFERED "Double Buffered:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG NAME "Processor Specific Name:"
+  SUBSETTING 1 WIDTH 300
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG LAST_FILE_LOADED "Last File Loaded:"
+  SUBSETTING 1 WIDTH 300
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG OWNER_APP_NAME "Owning Application Name:"
+  SUBSETTING 1 WIDTH 300
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_REG CRITICAL  "Critical:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  CFE_TBL_REG PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_TBL_REG RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_TBL_REG RECEIVED_COUNT 
+  END  
+END

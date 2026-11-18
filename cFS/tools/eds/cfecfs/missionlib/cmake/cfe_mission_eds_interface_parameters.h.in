@@ -1,0 +1,6 @@
+/* Generated wrapper based off the real source file location */
+#include "@EDS_FILE_PREFIX@_designparameters.h"
+
+extern const struct CFE_MissionLib_SoftwareBus_Interface @EDS_SYMBOL_PREFIX@_SOFTWAREBUS_INTERFACE;
+
+#define CFE_SOFTWAREBUS_INTERFACE  @EDS_SYMBOL_PREFIX@_SOFTWAREBUS_INTERFACE

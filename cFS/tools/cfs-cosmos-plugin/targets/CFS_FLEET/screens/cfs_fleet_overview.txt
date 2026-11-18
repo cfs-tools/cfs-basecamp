@@ -1,0 +1,171 @@
+SCREEN AUTO AUTO 1.0
+
+<% require 'cfs_target_num_color' %>
+<% require 'cfs_globals' %>
+<% require 'cfs_fleet_globals' %>
+
+VERTICAL
+    TITLE "cFS FSW Fleet Overview" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+    TABBOOK
+        <% (1..$cfs_fleet_globals_num_cfs_targets).each do |cpu_index| %>
+            TABITEM "<%= cfs_target_name_from_cpu_num(cpu_index) %>"
+                MATRIXBYCOLUMNS 7 2
+                    LABEL "App Name"
+                    LABEL "Seq Count"
+                    LABEL "Cmd Count"
+                    LABEL "Err Count"
+                    LABEL "Send HK"
+                    LABEL "No-Op Cmd"
+                    LABEL "Reset Cmd"
+
+                    LABEL "CFE_ES"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_ES_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_ES_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_ES_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_ES_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_ES_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_ES_CMD_RESET_COUNTERS")'
+
+                    LABEL "CFE_EVS"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_EVS_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_EVS_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_EVS_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_EVS_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_EVS_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_EVS_CMD_RESET_COUNTERS")'
+
+                    LABEL "CFE_SB"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_SB_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_SB_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_SB_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_SB_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_SB_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_SB_CMD_RESET_COUNTERS")'
+
+                    LABEL "CFE_TBL"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TBL_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TBL_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TBL_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TBL_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TBL_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TBL_CMD_RESET_COUNTERS")'
+
+                    LABEL "CFE_TIME"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TIME_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TIME_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TIME_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TIME_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TIME_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CFE_TIME_CMD_RESET_COUNTERS")'
+
+                    LABEL "CI_LAB"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CI_LAB_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CI_LAB_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CI_LAB_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CI_LAB_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CI_LAB_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CI_LAB_CMD_RESET_COUNTERS")'
+
+                    LABEL "TO_LAB"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> TO_LAB_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> TO_LAB_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> TO_LAB_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> TO_LAB_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> TO_LAB_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> TO_LAB_CMD_RESET_COUNTERS")'
+
+                    LABEL "SAMPLE_APP"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> SAMPLE_APP_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> SAMPLE_APP_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> SAMPLE_APP_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> SAMPLE_APP_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> SAMPLE_APP_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> SAMPLE_APP_CMD_RESET_COUNTERS")'
+
+                    LABEL "CF"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CF_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CF_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CF_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CF_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CF_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CF_CMD_RESET")'
+
+                    LABEL "CS"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CS_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CS_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> CS_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CS_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CS_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> CS_CMD_RESET_COUNTERS")'
+
+                    LABEL "DS"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> DS_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> DS_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> DS_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> DS_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> DS_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> DS_CMD_RESET_COUNTERS")'
+
+                    LABEL "FM"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> FM_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> FM_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> FM_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> FM_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> FM_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> FM_CMD_RESET_COUNTERS")'
+
+                    LABEL "HK"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> HK_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> HK_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> HK_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> HK_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> HK_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> HK_CMD_RESET_COUNTERS")'
+
+                    LABEL "LC"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> LC_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> LC_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> LC_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> LC_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> LC_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> LC_CMD_RESET_COUNTERS")'
+
+                    LABEL "MD"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> MD_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> MD_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> MD_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> MD_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> MD_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> MD_CMD_RESET_COUNTERS")'
+
+                    LABEL "MM"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> MM_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> MM_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> MM_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> MM_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> MM_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> MM_CMD_RESET_COUNTERS")'
+
+                    LABEL "SBN"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> SBN_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> SBN_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> SBN_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> SBN_CMD_HK")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> SBN_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> SBN_CMD_HK_RESET")'
+
+                    LABEL "SC"
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> SC_HK CCSDS_SEQUENCE
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> SC_HK COMMAND_COUNTER
+                    VALUE <%= cfs_target_name_from_cpu_num(cpu_index) %> SC_HK COMMAND_ERROR_COUNTER
+                    BUTTON 'Send Hk' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> SC_SEND_HK_CMD")'
+                    BUTTON 'No-Op' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> SC_CMD_NOOP")'
+                    BUTTON 'Reset' 'api.cmd("<%= cfs_target_name_from_cpu_num(cpu_index) %> SC_CMD_RESET_COUNTERS")'
+
+                END
+            END
+        <% end %>
+    END
+
+END

@@ -1,0 +1,102 @@
+<%= cfs_tlm_hdr(target_name, 'CFE_TIME_HK', "CFE_TIME Hk Tlm") %>
+   APPEND_ITEM COMMAND_COUNTER 8 UINT "Command Execution Counter"
+   APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "Command Error Counter"
+   APPEND_ITEM CLOCK_STATE_FLAGS 16 UINT "State Flags"
+      FORMAT_STRING "0x%04X"
+   APPEND_ITEM CLOCK_STATE_API 16 INT "Enumerated types identifying the quality of the current time"
+      STATE INVALID -1
+      STATE VALID    0
+      STATE FLYWHEEL 1
+   APPEND_ITEM LEAP_SECONDS 16 INT "Leap Seconds"
+   APPEND_ITEM MET_SECONDS 32 UINT "Current MET (secs)"
+   APPEND_ITEM MET_SUBSECS 32 UINT "Current MET (subsecs)"
+   APPEND_ITEM STCF_SECONDS 32 UINT "Current STCF (secs)"
+   APPEND_ITEM STCF_SUBSECONDS 32 UINT "Current STCF (subsecs)"
+<% if $cfs_time_server_config == false %>
+   APPEND_ITEM ADJUSTMENT_FACTOR_SECONDS 32 UINT "Current 1Hz STCF adjustment (secs)"
+   APPEND_ITEM ADJUSTMENT_FACTOR_SUBSECONDS 32 UINT "Current 1Hz STCF adjustment (subsecs)"
+<% end %>
+<% if $cfs_time_client_config == false %>
+   APPEND_ITEM SECONDS_DELAY 32 UINT "Current 1Hz STCF delay (secs)"
+   APPEND_ITEM SUBSECONDS_DELAY 32 UINT "Current 1Hz STCF delay (subsecs)"
+<% end %>
+
+<%= cfs_tlm_hdr(target_name, 'CFE_TIME_DIAG', "CFE_TIME Diagnostics Tlm") %>
+   APPEND_ITEM AT_TONE_MET_SECONDS 32 UINT "MET at time of tone (secs)"
+   APPEND_ITEM AT_TONE_MET_SUBSECONDS 32 UINT "MET at time of tone (subsecs)"
+   APPEND_ITEM AT_TONE_STCF_SECONDS 32 UINT "STCF at time of tone (secs)"
+   APPEND_ITEM AT_TONE_STCF_SUBSECONDS 32 UINT "STCF at time of tone (subsecs)"
+   APPEND_ITEM AT_TONE_DELAY_SECONDS 32 UINT "Adjustment for slow tone detection (secs)"
+   APPEND_ITEM AT_TONE_DELAY_SUBSECONDS 32 UINT "Adjustment for slow tone detection (subsecs)"
+   APPEND_ITEM AT_TONE_LATCH_SECONDS 32 UINT "Local clock latched at time of tone (secs)"
+   APPEND_ITEM AT_TONE_LATCH_SUBSECONDS 32 UINT "Local clock latched at time of tone (subecs)"
+   APPEND_ITEM AT_TONE_LEAP_SECONDS 16 INT "Leap Seconds at time of tone"
+   APPEND_ITEM CLOCK_STATE_API 16 INT "Enumerated types identifying the quality of the current time"
+      STATE INVALID -1
+      STATE VALID    0
+      STATE FLYWHEEL 1
+   APPEND_ITEM TIME_SINCE_TONE_SECONDS 32 UINT "Time elapsed since tone (secs)"
+   APPEND_ITEM TIME_SINCE_TONE_SUBSECONDS 32 UINT "Time elapsed since tone (subecs)"
+   APPEND_ITEM CURRENT_LATCH_SECONDS 32 UINT "Local clock latched just now (secs)"
+   APPEND_ITEM CURRENT_LATCH_SUBSECONDS 32 UINT "Local clock latched just now (subsecs)"
+   APPEND_ITEM CURRENT_MET_SECONDS 32 UINT "Current MET (secs)"
+   APPEND_ITEM CURRENT_MET_SUBSECONDS 32 UINT "Current MET (subsecs)"
+   APPEND_ITEM CURRENT_TAI_SECONDS 32 UINT "Current TAI (secs)"
+   APPEND_ITEM CURRENT_TAI_SUBSECONDS 32 UINT "Current TAI (subecs)"
+   APPEND_ITEM CURRENT_UTC_SECONDS 32 UINT "Current UTC (secs)"
+   APPEND_ITEM CURRENT_UTC_SUBSECONDS 32 UINT "Current UTC (subsecs)"
+   APPEND_ITEM CLOCK_SET_STATE 16 INT "Time has been set"
+      STATE NOT_SET 0
+      STATE WAS_SET 1   
+   APPEND_ITEM CLOCK_FLY_STATE 16 INT "Current fly-wheel state"
+      STATE NO_FLY 0
+      STATE IS_FLY 1   
+   APPEND_ITEM CLOCK_SOURCE 16 INT "Internal vs external, etc."
+      STATE INTERNAL 1
+      STATE EXTERNAL 2
+   APPEND_ITEM CLOCK_SIGNAL 16 INT "Primary vs redundant, etc."
+      STATE PRIMARY   1
+      STATE REDUNDANT 2  
+   APPEND_ITEM SERVER_FLY_STATE 16 INT "Used by clients only"
+      STATE NO_FLY 0
+      STATE IS_FLY 1   
+   APPEND_ITEM FORCED_2_FLY 16 INT "Commanded into flywheel"
+      STATE FALSE    0
+      STATE TRUE     1
+   APPEND_ITEM CLOCK_STATE_FLAGS 16 UINT "Clock State Flags"
+      FORMAT_STRING "0x%04X"
+   APPEND_ITEM ONE_TIME_DIRECTION 16 INT "One time STCF adjustment direction (Add = 1, Sub = 2)"
+      STATE ADD      1
+      STATE SUBTRACT 2   
+   APPEND_ITEM ONE_HZ_DIRECTION 16 INT "1Hz STCF adjustment direction"
+      STATE ADD      1
+      STATE SUBTRACT 2   
+   APPEND_ITEM DELAY_DIRECTION 16 INT "Client latency adjustment direction"
+      STATE ADD      1
+      STATE SUBTRACT 2   
+   APPEND_ITEM ONE_TIME_ADJUST_SECONDS 32 UINT "Previous one-time STCF adjustment (secs)"
+   APPEND_ITEM ONE_TIME_ADJUST_SUBSECONDS 32 UINT "Previous one-time STCF adjustment (subsecs)"
+   APPEND_ITEM ONE_HZ_ADJUST_SECONDS 32 UINT "Current 1Hz STCF adjustment (secs)"
+   APPEND_ITEM ONE_HZ_ADJUST_SUBSECONDS 32 UINT "Current 1Hz STCF adjustment (subsecs)"
+   APPEND_ITEM TONE_SIGNAL_LATCH_SECONDS 32 UINT "Local clock latched at most recent tone signal (secs)"
+   APPEND_ITEM TONE_SIGNAL_LATCH_SUBSECONDS 32 UINT "Local clock latched at most recent tone signal (subecs)"
+   APPEND_ITEM TONE_DATA_LATCH_SECONDS 32 UINT "Local clock latched at most recent tone data (secs)"
+   APPEND_ITEM TONE_DATA_LATCH_SUBSECONDS 32 UINT "Local clock latched at most recent tone data (subsecs)"
+   APPEND_ITEM TONE_MATCH_COUNTER 32 UINT "Tone signal / data verification count"
+   APPEND_ITEM TONE_MATCH_ERROR_COUNTER 32 UINT "Tone signal / data verification error count"
+   APPEND_ITEM TONE_SIGNAL_COUNTER 32 UINT "Tone signal detected SB message count"
+   APPEND_ITEM TONE_DATA_COUNTER 32 UINT "Time at the tone data SB message count"
+   APPEND_ITEM TONE_INT_COUNTER 32 UINT "Tone signal ISR execution count"
+   APPEND_ITEM TONE_INT_ERROR_COUNTER 32 UINT "Tone signal ISR error count"
+   APPEND_ITEM TONE_TASK_COUNTER 32 UINT "Tone task execution count"
+   APPEND_ITEM VERSION_COUNTER 32 UINT "Count of mods to time at tone reference data (version)"
+   APPEND_ITEM LOCAL_INT_COUNTER 32 UINT "Local 1Hz ISR execution count"
+   APPEND_ITEM LOCAL_TASK_COUNTER 32 UINT "Local 1Hz task execution count"
+   APPEND_ITEM VIRTUAL_MET 32 UINT "Software MET"
+   APPEND_ITEM MIN_ELAPSED 32 UINT "Min tone signal / data pkt arrival window (subsecs)"
+   APPEND_ITEM MAX_ELAPSED 32 UINT "Max tone signal / data pkt arrival window (subsecs)"
+   APPEND_ITEM MAX_LOCAL_CLOCK_SECONDS 32 UINT "Max local clock value before rollover (secs)"
+   APPEND_ITEM MAX_LOCAL_CLOCK_SUBSECONDS 32 UINT "Max local clock value before rollover (subecs)"
+   APPEND_ITEM TONE_OVER_LIMIT 32 UINT "Max between tone signal interrupts"
+   APPEND_ITEM TONE_UNDER_LIMIT 32 UINT "Min between tone signal interrupts"
+   APPEND_ITEM DATA_STORE_STATUS 32 UINT "Data Store status (preserved across processor reset)"

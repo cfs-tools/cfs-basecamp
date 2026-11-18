@@ -1,0 +1,92 @@
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_SEND_HK_CMD', 0, 'CFE_ES housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_NOOP',  0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_RESET_COUNTERS',  1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_RESTART',  2, "Telecommand Message") %>
+   APPEND_PARAMETER RESTART_TYPE 16 UINT 1 2 1 "#CFE_ES_PROCESSOR_RESET=Processor Reset or #CFE_ES_POWERON_RESET=Power-On Reset"
+      STATE PROCESSOR 1
+      STATE POWER_ON  2
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_START_APP',  4, "Telecommand Message") %>
+   APPEND_PARAMETER APPLICATION 160 STRING "" "Name of Application to be started"
+   APPEND_PARAMETER APP_ENTRY_POINT 160 STRING "" "Symbolic name of Application's entry point"
+   APPEND_PARAMETER APP_FILE_NAME 512 STRING "" "Full path and filename of Application's executable image"
+<% if $cfs_globals_mem_addr_size == 64 %>
+   APPEND_PARAMETER STACK_SIZE 64 UINT MIN_UINT64 MAX_UINT64 0 "Desired stack size for the new application"
+<% else %>
+   APPEND_PARAMETER STACK_SIZE 32 UINT MIN_UINT32 MAX_UINT32 0 "Desired stack size for the new application"
+<% end %>
+   APPEND_PARAMETER EXCEPTION_ACTION 8 UINT 0 1 0 "Identifies action to take if exception occurs"
+      STATE RESTART_CPU 0
+      STATE RESTART_APP 1
+   APPEND_PARAMETER PADDING1 8 UINT 0 0 0
+   APPEND_PARAMETER PRIORITY 16 UINT 0 MAX_UINT16 0 "The new Applications runtime priority."
+   APPEND_PARAMETER PADDING2 32 UINT 0 0 0
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_STOP_APP',  5, "Telecommand Message") %>
+   APPEND_PARAMETER APPLICATION 160 STRING "" "ASCII text string containing Application Name"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_RESTART_APP',  6, "Telecommand Message") %>
+   APPEND_PARAMETER APPLICATION 160 STRING "" "ASCII text string containing Application Name"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_RELOAD_APP',  7, "Telecommand Message") %>
+   APPEND_PARAMETER APPLICATION 160 STRING "" "ASCII text string containing Application Name"
+   APPEND_PARAMETER APP_FILE_NAME 512 STRING "" "Full path and filename of Application's executable image"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_QUERY_ONE',  8, "Telecommand Message") %>
+   APPEND_PARAMETER APPLICATION 160 STRING "" "ASCII text string containing Application Name"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_QUERY_ALL',  9, "Telecommand Message") %>
+   APPEND_PARAMETER FILE_NAME 512 STRING "" "ASCII text string of full path and filename of file"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_CLEAR_SYS_LOG',  10, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_WRITE_SYS_LOG',  11, "Telecommand Message") %>
+   APPEND_PARAMETER FILE_NAME 512 STRING "" "ASCII text string of full path and filename of file"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_CLEAR_ER_LOG',  12, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_WRITE_ER_LOG',  13, "Telecommand Message") %>
+   APPEND_PARAMETER FILE_NAME 512 STRING "" "ASCII text string of full path and filename of file"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_START_PERF_DATA',  14, "Telecommand Message") %>
+   APPEND_PARAMETER TRIGGER_MODE 32 UINT 0 2 0 "Desired trigger position (Start, Center, End)"
+      STATE START  0
+      STATE CENTER 1
+      STATE END    2
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_STOP_PERF_DATA',  15, "Telecommand Message") %>
+   APPEND_PARAMETER DATA_FILE_NAME 512 STRING "" "ASCII text string of full path and filename of file Performance Analyzer data is to be written"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_SET_PERF_FILTER_MASK',  16, "Telecommand Message") %>
+   APPEND_PARAMETER FILTER_MASK_NUM 32 UINT 0 MAX_UINT32 0 "Index into array of Filter Masks"
+   APPEND_PARAMETER FILTER_MASK 32 UINT 0 MAX_UINT32 0 "New Mask for specified entry in array of Filter Masks"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_SET_PERF_TRIGGER_MASK',  17, "Telecommand Message") %>
+   APPEND_PARAMETER TRIGGER_MASK_NUM 32 UINT 0 MAX_UINT32 0 "Index into array of Trigger Masks"
+   APPEND_PARAMETER TRIGGER_MASK 32 UINT 0 MAX_UINT32 0 "New Mask for specified entry in array of Trigger Masks"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_OVER_WRITE_SYS_LOG',  18, "Telecommand Message") %>
+   APPEND_PARAMETER MODE 32 UINT 0 1 0 "Identifies handling of log messages after storage is filled"
+      STATE OVERWRITE 0
+      STATE DISCARD   1
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_RESET_PR_COUNT',  19, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_SET_MAX_PR_COUNT',  20, "Telecommand Message") %>
+   APPEND_PARAMETER MAX_PR_COUNT 16 UINT 0 MAX_UINT16 0 "New maximum number of Processor Resets before an automatic Power-On Reset is performed"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_DELETE_CDS',  21, "Telecommand Message") %>
+   APPEND_PARAMETER CDS_NAME 320 STRING "" "ASCII text string containing name of CDS to delete"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_SEND_MEM_POOL_STATS',  22, "Telecommand Message") %>
+   APPEND_PARAMETER APPLICATION 160 STRING "" "Application Name"
+   APPEND_PARAMETER POOL_HANDLE 32 UINT 0 MAX_UINT32 0 "Memory Pool Handle"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_DUMP_CDS_REGISTRY',  23, "Telecommand Message") %>
+   APPEND_PARAMETER DUMP_FILENAME 512 STRING "" "ASCII text string of full path and filename of file CDS Registry is to be written"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_ES_CMD_QUERY_ALL_TASKS',  24, "Telecommand Message") %>
+   APPEND_PARAMETER FILE_NAME 512 STRING "" "ASCII text string of full path and filename of file"

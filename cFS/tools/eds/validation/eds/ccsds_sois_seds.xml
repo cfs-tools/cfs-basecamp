@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.ccsds.org/schema/sois/seds">
+  <Package name="CCSDS/SOIS/SEDS" shortDescription="SOIS EDS Dictionary of Types">
+    <LongDescription>This namespace contains some generally-useful types, including:&lt;ul&gt;&lt;li&gt; standard c-like types with defined encoding and range&lt;li&gt; timestamps, quaternians, spin rates and similar space-domain quantities&lt;/ul&gt;</LongDescription>
+    <DataTypeSet>
+      <BooleanDataType name="BOOLEAN" shortDescription="Single bit flag">
+        <BooleanDataEncoding sizeInBits="1"/>
+      </BooleanDataType>
+      <FloatDataType name="FLOAT32" shortDescription="Dimensionless real">
+        <FloatDataEncoding encodingAndPrecision="IEEE754_2008_single" sizeInBits="32"/>
+        <Range>
+          <PrecisionRange>single</PrecisionRange>
+        </Range>
+      </FloatDataType>
+      <FloatDataType name="FLOAT64" shortDescription="Dimensionless real">
+        <FloatDataEncoding encodingAndPrecision="IEEE754_2008_double" sizeInBits="64"/>
+        <Range>
+          <PrecisionRange>double</PrecisionRange>
+        </Range>
+      </FloatDataType>
+      <IntegerDataType name="INT16" shortDescription="16 bit signed integer">
+        <IntegerDataEncoding encoding="twosComplement" sizeInBits="16"/>
+        <Range>
+          <MinMaxRange max="32767" min="-32768" rangeType="inclusiveMinInclusiveMax"/>
+        </Range>
+      </IntegerDataType>
+      <IntegerDataType name="INT32" shortDescription="32 bit signed integer">
+        <IntegerDataEncoding encoding="twosComplement" sizeInBits="32"/>
+        <Range>
+          <MinMaxRange max="2147483647" min="-2147483648" rangeType="inclusiveMinInclusiveMax"/>
+        </Range>
+      </IntegerDataType>
+      <IntegerDataType name="INT64" shortDescription="64 bit signed integer">
+        <IntegerDataEncoding encoding="twosComplement" sizeInBits="64"/>
+        <Range>
+          <MinMaxRange max="9223372036854775807" min="-9223372036854775808" rangeType="inclusiveMinInclusiveMax"/>
+        </Range>
+      </IntegerDataType>
+      <IntegerDataType name="INT8" shortDescription="8 bit signed integer">
+        <IntegerDataEncoding encoding="twosComplement" sizeInBits="8"/>
+        <Range>
+          <MinMaxRange max="127" min="-128" rangeType="inclusiveMinInclusiveMax"/>
+        </Range>
+      </IntegerDataType>
+      <StringDataType fixedLength="false" length="1024" name="STRING">
+        <StringDataEncoding terminationByte="0"/>
+      </StringDataType>
+      <IntegerDataType name="UINT16" shortDescription="16 bit unsigned integer">
+        <IntegerDataEncoding encoding="unsigned" sizeInBits="16"/>
+        <Range>
+          <MinMaxRange max="65535" min="0" rangeType="inclusiveMinInclusiveMax"/>
+        </Range>
+      </IntegerDataType>
+      <IntegerDataType name="UINT32" shortDescription="32 bit unsigned integer">
+        <IntegerDataEncoding encoding="unsigned" sizeInBits="32"/>
+        <Range>
+          <MinMaxRange max="4294967295" min="0" rangeType="inclusiveMinInclusiveMax"/>
+        </Range>
+      </IntegerDataType>
+      <IntegerDataType name="UINT64" shortDescription="64 bit unsigned integer">
+        <IntegerDataEncoding encoding="unsigned" sizeInBits="64"/>
+        <Range>
+          <MinMaxRange max="18446744073709551615" min="0" rangeType="inclusiveMinInclusiveMax"/>
+        </Range>
+      </IntegerDataType>
+      <IntegerDataType name="UINT8" shortDescription="8 bit unsigned integer">
+        <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+        <Range>
+          <MinMaxRange max="255" min="0" rangeType="inclusiveMinInclusiveMax"/>
+        </Range>
+      </IntegerDataType>
+      <IntegerDataType name="COUNTER">
+        <Range>
+          <MinMaxRange min="0" rangeType="atLeast"/>
+        </Range>
+      </IntegerDataType>
+      <ContainerDataType name="Quaternian" shortDescription="A 4-element vector used to represent a rotation or angle in 3-dimensional space">
+        <LongDescription>In mathematics, the quaternions are a number system that extends the complex numbers. They were first described by Irish mathematician William Rowan Hamilton in 1843 and applied to mechanics in three-dimensional space. A feature of quaternions is that the product of two quaternions is noncommutative. Hamilton defined a quaternion as the quotient of two directed lines in a three-dimensional space or equivalently as the quotient of two vectors. Quaternions can also be represented as the sum of a scalar and a vector.</LongDescription>
+        <EntryList>
+          <Entry name="q1" shortDescription="First quaternian element" type="FLOAT64">
+            <ValidRange>
+              <MinMaxRange max="1.0" min="-1.0" rangeType="inclusiveMinInclusiveMax"/>
+            </ValidRange>
+          </Entry>
+          <Entry name="q2" shortDescription="Second quaternian element" type="FLOAT64">
+            <ValidRange>
+              <MinMaxRange max="1.0" min="-1.0" rangeType="inclusiveMinInclusiveMax"/>
+            </ValidRange>
+          </Entry>
+          <Entry name="q3" shortDescription="Third quaternian element" type="FLOAT64">
+            <ValidRange>
+              <MinMaxRange max="1.0" min="-1.0" rangeType="inclusiveMinInclusiveMax"/>
+            </ValidRange>
+          </Entry>
+          <Entry name="scalar" shortDescription="Scalar quaternian element" type="FLOAT64">
+            <ValidRange>
+              <MinMaxRange max="1.0" min="-1.0" rangeType="inclusiveMinInclusiveMax"/>
+            </ValidRange>
+          </Entry>
+        </EntryList>
+      </ContainerDataType>
+      <ArrayDataType dataTypeRef="FLOAT64" name="Position" shortDescription="3-dimensional position vector, in x, y, z order." unit="metre">
+        <DimensionList>
+          <Dimension size="3"/>
+        </DimensionList>
+      </ArrayDataType>
+      <ArrayDataType dataTypeRef="FLOAT64" name="AngularRate" shortDescription="3-dimensional angular rate vector, in x, y, z axis order" unit="radianPerSecond">
+        <DimensionList>
+          <Dimension size="3"/>
+        </DimensionList>
+      </ArrayDataType>
+      <ArrayDataType dataTypeRef="FLOAT64" name="Velocity" shortDescription="3-dimensional velocity vector, in x, y, z order." unit="metrePerSecond">
+        <DimensionList>
+          <Dimension size="3"/>
+        </DimensionList>
+      </ArrayDataType>
+      <SubRangeDataType baseType="FLOAT64" name="Angle" unit="radian">
+        <Range>
+          <MinMaxRange max="3.141592653589793" min="-3.141592653589793" rangeType="exclusiveMinInclusiveMax"/>
+        </Range>
+      </SubRangeDataType>
+      <ContainerDataType name="KeplerianOrbitalElements" shortDescription="A 6-element vector used to specifiy a Newtonian 2-body orbit">
+        <LongDescription>The traditional orbital elements are the six Keplerian elements, after Johannes Kepler and his laws of planetary motion.When viewed from an inertial frame, two orbiting bodies trace out distinct trajectories. Each of these trajectories has its focus at the common center of mass. When viewed from the non-inertial frame of one body only the trajectory of the opposite body is apparent; Keplerian elements describe these non-inertial trajectories. An orbit has two sets of Keplerian elements depending on which body is used as the point of reference. The reference body is called the primary, the other body is called the secondary. In the case of spacecraft orbiting an astronomical body, the spacecraft is always considered the secondary.</LongDescription>
+        <EntryList>
+          <Entry name="a" shortDescription="Semi-Major Axis" type="FLOAT64" unit="metre">
+            <LongDescription>The sum of the periapsis and apoapsis distances divided by two.</LongDescription>
+          </Entry>
+          <Entry name="e" shortDescription="Eccentricity" type="FLOAT64">
+            <LongDescription>The shape of the ellipse, describing how much it is elongated compared to a circle.</LongDescription>
+            <ValidRange>
+              <MinMaxRange min="0.0" rangeType="atLeast"/>
+            </ValidRange>
+          </Entry>
+          <Entry name="i" shortDescription="Inclination at ascending node" type="Angle">
+            <LongDescription>Vertical tilt of the ellipse with respect to the reference plane, measured at the ascending node.</LongDescription>
+            <ValidRange>
+              <MinMaxRange max="3.141592653589793" min="0.0" rangeType="inclusiveMinInclusiveMax"/>
+            </ValidRange>
+          </Entry>
+          <Entry name="ra" shortDescription="Right ascension of ascending node" type="Angle">
+            <LongDescription>Angle from a reference direction to the direction of the ascending node, measured in a reference frame.</LongDescription>
+          </Entry>
+          <Entry name="omega" shortDescription="Argument of periapsis" type="Angle">
+            <LongDescription>Defines the orientation of the ellipse in the orbital plane, as an angle measured from the ascending node to the periapsis.</LongDescription>
+          </Entry>
+          <Entry name="nu" shortDescription="True anomaly at epoch" type="Angle">
+            <LongDescription>Defines the position of the orbiting body along the ellipse at a specific time (the "epoch"). The geometric angle in the plane of the ellipse, between periapsis (closest approach to the central body) and the position of the orbiting object at any given time.</LongDescription>
+          </Entry>
+        </EntryList>
+      </ContainerDataType>
+      <ContainerDataType name="UNSEGMENTED_TIME" shortDescription="Corresponds to CCSSDS UNSEGMENTED TIME CODE (CUC), TAI epoch">
+        <LongDescription>Lossless representation for all defined CCSDS encodings up to 4 octets of coarse time.This allows a time code representation of time with an accuracy of 60ns  through the year 2094. The epoch is the TAI epoch of 1958 January 1.This time code is &lt;b&gt;not&lt;/b&gt; UTC-based and leap second corrections do not apply.</LongDescription>
+        <EntryList>
+          <Entry name="coarse" shortDescription="CUC coarse time: count of elapsed complete seconds since TAI epoch." type="UINT64" unit="second"/>
+          <Entry name="fine" shortDescription="CUC fine time: fraction of a second" type="FLOAT64" unit="second">
+            <ValidRange>
+              <MinMaxRange max="1.0" min="0.0" rangeType="inclusiveMinExclusiveMax"/>
+            </ValidRange>
+          </Entry>
+        </EntryList>
+      </ContainerDataType>
+      <ContainerDataType name="DAY_SEGMENTED_TIME" shortDescription="Corresponds to CCSSDS DAY SEGMENTED TIME CODE (CDS), TAI epoch">
+        <LongDescription>Lossless representation for all defined CCSDS encodings up to 4 octets of day number time.The epoch is the TAI epoch of 1958 January 1.</LongDescription>
+        <EntryList>
+          <Entry name="days" shortDescription="CDS day number: Count of elapsed complete days since TAI epoch." type="UINT32"/>
+          <Entry name="seconds" shortDescription="CDS seconds of day" type="FLOAT64" unit="second">
+            <ValidRange>
+              <MinMaxRange max="86400.0" min="0.0" rangeType="inclusiveMinInclusiveMax"/>
+            </ValidRange>
+          </Entry>
+        </EntryList>
+      </ContainerDataType>
+    </DataTypeSet>
+  </Package>
+</PackageFile>

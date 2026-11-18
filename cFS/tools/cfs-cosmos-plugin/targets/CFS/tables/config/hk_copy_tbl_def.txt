@@ -1,0 +1,11 @@
+<%= cfs_tbl_hdr('HK_CopyTable', 'HK copy table', 'HK') %>
+<% 128.times do |entry_idx| %>
+  APPEND_PARAMETER INPUT_MID_<%= entry_idx %> 32 UINT 0 MAX_UINT32 0x0800
+    FORMAT_STRING "0x%04X"
+  APPEND_PARAMETER INPUT_OFFSET_<%= entry_idx %> 16 UINT 0 MAX_UINT16 0
+  APPEND_PARAMETER PADDING_0_<%= entry_idx %> 16 UINT 0 0 0
+  APPEND_PARAMETER OUTPUT_MID_<%= entry_idx %> 32 UINT 0 MAX_UINT32 0x0800
+    FORMAT_STRING "0x%04X"
+  APPEND_PARAMETER OUTPUT_OFFSET_<%= entry_idx %> 16 UINT 0 MAX_UINT16 0
+  APPEND_PARAMETER NUM_BYTES_<%= entry_idx %> 16 UINT 0 MAX_UINT16 0
+<% end %>

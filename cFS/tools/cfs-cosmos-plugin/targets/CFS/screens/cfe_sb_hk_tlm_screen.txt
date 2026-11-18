@@ -1,0 +1,41 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> cFE SB Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK COMMAND_COUNTER "Command Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK COMMAND_ERROR_COUNTER "Command Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK NO_SUBSCRIBERS_COUNTER "Number of Subscribers Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK MSG_SEND_ERROR_COUNTER "Messages Send Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK MSG_RECEIVE_ERROR_COUNTER "Messages Received Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK INTERNAL_ERROR_COUNTER "Internal Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK CREATE_PIPE_ERROR_COUNTER "Create Pipe Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK SUBSCRIBE_ERROR_COUNTER "Subscribe Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK PIPE_OPTS_ERROR_COUNTER  "Pipe Opts Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK DUPLICATE_SUBSCRIPTIONS_COUNTER "Duplicate Subscriptions Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK GET_PIPE_ID_BY_NAME_ERROR_COUNTER "Get Pipe ID by Name Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK PIPE_OVERFLOW_ERROR_COUNTER "Pipe Overflow Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK MSG_LIMIT_ERROR_COUNTER "Message Limit Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK MEM_POOL_HANDLE "Memory Pool Handle:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK MEM_IN_USE "Memory in Use:"
+  LABELVALUEDESC <%= target_name %> CFE_SB_HK UNMARKED_MEM "Unmarked Memory:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %> CFE_SB_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CFE_SB_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CFE_SB_HK RECEIVED_COUNT 
+  END  
+END
+

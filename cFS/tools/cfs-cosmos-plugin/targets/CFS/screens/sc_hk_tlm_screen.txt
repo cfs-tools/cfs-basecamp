@@ -1,0 +1,68 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> SC Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  SC_HK COMMAND_COUNTER  "Command Count:"
+  LABELVALUEDESC <%= target_name %>  SC_HK COMMAND_ERROR_COUNTER  "Command Error Count:"
+
+  TABBOOK
+    TABITEM "ATS Info" 
+      LABELVALUEDESC <%= target_name %>  SC_HK ATS_CMD_CTR "ATS Command Count:"
+      LABELVALUEDESC <%= target_name %>  SC_HK ATS_CMD_ERR_CTR "ATS Command Error Count:"
+      LABELVALUEDESC <%= target_name %>  SC_HK LAST_ATS_ERR_SEQ "Last ATS Errant Sequence Number:"
+      LABELVALUEDESC <%= target_name %>  SC_HK LAST_ATS_ERR_CMD "Last ATS Errant Command Number:"
+      LABELVALUEDESC <%= target_name %>  SC_HK NEXT_ATS_TIME "Next ATS Command Time:"      
+      LABELVALUEDESC <%= target_name %>  SC_HK ATS_NUMBER "Current ATS Number:"
+      LABELVALUEDESC <%= target_name %>  SC_HK ATP_STATE "Current ATP State:"
+      LABELVALUEDESC <%= target_name %>  SC_HK CONT_ATS_ON_FAIL "Continue ATS on Failure?"
+      LABELVALUEDESC <%= target_name %>  SC_HK SWITCH_PEND_FLAG "ATS Switch Pending?"
+      LABELVALUEDESC <%= target_name %>  SC_HK APPEND_CMD_ARG "Last Append ATS Command Argument:"
+      LABELVALUEDESC <%= target_name %>  SC_HK APPEND_ENTRY_COUNT "Command Entries in ATS Table Count:"
+      LABELVALUEDESC <%= target_name %>  SC_HK APPEND_BYTE_COUNT "Size of Command Entries in ATS Table:"
+      LABELVALUEDESC <%= target_name %>  SC_HK APPEND_LOAD_COUNT "ATS Table Load Count:"
+      LABELVALUEDESC <%= target_name %>  SC_HK ATP_CMD_NUMBER "Current ATP Command Number:"
+<% $sc_num_ats.times do |n|  %>
+      LABELVALUEDESC <%= target_name %>  SC_HK ATP_<%=n+1%>_FREE_BYTES "Free Bytes in ATS <%=n+1%>:"
+<% end %>
+	  END
+
+    TABITEM "RTS Info" 
+      LABELVALUEDESC <%= target_name %>  SC_HK RTS_CMD_CTR "RTS Command Count:"
+      LABELVALUEDESC <%= target_name %>  SC_HK RTS_CMD_ERR_CTR "RTS Command Error Count:"
+      LABELVALUEDESC <%= target_name %>  SC_HK LAST_RTS_ERR_SEQ "Last RTS Errant Sequence Number:"
+      LABELVALUEDESC <%= target_name %>  SC_HK LAST_RTS_ERR_CMD "Last RTS Errant Command Number:"
+      LABELVALUEDESC <%= target_name %>  SC_HK NEXT_RTS_TIME "Next RTS Command Time:"
+      LABELVALUEDESC <%= target_name %>  SC_HK NUM_RTS_ACTIVE "Number of Active RTSs:"
+      LABELVALUEDESC <%= target_name %>  SC_HK RTS_NUMBER "Next RTS Number:"
+      LABELVALUEDESC <%= target_name %>  SC_HK RTS_ACTIVE_CTR "Successful RTS Start Count:"
+      LABELVALUEDESC <%= target_name %>  SC_HK RTS_ACTIVE_ERR_CTR "Failed RTS Start Count:"
+<% $sc_num_rts_status_fields.times do |n|  %>
+      LABELVALUEDESC <%= target_name %>  SC_HK RTS_W<%=n%>_EXE_STATUS "RTS Executing Status Word <%=n%>:"
+      LABELVALUEDESC <%= target_name %>  SC_HK RTS_W<%=n%>_DIS_STATUS "RTS Disabled Status Word <%=n%>:"
+<% end %>
+	  END
+    
+  END
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> SC_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> SC_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> SC_HK RECEIVED_COUNT 
+  END 
+ END
+
+

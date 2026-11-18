@@ -1,0 +1,33 @@
+<%= cfs_cmd_hdr(target_name, 'LC_SEND_HK_CMD', 0, 'LC housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'LC_CMD_NOOP', 0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'LC_CMD_RESET_COUNTERS', 1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'LC_CMD_SET_LC_STATE', 2, "Telecommand Message") %>
+  APPEND_PARAMETER NEW_LC_STATE 16 UINT 1 4 1 "1=Active, 2=Passive, 3=Disabled"
+    STATE ACTIVE   1
+    STATE PASSIVE  2
+    STATE DISABLED 3
+    STATE PERM_OFF 4
+  APPEND_PARAMETER PADDING   16 UINT 0 0 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'LC_CMD_SET_AP_STATE', 3, "Telecommand Message") %>
+  APPEND_PARAMETER AP_NUMBER    16 UINT MIN_UINT16 MAX_UINT16 0 "Which actionpoint(s) to change"
+  APPEND_PARAMETER NEW_AP_STATE 16 UINT MIN_UINT16 MAX_UINT16 1 "1=Active, 2=Passive, 3=Disabled"
+    STATE ACTIVE   1
+    STATE PASSIVE  2
+    STATE DISABLED 3
+    STATE PERM_OFF 4
+
+<%= cfs_cmd_hdr(target_name, 'LC_CMD_SET_AP_PERM_OFF', 4, "Telecommand Message") %>
+  APPEND_PARAMETER AP_NUMBER 16 UINT MIN_UINT16 MAX_UINT16 0 "Which actionpoint to change"
+  APPEND_PARAMETER PADDING   16 UINT MIN_UINT16 MAX_UINT16 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'LC_CMD_RESET_AP_STATS', 5, "Telecommand Message") %>
+  APPEND_PARAMETER AP_NUMBER 16 UINT MIN_UINT16 MAX_UINT16 0 "Which actionpoint(s) to change"
+  APPEND_PARAMETER PADDING   16 UINT 0 0 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'LC_CMD_RESET_WP_STATS', 6, "Telecommand Message") %>
+  APPEND_PARAMETER WP_NUMBER 16 UINT MIN_UINT16 MAX_UINT16 0 "Which watchpoint(s) to change"
+  APPEND_PARAMETER PADDING   16 UINT 0 0 0 "Structure padding"

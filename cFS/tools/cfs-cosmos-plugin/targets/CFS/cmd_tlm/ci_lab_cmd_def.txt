@@ -1,0 +1,5 @@
+<%= cfs_cmd_hdr(target_name, 'CI_LAB_SEND_HK_CMD', 0, 'CI_LAB housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'CI_LAB_CMD_NOOP', 0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CI_LAB_CMD_RESET_COUNTERS', 1, "Telecommand Message") %>

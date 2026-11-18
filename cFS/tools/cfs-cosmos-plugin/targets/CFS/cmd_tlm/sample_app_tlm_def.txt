@@ -1,0 +1,3 @@
+<%= cfs_tlm_hdr(target_name, 'SAMPLE_APP_HK', "SAMPLE_APP Hk Tlm") %>
+   APPEND_ITEM COMMAND_COUNTER 8 UINT "Command Counter"
+   APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "Command Error Counter"

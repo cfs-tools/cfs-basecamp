@@ -1,0 +1,78 @@
+<%= cfs_tlm_hdr(target_name, 'CF_HK', "CF Hk Tlm Packet") %>
+    APPEND_ITEM COMMAND_COUNTER 16 UINT "Command success counter"
+    APPEND_ITEM COMMAND_ERROR_COUNTER 16 UINT "Command error counter"
+    APPEND_ITEM PADDING 32 UINT
+<% 2.times do |chan_idx| %>
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_SENT_FILE_DATA_BYTES 64 UINT "Sent file data bytes"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_SENT_PDU 32 UINT "Sent PDUs counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_SENT_NAK_SEGMENT_REQUESTS 32 UINT "Sent NAK segment requests counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_RECV_FILE_DATA_BYTES 64 UINT "Sent file data bytes"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_RECV_PDU 32 UINT "Sent PDUs with valid header counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_RECV_ERROR 32 UINT "Sent PDUs with error counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_RECV_SPURIOUS 16 UINT "Received PDUs with invalid directive code for current context or file directive FIN without matching active transaction counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_RECV_DROPPED 16 UINT "Received PDUs dropped due to a transaction error"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_RECV_NAK_SEGMENT_REQUESTS 32 UINT "Received NAK segment requests counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_OPEN 16 UINT "File open fault counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_READ 16 UINT "File read fault counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_SEEK 16 UINT "File seek fault counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_WRITE 16 UINT "File write fault counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_RENAME 16 UINT "File rename fault counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_DIRECTORY_READ 16 UINT "Directory read fault counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_CRC_MISMATCH 16 UINT "CRC mismatch fault counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_SIZE_MISMATCH 16 UINT "File size mismatch fault counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_NAK_LIMIT 16 UINT "NAK limit exceeded fault counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_ACK_LIMIT 16 UINT "ACK limit exceeded fault counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_INACTIVITY_TIMER 16 UINT "Inactivity timer exceeded counter"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FAULT_PADDING_0 16 UINT "Spare"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_Q_SIZE_PEND 16 UINT "Queue Size PEND"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_Q_SIZE_TX 16 UINT "Queue Size TX"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_Q_SIZE_RX 16 UINT "Queue Size RX"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_Q_SIZE_HIST 16 UINT "Queue Size HIST"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_Q_SIZE_HIST_FREE 16 UINT "Queue Size HIST FREE"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_Q_SIZE_FREE 16 UINT "Queue Size FREE"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_POLL_COUNTER 8 UINT "Number of active polling directories"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_PLAYBACK_COUNTER 8 UINT "Number of active playback directories"
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_FROZEN 8 UINT "Frozen state"
+        STATE THAWED 0
+        STATE FROZEN 1
+    APPEND_ITEM CHANNEL_HK_<%= chan_idx %>_PADDING 8 UINT "Implicit Spare for 64-bit align"
+<% end %>
+
+<%= cfs_tlm_hdr(target_name, 'CF_EOT', "CF EOT Tlm Packet") %>
+    APPEND_ITEM SEQ_NUM 32 UINT "Transaction identifier"
+    APPEND_ITEM CHANNEL 32 UINT "Channel number"
+    APPEND_ITEM DIRECTION 32 UINT "Direction of this transaction"
+        STATE RX 0
+        STATE TX 1
+    APPEND_ITEM STATE 32 UINT "Transaction state"
+        STATE INIT       1
+        STATE RX_CLASS_1 2
+        STATE TX_CLASS_1 3
+        STATE RX_CLASS_2 4
+        STATE TX_CLASS_2 5
+        STATE DROPPED    6
+        STATE HOLD       7
+        STATE INVALID    8
+    APPEND_ITEM TXN_STAT 32 UINT "Final status code of transaction"
+        STATE NO_ERROR                  0
+        STATE POS_ACK_LIMIT_REACHED     1
+        STATE KEEP_ALIVE_LIMIT_REACHED  2
+        STATE INVALID_TRANSMISSION_MODE 3
+        STATE FILESTORE_REJECTION       4
+        STATE FILE_CHECKSUM_FAILURE     5
+        STATE FILE_SIZE_ERROR           6
+        STATE NAK_LIMIT_REACHED         7
+        STATE INACTIVITY_DETECTED       8
+        STATE INVALID_FILE_STRUCTURE    9
+        STATE CHECK_LIMIT_REACHED       10
+        STATE UNSUPPORTED_CHECKSUM_TYPE 11
+        STATE SUSPEND_REQUEST_RECEIVED  14
+        STATE CANCEL_REQUEST_RECEIVED   15
+    APPEND_ITEM SRC_EID 32 UINT "Source eid of the transaction"
+    APPEND_ITEM PEER_EID 32 UINT "peer_eid is always the 'other guy', same src_eid for RX"
+    APPEND_ITEM FSIZE 32 UINT "File size"
+    APPEND_ITEM CRC_RESULT 32 UINT "CRC result"
+      FORMAT_STRING "0x%08X"
+    APPEND_ITEM FNAMES_SRC_FILENAME 512 STRING "Source filename"
+    APPEND_ITEM FNAMES_DST_FILENAME 512 STRING "Destination filename"
+    

@@ -1,0 +1,41 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> cFE ES Memory Pool Status" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %> CFE_ES_MEMSTATS POOL_HANDLE "Pool Handle:"
+  LABELVALUEDESC <%= target_name %> CFE_ES_MEMSTATS POOL_SIZE "Pool Size (bytes):"
+  LABELVALUEDESC <%= target_name %> CFE_ES_MEMSTATS NUM_BLOCKS_REQUESTED "Number of Blocks Requested:"
+  LABELVALUEDESC <%= target_name %> CFE_ES_MEMSTATS CHECK_ERR_CTR "Pool Error Count:"
+  LABELVALUEDESC <%= target_name %> CFE_ES_MEMSTATS NUM_FREE_BYTES "Number of Free Bytes:"
+ 
+  TABBOOK
+  <% 17.times do |blk_stat_idx| %>   
+    TABITEM "Pool Block <%= blk_stat_idx %>" 
+      LABELVALUEDESC <%= target_name %> CFE_ES_MEMSTATS BLOCK_STATS_<%= blk_stat_idx %>_BLOCK_SIZE "Size (bytes):"
+      LABELVALUEDESC <%= target_name %> CFE_ES_MEMSTATS BLOCK_STATS_<%= blk_stat_idx %>_NUM_CREATED "Number Created:"
+      LABELVALUEDESC <%= target_name %> CFE_ES_MEMSTATS BLOCK_STATS_<%= blk_stat_idx %>_NUM_FREE "Number Free:"
+    END
+  <% end %>
+  END
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> CFE_ES_MEMSTATS PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CFE_ES_MEMSTATS RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CFE_ES_MEMSTATS RECEIVED_COUNT 
+  END   
+END
+

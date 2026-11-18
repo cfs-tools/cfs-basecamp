@@ -1,0 +1,36 @@
+<%= cfs_tlm_hdr(target_name, 'SBN_HK', "SBN HK Tlm") %>
+   APPEND_ITEM COMMAND_CODE 8 UINT "Command Code"
+   APPEND_ITEM COMMAND_COUNTER 16 UINT "Command Counter" BIG_ENDIAN
+   APPEND_ITEM COMMAND_ERROR_COUNTER 16 UINT "Command Error Counter" BIG_ENDIAN
+   APPEND_ITEM SUB_COUNTER 16 UINT "Sub Counter" BIG_ENDIAN
+   APPEND_ITEM NETWORK_COUNTER 16 UINT "Network Counter" BIG_ENDIAN
+
+<%= cfs_tlm_hdr(target_name, 'SBN_HKNET', "SBN HK Net Tlm") %>
+   APPEND_ITEM COMMAND_CODE 8 UINT "Command Code"
+   APPEND_ITEM PROTOCOL_IDX 8 UINT "Protocol Idx"
+   APPEND_ITEM PEER_COUNTER 16 UINT "Peer Counter" BIG_ENDIAN
+
+<%= cfs_tlm_hdr(target_name, 'SBN_HKPEER', "SBN HK Peer Tlm") %>
+   APPEND_ITEM COMMAND_CODE 8 UINT "Command Code"
+   APPEND_ITEM PROCESSOR_ID 32 UINT "Processor ID of the peer" BIG_ENDIAN
+   APPEND_ITEM TIME_SEND_SECONDS 32 UINT "Time of last send to peer (1)"
+   APPEND_ITEM TIME_SEND_SUBSECONDS 32 UINT "Time of last send to peer (2)"
+   APPEND_ITEM TIME_RECV_SECONDS 32 UINT "Time of last receive from peer (1)"
+   APPEND_ITEM TIME_RECV_SUBSECONDS 32 UINT "Time of last receive from peer (2)"
+   APPEND_ITEM PEER_SEND_COUNTER 16 UINT "Number of messages sent to peer" BIG_ENDIAN
+   APPEND_ITEM PEER_RECV_COUNTER 16 UINT "Number of messages received from peer" BIG_ENDIAN
+   APPEND_ITEM PEER_SEND_ERROR_COUNTER 16 UINT "Number of errors generated sending to peer" BIG_ENDIAN
+   APPEND_ITEM PEER_RECV_ERROR_COUNTER 16 UINT "Number of errors generated receiving from peer" BIG_ENDIAN
+   APPEND_ITEM PEER_SUBS_COUNTER 16 UINT "Number of subscriptions to this peer" BIG_ENDIAN
+
+<%= cfs_tlm_hdr(target_name, 'SBN_HKMYSUBS', "SBN HK MySubs Tlm") %>
+   APPEND_ITEM COMMAND_CODE 8 UINT "Command Code"
+   APPEND_ITEM MYSUBS_SUB_COUNTER 16 UINT "Number of subscriptions" BIG_ENDIAN
+   APPEND_ARRAY_ITEM MYSUBS_MIDS 32 UINT 8192 "256-entry array of My MID Subscriptions" BIG_ENDIAN
+
+<%= cfs_tlm_hdr(target_name, 'SBN_HKPEERSUBS', "SBN HK Peer Subs Tlm") %>
+   APPEND_ITEM COMMAND_CODE 8 UINT "Command Code"
+   APPEND_ITEM PEER_SUBS_NET_IDX 16 UINT "Network" BIG_ENDIAN
+   APPEND_ITEM PEER_SUBS_PEER_IDX 16 UINT "Index of the peer in the request" BIG_ENDIAN
+   APPEND_ITEM PEER_SUBS_SUB_COUNTER 16 UINT "Number of local subscriptions" BIG_ENDIAN
+   APPEND_ARRAY_ITEM PEER_SUB_MIDS 32 UINT 8192 "256-entry array of Peer MID Subscriptions" BIG_ENDIAN

@@ -1,0 +1,60 @@
+<%= cfs_cmd_hdr(target_name, 'SC_SEND_HK_CMD', 0, 'SC housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_NOOP', 0, "Generate an event that displays the application version") %>
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_RESET_COUNTERS', 1, "Clear the command counters and error counters for SC") %>
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_START_ATS', 2, "Start an ATS on the ATP") %>
+  APPEND_PARAMETER ATS_NUM 16 UINT 1 <%= $sc_num_ats %> 1 "The ID of the ATS to start, 1 = ATS_A, 2 = ATS_B."
+  APPEND_PARAMETER PADDING 16 UINT 0 0 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_STOP_ATS', 3, "Stops an ATS from executing on the ATP even if an ATS is not currently executing") %>
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_START_RTS', 4, "Starts the execution of an RTS") %>
+  APPEND_PARAMETER RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "The ID of the RTS to start, 1 through SC_NUMBER_OF_RTS."
+  APPEND_PARAMETER PADDING 16 UINT 0 0 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_STOP_RTS', 5, "Stops the execution of an RTS") %>
+  APPEND_PARAMETER RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "The ID of the RTS to stop, 1 through SC_NUMBER_OF_RTS."
+  APPEND_PARAMETER PADDING 16 UINT 0 0 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_DISABLE_RTS', 6, "Disables an enabled RTS") %>
+  APPEND_PARAMETER RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "The ID of the RTS to disable, 1 through SC_NUMBER_OF_RTS."
+  APPEND_PARAMETER PADDING 16 UINT 0 0 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_ENABLE_RTS', 7, "Enables a disabled RTS") %>
+  APPEND_PARAMETER RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "The ID of the RTS to enable, 1 through SC_NUMBER_OF_RTS."
+  APPEND_PARAMETER PADDING 16 UINT 0 0 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_SWITCH_ATS', 8, "Initiates an ATS switch") %>
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_JUMP_ATS', 9, "Jumps to specified time in currently running ATS") %>
+  APPEND_PARAMETER NEW_TIME 32 UINT MIN_UINT32 MAX_UINT32 0 "the time to 'jump' to"
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_CONTINUE_ATS_ON_FAILURE', 10, "Lets an ATS continue if a command failed the checksum") %>
+  APPEND_PARAMETER CONTINUE_STATE 8 UINT 0 1 0 "TRUE or FALSE, to continue ATS after a failure."
+        STATE FALSE 0
+        STATE TRUE  1
+  APPEND_ARRAY_PARAMETER PADDING 8 UINT 24 "Padding for packet alignment"
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_APPEND_ATS', 11, "Adds the contents of the Append ATS table to the selected ATS then re-sorts for command execution order") %>
+  APPEND_PARAMETER ATS_NUM 16 UINT 1 <%= $sc_num_ats %> 1 "The ID of the ATS to append to, 1 = ATS_A, 2 = ATS_B."
+  APPEND_PARAMETER PADDING 16 UINT 0 0 0 "Structure padding"
+
+# FC 12 is for an internal command
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_START_RTS_GRP', 13, "Starts the execution of a group of RTSs") %>
+  APPEND_PARAMETER FIRST_RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "ID of the first RTS to act on, 1 through SC_NUMBER_OF_RTS."
+  APPEND_PARAMETER LAST_RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "ID of the last RTS to act on, 1 through SC_NUMBER_OF_RTS."
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_STOP_RTS_GRP', 14, "Stops the execution of a group of RTSs") %>
+  APPEND_PARAMETER FIRST_RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "ID of the first RTS to act on, 1 through SC_NUMBER_OF_RTS."
+  APPEND_PARAMETER LAST_RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "ID of the last RTS to act on, 1 through SC_NUMBER_OF_RTS."
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_DISABLE_RTS_GRP', 15, "Disables a group of enabled RTSs") %>
+  APPEND_PARAMETER FIRST_RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "ID of the first RTS to act on, 1 through SC_NUMBER_OF_RTS."
+  APPEND_PARAMETER LAST_RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "ID of the last RTS to act on, 1 through SC_NUMBER_OF_RTS."
+
+<%= cfs_cmd_hdr(target_name, 'SC_CMD_ENABLE_RTS_GRP', 16, "Enables a group of disabled RTSs") %>
+  APPEND_PARAMETER FIRST_RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "ID of the first RTS to act on, 1 through SC_NUMBER_OF_RTS."
+  APPEND_PARAMETER LAST_RTS_NUM 16 UINT 1 <%= $sc_num_rts %> 1 "ID of the last RTS to act on, 1 through SC_NUMBER_OF_RTS."

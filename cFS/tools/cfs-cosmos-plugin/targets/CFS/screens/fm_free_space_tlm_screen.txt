@@ -1,0 +1,37 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> FM Freespace/Monitor Telemetry" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  BUTTON 'Send FM Freespace/Monitor Telemetry' 'api.cmd("<%= target_name %>  FM_CMD_MONITOR_FILESYSTEM_SPACE")'
+
+  TABBOOK
+  <% 8.times do |free_space_entry| %>
+    TABITEM "App Data <%= free_space_entry %>" 
+        LABELVALUEDESC <%= target_name %> FM_MONITOR_TLM FILE_SYS_<%= free_space_entry %>_REPORT_TYPE "Report Type:"
+        LABELVALUEDESC <%= target_name %> FM_MONITOR_TLM FILE_SYS_<%= free_space_entry %>_NAME "File System Name:"
+        LABELVALUEDESC <%= target_name %> FM_MONITOR_TLM FILE_SYS_<%= free_space_entry %>_BLOCKS "Block Count:"
+        LABELVALUEDESC <%= target_name %> FM_MONITOR_TLM FILE_SYS_<%= free_space_entry %>_BYTES "Byte Count:"
+    END
+  <% end %>
+  END
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  FM_MONITOR_TLM PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  FM_MONITOR_TLM RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  FM_MONITOR_TLM RECEIVED_COUNT
+  END
+END
+

@@ -1,0 +1,63 @@
+
+name: Static Analysis
+
+# Run on pull requests and by dispatch
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+
+# Force bash to apply pipefail option so pipeline failures aren't masked
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  #Checks for duplicate actions. Skips push actions if there is a matching or duplicate pull-request action.
+  checks-for-duplicates:
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          concurrent_skipping: 'same_content'
+          skip_after_successful_duplicate: 'true'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+
+  static-analysis:
+    name: Run cppcheck
+    needs: checks-for-duplicates
+    if: ${{ needs.checks-for-duplicates.outputs.should_skip != 'true' || contains(github.ref, 'dev') }}
+    runs-on: ubuntu-latest
+    container: ghcr.io/core-flight-system/cfsbuildenv-linux:latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          path: source
+
+      - name: CMake Setup
+        run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DENABLE_UNIT_TESTS=FALSE -B build -S source
+
+      - name: Run general cppcheck
+        run: cppcheck --force --inline-suppr --xml --project=build/compile_commands.json 2> cppcheck_err.xml
+
+      - name: Convert cppcheck results to Markdown
+        run: xsltproc source/.github/scripts/cppcheck-output.xslt cppcheck_err.xml | tee $GITHUB_STEP_SUMMARY cppcheck_err.txt
+
+      - name: Check for reported errors
+        run: tail -n 1 cppcheck_err.txt | grep -q '^\*\*0 error(s) reported\*\*$'

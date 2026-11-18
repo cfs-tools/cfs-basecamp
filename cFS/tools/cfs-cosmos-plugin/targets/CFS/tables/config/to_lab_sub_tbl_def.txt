@@ -1,0 +1,8 @@
+<%= cfs_tbl_hdr('TO_Lab_Subs', 'TO_Lab Subscription Table', 'TO_LAB_APP') %>
+<% 256.times do |sub_idx| %>
+  APPEND_PARAMETER MSGID_<%= sub_idx%> 32 UINT 0 MAX_UINT32 0x0800
+    FORMAT_STRING "0x%04X"
+  APPEND_PARAMETER QOS_PRIORITY_FLAG_<%= sub_idx%> 8 UINT 0 MAX_UINT8 0
+  APPEND_PARAMETER QOS_RELIABILITY_FLAG_<%= sub_idx%> 8 UINT 0 MAX_UINT8 0
+  APPEND_PARAMETER BUF_LIMIT_<%= sub_idx%> 16 UINT 0 MAX_UINT16 0
+<% end %>

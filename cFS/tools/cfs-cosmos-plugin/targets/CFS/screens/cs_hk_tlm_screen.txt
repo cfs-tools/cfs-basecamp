@@ -1,0 +1,81 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> CS Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  CS_HK COMMAND_COUNTER  "Command Count:"
+  LABELVALUEDESC <%= target_name %>  CS_HK COMMAND_ERROR_COUNTER  "Command Error Count:"
+  LABELVALUEDESC <%= target_name %>  CS_HK Checksumstate "Global Checksum State:"
+  LABELVALUEDESC <%= target_name %>  CS_HK Recomputeinprogress "Recompute in Progress?"
+  LABELVALUEDESC <%= target_name %>  CS_HK Oneshotinprogress "Oneshot in Progress?"
+
+  LABELVALUEDESC <%= target_name %>  CS_HK Currentcstable "Current Table Being Checksummed:"
+  LABELVALUEDESC <%= target_name %>  CS_HK Currententryintable "Current Table Entry ID:"
+
+  LABELVALUEDESC <%= target_name %>  CS_HK Lastoneshotaddress "Last Oneshot Checksum Address:"
+  LABELVALUEDESC <%= target_name %>  CS_HK Lastoneshotsize "Last Oneshot Checksum Size:"
+  LABELVALUEDESC <%= target_name %>  CS_HK Lastoneshotmaxbytespercycle "Last Oneshot Checksum Max Bytes Per Cycle:"
+  LABELVALUEDESC <%= target_name %>  CS_HK Lastoneshotchecksum "Last Oneshot Checksum:"
+  LABELVALUEDESC <%= target_name %>  CS_HK Passcounter "Passes Made Through All Tables:"
+END
+
+VERTICALBOX
+  MATRIXBYCOLUMNS 4 2
+
+    LABEL "Region"
+    LABEL "State"
+    LABEL "Error Count"
+    LABEL "Baseline Checksum"
+
+    LABEL "EEPROM Checksum"
+    VALUE <%= target_name %> CS_HK Eepromcsstate
+    VALUE <%= target_name %> CS_HK Eepromcserrcounter
+    VALUE <%= target_name %> CS_HK Eeprombaseline
+
+    LABEL "Memory Checksum"
+    VALUE <%= target_name %> CS_HK Memorycsstate
+    VALUE <%= target_name %> CS_HK Memorycserrcounter
+    LABEL "N/A"
+
+    LABEL "Apps Checksum"
+    VALUE <%= target_name %> CS_HK Appcsstate
+    VALUE <%= target_name %> CS_HK Appcserrcounter
+    LABEL "N/A"
+
+    LABEL "Tables Checksum"
+    VALUE <%= target_name %> CS_HK Tablescsstate
+    VALUE <%= target_name %> CS_HK Tablescserrcounter
+    LABEL "N/A"
+
+    LABEL "OS Checksum"
+    VALUE <%= target_name %> CS_HK Oscsstate
+    VALUE <%= target_name %> CS_HK Oscserrcounter
+    VALUE <%= target_name %> CS_HK Osbaseline
+
+    LABEL "cFE Core Checksum"
+    VALUE <%= target_name %> CS_HK Cfecorecsstate
+    VALUE <%= target_name %> CS_HK Cfecorecserrcounter
+    VALUE <%= target_name %> CS_HK Cfecorebaseline
+
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> CS_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CS_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CS_HK RECEIVED_COUNT 
+  END 
+ END
+
+

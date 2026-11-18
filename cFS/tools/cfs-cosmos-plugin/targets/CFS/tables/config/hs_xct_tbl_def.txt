@@ -1,0 +1,11 @@
+<%= cfs_tbl_hdr('HS_ExeCount_tbl', 'HS execution counters table', 'HS') %>
+<% 32.times do |entry_idx| %>
+  APPEND_PARAMETER RESOURCE_NAME_<%= entry_idx %> 160 STRING ""
+  APPEND_PARAMETER NULL_TERM_<%= entry_idx %> 32 UINT 0 MAX_UINT32 0
+  APPEND_PARAMETER RESOURCE_TYPE_<%= entry_idx %> 32 UINT 0 4 0
+    STATE NO_TYPE   0
+    STATE APP_MAIN  1
+    STATE APP_CHILD 2
+    STATE DEVICE    3
+    STATE ISR       4
+<% end %>

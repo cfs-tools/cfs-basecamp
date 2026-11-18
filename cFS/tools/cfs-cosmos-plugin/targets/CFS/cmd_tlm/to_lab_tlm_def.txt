@@ -1,0 +1,21 @@
+<%= cfs_tlm_hdr(target_name, 'TO_LAB_HK', "TO_LAB Hk Tlm") %>
+   APPEND_ITEM COMMAND_COUNTER 8 UINT "Command Counter"
+   APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "Command Error Counter"
+
+<%= cfs_tlm_hdr(target_name, 'TO_LAB_DATA_TYPES', "Data type test interface") %>
+   APPEND_ITEM SYNCH 16 UINT "Unsigned 16 bit integer"
+   APPEND_ITEM BL_1 8 UINT "Unsigned 8 bit integer"
+   APPEND_ITEM BL_2 8 UINT "Unsigned 8 bit integer"
+   APPEND_ITEM B1 8 INT "Signed 8 bit integer"
+   APPEND_ITEM B2 8 INT "Signed 8 bit integer"
+   APPEND_ITEM B3 8 INT "Signed 8 bit integer"
+   APPEND_ITEM B4 8 INT "Signed 8 bit integer"
+   APPEND_ITEM W1 16 UINT "Unsigned 16 bit integer"
+   APPEND_ITEM W2 16 UINT "Unsigned 16 bit integer"
+   APPEND_ITEM DW_1 32 UINT "Unsigned 32 bit integer"
+   APPEND_ITEM DW_2 32 UINT "Unsigned 32 bit integer"
+   APPEND_ITEM F1 32 FLOAT "Single precision (32 bit) floating point value"
+   APPEND_ITEM F2 32 FLOAT "Single precision (32 bit) floating point value"
+   APPEND_ITEM DF_1 64 FLOAT "Double precision (64 bit) floating point value"
+   APPEND_ITEM DF_2 64 FLOAT "Double precision (64 bit) floating point value"
+   APPEND_ITEM STR 80 STRING "Value"

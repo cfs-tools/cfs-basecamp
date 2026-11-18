@@ -1,0 +1,30 @@
+<%= cfs_cmd_hdr(target_name, 'MD_SEND_HK_CMD', 0, 'MD housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'MD_CMD_NOOP', 0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'MD_CMD_RESET_COUNTERS', 1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'MD_CMD_START_DWELL', 2, "Telecommand Message") %>
+  APPEND_PARAMETER TABLE_MASK 16 UINT 0 MAX_UINT16 0 "Table mask"
+  APPEND_PARAMETER PADDING    16 UINT 0 MAX_UINT16 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'MD_CMD_STOP_DWELL', 3, "Telecommand Message") %>
+  APPEND_PARAMETER TABLE_MASK 16 UINT 0 MAX_UINT16 0 "Table mask"
+  APPEND_PARAMETER PADDING    16 UINT 0 MAX_UINT16 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'MD_CMD_JAM_DWELL', 4, "Telecommand Message") %>
+  APPEND_PARAMETER TABLE_ID     16 UINT 1 4  1 "Table ID"
+  APPEND_PARAMETER ENTRY_ID     16 UINT 1 25 1 "Entry ID"
+  APPEND_PARAMETER FIELD_LENGTH 16 UINT 0 4  1 "Field length"
+  APPEND_PARAMETER DWELL_DELAY  16 UINT 0 MAX_UINT16 0 "Dwell delay"
+<% if $cfs_globals_mem_addr_size == 64 %>
+  APPEND_PARAMETER OFFSET       64 UINT 0 MAX_UINT16 0 "Offset"
+<% else %>
+  APPEND_PARAMETER OFFSET       32 UINT 0 MAX_UINT16 0 "Offset"
+<% end %>  
+  APPEND_PARAMETER SYM_NAME     512 STRING "" "Symbol name"
+
+<%= cfs_cmd_hdr(target_name, 'MD_CMD_SET_SIGNATURE', 5, "Telecommand Message") %>
+  APPEND_PARAMETER TABLE_ID   16 UINT 1 4  1 "Table ID"
+  APPEND_PARAMETER PADDING    16 UINT 0 MAX_UINT16 0 "Structure padding"
+  APPEND_PARAMETER SIGNATURE 256 STRING "" "Signature"

@@ -1,0 +1,55 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+	TITLE "<%= target_name %> cFE TBL Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK COMMAND_COUNTER "Command Counter:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK COMMAND_ERROR_COUNTER "Command Error Counter:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK NUM_TABLES "Number of Tables:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK NUM_LOAD_PENDING "Number of Loads Pending:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK VALIDATION_COUNTER "Table Validation Counter:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK LAST_VAL_CRC "Last Validation CRC:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK LAST_VAL_STATUS "Last Validaton Status:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK ACTIVE_BUFFER "Active Buffer:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK LAST_VAL_TABLE_NAME "Last Validated Table:"
+  SUBSETTING 1 WIDTH 300
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK SUCCESS_VAL_COUNTER "Succesful Validation Counter:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK FAILED_VAL_COUNTER "Failed Validation Counter:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK NUM_VAL_REQUESTS "Number of Validation Requests:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK NUM_FREE_SHARED_BUFS "Number of Free Shared Buffers:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK MEM_POOL_HANDLE "Memory Pool Handle:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK LAST_UPDATE_TIME_SECONDS "Last Update Time Seconds:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK LAST_UPDATE_TIME_SUBSECONDS "Last Update Time Sub Seconds:"
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK LAST_UPDATED_TABLE "Last Updated Table:"
+  SUBSETTING 1 WIDTH 300
+
+  VERTICALBOX "Last File Loaded:"
+    TEXTBOX <%= target_name %>  CFE_TBL_HK LAST_FILE_LOADED 400 60
+  END
+  VERTICALBOX "Last File Dumped:"
+    TEXTBOX <%= target_name %>  CFE_TBL_HK LAST_FILE_DUMPED 400 60
+  END
+ 
+  SPACER 0, 10
+  LABELVALUEDESC <%= target_name %>  CFE_TBL_HK LAST_TABLE_LOADED "Last Table Loaded:"
+  SUBSETTING 1 WIDTH 300
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  CFE_TBL_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_TBL_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_TBL_HK RECEIVED_COUNT 
+  END 
+END
+

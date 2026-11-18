@@ -1,0 +1,16 @@
+<%= cfs_tbl_hdr('DS_FilterTable', 'DS filter table', 'DS') %>
+  APPEND_PARAMETER DESCRIPTOR 256 STRING ""
+
+<% 256.times do |entry_idx| %>
+  APPEND_PARAMETER MSGID_<%= entry_idx %> 32 UINT 0 MAX_UINT32 0x0800
+    FORMAT_STRING "0x%04X"
+  <% 4.times do |filter_idx| %>
+    APPEND_PARAMETER FILE_TBL_INDEX_<%= entry_idx %>_<%= filter_idx %> 8 UINT 0 MAX_UINT8 0
+    APPEND_PARAMETER FILTER_TYPE_<%= entry_idx %>_<%= filter_idx %> 8 UINT 1 2 1
+      STATE BY_COUNT 1
+      STATE BY_TIME  2
+    APPEND_PARAMETER ALGORITHM_N_<%= entry_idx %>_<%= filter_idx %> 16 UINT 0 MAX_UINT16 0
+    APPEND_PARAMETER ALGORITHM_X_<%= entry_idx %>_<%= filter_idx %> 16 UINT 0 MAX_UINT16 0
+    APPEND_PARAMETER ALGORITHM_O_<%= entry_idx %>_<%= filter_idx %> 16 UINT 0 MAX_UINT16 0
+  <% end %>
+<% end %>

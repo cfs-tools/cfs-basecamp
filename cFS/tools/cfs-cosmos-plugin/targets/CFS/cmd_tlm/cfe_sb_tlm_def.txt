@@ -1,0 +1,73 @@
+<%= cfs_tlm_hdr(target_name, 'CFE_SB_HK', "CFE_SB Hk Tlm") %>
+   APPEND_ITEM COMMAND_COUNTER 8 UINT "Count of valid commands received"
+   APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "Count of invalid commands received"
+   APPEND_ITEM NO_SUBSCRIBERS_COUNTER 8 UINT "Count pkts sent with no subscribers"
+   APPEND_ITEM MSG_SEND_ERROR_COUNTER 8 UINT "Count of message send errors"
+   APPEND_ITEM MSG_RECEIVE_ERROR_COUNTER 8 UINT "Count of message receive errors"
+   APPEND_ITEM INTERNAL_ERROR_COUNTER 8 UINT "Count of queue read or write errors"
+   APPEND_ITEM CREATE_PIPE_ERROR_COUNTER 8 UINT "Count of errors in create pipe API"
+   APPEND_ITEM SUBSCRIBE_ERROR_COUNTER 8 UINT "Count of errors in subscribe API"
+   APPEND_ITEM PIPE_OPTS_ERROR_COUNTER 8 UINT "Count of errors in set/get pipe options API"
+   APPEND_ITEM DUPLICATE_SUBSCRIPTIONS_COUNTER 8 UINT "Count of duplicate subscriptions"
+   APPEND_ITEM GET_PIPE_ID_BY_NAME_ERROR_COUNTER 8 UINT "Count of errors in get pipe id by name API"
+   APPEND_ITEM PADDING 8 UINT "Spare padding for alignment"
+   APPEND_ITEM PIPE_OVERFLOW_ERROR_COUNTER 16 UINT "Count of pipe overflow errors"
+   APPEND_ITEM MSG_LIMIT_ERROR_COUNTER 16 UINT "Count of msg id to pipe errors"
+   APPEND_ITEM MEM_POOL_HANDLE 32 UINT "Handle to SB's Memory Pool"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM MEM_IN_USE 32 UINT "Memory in use"
+   APPEND_ITEM UNMARKED_MEM 32 UINT "Unmarked memory"
+
+<%= cfs_tlm_hdr(target_name, 'CFE_SB_STATS', "CFE_SB Stats Tlm") %>
+   APPEND_ITEM MSG_IDS_IN_USE 32 UINT "Current number of MsgIds with a destination"
+   APPEND_ITEM PEAK_MSG_IDS_IN_USE 32 UINT "Peak number of MsgIds with a destination"
+   APPEND_ITEM MAX_MSG_IDS_ALLOWED 32 UINT "cFE Cfg Param #CFE_PLATFORM_SB_MAX_MSG_IDS"
+   APPEND_ITEM PIPES_IN_USE 32 UINT "Number of pipes currently in use"
+   APPEND_ITEM PEAK_PIPES_IN_USE 32 UINT "Peak number of pipes since last reboot"
+   APPEND_ITEM MAX_PIPES_ALLOWED 32 UINT "cFE Cfg Param #CFE_PLATFORM_SB_MAX_PIPES"
+   APPEND_ITEM MEM_IN_USE 32 UINT "Memory bytes currently in use for SB msg transfers"
+   APPEND_ITEM PEAK_MEM_IN_USE 32 UINT "Peak memory bytes in use for SB msg transfers"
+   APPEND_ITEM MAX_MEM_ALLOWED 32 UINT "cFE Cfg Param #CFE_PLATFORM_SB_BUF_MEMORY_BYTES"
+   APPEND_ITEM SUBSCRIPTIONS_IN_USE 32 UINT "Number of current subscriptions"
+   APPEND_ITEM PEAK_SUBSCRIPTIONS_IN_USE 32 UINT "Peak number of subscriptions"
+   APPEND_ITEM MAX_SUBSCRIPTIONS_ALLOWED 32 UINT "Maximum subscriptions allowed"
+   APPEND_ITEM SB_BUFFERS_IN_USE 32 UINT "Number of SB message buffers currently in use"
+   APPEND_ITEM PEAK_SB_BUFFERS_IN_USE 32 UINT "Max number of SB message buffers in use"
+   APPEND_ITEM MAX_PIPE_DEPTH_ALLOWED 32 UINT "cFE Cfg Param #CFE_PLATFORM_SB_MAX_PIPE_DEPTH"
+<% 32.times do |pipe_index| %>
+   APPEND_ITEM PIPE_DEPTH_STATS_<%= pipe_index %>_PIPE_ID 32 UINT "Pipe ID"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM PIPE_DEPTH_STATS_<%= pipe_index %>_MAX_QUEUE_DEPTH 16 UINT "Number of messages the pipe can hold"
+   APPEND_ITEM PIPE_DEPTH_STATS_<%= pipe_index %>_CURRENT_QUEUE_DEPTH 16 UINT "Number of messages currently on the pipe"
+   APPEND_ITEM PIPE_DEPTH_STATS_<%= pipe_index %>_PEAK_QUEUE_DEPTH 16 UINT "Peak number of messages in the pipe"
+   APPEND_ITEM PIPE_DEPTH_STATS_<%= pipe_index %>_PADDING 16 UINT "Spare word to ensure alignment"
+<% end %>
+
+<%= cfs_tlm_hdr(target_name, 'CFE_SB_ONESUB', "Software bus single subscription telemetry interface") %>
+   APPEND_ITEM SUB_TYPE 8 UINT "Subscription or Unsubscription"
+      STATE SUBSCRIPTION   0
+      STATE UNSUBSCRIPTION 1
+   APPEND_ITEM MSG_ID_VALUE 32 UINT "Internal MsgId Value"
+   APPEND_ITEM QOS_PRIORITY 8 UINT "Specify high(1) or low(0) message priority for off-board routing, currently unused"
+      STATE LOW  0
+      STATE HIGH 1
+   APPEND_ITEM QOS_RELIABILITY 8 UINT "Specify high(1) or low(0) message transfer reliability for off-board routing, currently unused"
+      STATE LOW  0
+      STATE HIGH 1
+   APPEND_ITEM PIPE_BASE_TYPE 32 UINT "Unsigned 32 bit integer"
+
+<%= cfs_tlm_hdr(target_name, 'CFE_SB_ALLSUBS', "Software bus global subscription telemetry interface") %>
+   APPEND_ITEM PKT_SEGMENT 32 UINT "Pkt number(starts at 1) in the series"
+   APPEND_ITEM TOTAL_SEGMENTS 32 UINT "Total number of pkts needed to complete the request"
+   APPEND_ITEM ENTRIES 32 UINT "Number of entries in the pkt"
+
+   <% 20.times do |entry_index| %>
+      APPEND_ITEM ENTRY_<%= entry_index %>_MSG_ID_VALUE 32 UINT "Internal MsgId Value"
+      APPEND_ITEM ENTRY_<%= entry_index %>_QOS_PRIORITY 8 UINT "Specify high(1) or low(0) message priority for off-board routing, currently unused"
+         STATE LOW  0
+         STATE HIGH 1
+      APPEND_ITEM ENTRY_<%= entry_index %>_QOS_RELIABILITY 8 UINT "Specify high(1) or low(0) message transfer reliability for off-board routing, currently unused"
+         STATE LOW  0
+         STATE HIGH 1
+      APPEND_ITEM ENTRY_<%= entry_index %>_PIPE_BASE_TYPE 32 UINT "Unsigned 32 bit integer"
+   <% end %>

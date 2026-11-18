@@ -1,0 +1,41 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> FM Open Files Telemetry" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  BUTTON 'Send FM Open Files Telemetry' 'api.cmd("<%= target_name %>  FM_CMD_GET_OPEN_FILES")'
+
+  LABELVALUEDESC <%= target_name %>  FM_OPEN_FILES NUM_OPEN_FILES "Number of Open Files:"
+
+  # COSMOS has trouble with tabbooks with more than 17 items so the entries are split
+  # here into multiple tabbooks
+  <% 5.times do |tab_num| %>
+  TABBOOK
+    <% 10.times do |entry_idx| %>
+    TABITEM "File <%= entry_idx + (10 * tab_num) %>" 
+      LABELVALUEDESC <%= target_name %> FM_OPEN_FILES OPEN_FILES_LIST_<%= entry_idx + (10 * tab_num) %>_LOGICAL_NAME "File Name:"
+      LABELVALUEDESC <%= target_name %> FM_OPEN_FILES OPEN_FILES_LIST_<%= entry_idx + (10 * tab_num) %>_APP_NAME "App that Opened File:"
+  	END
+    <% end %>
+  END
+  <% end %>
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  FM_OPEN_FILES PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  FM_OPEN_FILES RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  FM_OPEN_FILES RECEIVED_COUNT 
+  END
+END
+

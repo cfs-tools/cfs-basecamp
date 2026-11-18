@@ -1,0 +1,22 @@
+<% os_max_cpus = 64 %>
+<% mask_bits = ((os_max_cpus + 7) / 8) * 8 %>
+<% hex_chars = mask_bits / 4 %>
+
+<%= cfs_cmd_hdr(target_name, 'TA_SEND_HK_CMD', 0, "TA Housekeeping Request Cmd") %>
+
+<%= cfs_cmd_hdr(target_name, 'TA_CMD_NOOP', 0, "TA No-Op Command") %>
+
+<%= cfs_cmd_hdr(target_name, 'TA_CMD_RESET_COUNTERS', 1, "TA Reset Counters Command") %>
+
+<%= cfs_cmd_hdr(target_name, 'TA_CMD_QUERY_ALL_TASKS', 2, "TA Query All Tasks to File") %>
+   APPEND_PARAMETER FILENAME 512 STRING "" "Filename (and path) to write task affinity data"
+
+<%= cfs_cmd_hdr(target_name, 'TA_CMD_SET_TASK_AFFINITY', 3, "TA Set Affinity for a Specific Task") %>
+   APPEND_PARAMETER TASK_NAME 160 STRING "" "Name of the task to modify"
+   
+   # Dynamically scales to OS_MAX_CPUS 
+   APPEND_PARAMETER AFFINITY_MASK <%= mask_bits %> UINT 0 0x<%= "F" * hex_chars %> 0 "CPU Core Affinity Mask (Bitfield)"
+       FORMAT_STRING "0x%0<%= hex_chars %>X"
+   
+<%= cfs_cmd_hdr(target_name, 'TA_CMD_GET_TASK_AFFINITY', 4, "TA Get Affinity for a Specific Task") %>
+   APPEND_PARAMETER TASK_NAME 160 STRING "" "Name of the task to query"

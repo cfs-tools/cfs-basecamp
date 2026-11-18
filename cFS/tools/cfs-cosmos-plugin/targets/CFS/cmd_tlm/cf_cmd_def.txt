@@ -1,0 +1,156 @@
+<%= cfs_cmd_hdr(target_name, 'CF_SEND_HK_CMD', 0, 'CF housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_NOOP', 0, "Generate an info event message with app version") %>
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_RESET_COUNTERS',  1, "Resets HK TLM parent and child task counters") %>
+    APPEND_PARAMETER RESET_TYPE 8 UINT 0 4 0 "Reset Value Type"
+        STATE ALL 0
+        STATE CMD_COUNT 1
+        STATE FAULT 2
+        STATE RX 3
+        STATE TX 4
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 24 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_TX_FILE',  2, "Send file from Spacecraft to Ground") %>
+    APPEND_PARAMETER CFDP_CLASS 8 UINT 0 1 0 "CFDP class: CLASS_1=0 CLASS_2=1"
+        STATE CLASS_1 0
+        STATE CLASS_2 1
+    APPEND_PARAMETER KEEP_FILE_FLAG 8 INT 0 1 0 "Keep file flag: 1=keep, else delete"
+        STATE DELETE 0
+        STATE KEEP   1
+    APPEND_PARAMETER CHAN_NUM 8 UINT 0 1 0 "Channel number"
+    APPEND_PARAMETER PRIORITY 8 UINT 0 255 0 "Priority: 0=highest priority"
+    APPEND_PARAMETER DEST_ID 32 UINT 0 MAX_UINT32 0 "Destination entity id"
+    APPEND_PARAMETER SRC_FILENAME 512 STRING "" "Source filename"
+    APPEND_PARAMETER DEST_FILENAME 512 STRING "" "Destination filename"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_PLAYBACK_DIR',  3, "Playback a directory") %>
+    APPEND_PARAMETER CFDP_CLASS 8 UINT 0 1 0 "CFDP class: CLASS_1=0 CLASS_2=1"
+      STATE CLASS_1 0
+      STATE CLASS_2 1
+    APPEND_PARAMETER KEEP 8 INT 0 1 0 "Keep file flag: 1=keep, else delete"
+        STATE DELETE 0
+        STATE KEEP   1
+    APPEND_PARAMETER CHAN_NUM 8 UINT 0 1 0 "Channel number"
+    APPEND_PARAMETER PRIORITY 8 UINT 0 255 0 "Priority: 0=highest priority"
+    APPEND_PARAMETER DEST_ID 32 UINT 0 MAX_UINT32 0 "Destination entity id"
+    APPEND_PARAMETER SRC_FILENAME 512 STRING "" "Source filename"
+    APPEND_PARAMETER DST_FILENAME 512 STRING "" "Destination filename"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_FREEZE',  4, "Freeze a channel") %>
+    APPEND_PARAMETER CHANNEL_NUM 8 UINT 0 1 0 "Channel number"
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 24 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_THAW',  5, "Thaw a channel") %>
+    APPEND_PARAMETER CHANNEL_NUM 8 UINT 0 1 0 "Channel number"
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 24 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_SUSPEND',  6, "Suspend a transaction") %>
+    APPEND_PARAMETER TRANSACTION_SEQ_NUM 32 UINT 0 MAX_UINT32 0 "Transaction sequence number"
+    APPEND_PARAMETER EID 32 UINT 0 MAX_UINT32 0 "Entity id"
+    APPEND_PARAMETER CHAN 8 UINT 0 255 0 "Channel number: 254=use ts, 255=all channels, else channel"
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 24 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_RESUME',  7, "Resume a transaction") %>
+    APPEND_PARAMETER TRANSACTION_SEQ_NUM 32 UINT 0 MAX_UINT32 0 "Transaction sequence number"
+    APPEND_PARAMETER EID 32 UINT 0 MAX_UINT32 0 "Entity id"
+    APPEND_PARAMETER CHAN 8 UINT 0 255 0 "Channel number: 254=use ts, 255=all channels, else channel"
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 24 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_CANCEL',  8, "Cancel a transaction") %>
+    APPEND_PARAMETER TRANSACTION_SEQ_NUM 32 UINT 0 MAX_UINT32 0 "Transaction sequence number"
+    APPEND_PARAMETER EID 32 UINT 0 MAX_UINT32 0 "Entity id"
+    APPEND_PARAMETER CHAN 8 UINT 0 255 0 "Channel number: 254=use ts, 255=all channels, else channel"
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 24 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_ABANDON',  9, "Abandon a transaction") %>
+    APPEND_PARAMETER TRANSACTION_SEQ_NUM 32 UINT 0 MAX_UINT32 0 "Transaction sequence number"
+    APPEND_PARAMETER EID 32 UINT 0 MAX_UINT32 0 "Entity id"
+    APPEND_PARAMETER CHAN 8 UINT 0 255 0 "Channel number: 254=use ts, 255=all channels, else channel"
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 24 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_SET_PARAM',  10, "Set a local parameter") %>
+    APPEND_PARAMETER VALUE 32 UINT 0 MAX_UINT32 0 "Parameter value to set"
+    APPEND_PARAMETER KEY 8 UINT 0 9 0 "Parameter key"
+        STATE TICKS_PER_SEC       0
+        STATE RX_CRC_CALC_BYTES   1
+        STATE ACK_TIMER           2
+        STATE NAK_TIMER           3
+        STATE INACTIVITY_TIMER    4
+        STATE OUTGOING_CHUNK_SIZE 5
+        STATE ACK_LIMIT           6
+        STATE NAK_LIMIT           7
+        STATE LOCAL_EID           8
+        STATE MAX_OUTGOING_MSGS   9
+    APPEND_PARAMETER CHAN_NUM 8 UINT 0 1 0 "Channel number"
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 16 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_GET_PARAM',  11, "Get a local parameter") %>
+    APPEND_PARAMETER KEY 8 UINT 0 9 0 "Parameter key"
+        STATE TICKS_PER_SEC       0
+        STATE RX_CRC_CALC_BYTES   1
+        STATE ACK_TIMER           2
+        STATE NAK_TIMER           3
+        STATE INACTIVITY_TIMER    4
+        STATE OUTGOING_CHUNK_SIZE 5
+        STATE ACK_LIMIT           6
+        STATE NAK_LIMIT           7
+        STATE LOCAL_EID           8
+        STATE MAX_OUTGOING_MSGS   9
+    APPEND_PARAMETER CHAN_NUM 8 UINT 0 1 0 "Channel number"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_WRITE_QUEUE',  15, "Write a queue to file") %>
+    APPEND_PARAMETER TYPE 8 UINT 0 2 0 "Transaction direction: all=0, up=1, down=2"
+        STATE ALL 0
+        STATE RX  1
+        STATE TX  2 
+    APPEND_PARAMETER CHAN 8 UINT 0 1 0 "Channel number"
+    APPEND_PARAMETER QUEUE 8 UINT 0 3 0 "Queue type: 0=pending, 1=active, 2=history, 3=all"
+        STATE PENDING 0
+        STATE ACTIVE  1
+        STATE HISTORY 2
+        STATE ALL     3
+    APPEND_PARAMETER PADDING   8 UINT 0 0 0 "Spare"
+    APPEND_PARAMETER FILENAME 512 STRING "" "Filename written to"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_ENABLE_DEQUEUE',  16, "Enable dequeue (tx file) for a channel") %>
+    APPEND_PARAMETER CHANNEL_NUM 8 UINT 0 1 0 "Channel number"
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 24 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_DISABLE_DEQUEUE',  17, "Disable dequeue (tx file) for a channel") %>
+    APPEND_PARAMETER CHANNEL_NUM 8 UINT 0 1 0 "Channel number"
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 24 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_ENABLE_DIR_POLLING',  18, "Enable polling directory") %>
+    APPEND_PARAMETER CHANNEL_NUM 8 UINT 0 1   0 "Channel number"
+    APPEND_PARAMETER POLL_DIR    8 UINT 0 255 0 "Spare"
+        STATE ZERO  0
+        STATE ONE   1
+        STATE TWO   2
+        STATE THREE 3
+        STATE FOUR  4
+        STATE ALL 255
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 16 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_DISABLE_DIR_POLLING',  19, "Disable polling directory") %>
+    APPEND_PARAMETER CHANNEL_NUM 8 UINT 0 1   0 "Channel number"
+    APPEND_PARAMETER POLL_DIR    8 UINT 0 255 0 "Spare"
+        STATE ZERO  0
+        STATE ONE   1
+        STATE TWO   2
+        STATE THREE 3
+        STATE FOUR  4
+        STATE ALL 255
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 16 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_PURGE_QUEUE',  21, "Purge queue") %>
+    APPEND_PARAMETER CHANNEL_NUM 8 UINT 0 1 0 "Channel number"
+    APPEND_PARAMETER QUEUE_TYPE  8 UINT 0 2 0 "Queue type"
+        STATE PENDING 0
+        STATE HISTORY 1
+        STATE ALL     2
+    APPEND_ARRAY_PARAMETER PADDING 8 UINT 16 "Spare for alignment"
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_ENABLE_ENGINE',  22, "Enable Engine") %>
+
+<%= cfs_cmd_hdr(target_name, 'CF_CMD_DISABLE_ENGINE',  23, "Disable Engine") %>

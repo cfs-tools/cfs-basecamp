@@ -1,0 +1,58 @@
+<%= cfs_tlm_hdr(target_name, 'MD_HK', "MD Hk Tlm") %>
+    APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "Command Error Counter"
+    APPEND_ITEM COMMAND_COUNTER 8 UINT "Command Valid Counter"
+    APPEND_ITEM DWELL_ENABLED_MASK 16 UINT "Mask of enabled dwell tables"
+<% $md_num_dwell_tables.times do |tbl_idx| %>
+    APPEND_ITEM DWELL_TBL_ADDR_COUNT_<%=tbl_idx+1%> 16 UINT "Number of dwell addresses for tbl <%=tbl_idx+1%>"
+<% end %>
+<% $md_num_dwell_tables.times do |tbl_idx| %>
+    APPEND_ITEM NUM_WAITS_PER_PKT_<%=tbl_idx+1%> 16 UINT "Number of delay counts for tbl <%=tbl_idx+1%>"
+<% end %>
+<% $md_num_dwell_tables.times do |tbl_idx| %>
+    APPEND_ITEM BYTE_COUNT_<%=tbl_idx+1%> 16 UINT "Number of bytes of data specified for tbl <%=tbl_idx+1%>"
+<% end %>
+<% $md_num_dwell_tables.times do |tbl_idx| %>
+    APPEND_ITEM DWELL_PKT_OFFSET_<%=tbl_idx+1%> 16 UINT "Current write offset within dwell packet data region for tbl <%=tbl_idx+1%>"
+<% end %>
+<% $md_num_dwell_tables.times do |tbl_idx| %>
+    APPEND_ITEM DWELL_TBL_ENTRY_<%=tbl_idx+1%> 16 UINT "Next dwell table entry to be processed for tbl <%=tbl_idx+1%>"
+<% end %>
+<% $md_num_dwell_tables.times do |tbl_idx| %>
+    APPEND_ITEM COUNTDOWN_<%=tbl_idx+1%> 16 UINT "Current value of countdown timer for tbl <%=tbl_idx+1%>"
+<% end %>
+
+# The dwell telemetry packets all have the same structure, just different message IDs
+<%= cfs_tlm_hdr(target_name, 'MD_DWELL_PKT_1', 'MD Dwell Tlm') %>
+    APPEND_ITEM TABLE_ID    8 UINT "Table ID"
+    APPEND_ITEM ADDR_COUNT  8 UINT "Number of addresses being sent"
+    APPEND_ITEM BYTE_COUNT 16 UINT "Number of bytes of dwell data"
+    APPEND_ITEM RATE       32 UINT "Number of counts between packet sends"
+    APPEND_ITEM SIGNATURE 256 STRING "Signature"
+    APPEND_ARRAY_ITEM DATA  8 UINT 800 "Dwell data"  
+
+# The dwell telemetry packets all have the same structure, just different message IDs
+<%= cfs_tlm_hdr(target_name, 'MD_DWELL_PKT_2', 'MD Dwell Tlm') %>
+    APPEND_ITEM TABLE_ID    8 UINT "Table ID"
+    APPEND_ITEM ADDR_COUNT  8 UINT "Number of addresses being sent"
+    APPEND_ITEM BYTE_COUNT 16 UINT "Number of bytes of dwell data"
+    APPEND_ITEM RATE       32 UINT "Number of counts between packet sends"
+    APPEND_ITEM SIGNATURE 256 STRING "Signature"
+    APPEND_ARRAY_ITEM DATA  8 UINT 800 "Dwell data"  
+
+# The dwell telemetry packets all have the same structure, just different message IDs
+<%= cfs_tlm_hdr(target_name, 'MD_DWELL_PKT_3', 'MD Dwell Tlm') %>
+    APPEND_ITEM TABLE_ID    8 UINT "Table ID"
+    APPEND_ITEM ADDR_COUNT  8 UINT "Number of addresses being sent"
+    APPEND_ITEM BYTE_COUNT 16 UINT "Number of bytes of dwell data"
+    APPEND_ITEM RATE       32 UINT "Number of counts between packet sends"
+    APPEND_ITEM SIGNATURE 256 STRING "Signature"
+    APPEND_ARRAY_ITEM DATA  8 UINT 800 "Dwell data"  
+
+# The dwell telemetry packets all have the same structure, just different message IDs
+<%= cfs_tlm_hdr(target_name, 'MD_DWELL_PKT_4', 'MD Dwell Tlm') %>
+    APPEND_ITEM TABLE_ID    8 UINT "Table ID"
+    APPEND_ITEM ADDR_COUNT  8 UINT "Number of addresses being sent"
+    APPEND_ITEM BYTE_COUNT 16 UINT "Number of bytes of dwell data"
+    APPEND_ITEM RATE       32 UINT "Number of counts between packet sends"
+    APPEND_ITEM SIGNATURE 256 STRING "Signature"
+    APPEND_ARRAY_ITEM DATA  8 UINT 800 "Dwell data"  

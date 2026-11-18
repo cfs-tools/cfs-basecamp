@@ -1,0 +1,35 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+    TITLE "<%= target_name %> cFE EVS Long Event Messages" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+  
+  LABELVALUEDESC <%= target_name %>  CFE_EVS_LONG_EVENT_MSG PACKET_ID_APP_NAME "Application Name:"
+  SUBSETTING 1 WIDTH 140
+  LABELVALUEDESC <%= target_name %>  CFE_EVS_LONG_EVENT_MSG PACKET_ID_EVENT_ID "Event ID:"
+  LABELVALUEDESC <%= target_name %>  CFE_EVS_LONG_EVENT_MSG PACKET_ID_EVENT_TYPE "Event Type:"
+  LABELVALUEDESC <%= target_name %>  CFE_EVS_LONG_EVENT_MSG PACKET_ID_SPACECRAFT_ID "Spacecraft ID:"
+  LABELVALUEDESC <%= target_name %>  CFE_EVS_LONG_EVENT_MSG PACKET_ID_PROCESSOR_ID "Processor ID:"
+  HORIZONTAL 
+    VERTICALBOX "Event Message:"
+      TEXTBOX <%= target_name %>  CFE_EVS_LONG_EVENT_MSG MESSAGE 390 125
+    END
+  END
+  
+  HORIZONTAL
+    VERTICALBOX
+      LABEL "Packet Time Created:"
+      SETTING TEXTALIGN RIGHT
+      LABEL "Packet Time Received:"
+      SETTING TEXTALIGN RIGHT
+      LABEL "Packets Received:"
+      SETTING TEXTALIGN RIGHT
+    END
+    VERTICALBOX
+      VALUE <%= target_name %>  CFE_EVS_LONG_EVENT_MSG PACKET_TIMEFORMATTED CONVERTED 23
+      VALUE <%= target_name %>  CFE_EVS_LONG_EVENT_MSG RECEIVED_TIMEFORMATTED CONVERTED 23
+      VALUE <%= target_name %>  CFE_EVS_LONG_EVENT_MSG RECEIVED_COUNT 
+    END  
+  END     
+END

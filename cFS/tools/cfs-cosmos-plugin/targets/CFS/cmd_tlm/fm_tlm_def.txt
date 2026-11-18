@@ -1,0 +1,64 @@
+<%= cfs_tlm_hdr(target_name, 'FM_HK', "FM Hk Tlm") %>
+   APPEND_ITEM COMMAND_COUNTER 8 UINT "Command Counter"
+   APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "Command Error Counter"
+   APPEND_ITEM OPEN_FILES 8 UINT "Number of open files in the system"
+   APPEND_ITEM CHILD_COMMAND_COUNTER 8 UINT "Child task command counter"
+   APPEND_ITEM CHILD_COMMAND_ERROR_COUNTER 8 UINT "Child task command error counter"
+   APPEND_ITEM CHILD_COMMAND_WARNING_COUNTER 8 UINT "Child task command warning counter"
+   APPEND_ITEM CHILD_QUEUE_COUNT 8 UINT "Number of pending commands in queue"
+   APPEND_ITEM CHILD_CURRENT_CC 8 UINT "Command code currently executing"
+   APPEND_ITEM CHILD_PREVIOUS_CC 8 UINT "Command code previously executed"
+   APPEND_ARRAY_ITEM PADDING1 8 UINT 24 "Padding for packet alignment"
+
+<%= cfs_tlm_hdr(target_name, 'FM_DIR_LIST', "FM Get Directory List Tlm") %>
+   APPEND_ITEM DIRECTORY_NAME 512 STRING "Directory name"
+   APPEND_ITEM TOTAL_FILES 32 UINT "Number of files in the directory"
+   APPEND_ITEM FILES_IN_PACKET 32 UINT "Number of files in this packet"
+   APPEND_ITEM FIRST_FILE_INDEX 32 UINT "Index into directory files of first packet file"
+<% 20.times do |dir_list_entry| %>
+   APPEND_ITEM FILE_LIST_<%= dir_list_entry %>_FILE_NAME 512 STRING "Directory listing filename"
+   APPEND_ITEM FILE_LIST_<%= dir_list_entry %>_SIZE 32 UINT "Directory listing file size"
+   APPEND_ITEM FILE_LIST_<%= dir_list_entry %>_MODIFY_TIME 32 UINT "Directory listing file last modification time"
+   ITEM FILE_LIST_<%= dir_list_entry %>_MODIFY_TIME_CONVERTED 0 0 DERIVED "Ruby time based on cFE timestamp"
+      READ_CONVERSION unix_time_conversion_epoch_offset.rb FILE_LIST_<%= dir_list_entry %>_MODIFY_TIME
+   APPEND_ITEM FILE_LIST_<%= dir_list_entry %>_PERMISSIONS 32 UINT "Mode of the file"
+<% end %>
+
+<%= cfs_tlm_hdr(target_name, 'FM_FILE_INFO', "FM File Info Tlm") %>
+   APPEND_ITEM STATUS 8 UINT "Open/close status of file"
+      STATE DONT_EXIST  1
+      STATE OPEN_FILE   2
+      STATE CLOSED_FILE 3
+      STATE DIRECTORY   4
+   APPEND_ITEM CRC_COMPUTED 8 UINT "Flag indicating whether CRC was computed or not"
+      STATE FALSE 0
+      STATE TRUE  1
+   APPEND_ARRAY_ITEM PADDING1 8 UINT 16 "Padding for packet alignment"
+   APPEND_ITEM CRC 32 UINT "CRC value if computed"
+      FORMAT_STRING "0x%04X"
+   APPEND_ITEM SIZE 32 UINT "File Size"
+   APPEND_ITEM LAST_MODIFIED_TIME 32 UINT "Last Modification Time of File"
+   ITEM LAST_MODIFIED_TIME_CONVERTED 0 0 DERIVED "Ruby time based on cFE timestamp"
+      READ_CONVERSION unix_time_conversion_epoch_offset.rb LAST_MODIFIED_TIME
+   APPEND_ITEM PERMISSIONS 32 UINT "Mode of the file (permissions)"
+   APPEND_ITEM NAME 512 STRING "File name"
+
+<%= cfs_tlm_hdr(target_name, 'FM_OPEN_FILES', "FM Open Files Tlm") %>
+   APPEND_ITEM COUNT 32 UINT "Number of files opened via cFE"
+<% 50.times do |file_idx| %>
+   APPEND_ITEM OPEN_FILES_LIST_<%= file_idx %>_LOGICAL_NAME 512 STRING "Logical filename"
+   APPEND_ITEM OPEN_FILES_LIST_<%= file_idx %>_APP     160 STRING "Application that opened file"
+<% end %>
+
+<%= cfs_tlm_hdr(target_name, 'FM_MONITOR', "FM Freespace/Monitor Tlm") %>
+<% 8.times do |free_space_entry| %>
+   APPEND_ITEM FILE_SYS_<%= free_space_entry %>_REPORT_TYPE 8 UINT "Report Type"
+      STATE NOT_USED       0
+      STATE VOL_FREE_SPACE 1
+      STATE DIR_ESTIMATE   2
+   APPEND_ARRAY_ITEM PADDING1_<%= free_space_entry %> 8 UINT 56 "Padding for packet alignment"
+   APPEND_ITEM FILE_SYS_<%= free_space_entry %>_PATH   512 STRING "File system path"
+   APPEND_ARRAY_ITEM PADDING2_<%= free_space_entry %> 8 UINT 32 "Padding for packet alignment"
+   APPEND_ITEM FILE_SYS_<%= free_space_entry %>_BLOCKS  64 UINT "Block count from last check/poll"
+   APPEND_ITEM FILE_SYS_<%= free_space_entry %>_BYTES   64 UINT "Byte count from last check/poll"
+<% end %>

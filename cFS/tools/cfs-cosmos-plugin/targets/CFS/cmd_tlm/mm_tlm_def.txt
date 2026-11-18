@@ -1,0 +1,37 @@
+<%= cfs_tlm_hdr(target_name, 'MM_HK', "MM Hk Tlm") %>
+     APPEND_ITEM COMMAND_COUNTER       8 UINT "MM Application Command Counter"
+     APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "MM Application Command Error Counter"
+     APPEND_ITEM LAST_ACTION           8 UINT "Last command action executed"
+          STATE NO_ACTION     0
+          STATE PEEK          1
+          STATE POKE          2
+          STATE LOAD_FILE     3
+          STATE LOAD_WID      4
+          STATE DUMP_FILE     5
+          STATE DUMP_EVENT    6  
+          STATE FILL          7
+          STATE SYM_LOOKUP    8
+          STATE SYM_DUMP      9
+          STATE WRITE_ENABLE  10
+          STATE WRITE_DISABLE 11
+          STATE NOOP          12
+          STATE RESET         13
+     APPEND_ITEM       PADDING         8 UINT "Padding for 32-bit alignment"
+     APPEND_ITEM       MEM_TYPE       32 UINT "Memory type for last command"
+          STATE NONE   0
+          STATE RAM    1
+          STATE EEPROM 2
+          STATE MEM8   3
+          STATE MEM16  4
+          STATE MEM32  5
+<% if $cfs_globals_mem_addr_size == 64 %>
+     APPEND_ITEM       ADDRESS          64 UINT "Fully resolved address used for last command"
+          FORMAT_STRING "0x%011X"
+<% else %>
+     APPEND_ITEM       ADDRESS          32 UINT "Fully resolved address used for last command"
+          FORMAT_STRING "0x%08X"
+<% end %>
+     APPEND_ITEM       DATA_VALUE       32 UINT "Last command data (fill pattern or peek/poke value)"
+          FORMAT_STRING  "0x%08X"
+     APPEND_ITEM       BYTES_PROCESSED  32 UINT "Bytes processed for last command"
+     APPEND_ITEM       FILE_NAME       512 STRING "Name of the data file used for last command, where applicable"

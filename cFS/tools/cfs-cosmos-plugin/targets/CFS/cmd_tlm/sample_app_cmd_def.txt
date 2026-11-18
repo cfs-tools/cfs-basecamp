@@ -1,0 +1,12 @@
+<%= cfs_cmd_hdr(target_name, 'SAMPLE_APP_SEND_HK_CMD', 0, 'SAMPLE_APP housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'SAMPLE_APP_CMD_NOOP', 0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'SAMPLE_APP_CMD_RESET_COUNTERS', 1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'SAMPLE_APP_CMD_PROCESS', 2, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'SAMPLE_APP_CMD_DISPLAY_PARAM', 3, "Telecommand Message") %>
+  APPEND_PARAMETER VAL_U32 32 UINT 0 MAX_UINT32 0 "32-bit unsigned int value"
+  APPEND_PARAMETER VAL_I16 16 INT MIN_INT16 MAX_INT16 0 "16-bit signed int value"
+  APPEND_PARAMETER VAL_STR 80 STRING "" "Example string"

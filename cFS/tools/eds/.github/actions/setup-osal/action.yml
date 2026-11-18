@@ -1,0 +1,35 @@
+name: Install OSAL
+description: 'Builds and installs NASA OSAL into the workflow filesystem'
+
+inputs:
+  upstream-ref:
+    description: 'Upstream ref to check out'
+    default: main
+  upstream-repo:
+    description: 'Upstream repository to use'
+    default: nasa/osal
+  config-options:
+    description: 'Configuration options to pass to CMake'
+    default: -DCMAKE_BUILD_TYPE=Release -DOSAL_OMIT_DEPRECATED=TRUE -DENABLE_UNIT_TESTS=TRUE -DOSAL_CONFIG_DEBUG_PERMISSIVE_MODE=ON
+  staging-dir:
+    description: 'Directory to stage output'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout OSAL
+      uses: actions/checkout@v6
+      with:
+        repository: ${{ inputs.upstream-repo }}
+        ref: ${{ inputs.upstream-ref }}
+        path: osal-source
+
+    - name: Set up OSAL build
+      shell: bash
+      run: cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DOSAL_SYSTEM_BSPTYPE=generic-linux ${{ inputs.config-options }} -S osal-source -B osal-build
+
+    - name: Build and Install OSAL
+      shell: bash
+      working-directory: osal-build
+      run: make DESTDIR=${{ inputs.staging-dir }} install

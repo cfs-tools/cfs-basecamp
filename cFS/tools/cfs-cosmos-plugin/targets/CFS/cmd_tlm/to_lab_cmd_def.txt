@@ -1,0 +1,25 @@
+<%= cfs_cmd_hdr(target_name, 'TO_LAB_SEND_HK_CMD', 0, 'TO_LAB housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'TO_LAB_CMD_NOOP', 0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'TO_LAB_CMD_RESET_COUNTERS', 1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'TO_LAB_CMD_ADD_PACKET', 2, "Telecommand Message") %>
+   APPEND_PARAMETER STREAM_VALUE 32 UINT 0 0xFFFF 0 "MsgId VALUE"
+   APPEND_PARAMETER FLAGS_PRIORITY 8 UINT 0 255 0 "Message priority for off-board routing, currently unused"
+      STATE LOW  0
+      STATE HIGH 1
+   APPEND_PARAMETER FLAGS_RELIABILITY 8 UINT 0 255 0 "Message transfer reliability for off-board routing, currently unused"
+      STATE LOW  0
+      STATE HIGH 1
+   APPEND_PARAMETER BUF_LIMIT 8 UINT 0 255 0 "Buffer limit"
+
+<%= cfs_cmd_hdr(target_name, 'TO_LAB_CMD_SEND_DATA_TYPES', 3, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'TO_LAB_CMD_REMOVE_PACKET', 4, "Telecommand Message") %>
+   APPEND_PARAMETER STREAM_VALUE 32 UINT 0 0xFFFF 0 "MsgId Value"
+
+<%= cfs_cmd_hdr(target_name, 'TO_LAB_CMD_REMOVE_ALL', 5, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'TO_LAB_CMD_ENABLE_OUTPUT', 6, "Telecommand Message") %>
+   APPEND_PARAMETER DEST_IP 128 STRING "<%= global_tlm_output_ip %>" "IP Address to send telemetry to"

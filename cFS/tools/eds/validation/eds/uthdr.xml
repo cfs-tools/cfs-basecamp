@@ -1,0 +1,50 @@
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+  <Package name="UtHdr">
+
+    <DataTypeSet>
+      <ContainerDataType name="UtPriHdr" shortDescription="The Primary message header that is present in all messages">
+        <EntryList>
+          <Entry name="UtLength" type="CCSDS/SOIS/SEDS/UINT16" shortDescription="packet length word" />
+          <Entry name="UtStreamId" type="CCSDS/SOIS/SEDS/UINT16" shortDescription="Packet identifier word" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="UtCmdHdr" baseType="UtPriHdr" shortDescription="The extended message header that is present in command messages">
+        <EntryList>
+          <Entry name="UtCommandId" type="CCSDS/SOIS/SEDS/UINT16" shortDescription="Command Identifier Word" />
+          <Entry name="CmdExtraInfo" type="CCSDS/SOIS/SEDS/UINT16" shortDescription="Extra Info" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="UtTlmHdr" baseType="UtPriHdr" shortDescription="The extended message header that is present in telemetry messages">
+        <EntryList>
+          <Entry name="TlmExtraInfo1" type="CCSDS/SOIS/SEDS/UINT16" shortDescription="Extra Info" />
+          <Entry name="TlmExtraInfo2" type="CCSDS/SOIS/SEDS/UINT16" shortDescription="Extra Info" />
+        </EntryList>
+      </ContainerDataType>
+
+    </DataTypeSet>
+
+   <DeclaredInterfaceSet>
+
+      <Interface name="UtTlm" level="functional">
+        <CommandSet>
+          <Command name="send">
+            <Argument name="data" type="UtTlmHdr" mode="out" />
+          </Command>
+        </CommandSet>
+      </Interface>
+
+      <Interface name="UtCmd" level="functional">
+        <CommandSet>
+          <Command name="recv">
+            <Argument name="data" type="UtCmdHdr" mode="in" />
+          </Command>
+        </CommandSet>
+      </Interface>
+
+   </DeclaredInterfaceSet>
+
+
+  </Package>
+</PackageFile>

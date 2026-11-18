@@ -1,0 +1,38 @@
+set(MAKE $ENV{_})
+set(STAGING_DIR_BASE $ENV{DESTDIR}@CMAKE_INSTALL_PREFIX@/lib/python)
+set(STAGING_DIR_TEST ${STAGING_DIR_BASE}/cfs_app_tests)
+if (@TESTRUNNER_INSTALL_SYMLINK@)
+    set(TESTRUNNER_INSTALL_SYMLINK "TESTRUNNER_INSTALL_SYMLINK=1")
+else()
+    set(TESTRUNNER_INSTALL_SYMLINK)
+endif()
+
+message(STATUS "Installing CFS app tests to: ${STAGING_DIR_TEST}")
+file(MAKE_DIRECTORY ${STAGING_DIR_TEST})
+execute_process(
+    COMMAND
+        make O=@CMAKE_BINARY_DIR@ ${TESTRUNNER_INSTALL_SYMLINK} -f @EDS_CFS_TESTRUNNER_SOURCE_DIR@/cfs_app_test_groups.mk __init__.py
+    WORKING_DIRECTORY 
+        ${STAGING_DIR_TEST}
+    RESULT_VARIABLE
+        STATUS
+)
+
+if (NOT STATUS EQUAL 0)
+    message(FATAL_ERROR "${MAKE} returned status ${STATUS}")
+endif()
+
+if (TESTRUNNER_INSTALL_SYMLINK)
+    message(STATUS "Symlinking test library to: ${STAGING_DIR_BASE}")
+    execute_process(
+        COMMAND 
+            ${CMAKE_COMMAND} -E create_symlink @EDS_CFS_TESTRUNNER_SOURCE_DIR@/src ${STAGING_DIR_BASE}/testrunner
+        RESULT_VARIABLE
+            STATUS
+    )
+
+    if (NOT STATUS EQUAL 0)
+        message(FATAL_ERROR "${CMAKE_COMMAND} returned status ${STATUS}")
+    endif()
+
+endif()

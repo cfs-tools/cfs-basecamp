@@ -1,0 +1,32 @@
+<%= cfs_tlm_hdr(target_name, 'HS_HK', "HS Hk Tlm") %>
+   APPEND_ITEM COMMAND_COUNTER 8 UINT "Application command counter"
+   APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "Application command error counter"
+   APPEND_ITEM APP_MON_STATE   8 UINT "Critical Application Monitor operational state"
+      STATE DISABLED 0
+      STATE ENABLED  1
+      STATE NO_EVENT 2
+   APPEND_ITEM EVENT_MON_STATE 8 UINT "Critical Events Monitor operational state"
+      STATE DISABLED 0
+      STATE ENABLED  1
+      STATE NO_EVENT 2
+   APPEND_ITEM ALIVENESS_STATE 8 UINT "Terminal window aliveness indicator operational state"
+      STATE DISABLED 0
+      STATE ENABLED  1
+      STATE NO_EVENT 2
+   APPEND_ITEM CPU_HOG_STATE   8 UINT "HS Hogging Indicator operational state"
+      STATE DISABLED 0
+      STATE ENABLED  1
+      STATE NO_EVENT 2
+   APPEND_ITEM STATUS_FLAGS            8 UINT "Operational states."
+      FORMAT_STRING  "0x%04X"
+   APPEND_ITEM PAD8 8 UINT "Alignment Spares."
+   APPEND_ITEM RESETS_PERFORMED    16 UINT "Number of processor resets"
+   APPEND_ITEM MAX_RESETS          16 UINT "Maximum number of processor resets before a power on reset"
+   APPEND_ITEM EVENT_MON_CNT       32 UINT "Count of event messages monitored"
+   APPEND_ITEM INVLD_EVENT_MON_CNT 32 UINT "Count of invalid event monitors"
+   APPEND_ITEM APP_MON_ENA         32 UINT "Enable states of app monitor entries"
+      FORMAT_STRING  "0x%08X"
+   APPEND_ITEM MSG_ACT_EXEC_CNT    32 UINT "Number of Software Bus Message Actions Executed"
+   APPEND_ITEM CPU_UTIL_AVG        32 UINT "Current CPU Utilization Average."
+   APPEND_ITEM CPU_UTIL_PEAK       32 UINT "Current CPU Utilization Peak."
+   APPEND_ARRAY_ITEM EXEC_CNTS     32 UINT 1024 "Execution Counters"

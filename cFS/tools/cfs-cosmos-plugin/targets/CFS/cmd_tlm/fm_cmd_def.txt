@@ -1,0 +1,82 @@
+<%= cfs_cmd_hdr(target_name, 'FM_SEND_HK_CMD', 0, 'FM housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_NOOP', 0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_RESET_COUNTERS', 1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_COPY_FILE', 2, "Telecommand Message") %>
+   APPEND_PARAMETER OVERWRITE 16 UINT 0 1 0 "Allow Overwrite"
+      STATE PROTECTED 0
+      STATE OVERWRITE 1
+   APPEND_PARAMETER SOURCE_PATH 512 STRING "" "Source filename"
+   APPEND_PARAMETER TARGET_PATH 512 STRING "" "Target filename"
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_MOVE_FILE', 3, "Telecommand Message") %>
+   APPEND_PARAMETER OVERWRITE 16 UINT 0 1 0 "Allow Overwrite"
+      STATE PROTECTED 0
+      STATE OVERWRITE 1
+   APPEND_PARAMETER SOURCE_PATH 512 STRING "" "Source filename"
+   APPEND_PARAMETER TARGET_PATH 512 STRING "" "Target filename"
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_RENAME_FILE', 4, "Telecommand Message") %>
+   APPEND_PARAMETER SOURCE_PATH 512 STRING "" "Source filename"
+   APPEND_PARAMETER TARGET_PATH 512 STRING "" "Target filename"
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_DELETE_FILE', 5, "Telecommand Message") %>
+   APPEND_PARAMETER PATH 512 STRING "" "Path to file to delete"
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_DELETE_ALL_FILES', 7, "Telecommand Message") %>
+   APPEND_PARAMETER PATH 512 STRING "" "Path to directory whose contents are to be deleted"
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_DECOMPRESS_FILE', 8, "Telecommand Message") %>
+   APPEND_PARAMETER SOURCE_PATH 512 STRING "" "Source filename"
+   APPEND_PARAMETER TARGET_PATH 512 STRING "" "Target filename"
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_CONCAT_FILES', 9, "Telecommand Message") %>
+   APPEND_PARAMETER SOURCE_PATH1 512 STRING "" "Source 1 filename"
+   APPEND_PARAMETER SOURCE_PATH2 512 STRING "" "Source 2 filename"
+   APPEND_PARAMETER TARGET_PATH 512 STRING "" "Target filename"
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_GET_FILE_INFO', 10, "Telecommand Message") %>
+   APPEND_PARAMETER PATH 512 STRING "" "Path to file"
+   APPEND_PARAMETER CRC_METHOD 32 UINT 0 3 0 "CRC method"
+      STATE CRC_NONE 0
+      STATE CRC_8    1
+      STATE CRC_16   2
+      STATE CRC_32   3
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_GET_OPEN_FILES', 11, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_CREATE_DIRECTORY', 12, "Telecommand Message") %>
+   APPEND_PARAMETER PATH 512 STRING "" "Path to creation location"
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_DELETE_DIRECTORY', 13, "Telecommand Message") %>
+   APPEND_PARAMETER PATH 512 STRING "" "Path to deletion location"
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_GET_DIR_LIST_FILE', 14, "Telecommand Message") %>
+   APPEND_PARAMETER DIRECTORY_PATH 512 STRING "" "Path to directory to output"
+   APPEND_PARAMETER OUTPUT_FILE_PATH 512 STRING "" "Path to file that holds output"
+   APPEND_PARAMETER GET_SIZE_TIME_MODE 8 UINT 0 1 0 "Option to query size, time, and mode of files"
+      STATE FALSE 0
+      STATE TRUE  1
+   APPEND_ARRAY_PARAMETER PADDING1 8 UINT 24 "Padding for packet alignment"
+   
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_GET_DIR_LIST_PKT', 15, "Telecommand Message") %>
+   APPEND_PARAMETER PATH 512 STRING "" "Path to directory to output"
+   APPEND_PARAMETER OFFSET 32 UINT 0 MAX_UINT32 0 "Index of first entry to put in packet"
+   APPEND_PARAMETER GET_SIZE_TIME_MODE 8 UINT 0 1 0 "Option to query size, time, and mode of files"
+      STATE FALSE 0
+      STATE TRUE  1
+   APPEND_ARRAY_PARAMETER PADDING1 8 UINT 24 "Padding for packet alignment"
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_MONITOR_FILESYSTEM_SPACE', 16, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_SET_TABLE_STATE', 17, "Telecommand Message") %>
+   APPEND_PARAMETER INDEX 32 UINT 0 MAX_UINT32 0 "Table entry index"
+   APPEND_PARAMETER STATE 32 UINT 0 1 0 "Table entry state"
+      STATE DISABLED 0
+      STATE ENABLED  1
+
+<%= cfs_cmd_hdr(target_name, 'FM_CMD_SET_PERMISSIONS', 19, "Telecommand Message") %>
+   APPEND_PARAMETER PATH 512 STRING "" "Path to file whose permissions are to be set"
+   APPEND_PARAMETER PERMISSIONS 32 UINT 0 MAX_UINT32 0 "Permissions for the file"

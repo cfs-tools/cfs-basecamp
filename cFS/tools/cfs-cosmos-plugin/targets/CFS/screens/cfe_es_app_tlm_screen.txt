@@ -1,0 +1,50 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> cFE ES App Telemetry" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_RESOURCE_ID "Resource ID:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_TYPE "Type:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_NAME "Registered Name:"
+    SUBSETTING 1 WIDTH 300
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_ENTRY_POINT "Entry Point Label:"
+    SUBSETTING 1 WIDTH 300
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_FILE_NAME "File Name:"
+    SUBSETTING 1 WIDTH 300
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_STACK_SIZE "Stack Size:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_ADDRESSES_ARE_VALID "Addresses are Valid:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_CODE_ADDRESS "Code Address:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_CODE_SIZE "Code Size:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_DATA_ADDRESS "Data Address:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_DATA_SIZE "Data Size:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_BSS_ADDRESS "BSS Address:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_BSS_SIZE "BSS Size:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_START_ADDRESS "Start Address:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_EXCEPTION_ACTION "Exception Action:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_PRIORITY "Priority:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_MAIN_TASK_ID  "Main Task ID:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_EXECUTION_COUNTER "Execution Counter:"
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_MAIN_TASK_NAME "Main Task Name:"
+  SUBSETTING 1 WIDTH 300
+  LABELVALUEDESC <%= target_name %>  CFE_ES_APP APP_INFO_NUM_OF_CHILD_TASKS "Number of Child Tasks:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  CFE_ES_APP PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_ES_APP RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_ES_APP RECEIVED_COUNT 
+  END  
+END
+
+

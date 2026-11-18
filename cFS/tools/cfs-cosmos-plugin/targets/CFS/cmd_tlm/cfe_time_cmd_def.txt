@@ -1,0 +1,63 @@
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_SEND_HK_CMD', 0, 'CFE_TIME housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_NOOP',  0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_RESET_COUNTERS',  1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SEND_DIAGNOSTIC',  2, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SET_SOURCE',  3, "Telecommand Message") %>
+   APPEND_PARAMETER TIME_SOURCE 16 UINT 1 2 1 "Clock Source Selection Parameters"
+      STATE INTERNAL 1
+      STATE EXTERNAL 2
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SET_STATE',  4, "Telecommand Message") %>
+   APPEND_PARAMETER CLOCK_STATE 16 INT -1 1 0 "Enumerated types identifying the quality of the current time"
+      STATE INVALID -1
+      STATE VALID    0
+      STATE FLYWHEEL 1
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_ADD_DELAY',  5, "Telecommand Message") %>
+   APPEND_PARAMETER SECONDS 32 UINT 0 MAX_UINT32 0 "Seconds"
+   APPEND_PARAMETER MICROSECONDS 32 UINT 0 MAX_UINT32 0 "Microseconds"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SUB_DELAY',  6, "Telecommand Message") %>
+   APPEND_PARAMETER SECONDS 32 UINT 0 MAX_UINT32 0 "Seconds"
+   APPEND_PARAMETER MICROSECONDS 32 UINT 0 MAX_UINT32 0 "Microseconds"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SET_TIME',  7, "Telecommand Message") %>
+   APPEND_PARAMETER SECONDS 32 UINT 0 MAX_UINT32 0 "Seconds"
+   APPEND_PARAMETER MICROSECONDS 32 UINT 0 MAX_UINT32 0 "Microseconds"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SET_MET',  8, "Telecommand Message") %>
+   APPEND_PARAMETER SECONDS 32 UINT 0 MAX_UINT32 0 "Seconds"
+   APPEND_PARAMETER MICROSECONDS 32 UINT 0 MAX_UINT32 0 "Microseconds"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SET_STCF',  9, "Telecommand Message") %>
+   APPEND_PARAMETER SECONDS 32 UINT 0 MAX_UINT32 0 "Seconds"
+   APPEND_PARAMETER MICROSECONDS 32 UINT 0 MAX_UINT32 0 "Microseconds"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SET_LEAP_SECONDS',  10, "Telecommand Message") %>
+   APPEND_PARAMETER LEAP_SECONDS 16 INT MIN_INT16 MAX_INT16 0 "Signed 16 bit integer"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_ADD_ADJUST',  11, "Telecommand Message") %>
+   APPEND_PARAMETER SECONDS 32 UINT 0 MAX_UINT32 0 "Seconds"
+   APPEND_PARAMETER MICROSECONDS 32 UINT 0 MAX_UINT32 0 "Microseconds"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SUB_ADJUST',  12, "Telecommand Message") %>
+   APPEND_PARAMETER SECONDS 32 UINT 0 MAX_UINT32 0 "Seconds"
+   APPEND_PARAMETER MICROSECONDS 32 UINT 0 MAX_UINT32 0 "Microseconds"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_ADD_ONE_HZ_ADJUSTMENT',  13, "Telecommand Message") %>
+   APPEND_PARAMETER SECONDS 32 UINT 0 MAX_UINT32 0 "Seconds"
+   APPEND_PARAMETER SUBSECONDS 32 UINT 0 MAX_UINT32 0 "Unsigned 32 bit integer"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SUB_ONE_HZ_ADJUSTMENT',  14, "Telecommand Message") %>
+   APPEND_PARAMETER SECONDS 32 UINT 0 MAX_UINT32 0 "Seconds"
+   APPEND_PARAMETER SUBSECONDS 32 UINT 0 MAX_UINT32 0 "Unsigned 32 bit integer"
+
+<%= cfs_cmd_hdr(target_name, 'CFE_TIME_CMD_SET_SIGNAL',  15, "Telecommand Message") %>
+   APPEND_PARAMETER TONE_SOURCE 16 UINT 1 2 1 "Tone Signal Selection Parameters"
+      STATE TONE_PRI 1
+      STATE TONE_RED 2
+      

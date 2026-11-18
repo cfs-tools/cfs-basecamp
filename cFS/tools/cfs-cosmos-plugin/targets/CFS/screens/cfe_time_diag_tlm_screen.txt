@@ -1,0 +1,109 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+	TITLE "<%= target_name %> cFE TIME Diagnostic Telemetry" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  BUTTON 'Send TIME Diagnostic Telemetry' 'api.cmd("<%= target_name %>  CFE_TIME_CMD_SEND_DIAGNOSTIC")'
+
+  HORIZONTAL <Margin>
+    TABBOOK
+      TABITEM "AT TONE" 
+             
+          TITLE "AT TONE Time Telemetry" 
+          SETTING TEXTCOLOR YELLOW
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG AT_TONE_MET_SECONDS "MET Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG AT_TONE_MET_SUBSECONDS "MET Subseconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG AT_TONE_STCF_SECONDS "STCF Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG AT_TONE_STCF_SUBSECONDS "STCF Subseconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG AT_TONE_DELAY_SECONDS "Delay Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG AT_TONE_DELAY_SUBSECONDS "Delay Subseconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG AT_TONE_LATCH_SECONDS "Latch Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG AT_TONE_LATCH_SUBSECONDS "Latch Subseconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG AT_TONE_LEAP_SECONDS "Leap Seconds:"
+        
+      END
+      
+      TABITEM "CURRENT"
+        
+          TITLE "CURRENT Time Telemetry" 
+          SETTING TEXTCOLOR YELLOW
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CURRENT_LATCH_SECONDS "Latch Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CURRENT_LATCH_SUBSECONDS "Latch Subseconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CURRENT_MET_SECONDS "MET Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CURRENT_MET_SUBSECONDS "MET Subseconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CURRENT_TAI_SECONDS "TAI Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CURRENT_TAI_SUBSECONDS "TAI Subseconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CURRENT_UTC_SECONDS "UTC Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CURRENT_UTC_SUBSECONDS "UTC Subseconds:"
+        
+      END
+      
+      TABITEM "TONE"
+        
+          TITLE "TONE Time Telemetry" 
+          SETTING TEXTCOLOR YELLOW
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_SIGNAL_LATCH_SECONDS "Signal Latch Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_SIGNAL_LATCH_SUBSECONDS "Signal Latch Subseconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_DATA_LATCH_SECONDS "Data Latch Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_DATA_LATCH_SUBSECONDS "Data Latch Subseconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_MATCH_COUNTER "Match Counter:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_MATCH_ERROR_COUNTER "Match Error Counter:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_SIGNAL_COUNTER "Signal Counter:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_DATA_COUNTER "Data Counter:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_INT_COUNTER "ISR Counter:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_INT_ERROR_COUNTER "ISR Error Counter:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_TASK_COUNTER "Task Counter:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TIME_SINCE_TONE_SECONDS "Time Since Tone Seconds:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TIME_SINCE_TONE_SUBSECONDS "Time Since Tone Subseconds:" 
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_OVER_LIMIT "Tone Over Limit:"
+          LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG TONE_UNDER_LIMIT "Tone Under Limit:"          
+      END
+    END
+ 
+    VERTICALBOX
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CLOCK_STATE_API "Clock State API:"
+
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CLOCK_SET_STATE "Clock Set State:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CLOCK_FLY_STATE "Clock Fly State:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CLOCK_SOURCE "Clock Source:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CLOCK_SIGNAL "Clock Signal:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG SERVER_FLY_STATE "Server Fly State:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG FORCED_2_FLY "Forced to Fly:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG CLOCK_STATE_FLAGS "Clock State Flags:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG ONE_TIME_DIRECTION "One Time Direction:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG ONE_HZ_DIRECTION "One HZ Direction:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG DELAY_DIRECTION "Delay Direction:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG ONE_TIME_ADJUST_SECONDS "One Time Adjust Seconds:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG ONE_TIME_ADJUST_SUBSECONDS "One time Adjust Subseconds:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG ONE_HZ_ADJUST_SECONDS "One HZ Adjustment Seconds:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG ONE_HZ_ADJUST_SUBSECONDS "One HZ Adjustment Subseconds:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG VERSION_COUNTER "Version Counter:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG LOCAL_INT_COUNTER "Local ISR Counter:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG LOCAL_TASK_COUNTER "Local Task Counter:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG VIRTUAL_MET "Virtual MET:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG MIN_ELAPSED "Minimum Elapsed:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG MAX_ELAPSED "Maximum Elapsed:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG MAX_LOCAL_CLOCK_SECONDS "Maximum Local Clock Seconds:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG MAX_LOCAL_CLOCK_SUBSECONDS "Maximum Local Clock Subseconds:"
+      LABELVALUEDESC <%= target_name %>  CFE_TIME_DIAG DATA_STORE_STATUS "Data Store Status:"
+    END
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  CFE_TIME_DIAG PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_TIME_DIAG RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  CFE_TIME_DIAG RECEIVED_COUNT 
+  END  
+END
+

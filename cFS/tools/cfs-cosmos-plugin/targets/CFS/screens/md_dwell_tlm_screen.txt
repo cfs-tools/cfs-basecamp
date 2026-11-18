@@ -1,0 +1,46 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> MD Dwell Packets" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  TABBOOK
+  <% $md_num_dwell_tables.times do |pkt_idx| %>
+    TABITEM "Dwell Packet <%= pkt_idx+1 %>" 
+      VERTICAL
+        LABELVALUEDESC <%= target_name %> MD_DWELL_PKT_<%= pkt_idx+1 %> TABLE_ID "Table ID:"
+        LABELVALUEDESC <%= target_name %> MD_DWELL_PKT_<%= pkt_idx+1 %> ADDR_COUNT "Address Count:"
+        LABELVALUEDESC <%= target_name %> MD_DWELL_PKT_<%= pkt_idx+1 %> BYTE_COUNT "Byte Count:"
+        LABELVALUEDESC <%= target_name %> MD_DWELL_PKT_<%= pkt_idx+1 %> RATE "Counts Between Packets:"
+        LABELVALUEDESC <%= target_name %> MD_DWELL_PKT_<%= pkt_idx+1 %> SIGNATURE "Signature:"
+      END
+      VERTICALBOX
+        LABEL "Dwell Data:"
+        ARRAY <%= target_name %>  MD_DWELL_PKT_<%= pkt_idx+1 %> DATA 800 200 nil 100 RAW
+      END
+      HORIZONTAL
+        VERTICALBOX
+            LABEL "Packet Time Created:"
+            SETTING TEXTALIGN RIGHT
+            LABEL "Packet Time Received:"
+            SETTING TEXTALIGN RIGHT
+            LABEL "Packets Received:"
+            SETTING TEXTALIGN RIGHT
+          END
+  
+        VERTICALBOX
+          VALUE <%= target_name %> MD_DWELL_PKT_<%= pkt_idx+1 %> PACKET_TIMEFORMATTED CONVERTED 23
+          VALUE <%= target_name %> MD_DWELL_PKT_<%= pkt_idx+1 %> RECEIVED_TIMEFORMATTED CONVERTED 23
+          VALUE <%= target_name %> MD_DWELL_PKT_<%= pkt_idx+1 %> RECEIVED_COUNT 
+        END 
+      END
+
+	  END
+  <% end %>
+  END
+
+END
+
+
+

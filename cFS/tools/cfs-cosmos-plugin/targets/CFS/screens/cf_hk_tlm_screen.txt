@@ -1,0 +1,48 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+    TITLE "<%= target_name %> CFDP Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+    LABELVALUEDESC <%= target_name %> CF_HK COMMAND_COUNTER "Command Counter:"
+    LABELVALUEDESC <%= target_name %> CF_HK COMMAND_ERROR_COUNTER "Error Counter:"
+
+    TABBOOK
+        <% 2.times do |chan_idx| %>
+        TABITEM "Channel <%= chan_idx %>"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_SENT_FILE_DATA_BYTES "Sent File Data Bytes:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_SENT_PDU "Sent PDU:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_SENT_NAK_SEGMENT_REQUESTS "Sent NAK Segment Requests:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_RECV_FILE_DATA_BYTES "Received File Data Bytes:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_RECV_PDU "Received PDU:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_RECV_ERROR "Received Error:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_RECV_SPURIOUS "Received Spurious:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_RECV_DROPPED "Received Dropped:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_RECV_NAK_SEGMENT_REQUESTS "Received NAK segment Request:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_OPEN "Fault File Open:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_READ "Fault File Read:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_SEEK "Fault File Seek:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_WRITE "Fault File Write:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_RENAME "Fault File Rename:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_DIRECTORY_READ "Fault Directory Read:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_CRC_MISMATCH "Fault CRC Mismatch:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_FILE_SIZE_MISMATCH "Fault File Size Mismatch:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_NAK_LIMIT "Fault NAK Limit:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_ACK_LIMIT "Fault ACK Limit:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_INACTIVITY_TIMER "Fault Inactivity Timer:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FAULT_SPARE_0 "Fault Spare Pad"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_Q_SIZE_PEND "Size Pending:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_Q_SIZE_TX "Size TX:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_Q_SIZE_RX "Size RX:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_Q_SIZE_HIST "Size History:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_Q_SIZE_HIST_FREE "Size History Free:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_Q_SIZE_FREE "Size Free:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_POLL_COUNTER "Poll Counter:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_PLAYBACK_COUNTER "Playback Counter:"
+            LABELVALUEDESC <%= target_name %> CF_HK CHANNEL_HK_<%= chan_idx %>_FROZEN "Frozen:"
+        END
+        <% end %>
+    END
+END
+

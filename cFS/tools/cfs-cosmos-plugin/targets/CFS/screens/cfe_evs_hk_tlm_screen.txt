@@ -1,0 +1,47 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> cFE EVS Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK COMMAND_COUNTER "Command Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK COMMAND_ERROR_COUNTER "Command Error Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK MESSAGE_FORMAT_MODE "Message Format Mode:"
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK MESSAGE_TRUNC_COUNTER "Message Truncated Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK UNREGISTERED_APP_COUNTER "Unregistered Application Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK OUTPUT_PORT "Output Port:"
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK LOG_FULL_FLAG "Log Full Flag:"
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK LOG_MODE "Log Mode:"
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK MESSAGE_SEND_COUNTER "Message Send Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK LOG_OVERFLOW_COUNTER "Log Overflow Counter:"
+  LABELVALUEDESC <%= target_name %> CFE_EVS_HK LOG_ENABLED "Log Enabled:"
+  
+  TABBOOK
+  <% 16.times do |app_data_index| %>
+    TABITEM "App Data <%= app_data_index %>" 
+      	LABELVALUEDESC <%= target_name %> CFE_EVS_HK APP_DATA_<%= app_data_index %>_APP_ID "App ID:"
+      	LABELVALUEDESC <%= target_name %> CFE_EVS_HK APP_DATA_<%= app_data_index %>_APP_MESSAGE_SENT_COUNTER "Message Sent Counter:"
+      	LABELVALUEDESC <%= target_name %> CFE_EVS_HK APP_DATA_<%= app_data_index %>_APP_ENABLED "Enable Status:"
+      	LABELVALUEDESC <%= target_name %> CFE_EVS_HK APP_DATA_<%= app_data_index %>_APP_MESSAGE_SQUELCHED_COUNTER " Message Squelched Counter:"
+	  END
+  <% end %>
+  END
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> CFE_EVS_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CFE_EVS_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> CFE_EVS_HK RECEIVED_COUNT 
+  END 
+ END

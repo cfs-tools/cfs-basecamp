@@ -1,0 +1,53 @@
+<%= cfs_tlm_hdr(target_name, 'CS_HK', "CS Hk Tlm") %>
+    APPEND_ITEM COMMAND_COUNTER                    8 UINT  "CS Application Command Counter"
+    APPEND_ITEM COMMAND_ERROR_COUNTER                8 UINT  "CS Application Command Error Counter"
+    APPEND_ITEM CHECKSUM_STATE                     8 UINT  "CS Application global checksum state"
+        STATE ENABLED  1
+        STATE DISABLED 2
+    APPEND_ITEM EEPROM_CS_STATE                    8 UINT  "CS EEPROM table checksum state"
+        STATE ENABLED  1
+        STATE DISABLED 2
+    APPEND_ITEM MEMORY_CS_STATE                    8 UINT  "CS Memory table checksum state"
+        STATE ENABLED  1
+        STATE DISABLED 2
+    APPEND_ITEM APP_CS_STATE                       8 UINT  "CS App table checksum state"
+        STATE ENABLED  1
+        STATE DISABLED 2
+    APPEND_ITEM TABLES_CS_STATE                    8 UINT  "CS Tables table checksum state"
+        STATE ENABLED  1
+        STATE DISABLED 2
+    APPEND_ITEM OS_CS_STATE                        8 UINT  "OS code segment checksum state"
+        STATE ENABLED  1
+        STATE DISABLED 2
+    APPEND_ITEM CFE_CORE_CS_STATE                  8 UINT  "cFE Core code segment checksum stat"
+        STATE ENABLED  1
+        STATE DISABLED 2
+    APPEND_ITEM RECOMPUTE_IN_PROGRESS              8 UINT  "CS 'Recompute In Progress' flag"
+    APPEND_ITEM ONE_SHOT_IN_PROGRESS               8 UINT  "CS 'OneShot In Progress' flag"
+    APPEND_ITEM PADDING_8                            8 UINT  "8 bit padding"
+    APPEND_ITEM EEPROM_CS_ERR_COUNTER             16 UINT  "EEPROM miscompare counter"
+    APPEND_ITEM MEMORY_CS_ERR_COUNTER             16 UINT  "Memory miscompare counter"
+    APPEND_ITEM APP_CS_ERR_COUNTER                16 UINT  "App miscompare counter"
+    APPEND_ITEM TABLES_CS_ERR_COUNTER             16 UINT  "Tables miscompare counter"
+    APPEND_ITEM CFE_CORE_CS_ERR_COUNTER           16 UINT  "cFE core miscompare counter"
+    APPEND_ITEM OS_CS_ERR_COUNTER                 16 UINT  "OS code segment miscopmare counter"
+    APPEND_ITEM CURRENT_CS_TABLE                  16 UINT  "Current table being checksummed"
+        STATE CFE    0
+        STATE OS     1
+        STATE EEPROM 2
+        STATE MEMORY 3
+        STATE TABLES 4
+        STATE APPS   5
+    APPEND_ITEM CURRENT_ENTRY_IN_TABLE            16 UINT  "Current entry ID in table being checksummed"
+    APPEND_ITEM EEPROM_BASELINE                   32 UINT  "Baseline checksum for all of EEPROM"
+    APPEND_ITEM OS_BASELINE                       32 UINT  "Baseline checksum for the OS code segment"
+    APPEND_ITEM CFE_CORE_BASELINE                 32 UINT  "Baseline checksum for the cFE core"
+<% if $cfs_globals_mem_addr_size == 64 %>
+    APPEND_ITEM LAST_ONE_SHOT_ADDRESS             64 UINT  "Address used in last one shot checksum command"
+<% else %>
+    APPEND_ITEM LAST_ONE_SHOT_ADDRESS             32 UINT  "Address used in last one shot checksum command"
+<% end %>    
+    APPEND_ITEM LAST_ONE_SHOT_SIZE                32 UINT  "Size used in the last one shot checksum command"
+    APPEND_ITEM LAST_ONE_SHOT_MAX_BYTES_PER_CYCLE 32 UINT  "Max bytes per cycle for last one shot checksum command"
+    APPEND_ITEM LAST_ONE_SHOT_CHECKSUM            32 UINT  "Checksum of the last one shot checksum command"
+    APPEND_ITEM PASS_COUNTER                      32 UINT  "Number of times CS has passed through all of its tables"

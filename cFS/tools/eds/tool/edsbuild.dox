@@ -1,0 +1,52 @@
+/**
+
+\defgroup build EDS build tools
+
+Compile-time tools for generating intermediate build products
+
+\section overview Overview
+
+\image html prebuild.png "Overview of EDS build tools"
+
+Using EDS requires establishing a three-part build procedure:
+- First, the EDS build tools (this source tree) must be compiled using the _native_ compiler for the development machine
+- Next, The EDS build tools are then _executed_ on the development machine to produce the intermediate build products
+- Finally, the intermediate products are compiled and linked into the _target_ binaries. 
+
+
+\section usage Usage
+
+__Important__: All files in the `src` subdirectory should be compiled using the native host compiler, _not_ a cross-compiler. 
+
+Files with a `seds_` prefix are part of the main EDS processor utility as depicted here.  See the documentation for `seds_gencdecl.c` for
+command line options and other usage instructions.
+ 
+The `updatefiles.c` source file provides a helper utility to aid in incremental build procedures.  See the documentation for
+that utility.  
+
+\section operation Operation
+
+The EDS processor toolchain follows this general operational flow:
+
+1. Read entire set of all EDS XML files into tree structure in memory.
+
+2. After all EDS files are read, resolve all cross-references / undefined symbols between EDS files and project configuration.  
+    - All Value Constraints and symbols are resolved to absolute/concrete numbers
+    - All structures are mapped to their final concrete definitions
+    - The size of all types are calculated
+    - Must be no conflicts or unresolved values after this stage.  Toolchain will indicate errors if this is not the case (must be fixed).
+    
+3. Output Temporary C Header files (`*_msgdefs.h` and `*_dictionary.h`)
+
+4. Output Temporary C Runtime Database files (`*-impl.c`)
+
+5. Update "Final" C files from temporary files, if different (via the `updatefiles.c` tool)
+
+
+
+\dir build
+\ingroup build
+ 
+
+*/
+

@@ -1,0 +1,45 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> HS Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  HS_HK COMMAND_COUNTER  "Command Count:"
+  LABELVALUEDESC <%= target_name %>  HS_HK COMMAND_ERROR_COUNTER  "Command Error Count:"
+  LABELVALUEDESC <%= target_name %>  HS_HK APP_MON_STATE "Application Monitor State:"
+  LABELVALUEDESC <%= target_name %>  HS_HK EVENT_MON_STATE "Events Monitor State:"
+  LABELVALUEDESC <%= target_name %>  HS_HK ALIVENESS_STATE "Aliveness Indicator State:"
+  LABELVALUEDESC <%= target_name %>  HS_HK CPU_HOG_STATE "CPU Hogging Indicator State:"
+  LABELVALUEDESC <%= target_name %>  HS_HK STATE_BITS "Operational States:"
+  LABELVALUEDESC <%= target_name %>  HS_HK CPU_RESET_CNT "Processor Reset Count:"
+  LABELVALUEDESC <%= target_name %>  HS_HK MAX_RESETS "Maximum Processor Resets Before Power-On Reset:"
+  LABELVALUEDESC <%= target_name %>  HS_HK EVENT_MON_CNT "Monitored Events Count:"
+  LABELVALUEDESC <%= target_name %>  HS_HK INVLD_EVENT_MON_CNT "Invalid Event Monitors Count:"
+  LABELVALUEDESC <%= target_name %>  HS_HK APP_MON_ENA "App Monitor Entries' States:"
+  LABELVALUEDESC <%= target_name %>  HS_HK MSG_ACT_EXEC_CNT "SB Message Actions Executed Count:"
+  LABELVALUEDESC <%= target_name %>  HS_HK CPU_UTIL_AVG "CPU Utilization Average:"
+  LABELVALUEDESC <%= target_name %>  HS_HK CPU_UTIL_PEAK "CPU Utilization Peak:"
+END
+
+VERTICALBOX 
+  LABEL "Execution Counts:"
+  ARRAY <%= target_name %>  HS_HK EXEC_CNTS 600 200 nil 10 RAW
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> HS_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> HS_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> HS_HK RECEIVED_COUNT 
+  END 
+ END

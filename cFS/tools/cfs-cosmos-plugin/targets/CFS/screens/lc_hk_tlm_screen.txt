@@ -1,0 +1,58 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> LC Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  LC_HK COMMAND_COUNTER  "Command Count:"
+  LABELVALUEDESC <%= target_name %>  LC_HK COMMAND_ERROR_COUNTER  "Command Error Count:"
+  LABELVALUEDESC <%= target_name %>  LC_HK APP_STATE        "App State:"
+  LABELVALUEDESC <%= target_name %>  LC_HK PASSIVE_RTS_EXE_CNT "Uninitiated RTSs due to Passive State:"
+  LABELVALUEDESC <%= target_name %>  LC_HK WPS_IN_USE        "Active WPs Count:"
+  LABELVALUEDESC <%= target_name %>  LC_HK ACTIVE_APS        "Active APs Count:"
+  LABELVALUEDESC <%= target_name %>  LC_HK AP_SAMPLE_CNT     "Sampled APs Count:"
+  LABELVALUEDESC <%= target_name %>  LC_HK MONITORED_MSG_CNT "Monitored Message Count:"
+  LABELVALUEDESC <%= target_name %>  LC_HK RTS_EXE_CNT       "RTSs Initiated Count:"
+
+  TABBOOK
+  <% 4.times do |idx| %>
+    TABITEM "WP Results <%=(idx*4)+0%> through <%=(idx*4)+3%>" 
+      	LABELVALUEDESC <%= target_name %> LC_HK WP_<%=(idx*4)+0%>_RESULT "WP <%=(idx*4)+0%>"
+      	LABELVALUEDESC <%= target_name %> LC_HK WP_<%=(idx*4)+1%>_RESULT "WP <%=(idx*4)+1%>"
+      	LABELVALUEDESC <%= target_name %> LC_HK WP_<%=(idx*4)+2%>_RESULT "WP <%=(idx*4)+2%>"
+      	LABELVALUEDESC <%= target_name %> LC_HK WP_<%=(idx*4)+3%>_RESULT "WP <%=(idx*4)+3%>"
+	  END
+  <% end %>
+  END
+
+  TABBOOK
+  <% 2.times do |idx| %>
+    TABITEM "AP Results <%=(idx*2)+0%> through <%=(idx*2)+1%>" 
+      	LABELVALUEDESC <%= target_name %> LC_HK AP_<%=(idx*2)+0%>_STATE  "AP State <%=(idx*2)+0%>"
+      	LABELVALUEDESC <%= target_name %> LC_HK AP_<%=(idx*2)+0%>_RESULT "AP Result <%=(idx*2)+0%>"
+
+      	LABELVALUEDESC <%= target_name %> LC_HK AP_<%=(idx*2)+1%>_STATE  "AP State <%=(idx*2)+1%>"
+      	LABELVALUEDESC <%= target_name %> LC_HK AP_<%=(idx*2)+1%>_RESULT "AP Result <%=(idx*2)+1%>"
+	  END
+  <% end %>
+  END  
+
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  
+  VERTICALBOX
+    VALUE <%= target_name %> LC_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> LC_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %> LC_HK RECEIVED_COUNT 
+  END 
+ END

@@ -1,0 +1,119 @@
+<%= cfs_cmd_hdr(target_name, 'MM_SEND_HK_CMD', 0, 'MM housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_NOOP', 0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_RESET_COUNTERS', 1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_PEEK', 2, "Telecommand Message") %>
+    APPEND_PARAMETER       DATA_SIZE                32 UINT MIN MAX 0 "Size of the data to be read"
+    APPEND_PARAMETER       MEM_TYPE                  8 UINT MIN MAX 0 "Memory type to peek data from"
+        STATE RAM    1
+        STATE EEPROM 2
+        STATE MEM8   3
+        STATE MEM16  4
+        STATE MEM32  5
+     
+    APPEND_ARRAY_PARAMETER PADDING                   8 UINT 24 "Padding for alignment"
+<% if $cfs_globals_mem_addr_size == 64 %>
+    APPEND_PARAMETER       SRC_SYM_ADDRESS_OFFSET   64 UINT MIN MAX 0 "Symbolic source peek address"
+<% else %>
+    APPEND_PARAMETER       SRC_SYM_ADDRESS_OFFSET   32 UINT MIN MAX 0 "Symbolic source peek address"
+<% end %>
+    APPEND_PARAMETER       SRC_SYM_ADDRESS_SYMNAME 512 STRING "" "Symbolic source peek address"
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_POKE', 3, "Telecommand Message") %>
+    APPEND_PARAMETER       DATA_SIZE                 32 UINT MIN MAX 0 "Size of the data to be written"
+    APPEND_PARAMETER       MEM_TYPE                   8 UINT MIN MAX 0 "Memory type to poke data to"
+        STATE RAM    1
+        STATE EEPROM 2
+        STATE MEM8   3
+        STATE MEM16  4
+        STATE MEM32  5
+    APPEND_ARRAY_PARAMETER PADDING1                   8 UINT 24 "Padding for alignment"
+    APPEND_PARAMETER       DATA                      32 UINT MIN MAX 0 "Data to be written"
+    APPEND_ARRAY_PARAMETER PADDING2                   8 UINT 32 "Padding for alignment"
+<% if $cfs_globals_mem_addr_size == 64 %>
+    APPEND_PARAMETER       DEST_SYM_ADDRESS_OFFSET   64 UINT MIN MAX 0 "Symbolic destination poke address"
+<% else %>
+    APPEND_PARAMETER       DEST_SYM_ADDRESS_OFFSET   32 UINT MIN MAX 0 "Symbolic destination poke address"
+<% end %>
+    APPEND_PARAMETER       DEST_SYM_ADDRESS_SYMNAME 512 STRING "" "Symbolic destination poke address"
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_LOAD_MEM_WID', 4, "Telecommand Message") %>
+    APPEND_PARAMETER       NUM_OF_BYTES               8 UINT MIN MAX 0 "Number of bytes to be loaded"
+    APPEND_ARRAY_PARAMETER PADDING                    8 UINT 24 "Padding for alignment"
+    APPEND_PARAMETER       CRC                       32 UINT MIN MAX 0 "Data check value"
+<% if $cfs_globals_mem_addr_size == 64 %>
+    APPEND_PARAMETER       DEST_SYM_ADDRESS_OFFSET   64 UINT MIN MAX 0 "Symbolic destination load address"
+<% else %>
+    APPEND_PARAMETER       DEST_SYM_ADDRESS_OFFSET   32 UINT MIN MAX 0 "Symbolic destination load address"
+<% end %>
+    APPEND_PARAMETER       DEST_SYM_ADDRESS_SYMNAME 512 STRING "" "Symbolic destination load address"
+    APPEND_ARRAY_PARAMETER DATA_ARRAY                 8 UINT 1600 "Data to be loaded"
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_LOAD_MEM_FROM_FILE', 5, "Telecommand Message") %>
+    APPEND_PARAMETER       FILENAME                                    512 STRING "" "Name of memory load file"
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_DUMP_MEM_TO_FILE', 6, "Telecommand Message") %>
+    APPEND_PARAMETER       MEM_TYPE                  8 UINT MIN MAX 0 "Memory dump type"
+        STATE RAM    1
+        STATE EEPROM 2
+        STATE MEM8   3
+        STATE MEM16  4
+        STATE MEM32  5
+    APPEND_ARRAY_PARAMETER PADDING1                  8 UINT 24 "Padding for alignment"
+    APPEND_PARAMETER       NUM_OF_BYTES             32 UINT MIN MAX 0 "Number of bytes to be dumped"
+<% if $cfs_globals_mem_addr_size == 64 %>
+    APPEND_PARAMETER       SRC_SYM_ADDRESS_OFFSET   64 UINT MIN MAX 0 "Symbol plus optional offset"
+<% else %>
+    APPEND_PARAMETER       SRC_SYM_ADDRESS_OFFSET   32 UINT MIN MAX 0 "Symbol plus optional offset"
+<% end %>
+    APPEND_PARAMETER       SRC_SYM_ADDRESS_SYMNAME 512 STRING "" "Symbol plus optional offset"
+    APPEND_PARAMETER       FILENAME                512 STRING "" "Name of memory dump file"
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_DUMP_IN_EVENT', 7, "Telecommand Message") %>
+    APPEND_PARAMETER       MEM_TYPE                  8 UINT MIN MAX 0 "Memory dump type"
+        STATE RAM    1
+        STATE EEPROM 2
+        STATE MEM8   3
+        STATE MEM16  4
+        STATE MEM32  5
+    APPEND_ARRAY_PARAMETER PADDING                   8 UINT 24 "Padding for alignment"
+    APPEND_PARAMETER       NUM_OF_BYTES              8 UINT MIN MAX 0 "Number of bytes to be dumped"
+    APPEND_ARRAY_PARAMETER PADDING1                  8 UINT 24 "Padding for alignment"
+<% if $cfs_globals_mem_addr_size == 64 %>
+    APPEND_PARAMETER       SRC_SYM_ADDRESS_OFFSET   64 UINT MIN MAX 0 "Symbolic source address"
+<% else %>
+    APPEND_PARAMETER       SRC_SYM_ADDRESS_OFFSET   32 UINT MIN MAX 0 "Symbolic source address"
+<% end %>
+    APPEND_PARAMETER       SRC_SYM_ADDRESS_SYMNAME 512 STRING "" "Symbolic source address"
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_FILL_MEM', 8, "Telecommand Message") %>
+    APPEND_PARAMETER       MEM_TYPE                   8 UINT MIN MAX 0 "Memory type"
+        STATE RAM    1
+        STATE EEPROM 2
+        STATE MEM8   3
+        STATE MEM16  4
+        STATE MEM32  5
+    APPEND_ARRAY_PARAMETER PADDING1                   8 UINT 24 "Padding for alignment"
+    APPEND_PARAMETER       NUM_OF_BYTES              32 UINT MIN MAX 0 "Number of bytes to fill"
+    APPEND_PARAMETER       FILL_PATTERN              32 UINT MIN MAX 0 "Fill pattern to use"
+    APPEND_PARAMETER       PADDING                   32 UINT MIN MAX 0 "Padding for alignment"
+<% if $cfs_globals_mem_addr_size == 64 %>
+    APPEND_PARAMETER       DEST_SYM_ADDRESS_OFFSET   64 UINT MIN MAX 0 "Symbol plus optional offset"
+<% else %>
+    APPEND_PARAMETER       DEST_SYM_ADDRESS_OFFSET   32 UINT MIN MAX 0 "Symbol plus optional offset"
+<% end %>
+    APPEND_PARAMETER       DEST_SYM_ADDRESS_SYMNAME 512 STRING "" "Symbol plus optional offset"
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_LOOKUP_SYM', 9, "Telecommand Message") %>
+    APPEND_PARAMETER SYMNAME 512 STRING "" "Symbol name string"
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_SYM_TBL_TO_FILE', 10, "Telecommand Message") %>
+    APPEND_PARAMETER FILENAME 512 STRING "" "Name of symbol dump file"
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_EEPROM_WRITE_ENA', 11, "Telecommand Message") %>
+    APPEND_PARAMETER BANK 32 UINT  MIN MAX 0 "EEPROM bank number to write-enable"
+
+<%= cfs_cmd_hdr(target_name, 'MM_CMD_EEPROM_WRITE_DIS', 12, "Telecommand Message") %>
+    APPEND_PARAMETER BANK 32 UINT  MIN MAX 0 "EEPROM bank number to write-disable"

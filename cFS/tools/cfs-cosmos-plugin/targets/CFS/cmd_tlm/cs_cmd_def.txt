@@ -1,0 +1,115 @@
+<%= cfs_cmd_hdr(target_name, 'CS_SEND_HK_CMD', 0, 'CS housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_NOOP', 0, "Generate an info event message with app version") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_RESET_COUNTERS', 1, "Reset CS counters") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ONE_SHOT', 2, "Telecommand Message") %>
+<% if $cfs_globals_mem_addr_size == 64 %>
+    APPEND_PARAMETER ADDRESS                64 UINT  0 9223372036854775807 0 "Address to start checksum"
+<% else %>
+    APPEND_PARAMETER ADDRESS                32 UINT  0 4294967295 0 "Address to start checksum"
+<% end %>  
+    APPEND_PARAMETER SIZE                   32 UINT  0 4294967295 0 "Number of bytes to checksum"
+    APPEND_PARAMETER MAX_BYTES_PER_CYCLE    32 UINT  0 4294967295 0 "Max Number of bytes to compute per cycle. Value of Zero to use platform config value"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_CANCEL_ONE_SHOT', 3, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_ALL_CS', 4, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_ALL_CS', 5, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_CFE_CORE', 6, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_CFE_CORE', 7, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_REPORT_BASELINE_CFE_CORE', 8, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_RECOMPUTE_BASELINE_CFE_CORE', 9, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_OS', 10, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_OS', 11, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_REPORT_BASELINE_OS', 12, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_RECOMPUTE_BASELINE_OS', 13, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_EEPROM', 14, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_EEPROM', 15, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_REPORT_BASELINE_ENTRY_ID_EEPROM', 16, "Telecommand Message") %>
+     APPEND_PARAMETER ENTRY_ID 32 UINT  0 4294967295 0 "EntryID  to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_RECOMPUTE_BASELINE_EEPROM', 17, "Telecommand Message") %>
+     APPEND_PARAMETER ENTRY_ID 32 UINT  0 4294967295 0 "EntryID  to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_ENTRY_ID_EEPROM', 18, "Telecommand Message") %>
+     APPEND_PARAMETER ENTRY_ID 32 UINT  0 4294967295 0 "EntryID  to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_ENTRY_ID_EEPROM', 19, "Telecommand Message") %>
+     APPEND_PARAMETER ENTRY_ID 32 UINT  0 4294967295 0 "EntryID  to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_GET_ENTRY_ID_EEPROM', 20, "Telecommand Message") %>
+<% if $cfs_globals_mem_addr_size == 64 %>
+    APPEND_PARAMETER ADDRESS                64 UINT  0 9223372036854775807 0 "Address to get the ID for"
+<% else %>
+    APPEND_PARAMETER ADDRESS                32 UINT  0 4294967295 0 "Address to get the ID for"
+<% end %>  
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_MEMORY', 21, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_MEMORY', 22, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_REPORT_BASELINE_ENTRY_ID_MEMORY', 23, "Telecommand Message") %>
+     APPEND_PARAMETER ENTRY_ID 32 UINT  0 4294967295 0 "EntryID  to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_RECOMPUTE_BASELINE_MEMORY', 24, "Telecommand Message") %>
+     APPEND_PARAMETER ENTRY_ID 32 UINT  0 4294967295 0 "EntryID  to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_ENTRY_ID_MEMORY', 25, "Telecommand Message") %>
+     APPEND_PARAMETER ENTRY_ID 32 UINT  0 4294967295 0 "EntryID  to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_ENTRY_ID_MEMORY', 26, "Telecommand Message") %>
+     APPEND_PARAMETER ENTRY_ID 32 UINT  0 4294967295 0 "EntryID  to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_GET_ENTRY_ID_MEMORY', 27, "Telecommand Message") %>
+<% if $cfs_globals_mem_addr_size == 64 %>
+    APPEND_PARAMETER ADDRESS                64 UINT  0 9223372036854775807 0 "Address to get the ID for"
+<% else %>
+    APPEND_PARAMETER ADDRESS                32 UINT  0 4294967295 0 "Address to get the ID for"
+<% end %>  
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_TABLES', 28, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_TABLES', 29, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_REPORT_BASELINE_TABLE', 30, "Telecommand Message") %>
+     APPEND_PARAMETER NAME 320 STRING "" "Table name to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_RECOMPUTE_BASELINE_TABLE', 31, "Telecommand Message") %>
+     APPEND_PARAMETER NAME 320 STRING "" "Table name to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_NAME_TABLE', 32, "Telecommand Message") %>
+     APPEND_PARAMETER NAME 320 STRING "" "Table name to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_NAME_TABLE', 33, "Telecommand Message") %>
+     APPEND_PARAMETER NAME 320 STRING "" "Table name to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_APPS', 34, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_APPS', 35, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_REPORT_BASELINE_APP', 36, "Telecommand Message") %>
+     APPEND_PARAMETER NAME 160 STRING "" "App name to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_RECOMPUTE_BASELINE_APP', 37, "Telecommand Message") %>
+     APPEND_PARAMETER NAME 160 STRING "" "App name to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_ENABLE_NAME_APP', 38, "Telecommand Message") %>
+     APPEND_PARAMETER NAME 160 STRING "" "App name to perform a command on"
+
+<%= cfs_cmd_hdr(target_name, 'CS_CMD_DISABLE_NAME_APP', 39, "Telecommand Message") %>
+     APPEND_PARAMETER NAME 160 STRING "" "App name to perform a command on"
+

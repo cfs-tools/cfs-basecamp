@@ -1,0 +1,34 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> FM Housekeeping" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  FM_HK COMMAND_COUNTER "Command Counter:"
+  LABELVALUEDESC <%= target_name %>  FM_HK COMMAND_ERROR_COUNTER "Command Error Counter:"
+  LABELVALUEDESC <%= target_name %>  FM_HK NUM_OPEN_FILES "Number of Open Files:"
+  LABELVALUEDESC <%= target_name %>  FM_HK CHILD_CMD_COUNTER "Child Command Counter:"
+  LABELVALUEDESC <%= target_name %>  FM_HK CHILD_CMD_ERR_COUNTER "Child Command Error Counter:"
+  LABELVALUEDESC <%= target_name %>  FM_HK CHILD_CMD_WARN_COUNTER "Child Command Warning Counter:"
+  LABELVALUEDESC <%= target_name %>  FM_HK CHILD_QUEUE_COUNT "Pending Commands in Queue:"
+  LABELVALUEDESC <%= target_name %>  FM_HK CHILD_CURRENT_CC "Command Code Currently Executing:"
+  LABELVALUEDESC <%= target_name %>  FM_HK CHILD_PREVIOUS_CC "Command Code Previously Executed:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  FM_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  FM_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  FM_HK RECEIVED_COUNT 
+  END
+END
+

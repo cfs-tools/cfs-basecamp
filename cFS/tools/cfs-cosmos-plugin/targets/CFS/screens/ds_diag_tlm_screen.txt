@@ -1,0 +1,37 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> DS Diagnostic Telemetry" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  TABBOOK
+  <% 16.times do |file_idx| %>
+    TABITEM "File Data <%= file_idx %>" 
+      	LABELVALUEDESC <%= target_name %> DS_DIAG FILE_AGE_<%= file_idx %> "File Age (secs):"
+      	LABELVALUEDESC <%= target_name %> DS_DIAG FILE_SIZE_<%= file_idx %> "File Size (bytes):"
+      	LABELVALUEDESC <%= target_name %> DS_DIAG FILE_RATE_<%= file_idx %> "Data Rate:"
+      	LABELVALUEDESC <%= target_name %> DS_DIAG SEQUENCE_COUNT_<%= file_idx %> "Sequence Count:"
+      	LABELVALUEDESC <%= target_name %> DS_DIAG ENABLE_STATE_<%= file_idx %> "File State:"
+      	LABELVALUEDESC <%= target_name %> DS_DIAG OPEN_STATE_<%= file_idx %> "Open:"
+      	LABELVALUEDESC <%= target_name %> DS_DIAG FILENAME_<%= file_idx %> "File Name:"
+	  END
+  <% end %>
+  END
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  DS_DIAG PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  DS_DIAG RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  DS_DIAG RECEIVED_COUNT 
+  END  
+END

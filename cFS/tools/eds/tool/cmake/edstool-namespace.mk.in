@@ -1,0 +1,12 @@
+# Variables related to the file and symbol naming conventions
+export EDSTOOL_PROJECT_NAME  := ${EDSTOOL_PROJECT_NAME}
+export EDSTOOL_OUTPUT_DIR    := ${EDSTOOL_OUTPUT_DIR}
+export EDS_FILE_PREFIX       := ${EDS_FILE_PREFIX}
+export EDS_SYMBOL_PREFIX     := ${EDS_SYMBOL_PREFIX}
+
+# These are included for reference, in case CMAKE is also used by sub-scripts
+export CMAKE                 := ${CMAKE_COMMAND}
+export BUILD_TYPE            := ${CMAKE_BUILD_TYPE}
+
+# Also include the full path to the parent repo
+export EDS_REPO_SOURCE_DIR   := ${EDS_REPO_SOURCE_DIR}

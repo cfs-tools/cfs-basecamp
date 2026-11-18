@@ -1,0 +1,27 @@
+<%= cfs_cmd_hdr(target_name, 'HS_SEND_HK_CMD', 0, 'HS housekeeping request command') %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_NOOP', 0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_RESET_COUNTERS', 1, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_ENABLE_APP_MON', 2, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_DISABLE_APP_MON', 3, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_ENABLE_EVENT_MON', 4, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_DISABLE_EVENT_MON', 5, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_ENABLE_ALIVENESS', 6, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_DISABLE_ALIVENESS', 7, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_RESET_RESETS_PERFORMED', 8, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_SET_MAX_RESETS', 9, "Telecommand Message") %>
+  APPEND_PARAMETER MAX_RESETS 16 UINT MIN_UINT16 MAX_UINT16 0 " "
+  APPEND_PARAMETER PADDING    16 UINT MIN_UINT16 MAX_UINT16 0 "Structure padding"
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_ENABLE_CPU_HOG', 10, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'HS_CMD_DISABLE_CPU_HOG', 11, "Telecommand Message") %>

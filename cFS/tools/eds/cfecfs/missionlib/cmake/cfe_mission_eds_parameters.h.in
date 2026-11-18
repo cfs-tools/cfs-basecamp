@@ -1,0 +1,8 @@
+/* Generated wrapper based off the generated source file location */
+#include "@EDS_FILE_PREFIX@_designparameters.h"
+#include "@EDS_FILE_PREFIX@_master_index.h"
+
+#define  EDS_MISSION_NAME      "@MISSION_NAME@"
+#define  EDS_INDEX(x)          @EDS_SYMBOL_PREFIX@_INDEX_ ## x
+#define  EDS_MAX_DATASHEETS    @EDS_SYMBOL_PREFIX@_MAX_INDEX
+#define  EDS_DATABASE          @EDS_SYMBOL_PREFIX@_DATABASE

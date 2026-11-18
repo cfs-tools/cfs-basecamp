@@ -1,0 +1,20 @@
+<%= cfs_tbl_hdr('DS_FileTable', 'DS destination file table', 'DS') %>
+  APPEND_PARAMETER DESCRIPTOR 256 STRING ""
+
+<% 16.times do |entry_idx| %>
+<% if $ds_move_files == true %>
+  APPEND_PARAMETER MOVE_NAME_<%= entry_idx %> 512 STRING ""
+<% end %>
+  APPEND_PARAMETER PATH_NAME_<%= entry_idx %> 512 STRING ""
+  APPEND_PARAMETER BASE_NAME_<%= entry_idx %> 512 STRING ""
+  APPEND_PARAMETER EXTENSION_<%= entry_idx %> 64 STRING ""
+  APPEND_PARAMETER FILE_NAME_TYPE_<%= entry_idx %> 16 UINT 1 2 1
+    STATE BY_COUNT 1
+    STATE BY_TIME  2
+  APPEND_PARAMETER ENABLE_STATE_<%= entry_idx %> 16 UINT 0 1 0
+    STATE DISABLED 0
+    STATE ENABLED  1
+  APPEND_PARAMETER MAX_FILE_SIZE_BYTES_<%= entry_idx %> 32 UINT 0 MAX_UINT32 0
+  APPEND_PARAMETER MAX_FILE_AGE_SECS_<%= entry_idx %> 32 UINT 0 MAX_UINT32 0
+  APPEND_PARAMETER SEQUENCE_COUNT_<%= entry_idx %> 32 UINT 0 MAX_UINT32 0
+<% end %>

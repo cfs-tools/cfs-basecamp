@@ -1,0 +1,162 @@
+<%= cfs_tlm_hdr(target_name, 'CFE_ES_HK', "CFE_ES Hk Tlm") %>
+   APPEND_ITEM COMMAND_COUNTER 8 UINT "The ES Application Command Counter"
+   APPEND_ITEM COMMAND_ERROR_COUNTER 8 UINT "The ES Application Command Error Counter"
+   APPEND_ITEM CFE_CORE_CHECKSUM 16 UINT "Checksum of cFE Core Code"
+      FORMAT_STRING "0x%04X"
+   APPEND_ITEM CFE_MAJOR_VERSION 8 UINT "Major Version Number of cFE"
+   APPEND_ITEM CFE_MINOR_VERSION 8 UINT "Minor Version Number of cFE"
+   APPEND_ITEM CFE_REVISION 8 UINT "Sub-Minor Version Number of cFE"
+   APPEND_ITEM CFE_MISSION_REVISION 8 UINT "Mission Version Number of cFE"
+   APPEND_ITEM OSAL_MAJOR_VERSION 8 UINT "OS Abstraction Layer Major Version Number"
+   APPEND_ITEM OSAL_MINOR_VERSION 8 UINT "OS Abstraction Layer Minor Version Number"
+   APPEND_ITEM OSAL_REVISION 8 UINT "OS Abstraction Layer Revision Number"
+   APPEND_ITEM OSAL_MISSION_REVISION 8 UINT "OS Abstraction Layer MissionRevision Number"
+   APPEND_ITEM PSP_MAJOR_VERSION 8 UINT "Platform Support Package Major Version Number"
+   APPEND_ITEM PSP_MINOR_VERSION 8 UINT "Platform Support Package Minor Version Number"
+   APPEND_ITEM PSP_REVISION 8 UINT "Platform Support Package Revision Number"
+   APPEND_ITEM PSP_MISSION_REVISION 8 UINT "Platform Support Package MissionRevision Number"
+<% if $cfs_globals_mem_addr_size == 64 %>
+   APPEND_ITEM SYS_LOG_BYTES_USED 64 UINT "Total number of bytes used in system log"
+   APPEND_ITEM SYS_LOG_SIZE 64 UINT "Total size of the system log"
+<% else %>
+   APPEND_ITEM SYS_LOG_BYTES_USED 32 UINT "Total number of bytes used in system log"
+   APPEND_ITEM SYS_LOG_SIZE 32 UINT "Total size of the system log"
+<% end %>
+   APPEND_ITEM SYS_LOG_ENTRIES 32 UINT "Number of entries in the system log"
+   APPEND_ITEM SYS_LOG_MODE 32 UINT "Write/Overwrite Mode"
+      STATE OVERWRITE 0
+      STATE DISCARD   1
+   APPEND_ITEM ER_LOG_INDEX 32 UINT "Current index of the ER Log (wraps around)"
+   APPEND_ITEM ER_LOG_ENTRIES 32 UINT "Number of entries made in the ER Log since the power on"
+   APPEND_ITEM REGISTERED_CORE_APPS 32 UINT "Number of Applications registered with ES"
+   APPEND_ITEM REGISTERED_EXTERNAL_APPS 32 UINT "Number of Applications registered with ES"
+   APPEND_ITEM REGISTERED_TASKS 32 UINT "Number of Tasks (main AND child tasks) registered with ES"
+   APPEND_ITEM REGISTERED_LIBS 32 UINT "Number of Libraries registered with ES"
+   APPEND_ITEM RESET_TYPE 32 UINT "Reset type"
+      STATE PROCESSOR   1
+      STATE POWER_ON    2
+      STATE APP_RESTART 3
+   APPEND_ITEM RESET_SUBTYPE 32 UINT "Reset Subtype"
+      STATE POWER_CYCLE 1
+      STATE PUSH_BUTTON 2
+      STATE SPECIAL_CMD 3
+      STATE HW_WATCHDOG 4
+      STATE RESET_CMD   5
+      STATE EXCEPTION   6
+      STATE UNDEFINED   7
+      STATE HW_DEBUG    8
+      STATE BANK_SWITCH 9
+   APPEND_ITEM PROCESSOR_RESETS 32 UINT "Number of processor resets since last power on"
+   APPEND_ITEM MAX_PROCESSOR_RESETS 32 UINT "Max processor resets before a power on is done"
+   APPEND_ITEM BOOT_SOURCE 32 UINT "Boot source (as provided from BSP)"
+   APPEND_ITEM PERF_STATE 32 UINT "Current state of Performance Analyzer"
+      STATE IDLE                0
+      STATE WAITING_FOR_TRIGGER 1
+      STATE TRIGGERED           2
+   APPEND_ITEM PERF_MODE 32 UINT "Current mode of Performance Analyzer"
+      STATE START  0
+      STATE CENTER 1
+      STATE END    2
+   APPEND_ITEM PERF_TRIGGER_COUNT 32 UINT "Number of Times Performance Analyzer has Triggered"
+<% 128.times do |perf_id_index| %>
+   APPEND_ITEM PERF_FILTER_MASK_<%= perf_id_index %> 1 UINT "Single true/false status bit"
+<% end %>
+<% 128.times do |perf_id_index| %>
+   APPEND_ITEM PERF_TRIGGER_MASK_<%= perf_id_index %> 1 UINT "Single true/false status bit"
+<% end %>
+   APPEND_ITEM PERF_DATA_START 32 UINT "Identifies First Stored Entry in Performance Analyzer Log"
+   APPEND_ITEM PERF_DATA_END 32 UINT "Identifies Last Stored Entry in Performance Analyzer Log"
+   APPEND_ITEM PERF_DATA_COUNT 32 UINT "Number of Entries Put Into the Performance Analyzer Log"
+   APPEND_ITEM PERF_DATA_TO_WRITE 32 UINT "Number of Performance Analyzer Log Entries Left to be Written to Log Dump File"
+<% if $cfs_globals_mem_addr_size == 64 %>
+   APPEND_ITEM HEAP_BYTES_FREE 64 UINT "Number of free bytes remaining in the OS heap"
+   APPEND_ITEM HEAP_BLOCKS_FREE 64 UINT "Number of free blocks remaining in the OS heap"
+   APPEND_ITEM HEAP_MAX_BLOCK_SIZE 64 UINT "Number of bytes in the largest free block"
+<% else %>
+   APPEND_ITEM HEAP_BYTES_FREE 32 UINT "Number of free bytes remaining in the OS heap"
+   APPEND_ITEM HEAP_BLOCKS_FREE 32 UINT "Number of free blocks remaining in the OS heap"
+   APPEND_ITEM HEAP_MAX_BLOCK_SIZE 32 UINT "Number of bytes in the largest free block"
+<% end %>
+
+<%= cfs_tlm_hdr(target_name, 'CFE_ES_APP', "CFE_ES App Info Tlm") %>
+   APPEND_ITEM RESOURCE_ID 32 UINT "Application or Libary ID for this resource"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM TYPE 32 UINT "App Type"
+      STATE CORE     1
+      STATE EXTERNAL 2
+      STATE LIBRARY  3
+   APPEND_ITEM NAME 160 STRING "The Registered Name of the Application"
+   APPEND_ITEM ENTRY_POINT 160 STRING "The Entry Point label for the Application"
+   APPEND_ITEM FILE_NAME 512 STRING "The Filename of the file containing the Application"
+<% if $cfs_globals_mem_addr_size == 64 %>
+   APPEND_ITEM STACK_SIZE 64 UINT "The Stack Size of the Application"
+<% else %>
+   APPEND_ITEM STACK_SIZE 32 UINT "The Stack Size of the Application"
+<% end %>
+   APPEND_ITEM ADDRESSES_ARE_VALID 32 UINT "Indicates that the Code, Data, and BSS addresses/sizes are valid"
+      STATE FALSE 0
+      STATE TRUE  1
+<% if $cfs_globals_mem_addr_size == 64 %>
+   APPEND_ITEM PADDING1 32 UINT "Padding for alignment"
+   APPEND_ITEM CODE_ADDRESS 64 UINT "The Address of the Application Code Segment"
+      FORMAT_STRING "0x%016X"
+   APPEND_ITEM CODE_SIZE 64 UINT "The Code Size of the Application"
+   APPEND_ITEM DATA_ADDRESS 64 UINT "The Address of the Application Data Segment"
+      FORMAT_STRING "0x%016X"
+   APPEND_ITEM DATA_SIZE 64 UINT "The Data Size of the Application"
+   APPEND_ITEM BSS_ADDRESS 64 UINT "The Address of the Application BSS Segment"
+      FORMAT_STRING "0x%016X"
+   APPEND_ITEM BSS_SIZE 64 UINT "The BSS Size of the Application"
+   APPEND_ITEM START_ADDRESS 64 UINT "The Start Address of the Application"
+      FORMAT_STRING "0x%016X"
+<% else %>
+   APPEND_ITEM CODE_ADDRESS 32 UINT "The Address of the Application Code Segment"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM CODE_SIZE 32 UINT "The Code Size of the Application"
+   APPEND_ITEM DATA_ADDRESS 32 UINT "The Address of the Application Data Segment"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM DATA_SIZE 32 UINT "The Data Size of the Application"
+   APPEND_ITEM BSS_ADDRESS 32 UINT "The Address of the Application BSS Segment"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM BSS_SIZE 32 UINT "The BSS Size of the Application"
+   APPEND_ITEM START_ADDRESS 32 UINT "The Start Address of the Application"
+      FORMAT_STRING "0x%08X"
+<% end %>
+   APPEND_ITEM EXCEPTION_ACTION 8 UINT "What should occur if Application has an exception"
+      STATE RESTART_APP 0
+      STATE RESTART_CPU 1
+   APPEND_ITEM PADDING2 8 UINT "Padding for alignment"
+   APPEND_ITEM PRIORITY 16 UINT "The Priority of the Application"
+   APPEND_ITEM MAIN_TASK_ID 32 UINT "The Application's Main Task ID"
+      FORMAT_STRING "0x%08X"
+   APPEND_ITEM EXECUTION_COUNTER 32 UINT "The Application's Main Task Execution Counter"
+   APPEND_ITEM MAIN_TASK_NAME 160 STRING "The Application's Main Task Name"
+   APPEND_ITEM NUM_OF_CHILD_TASKS 32 UINT "Number of Child tasks for an App"
+   APPEND_ITEM PADDING3 32 UINT "Padding for 64-bit alignment"
+
+<%= cfs_tlm_hdr(target_name, 'CFE_ES_MEMSTATS', "CFE_ES Mem Stats Tlm") %>
+   APPEND_ITEM POOL_HANDLE 32 UINT "Handle of memory pool whose stats are being telemetered"
+      FORMAT_STRING "0x%08X"
+<% if $cfs_globals_mem_addr_size == 64 %>
+   APPEND_ITEM PADDING   32 UINT
+   APPEND_ITEM POOL_SIZE 64 UINT "Size of Memory Pool (in bytes)"
+<% else %>
+   APPEND_ITEM POOL_SIZE 32 UINT "Size of Memory Pool (in bytes)"
+<% end %>
+   APPEND_ITEM NUM_BLOCKS_REQUESTED 32 UINT "Number of times a memory block has been allocated"
+   APPEND_ITEM CHECK_ERR_CTR 32 UINT "Number of errors detected when freeing a memory block"
+<% if $cfs_globals_mem_addr_size == 64 %>
+   APPEND_ITEM NUM_FREE_BYTES 64 UINT "Number of bytes never allocated to a block"
+<% else %>
+   APPEND_ITEM NUM_FREE_BYTES 32 UINT "Number of bytes never allocated to a block"
+<% end %>
+
+<% 17.times do |blk_stat_idx| %>
+<% if $cfs_globals_mem_addr_size == 64 %>
+   APPEND_ITEM BLOCK_STATS_<%= blk_stat_idx %>_BLOCK_SIZE 64 UINT "Number of bytes in each of these blocks"
+<% else %>
+   APPEND_ITEM BLOCK_STATS_<%= blk_stat_idx %>_BLOCK_SIZE 32 UINT "Number of bytes in each of these blocks"
+<% end %>
+   APPEND_ITEM BLOCK_STATS_<%= blk_stat_idx %>_NUM_CREATED 32 UINT "Number of Memory Blocks of this size created"
+   APPEND_ITEM BLOCK_STATS_<%= blk_stat_idx %>_NUM_FREE 32 UINT "Number of Memory Blocks of this size that are free"
+<% end %>

@@ -1,0 +1,22 @@
+<%= cfs_cmd_hdr(target_name, 'SBN_CMD_SEND_HK', 0, "SBN Send Housekeeping command") %>
+
+<%= cfs_cmd_hdr(target_name, 'SBN_CMD_NOOP', 0, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'SBN_CMD_HK_NET', 11, "Telecommand Message") %>
+  APPEND_PARAMETER NET_IDX 8 UINT 0 MAX_UINT8 0 "Net Index"
+
+<%= cfs_cmd_hdr(target_name, 'SBN_CMD_HK_PEER', 12, "Telecommand Message") %>
+  APPEND_PARAMETER NET_IDX 8 UINT 0 MAX_UINT8 0 "Net Index"
+  APPEND_PARAMETER PEER_IDX 8 UINT 0 MAX_UINT8 0 "Peer Index"
+
+<%= cfs_cmd_hdr(target_name, 'SBN_CMD_HK_PEERSUBS', 13, "Telecommand Message") %>
+  APPEND_PARAMETER NET_IDX 8 UINT 0 MAX_UINT8 0 "Net Index"
+  APPEND_PARAMETER PEER_IDX 8 UINT 0 MAX_UINT8 0 "Peer Index"
+
+<%= cfs_cmd_hdr(target_name, 'SBN_CMD_HK_MYSUBS', 14, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'SBN_CMD_HK_RESET', 15, "Telecommand Message") %>
+
+<%= cfs_cmd_hdr(target_name, 'SBN_CMD_HK_RESET_PEER', 16, "Telecommand Message") %>
+  APPEND_PARAMETER NET_IDX 8 UINT 0 MAX_UINT8 0 "Net Index"
+  APPEND_PARAMETER PEER_IDX 8 UINT 0 MAX_UINT8 0 "Peer Index"

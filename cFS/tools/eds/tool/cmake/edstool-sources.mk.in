@@ -1,0 +1,5 @@
+
+# Capture the complete list of EDS files and scripts in use
+# Note that these will be cmake style semicolon-separated, not space-separated.
+EDSTOOL_FILELIST   := ${CURRENT_EDSTOOL_FILELIST}
+EDSTOOL_SCRIPTLIST := ${CURRENT_EDSTOOL_SCRIPTLIST}

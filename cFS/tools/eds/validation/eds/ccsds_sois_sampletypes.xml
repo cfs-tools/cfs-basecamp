@@ -1,0 +1,720 @@
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+  <Package name="CCSDS/SOIS/SAMPLETYPES" shortDescription="Sample Datatype Package">
+    <DataTypeSet>
+
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                     BOOLEAN VALUES                                       -->
+      <!--     Implement normal (0=false) and inverted (0=true) boolean types       -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+      <BooleanDataType name="B1NORMAL" shortDescription="Simple 1-bit Boolean value">
+        <BooleanDataEncoding sizeInBits="1" />
+      </BooleanDataType>
+    
+      <BooleanDataType name="B1INVERT" shortDescription="Inverted 1-bit Boolean value">
+        <BooleanDataEncoding sizeInBits="1" falseValue="nonZeroIsFalse" />
+      </BooleanDataType>
+    
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                     UNSIGNED INTEGERS                                    -->
+      <!-- An assortment of various integer sizes including C99 fixed-width         -->
+      <!-- as well as sizes in between these standard fixed-width types             -->
+      <!-- Includes big endian and little endian variants                           -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+      <!--  Typical unsigned integer sizes which match C99 native fixed-width types -->
+      <IntegerDataType name="U8EL" shortDescription="Unsigned 8 bit value, little endian">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" byteOrder="littleEndian"/>
+        <Range>
+          <MinMaxRange min="0" max="255" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+       
+      <IntegerDataType name="U8EB" shortDescription="Unsigned 8 bit value, big endian">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" byteOrder="bigEndian"/>
+        <Range>
+          <MinMaxRange min="0" max="255" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+       
+      <IntegerDataType name="U16EL" shortDescription="Unsigned 16 bit value, little endian">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="littleEndian"/>
+        <Range>
+          <MinMaxRange min="0" max="65535" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+       
+      <IntegerDataType name="U16EB" shortDescription="Unsigned 16 bit value, big endian">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="bigEndian"/>
+        <Range>
+          <MinMaxRange min="0" max="65535" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+       
+      <IntegerDataType name="U32EL" shortDescription="Unsigned 32 bit value, little endian">
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" byteOrder="littleEndian"/>
+        <Range>
+          <MinMaxRange min="0" max="4294967295" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+       
+      <IntegerDataType name="U32EB" shortDescription="Unsigned 32 bit value, big endian">
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" byteOrder="bigEndian"/>
+        <Range>
+          <MinMaxRange min="0" max="4294967295" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+      
+      <!--  Additional unsigned integer sizes which do _not_ match C99 native types -->
+      <!--  Note these all use the default "bigEndian" byte order, as littleEndian is 
+        restricted to items which are multiples of 8 bits only -->
+
+      <IntegerDataType name="U7" shortDescription="Unsigned 7 bit value">
+        <IntegerDataEncoding sizeInBits="7" encoding="unsigned"/>
+        <Range>
+          <MinMaxRange min="0" max="127" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+       
+      <IntegerDataType name="U11" shortDescription="Unsigned 11 bit value">
+        <IntegerDataEncoding sizeInBits="11" encoding="unsigned"/>
+        <Range>
+          <MinMaxRange min="0" max="2047" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+       
+      <IntegerDataType name="U21" shortDescription="Unsigned 21 bit value">
+        <IntegerDataEncoding sizeInBits="21" encoding="unsigned" />
+        <Range>
+          <MinMaxRange min="0" max="2097151" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+      
+      <IntegerDataType name="U36" shortDescription="Unsigned 36 bit value">
+        <IntegerDataEncoding sizeInBits="36" encoding="unsigned"/>
+        <Range>
+          <MinMaxRange min="0" max="68719476735" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+       
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                     SIGNED INTEGERS                                      -->
+      <!-- Defines types using various signed integer encodings and byte orders     -->
+      <!-- Sizes are varied (some large, some small) but do not duplicate those     -->
+      <!-- sizes already exercised in the unsigned integer types                    -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+
+      <!--  Twos complement variants (arguably the most commonly-used encoding) -->      
+      <!--  All "littleEndian" byte order types should be multiples of 8 bits   -->
+
+      <IntegerDataType name="S8EL" shortDescription="Signed 8 bit twos complement, little endian">
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement" byteOrder="littleEndian"/>
+        <Range>
+          <MinMaxRange min="-128" max="128" rangeType="inclusiveMinExclusiveMax" />
+        </Range>
+      </IntegerDataType>
+    
+      <IntegerDataType name="S16EL" shortDescription="Signed 16 bit twos complement, little endian">
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="littleEndian"/>
+        <Range>
+          <MinMaxRange min="-32768" max="32768" rangeType="inclusiveMinExclusiveMax" />
+        </Range>
+      </IntegerDataType>
+    
+      <IntegerDataType name="S32EL" shortDescription="Signed 32 bit twos complement, little endian">
+        <IntegerDataEncoding sizeInBits="32" encoding="twosComplement" byteOrder="littleEndian"/>
+        <Range>
+          <MinMaxRange min="-2147483648" max="2147483648" rangeType="inclusiveMinExclusiveMax" />
+        </Range>
+      </IntegerDataType>
+    
+      <IntegerDataType name="S6EB" shortDescription="Signed 6 bit twos complement, big endian">
+        <IntegerDataEncoding sizeInBits="6" encoding="twosComplement" byteOrder="bigEndian"/>
+        <Range>
+          <MinMaxRange min="-32" max="32" rangeType="inclusiveMinExclusiveMax" />
+        </Range>
+      </IntegerDataType>
+    
+      <IntegerDataType name="S15EB" shortDescription="Signed 15 bit twos complement, big endian">
+        <IntegerDataEncoding sizeInBits="15" encoding="twosComplement" byteOrder="bigEndian"/>
+        <Range>
+          <MinMaxRange min="-16384" max="16384" rangeType="inclusiveMinExclusiveMax" />
+        </Range>
+      </IntegerDataType>
+    
+      <IntegerDataType name="S27EB" shortDescription="Signed 27 bit twos complement, big endian">
+        <IntegerDataEncoding sizeInBits="27" encoding="twosComplement" byteOrder="bigEndian"/>
+        <Range>
+          <MinMaxRange min="-67108864" max="67108864" rangeType="inclusiveMinExclusiveMax" />
+        </Range>
+      </IntegerDataType>
+    
+      <!--  Non twos complement encodings - less frequently used -->
+      <IntegerDataType name="OC20EB" shortDescription="Signed 20-bit ones complement, big endian">
+        <IntegerDataEncoding sizeInBits="20" encoding="onesComplement" byteOrder="bigEndian"/>
+        <Range>
+          <MinMaxRange min="-524287" max="524287" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+    
+      <IntegerDataType name="SM40EL" shortDescription="Signed 40-bit sign+magnitude, little endian">
+        <IntegerDataEncoding sizeInBits="40" encoding="signMagnitude" byteOrder="littleEndian"/>
+        <Range>
+          <MinMaxRange min="-549755813887" max="549755813887" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+      
+      <!--  BCD encodings are technically described as signed, but the sign indication 
+            is ambiguous, so only non-negative values are exercised for now  -->
+      <IntegerDataType name="BCD40EB" shortDescription="10 digit packed BCD in big endian order">
+        <IntegerDataEncoding sizeInBits="40" encoding="packedBCD" byteOrder="bigEndian"/>
+        <!--  10 decimal digits @ 4 bits each -->
+        <Range>
+          <MinMaxRange min="0" max="9999999999" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+    
+      <IntegerDataType name="BCD56EL" shortDescription="7 digit BCD in little endian order">
+        <!--  7 decimal digits @ 8 bits each -->
+        <IntegerDataEncoding sizeInBits="56" encoding="BCD" byteOrder="littleEndian"/>
+        <Range>
+          <MinMaxRange min="0" max="9999999" rangeType="inclusiveMinInclusiveMax" />
+        </Range>
+      </IntegerDataType>
+    
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                     REAL NUMBERS / FLOATING POINT                        -->
+      <!--  Define every combination of MIL-STD-1750A, IEEE-754, big/little endian  -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+      <FloatDataType name="MFLOAT32EL" shortDescription="MIL-STD simple floating point, little endian">
+        <FloatDataEncoding sizeInBits="32" encodingAndPrecision="MILSTD_1750A_simple" byteOrder="littleEndian"/>
+        <Range>
+          <PrecisionRange>single</PrecisionRange>
+        </Range>
+      </FloatDataType>
+    
+      <FloatDataType name="MFLOAT32EB" shortDescription="MIL-STD simple floating point, big endian">
+        <FloatDataEncoding sizeInBits="32" encodingAndPrecision="MILSTD_1750A_simple" byteOrder="bigEndian"/>
+        <Range>
+          <PrecisionRange>single</PrecisionRange>
+        </Range>
+      </FloatDataType>
+    
+      <FloatDataType name="MFLOAT48EL" shortDescription="MIL-STD extended floating point, little endian">
+        <FloatDataEncoding sizeInBits="48" encodingAndPrecision="MILSTD_1750A_extended" byteOrder="littleEndian"/>
+        <Range>
+          <PrecisionRange>double</PrecisionRange>
+        </Range>
+      </FloatDataType>
+    
+      <FloatDataType name="MFLOAT48EB" shortDescription="MIL-STD extended floating point, big endian">
+        <FloatDataEncoding sizeInBits="48" encodingAndPrecision="MILSTD_1750A_extended" byteOrder="bigEndian"/>
+        <Range>
+          <PrecisionRange>double</PrecisionRange>
+        </Range>
+      </FloatDataType>
+    
+      <FloatDataType name="IFLOAT128EB" shortDescription="IEEE-754 Quad precision, big endian">
+        <FloatDataEncoding sizeInBits="128" encodingAndPrecision="IEEE754_2008_quad" byteOrder="bigEndian"/>
+        <Range>
+          <PrecisionRange>quad</PrecisionRange>
+        </Range>
+      </FloatDataType>
+    
+      <FloatDataType name="IFLOAT64EB" shortDescription="IEEE-754 Double precision, big endian">
+        <FloatDataEncoding sizeInBits="64" encodingAndPrecision="IEEE754_2008_double" byteOrder="bigEndian"/>
+        <Range>
+          <PrecisionRange>double</PrecisionRange>
+        </Range>
+      </FloatDataType>
+    
+      <FloatDataType name="IFLOAT32EB" shortDescription="IEEE-754 Single precision, big endian">
+        <FloatDataEncoding sizeInBits="32" encodingAndPrecision="IEEE754_2008_single" byteOrder="bigEndian"/>
+        <Range>
+          <PrecisionRange>single</PrecisionRange>
+        </Range>
+      </FloatDataType>
+    
+      <FloatDataType name="IFLOAT128EL" shortDescription="IEEE-754 Quad precision, little endian">
+        <FloatDataEncoding sizeInBits="128" encodingAndPrecision="IEEE754_2008_quad" byteOrder="littleEndian"/>
+        <Range>
+          <PrecisionRange>quad</PrecisionRange>
+        </Range>
+      </FloatDataType>
+    
+      <FloatDataType name="IFLOAT64EL" shortDescription="IEEE-754 Double precision, little endian">
+        <FloatDataEncoding sizeInBits="64" encodingAndPrecision="IEEE754_2008_double" byteOrder="littleEndian"/>
+        <Range>
+          <PrecisionRange>double</PrecisionRange>
+        </Range>
+      </FloatDataType>
+    
+      <FloatDataType name="IFLOAT32EL" shortDescription="IEEE-754 Double precision, little endian">
+        <FloatDataEncoding sizeInBits="32" encodingAndPrecision="IEEE754_2008_single" byteOrder="littleEndian"/>
+        <Range>
+          <PrecisionRange>single</PrecisionRange>
+        </Range>
+      </FloatDataType>
+      
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                      STRINGS                                             -->
+      <!--           Implement ASCII and UTF-8 encoding types                       -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+      <StringDataType name="S50ASCII" length="50" shortDescription="String value, 50 octets, ASCII encoded">
+        <StringDataEncoding encoding="ASCII" />
+      </StringDataType>
+    
+      <StringDataType name="S60UTF8" length="60" shortDescription="String value, 60 octets, UTF-8 encoded">
+        <StringDataEncoding encoding="UTF-8" />
+      </StringDataType>
+    
+      
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                      ENUMERATIONS                                        -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+      <EnumeratedDataType name="EU3" shortDescription="Enumerated value, 3 bits unsigned, all labels defined">
+        <IntegerDataEncoding sizeInBits="3" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration label="ZERO"         value="0" />
+          <Enumeration label="ONE"          value="1" />
+          <Enumeration label="TWO"          value="2" />
+          <Enumeration label="THREE"        value="3" />
+          <Enumeration label="FOUR"         value="4" />
+          <Enumeration label="FIVE"         value="5" />
+          <Enumeration label="SIX"          value="6" />
+          <Enumeration label="SEVEN"        value="7" />
+        </EnumerationList>
+      </EnumeratedDataType>
+    
+      <EnumeratedDataType name="ES16" shortDescription="Enumerated value, 16 bits ones complement, little endian">
+        <IntegerDataEncoding sizeInBits="16" encoding="onesComplement" byteOrder="littleEndian"/>
+        <EnumerationList>
+          <Enumeration label="ZERO"         value="0" />
+          <Enumeration label="MINUS10"      value="-10" />
+          <Enumeration label="PLUS10"       value="10" />
+        </EnumerationList>
+      </EnumeratedDataType>
+    
+      <EnumeratedDataType name="ES24" shortDescription="Enumerated value, 24 bits sign magnitude, big endian">
+        <IntegerDataEncoding sizeInBits="24" encoding="signMagnitude" byteOrder="bigEndian"/>
+        <EnumerationList>
+          <Enumeration label="ZERO"         value="0" />
+          <Enumeration label="MINUS1000"    value="-1000" />
+          <Enumeration label="PLUS1000"     value="1000" />
+        </EnumerationList>
+      </EnumeratedDataType>
+
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                      ARRAYS                                              -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+      <!-- An array of 4 6-bit signed twos complement integers -->
+      <ArrayDataType name="S6EBx4" dataTypeRef="S6EB">
+        <DimensionList>
+          <Dimension size="4" />
+        </DimensionList>
+      </ArrayDataType>
+
+      <!-- An array of floating points, indexed by the EU3 enum -->
+      <ArrayDataType name="MFLOAT32EBxEU3" dataTypeRef="MFLOAT32EB">
+        <DimensionList>
+          <Dimension indexTypeRef="EU3" />
+        </DimensionList>
+      </ArrayDataType>
+
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                      CONTAINERS                                          -->
+      <!--        Define containers that encapsulate every defined data type        -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+      <!--  Boolean container should encode to 8 bits / 1 byte in length -->
+      <ContainerDataType name="ALL_BOOLEANS" shortDescription="Container with Unsigned Data Types">
+        <EntryList>
+          <PaddingEntry sizeInBits="6" />
+          <Entry name="normal" type="B1NORMAL" shortDescription="Simple 1-bit Boolean value"   />
+          <Entry name="invert" type="B1INVERT" shortDescription="Inverted 1-bit Boolean value" />
+        </EntryList>
+      </ContainerDataType>
+    
+      <!--  Unsigned Int container should encode to 208 bits / 26 bytes in length -->
+      <ContainerDataType name="ALL_UNSIGNED_INTS" shortDescription="Container with Unsigned Data Types">
+        <EntryList>
+          <Entry name="u8el"  type="U8EL"  shortDescription="Unsigned 8 bit value, little endian"    />
+          <Entry name="u8eb"  type="U8EB"  shortDescription="Unsigned 8 bit value, big endian"       />
+          <Entry name="u16el" type="U16EL" shortDescription="Unsigned 16 bit value, little endian"   />
+          <Entry name="u16eb" type="U16EB" shortDescription="Unsigned 16 bit value, big endian"      />
+          <Entry name="u32el" type="U32EL" shortDescription="Unsigned 32 bit value, little endian"   />
+          <Entry name="u32eb" type="U32EB" shortDescription="Unsigned 32 bit value, big endian"      />
+          <Entry name="u7"    type="U7"    shortDescription="Unsigned 7 bit value"    />
+          <Entry name="u11"   type="U11"   shortDescription="Unsigned 11 bit value"   />
+          <Entry name="u21"   type="U21"   shortDescription="Unsigned 21 bit value"   />
+          <Entry name="u36"   type="U36"   shortDescription="Unsigned 36 bit value"   />
+          <FixedValueEntry name="fixed5_u21" type="U21"   fixedValue="5" />
+        </EntryList>
+      </ContainerDataType>
+       
+      <!--  Signed Int container should encode to 312 bits / 39 bytes in length -->
+      <ContainerDataType name="ALL_SIGNED_INTS" shortDescription="Container with Signed Data Types">
+        <EntryList>
+          <Entry name="s8el"    type="S8EL"    shortDescription="Signed 8 bit twos complement, little endian"  />
+          <Entry name="s16el"   type="S16EL"   shortDescription="Signed 16 bit twos complement, little endian" />
+          <Entry name="s32el"   type="S32EL"   shortDescription="Signed 32 bit twos complement, little endian" />
+          <Entry name="s6eb"    type="S6EB"    shortDescription="Signed 6 bit twos complement, big endian"     />
+          <Entry name="s15eb"   type="S15EB"   shortDescription="Signed 15 bit twos complement, big endian"    />
+          <Entry name="s27eb"   type="S27EB"   shortDescription="Signed 27 bit twos complement, big endian"    />
+          <Entry name="oc20eb"  type="OC20EB"  shortDescription="Signed 20-bit ones complement, big endian"    />
+          <Entry name="sm40el"  type="SM40EL"  shortDescription="Signed 40-bit sign+magnitude, little endian"  />
+          <Entry name="bcd40eb" type="BCD40EB" shortDescription="10 digit packed BCD in big endian order"      />
+          <Entry name="bcd56el" type="BCD56EL" shortDescription="7 digit BCD in little endian order"           />
+          <FixedValueEntry name="fixedminus4" type="OC20EB" fixedValue="-4" />
+          <FixedValueEntry name="fixedplus10" type="S32EL"   fixedValue="10" />
+        </EntryList>
+      </ContainerDataType>
+      
+      <!-- Float container should encode to 608 bits / 76 bytes in length -->
+      <ContainerDataType name="ALL_FLOATS" shortDescription="Container with Floating Point Data Types">
+        <EntryList>
+          <Entry name="mfloat32el"  type="MFLOAT32EL"  shortDescription="MIL-STD simple floating point, little endian"  />
+          <Entry name="mfloat32eb"  type="MFLOAT32EB"  shortDescription="MIL-STD simple floating point, big endian"     />
+          <Entry name="mfloat48el"  type="MFLOAT48EL"  shortDescription="MIL-STD extended floating point, little endian"/>
+          <Entry name="mfloat48eb"  type="MFLOAT48EB"  shortDescription="MIL-STD extended floating point, big endian"   />
+          <Entry name="ifloat128eb" type="IFLOAT128EB" shortDescription="IEEE-754 Quad precision, big endian"           />
+          <Entry name="ifloat128el" type="IFLOAT128EL" shortDescription="IEEE-754 Quad precision, little endian"        />
+          <Entry name="ifloat64eb"  type="IFLOAT64EB"  shortDescription="IEEE-754 Double precision, big endian"         />
+          <Entry name="ifloat64el"  type="IFLOAT64EL"  shortDescription="IEEE-754 Double precision, little endian"      />
+          <Entry name="ifloat32eb"  type="IFLOAT32EB"  shortDescription="IEEE-754 Single precision, big endian"         />
+          <Entry name="ifloat32el"  type="IFLOAT32EL"  shortDescription="IEEE-754 Single precision, little endian"      />
+        </EntryList>
+      </ContainerDataType>
+
+      <!--  Compound Type container should encode to 928 bits / 116 bytes in length -->
+      <ContainerDataType name="COMPOUND_TYPES" shortDescription="Container with Compound Types">
+        <EntryList>
+          <Entry name="s50ascii" type="S50ASCII" shortDescription="String value, 50 octets, ASCII encoded"  />
+          <Entry name="s60utf8"  type="S60UTF8" shortDescription="String value, 60 octets, UTF-8 encoded"   />
+          <PaddingEntry sizeInBits="5" />
+          <Entry name="eu3"      type="EU3"  shortDescription="Enumerated value, 3 bits unsigned, all labels defined"   />
+          <Entry name="es16"     type="ES16" shortDescription="Enumerated value, 16 bits ones complement, little endian"/>
+          <Entry name="es24"     type="ES24" shortDescription="Enumerated value, 24 bits sign magnitude, big endian"    />
+        </EntryList>
+      </ContainerDataType>
+      
+      <!--  A container that overrides encoding aspects of the members -->
+      <!--  Should encode to 80 bits / 10 bytes in length -->
+      <ContainerDataType name="OVERRIDE_TYPES" shortDescription="Container with Signed Data Types">
+        <EntryList>
+          <Entry name="s32el"  type="S27EB"   shortDescription="Signed 32 bit twos complement, littleEndian">
+            <IntegerDataEncoding sizeInBits="32" encoding="twosComplement" byteOrder="littleEndian" /> 
+          </Entry>
+          <Entry name="oc8"    type="S6EB"    shortDescription="Signed 8 bit ones complement">
+            <IntegerDataEncoding sizeInBits="8" encoding="onesComplement" /> 
+          </Entry>
+          <Entry name="oc24el" type="S6EB"    shortDescription="Signed 24 bit ones complement">
+            <IntegerDataEncoding sizeInBits="24" encoding="onesComplement" byteOrder="littleEndian" /> 
+          </Entry>
+          <Entry name="s15eb"  type="S15EB"   shortDescription="Signed 16 bit sign+magnitude, big endian">
+            <IntegerDataEncoding sizeInBits="16" encoding="signMagnitude" byteOrder="bigEndian"/>
+          </Entry>
+        </EntryList>
+      </ContainerDataType>
+
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                      ERROR CONTROL FIELDS                                -->
+      <!-- Containers that utilize various error control fields and placement       -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+      <!--  CRC-16 in a trailer entry -->
+      <!--  Encoded object should be 416 bits / 52 bytes in length -->
+      <ContainerDataType name="ERRCTL_CRC16EL" shortDescription="Container with CCITT CRC-16 error control">
+        <EntryList>
+          <Entry name="string" type="S50ASCII" shortDescription="Test String"  />
+        </EntryList>
+        <TrailerEntryList>
+          <ErrorControlEntry errorControlType="CRC16_CCITT" name="crc" shortDescription="CRC-16, little endian" type="U16EL"/>
+        </TrailerEntryList>
+      </ContainerDataType>
+      
+      <!--  CRC-8 in a normal entry at the end -->
+      <!--  Encoded object should be 408 bits / 51 bytes in length -->
+      <ContainerDataType name="ERRCTL_CRC8" shortDescription="Container with CRC8 error control">
+        <EntryList>
+          <Entry name="string" type="S50ASCII" shortDescription="Test String"  />
+          <ErrorControlEntry errorControlType="CRC8" name="crc" shortDescription="CRC-8" type="U8EB"/>
+        </EntryList>
+      </ContainerDataType>
+      
+      <!--  Mod 2^32 checksum at in a trailer entry -->
+      <!--  Encoded object should be 432 bits / 54 bytes in length -->
+      <ContainerDataType name="ERRCTL_CHECKSUM" shortDescription="Container with CHECKSUM error control">
+        <EntryList>
+          <Entry name="string" type="S50ASCII" shortDescription="Test String"  />
+        </EntryList>
+        <TrailerEntryList>
+          <ErrorControlEntry errorControlType="CHECKSUM" name="csum" shortDescription="Checksum, big endian" type="U32EB"/>
+        </TrailerEntryList>
+      </ContainerDataType>
+      
+      <!--  A checksum that is mixed in the middle of oddly-sized data (not octet-aligned) -->
+      <!--  Encoded object should be 40 bits / 5 bytes in length -->
+      <ContainerDataType name="ERRCTL_CHECKSUM_LONGITUDINAL" shortDescription="Container with CHECKSUM_LONGITUDINAL error control">
+        <EntryList>
+          <Entry name="testdata1" type="U11" shortDescription="Test Value 1"  />
+          <Entry name="testdata2" type="U21" shortDescription="Test Value 2"  />
+          <ErrorControlEntry errorControlType="CHECKSUM_LONGITUDINAL" name="csum" shortDescription="Checksum" type="U8EB"/>
+        </EntryList>
+      </ContainerDataType>
+      
+      
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                      INHERITANCE/CONSTRAINTS                             -->
+      <!-- Define a base type and some value constraints for inheritance            -->
+      <!-- Include an error control and length field for good measure               -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+      <ContainerDataType name="BASE" shortDescription="Base Container" abstract="true">
+        <EntryList>
+          <!--  The fixed value 21930 corresponds to 55AA in hex -->
+          <FixedValueEntry name="fixed" type="U16EB" shortDescription="Signature" fixedValue="21930" />
+          <Entry name="ident"  type="U16EB" shortDescription="Identification" />
+          <LengthEntry name="length" type="U32EB" shortDescription="Payload Length in Bits">
+            <PolynomialCalibrator>
+              <Term coefficient="4" exponent="0"/>
+              <Term coefficient="0.125"  exponent="1"/>
+            </PolynomialCalibrator>
+          </LengthEntry>
+        </EntryList>
+        <TrailerEntryList>
+          <ErrorControlEntry errorControlType="CRC16_CCITT" name="crc" shortDescription="CRC-16, big endian" type="U16EB"/>
+        </TrailerEntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="DERIV_U16" baseType="BASE" shortDescription="Derived Container 1">
+        <ConstraintSet>
+          <ValueConstraint entry="ident" value="1"/>
+        </ConstraintSet>
+        <EntryList>
+          <Entry name="u16testdata1" type="U16EB" shortDescription="Test Value 1"  />
+          <Entry name="u16testdata2" type="U16EB" shortDescription="Test Value 2"  />
+          <Entry name="u16testdata3" type="U16EB" shortDescription="Test Value 3"  />
+          <Entry name="u16testdata4" type="U16EB" shortDescription="Test Value 3"  />
+        </EntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="DERIV_U32" baseType="BASE" shortDescription="Derived Container 2">
+        <ConstraintSet>
+          <ValueConstraint entry="ident" value="2"/>
+        </ConstraintSet>
+        <EntryList>
+          <Entry name="u32testdata1" type="U32EL" shortDescription="Test Value 1"  />
+          <Entry name="u32testdata2" type="U32EL" shortDescription="Test Value 2"  />
+          <Entry name="u32testdata3" type="U32EL" shortDescription="Test Value 3"  />
+          <Entry name="u32testdata4" type="U32EL" shortDescription="Test Value 4"  />
+        </EntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="DERIV_F64" baseType="BASE" shortDescription="Derived Container 3">
+        <ConstraintSet>
+          <ValueConstraint entry="ident" value="3"/>
+        </ConstraintSet>
+        <EntryList>
+          <Entry name="f64testdata1" type="IFLOAT64EB" shortDescription="Test Value 1"  />
+          <Entry name="f64testdata2" type="IFLOAT64EB" shortDescription="Test Value 2"  />
+          <Entry name="f64testdata3" type="IFLOAT64EB" shortDescription="Test Value 3"  />
+          <Entry name="f64testdata4" type="IFLOAT64EB" shortDescription="Test Value 4"  />
+        </EntryList>
+      </ContainerDataType>
+      
+           
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                      Presence Conditions                             -->
+      <!-- Define fields that are present or not depenbding on constraints                -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+
+      <ContainerDataType name="OPTIONAL_FIRST" baseType="BASE" shortDescription="Optional derived Container 1">
+        <ConstraintSet>
+          <RangeConstraint entry="ident">
+                <MinMaxRange rangeType="inclusiveMinInclusiveMax" min="4" max="5"/>
+          </RangeConstraint>
+        </ConstraintSet>
+        <EntryList>
+          <Entry name="optional1" type="U8EB" shortDescription="Optional Test Value 1"  >
+            <PresentWhen>
+                <ValueConstraint entry="ident" value="4"/>
+            </PresentWhen>
+          </Entry>
+          <Entry name="mandatory1" type="U16EB" shortDescription="Test Value 2"  />
+          <Entry name="mandatory2" type="U32EB" shortDescription="Test Value 3"  />
+          <FixedValueEntry name="check" type="U32EB" shortDescription="Check value" fixedValue="12" />
+        </EntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="OPTIONAL_MID" baseType="BASE" shortDescription="Optional derived Container 2">
+        <ConstraintSet>
+          <RangeConstraint entry="ident">
+                <MinMaxRange rangeType="inclusiveMinExclusiveMax" min="6" max="8"/>
+          </RangeConstraint>
+        </ConstraintSet>
+        <EntryList>
+          <Entry name="mandatory1" type="U16EB" shortDescription="Test Value 2"  />
+          <Entry name="optional1" type="U8EB" shortDescription="Optional Test Value 1"  >
+            <PresentWhen>
+                <ValueConstraint entry="ident" value="6"/>
+            </PresentWhen>
+          </Entry>
+          <Entry name="mandatory2" type="U32EB" shortDescription="Test Value 3"  />
+          <FixedValueEntry name="check" type="U32EB" shortDescription="Check value" fixedValue="123" />
+        </EntryList>
+      </ContainerDataType>
+      
+            
+      <ContainerDataType name="OPTIONAL_LAST" baseType="BASE" shortDescription="Optional derived Container 3">
+        <ConstraintSet>
+          <RangeConstraint entry="ident">
+                <MinMaxRange rangeType="exclusiveMinExclusiveMax" min="8" max="9"/>
+          </RangeConstraint>
+        </ConstraintSet>
+        <EntryList>
+          <Entry name="mandatory1" type="U16EB" shortDescription="Test Value 2"  />
+          <Entry name="mandatory2" type="U32EB" shortDescription="Test Value 3"  />
+          <Entry name="optional1" type="U8EB" shortDescription="Optional Test Value 1"  >
+            <PresentWhen>
+                <ValueConstraint entry="ident" value="8"/>
+            </PresentWhen>
+          </Entry>
+        </EntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="OPTIONAL_MULTI" baseType="BASE" shortDescription="Optional derived Container 4">
+        <ConstraintSet>
+          <RangeConstraint entry="ident">
+                <MinMaxRange rangeType="inclusiveMinInclusiveMax" min="10" max="13"/>
+          </RangeConstraint>
+        </ConstraintSet>
+        <EntryList>
+          <Entry name="mandatory1" type="U16EB" shortDescription="Test Value 1"  />
+          <Entry name="optional1" type="U16EB" shortDescription="Optional Test Value 1"  >
+            <PresentWhen>
+              <RangeConstraint entry="ident">
+                    <MinMaxRange rangeType="atLeast" min="11"/>
+              </RangeConstraint>
+            </PresentWhen>
+          </Entry>
+          <Entry name="mandatory2" type="U32EB" shortDescription="Test Value 2"  />
+          <Entry name="optional2" type="U8EB" shortDescription="Optional Test Value 1"  >
+            <PresentWhen>
+              <RangeConstraint entry="ident">
+                    <MinMaxRange rangeType="atMost" max="12"/>
+              </RangeConstraint>
+            </PresentWhen>
+          </Entry>
+          <FixedValueEntry name="check" type="U32EB" shortDescription="Check value" fixedValue="1234" />
+        </EntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="OPTIONAL_DIRECT" shortDescription="Optional Container with no base">
+        <EntryList>
+          <Entry name="mandatory1" type="U16EB" shortDescription="Test Value 1"  />
+          <Entry name="optional1" type="U8EB" shortDescription="Optional Test Value 1"  >
+            <PresentWhen>
+              <RangeConstraint entry="mandatory1">
+                    <MinMaxRange rangeType="atLeast" min="400"/>
+              </RangeConstraint>
+            </PresentWhen>
+          </Entry>
+          <FixedValueEntry name="check" type="U32EB" shortDescription="Check value" fixedValue="12345" />
+        </EntryList>
+      </ContainerDataType>
+      
+      
+            
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      <!--                      ENUMERATION RANGE CONSTRAINTS                       -->
+      <!-- Define a base type and some value constraints for inheritance            -->
+      <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+      
+      <ContainerDataType name="BASE2" shortDescription="Base Container" abstract="true">
+        <EntryList>
+          <!--  The fixed value 21930 corresponds to 55AA in hex -->
+          <FixedValueEntry name="fixed" type="U16EB" shortDescription="Signature" fixedValue="21930" />
+          <Entry name="ident"  type="EU3" shortDescription="Identification" >
+                  <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+          </Entry>
+          <LengthEntry name="length" type="U32EB" shortDescription="Payload Length in Bits">
+            <PolynomialCalibrator>
+              <Term coefficient="4" exponent="0"/>
+              <Term coefficient="0.125"  exponent="1"/>
+            </PolynomialCalibrator>
+          </LengthEntry>
+        </EntryList>
+        <TrailerEntryList>
+          <ErrorControlEntry errorControlType="CRC16_CCITT" name="crc" shortDescription="CRC-16, big endian" type="U16EB"/>
+          <FixedValueEntry name="fixedCheck" type="U32EB" shortDescription="Check value" fixedValue="1234567" />
+        </TrailerEntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="ER_ODD" baseType="BASE2" shortDescription="Enumerated derived Container 1">
+        <ConstraintSet>
+          <RangeConstraint entry="ident">
+                <EnumeratedRange>
+                      <Label>ONE</Label>
+                      <Label>THREE</Label>
+                      <Label>FIVE</Label>
+                      <Label>SEVEN</Label>
+                </EnumeratedRange>
+          </RangeConstraint>
+        </ConstraintSet>
+        <EntryList>
+          <Entry name="optional1" type="U8EB" >
+            <PresentWhen>
+                <ValueConstraint entry="ident" value="ONE"/>
+            </PresentWhen>
+          </Entry>
+          <Entry name="optional2" type="U16EB"  >
+            <PresentWhen>
+                <ValueConstraint entry="ident" value="THREE"/>
+            </PresentWhen>
+          </Entry>
+          <Entry name="mandatory1" type="U16EB" />
+        </EntryList>
+      </ContainerDataType>
+      
+      <ContainerDataType name="ER_EVEN" baseType="BASE2" shortDescription="Enumerated derived Container 2">
+        <ConstraintSet>
+          <RangeConstraint entry="ident">
+                <EnumeratedRange>
+                      <Label>ZERO</Label>
+                      <Label>TWO</Label>
+                      <Label>FOUR</Label>
+                      <Label>SIX</Label>
+                </EnumeratedRange>
+          </RangeConstraint>
+        </ConstraintSet>
+        <EntryList>
+          <Entry name="optional1" type="U8EB" >
+            <PresentWhen>
+                <ValueConstraint entry="ident" value="TWO"/>
+            </PresentWhen>
+          </Entry>
+          <Entry name="optional2" type="U16EB" >
+            <PresentWhen>
+              <RangeConstraint entry="ident">
+                    <EnumeratedRange>
+                          <Label>TWO</Label>
+                          <Label>SIX</Label>
+                    </EnumeratedRange>
+              </RangeConstraint>            
+            </PresentWhen>
+          </Entry>
+          <Entry name="mandatory1" type="U16EB" />
+        </EntryList>
+      </ContainerDataType>
+      
+      
+    </DataTypeSet>
+  </Package>
+</PackageFile>
+

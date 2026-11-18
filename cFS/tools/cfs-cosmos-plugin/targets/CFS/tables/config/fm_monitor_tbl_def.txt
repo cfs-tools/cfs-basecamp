@@ -1,0 +1,11 @@
+<%= cfs_tbl_hdr('FM_MonitorTable', 'FM Monitor table', 'FM') %>
+<% 8.times do |entry_idx| %>
+  APPEND_PARAMETER TYPE_<%= entry_idx %> 8 UINT 0 MAX_UINT8 0
+    STATE UNUSED 0
+    STATE VOL_FREE_SPACE 1
+    STATE DIR_ESTIMATE 2
+  APPEND_PARAMETER ENABLED_<%= entry_idx %> 8 UINT 0 MAX_UINT8 0
+    STATE FALSE 0
+    STATE TRUE 1
+  APPEND_PARAMETER NAME_<%= entry_idx %> 512 STRING ""
+<% end %>

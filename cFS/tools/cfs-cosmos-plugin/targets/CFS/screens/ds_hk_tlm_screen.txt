@@ -1,0 +1,40 @@
+SCREEN AUTO AUTO 1.0
+<% require 'cfs_target_num_color' %>
+
+VERTICAL
+  TITLE "<%= target_name %> DS HK Telemetry" Courier 20 Normal true
+    SETTING TEXTCOLOR <%= cfs_target_num_color(target_name) %>
+
+  LABELVALUEDESC <%= target_name %>  DS_HK COMMAND_COUNTER "Command Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK COMMAND_ERROR_COUNTER "Command Error Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK DEST_TBL_LOAD_COUNTER "Destination Table Load Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK DEST_TBL_ERR_COUNTER "Destination Table Load Error Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK FILTER_TBL_LOAD_COUNTER "Filter Table Load Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK FILTER_TBL_ERR_COUNTER "Filter Table Load Error Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK APP_ENABLE_STATE "App State:"
+  LABELVALUEDESC <%= target_name %>  DS_HK FILE_WRITE_COUNTER "File Write Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK FILE_WRITE_ERR_COUNTER "File Write Error Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK FILE_UPDATE_COUNTER "File Update Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK FILE_UPDATE_ERR_COUNTER "File Update Error Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK DISABLED_PKT_COUNTER "Packets Discarded Count (DS Disabled):"
+  LABELVALUEDESC <%= target_name %>  DS_HK IGNORED_PKT_COUNTER "Packets Discarded Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK FILTERED_PKT_COUNTER "Packets Discarded Count (Filtered):"
+  LABELVALUEDESC <%= target_name %>  DS_HK PASSED_PKT_COUNTER "Packets Not Filtered Count:"
+  LABELVALUEDESC <%= target_name %>  DS_HK FILTER_TBL_FILENAME "Filter Table File Name:"
+END
+
+HORIZONTAL
+ VERTICALBOX
+    LABEL "Packet Time Created:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packet Time Received:"
+    SETTING TEXTALIGN RIGHT
+    LABEL "Packets Received:"
+    SETTING TEXTALIGN RIGHT
+  END
+  VERTICALBOX
+    VALUE <%= target_name %>  DS_HK PACKET_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  DS_HK RECEIVED_TIMEFORMATTED CONVERTED 23
+    VALUE <%= target_name %>  DS_HK RECEIVED_COUNT 
+  END  
+END
